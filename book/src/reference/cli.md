@@ -64,6 +64,51 @@ Options:
 - `-h, --help` - Show help
 - `-V, --version` - Show version
 
+## APR CLI Commands (Upstream)
+
+The following apr commands are tested by this QA framework:
+
+### apr tune
+
+Plan ML tuning configurations:
+
+```bash
+# Plan LoRA tuning for a 7B model with 24GB VRAM
+apr tune --model 7B --vram 24 --plan
+
+# Plan QLoRA for memory-constrained setup
+apr tune --model 1.5B --vram 8 --method qlora --plan
+
+# Output as JSON for CI integration
+apr tune --model 7B --vram 24 --json
+```
+
+Options:
+- `--model <SIZE>` - Model size (e.g., 1.5B, 7B, 13B)
+- `--vram <GB>` - Available VRAM in gigabytes
+- `--method <lora|qlora>` - Tuning method (default: lora)
+- `--plan` - Output tuning plan
+- `--json` - Output in JSON format for CI
+
+### apr profile
+
+Profile model execution:
+
+```bash
+apr profile <model> --output flamegraph.svg
+apr profile <model> --focus attention
+```
+
+### apr trace
+
+Trace model inference:
+
+```bash
+apr trace <model> --level basic
+apr trace <model> --level layer
+apr trace <model> --level payload
+```
+
 ## Make Targets
 
 ```bash
