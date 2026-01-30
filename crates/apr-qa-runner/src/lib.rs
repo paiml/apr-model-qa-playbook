@@ -54,6 +54,7 @@ pub use patterns::{
     PromptPattern, PromptSafetyResult, TensorValidityResult,
 };
 pub use playbook::{
-    DifferentialTestConfig, InferenceCompareConfig, Playbook, PlaybookStep, ProfileCiAssertions,
-    ProfileCiConfig, TensorDiffConfig, TracePayloadConfig,
+    DifferentialTestConfig, FingerprintConfig, InferenceCompareConfig, Playbook, PlaybookStep,
+    ProfileCiAssertions, ProfileCiConfig, StatsToleranceConfig, TensorDiffConfig,
+    TracePayloadConfig, ValidateStatsConfig,
 };
