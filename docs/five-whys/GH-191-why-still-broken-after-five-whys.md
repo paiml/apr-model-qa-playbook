@@ -4,6 +4,7 @@
 **Scope:** GH-191 (discovered immediately after GH-190 fix)
 **Predecessor:** [GH-190 Five Whys](GH-190-systemic-conversion-failures.md) — written hours earlier
 **Method:** Toyota Production System — Meta Root Cause Analysis
+**Root Cause:** CONFIRMED — dtype byte mapping mismatch in `realizar/src/gguf/loader.rs`
 
 ---
 
@@ -37,6 +38,87 @@ We diagnosed the disease, prescribed the cure, and the patient is still sick. **
 ```
 
 **6 hours of analysis, 1 fix landed, and the pipeline is still broken.**
+
+---
+
+## Confirmed Root Cause: dtype Byte Mapping Mismatch in realizar
+
+**Location:** `/home/noah/src/realizar/src/gguf/loader.rs`
+
+The writer and reader of APR dtype bytes live **in the same file** and **disagree with each other**.
+
+### The Writer: `dtype_to_byte()` (lines 1711-1730)
+
+```rust
+fn dtype_to_byte(dtype: &str) -> u8 {
+    match dtype {
+        "F32" => 0,
+        "F16" => 1,
+        "BF16" => 2,
+        "I8" => 3,   "I16" => 4,   "I32" => 5,   "I64" => 6,   "U8" => 7,
+        "Q4_K" => 8,        // ← writes 8 for Q4_K
+        "Q6_K" => 9,
+        "Q8_0" => 10,
+        "Q4_0" => 11,
+        "Q5_K" => 12,
+        "Q3_K" => 13,
+        "Q2_K" => 14,
+        _ => 0,             // ← SILENT FALLBACK TO F32
+    }
+}
+```
+
+### The Reader: `TensorEntry::from_binary()` (around line 781)
+
+Maps byte 8 back to `"Q4"` — **NOT** `"Q4_K"`. The forward and reverse mappings are inconsistent within the same file.
+
+### The Matcher: `dtype_to_ggml_qtype()` (around line 537)
+
+Matches against `"Q4_K"` but receives `"Q4"` from the reader. No match → `None` → treated as F32.
+
+### The Full Chain
+
+```
+Writer: "Q4_K" → dtype_to_byte() → byte 8       ← WRITES correctly
+Reader: byte 8 → from_binary()   → "Q4"         ← READS incorrectly
+Matcher: "Q4" vs "Q4_K"          → NO MATCH      ← FALLS THROUGH
+Fallback: None                    → F32           ← SILENT CORRUPTION
+```
+
+### Complete Mismatch Table
+
+```
+┌───────────┬───────────────────────────┬───────────────────────────────┬────────────────────────────┐
+│ GGML type │ dtype_to_byte() WRITES    │ from_binary() READS BACK AS  │ dtype_to_ggml_qtype match? │
+├───────────┼───────────────────────────┼───────────────────────────────┼────────────────────────────┤
+│ F32       │ 0                         │ "F32"                         │ ✅ Correct                 │
+│ F16       │ 1                         │ "F16"                         │ ✅ Correct                 │
+│ Q4_K      │ 8                         │ "Q4"                          │ ❌ NO ("Q4_K" expected)     │
+│ Q5_K      │ 12                        │ ???                           │ ❌ NO                       │
+│ Q6_K      │ 9                         │ "Q8_0"                        │ ❌ NO ("Q6_K" expected)     │
+│ Q8_0      │ 10                        │ unknown → "F32"               │ ❌ NO                       │
+│ Q4_0      │ 11                        │ ???                           │ ❌ NO                       │
+│ Q3_K      │ 13                        │ ???                           │ ❌ NO                       │
+│ Q2_K      │ 14                        │ ???                           │ ❌ NO                       │
+└───────────┴───────────────────────────┴───────────────────────────────┴────────────────────────────┘
+```
+
+**Every quantized type except F32/F16 is broken.** The writer and reader were written independently and never round-trip tested.
+
+### Three Silent Fallbacks in One File
+
+1. **`dtype_to_byte()` line 1728:** `_ => 0` — unknown string → F32 byte
+2. **`qtype_to_dtype()` line 1706:** `_ => "F32"` — unknown GGML type → F32 string
+3. **`dtype_to_ggml_qtype()`:** `None` → treated as F32 by caller
+
+Three fallbacks, all to F32, all silent, all in the same file. Any one of them triggers the entire corruption chain.
+
+### Why This Is GH-186 Redux
+
+GH-186 was: "GGML dtype 12 (Q4_K) read as F32 via silent `_ => F32` fallback."
+GH-191 is: "APR byte 8 (Q4_K) read as `"Q4"` via inconsistent reverse mapping → F32 fallback."
+
+Same pattern. Same file. Same fallback. Different code path.
 
 ---
 
@@ -169,13 +251,18 @@ The pattern is: **we analyze faster than we implement the fixes our analysis pre
 Conversion bugs stack like onion layers. Each fix peels one layer, revealing the next:
 
 ```
-Layer 0 (outermost): Names wrong → can't find tensors → garbage
-Layer 1:             Quant data wrong → wrong weights → garbage
+Layer 0 (outermost): Names wrong → can't find tensors → garbage     [GH-190 — FIXED by PMAT-205]
+Layer 1:             dtype byte mapping inconsistent → F32 fallback  [GH-191 — ROOT CAUSE FOUND]
+                     realizar/src/gguf/loader.rs:
+                       dtype_to_byte() writes 8 for Q4_K
+                       from_binary() reads 8 as "Q4" (not "Q4_K")
+                       Three silent _ => F32 fallbacks in same file
 Layer 2 (unknown):   ??? → ??? → garbage?
-Layer 3 (unknown):   ??? → ??? → garbage?
 ```
 
-We've peeled Layer 0 (GH-190) and found Layer 1 (GH-191). We don't know how many layers remain. The only way to know the onion is fully peeled is when the Golden Rule Test PASSES — same output, token by token.
+We've peeled Layer 0 (GH-190) and root-caused Layer 1 (GH-191). The fix is straightforward: make `from_binary()` the exact inverse of `dtype_to_byte()`, and replace all three `_ => F32` fallbacks with explicit errors.
+
+We won't know if Layer 2 exists until GH-191 is fixed and the Golden Rule Test runs again.
 
 **This is why I-1 (round-trip identity) is the supreme invariant.** It's the only test that proves ALL layers are correct simultaneously, without having to discover and test each one individually.
 
@@ -346,13 +433,61 @@ The fix is not more analysis. It's faster enforcement:
 
 | # | Action | Owner | Priority | Status |
 |---|--------|-------|----------|--------|
-| 1 | **Diagnostic runbook script** in repo | apr-qa team | P0 TODAY | NEW |
-| 2 | **Golden Rule Test as merge gate** in aprender CI | aprender team | P0 THIS PR | BLOCKED (need GH-191 fix) |
-| 3 | **All 5 invariants in CI** | platform team | P0 THIS SPRINT | NOT STARTED |
-| 4 | **Definition of Done** for conversion fixes = behavioral | eng leads | P0 | NOT STARTED |
-| 5 | Shared contract crate | platform team | P1 | NOT STARTED |
-| 6 | Stage 11 behavioral in `apr check` | apr-cli team | P1 | NOT STARTED |
-| 7 | Audit all `_ =>` fallbacks | aprender team | P1 | NOT STARTED |
+| 1 | **Diagnostic runbook script** in repo | apr-qa team | P0 TODAY | ✅ DONE (`scripts/diagnose-conversion.sh`) |
+| 2 | **Fix `from_binary()` reverse mapping** in realizar | realizar team | P0 THIS PR | ROOT CAUSE FOUND |
+| 3 | **Kill 3 silent `_ => F32` fallbacks** in `loader.rs` | realizar team | P0 THIS PR | AUDIT COMPLETE (lines 1706, 1728, and dtype_to_ggml_qtype) |
+| 4 | **Golden Rule Test as merge gate** in realizar CI | realizar team | P0 THIS PR | BLOCKED (need items 2+3) |
+| 5 | **All 5 invariants in CI** | platform team | P0 THIS SPRINT | NOT STARTED |
+| 6 | **Definition of Done** for conversion fixes = behavioral | eng leads | P0 | NOT STARTED |
+| 7 | Shared contract crate | platform team | P1 | NOT STARTED |
+| 8 | Stage 11 behavioral in `apr check` | apr-cli team | P1 | NOT STARTED |
+| 9 | Round-trip test for `dtype_to_byte` ↔ `from_binary` | realizar team | P0 | NOT STARTED |
+
+### Specific Fix for GH-191
+
+**File:** `realizar/src/gguf/loader.rs`
+
+**Fix 1:** Make `from_binary()` the exact inverse of `dtype_to_byte()`:
+```rust
+// byte → string (MUST be exact inverse of dtype_to_byte)
+fn byte_to_dtype(byte: u8) -> Result<&'static str, RealizarError> {
+    match byte {
+        0 => Ok("F32"),
+        1 => Ok("F16"),
+        2 => Ok("BF16"),
+        3 => Ok("I8"),    4 => Ok("I16"),   5 => Ok("I32"),   6 => Ok("I64"),   7 => Ok("U8"),
+        8 => Ok("Q4_K"),   // NOT "Q4"
+        9 => Ok("Q6_K"),   // NOT "Q8_0"
+        10 => Ok("Q8_0"),
+        11 => Ok("Q4_0"),
+        12 => Ok("Q5_K"),
+        13 => Ok("Q3_K"),
+        14 => Ok("Q2_K"),
+        _ => Err(RealizarError::UnsupportedOperation {
+            operation: "byte_to_dtype".into(),
+            reason: format!("Unknown APR dtype byte: {} — refusing silent F32 fallback", byte),
+        }),
+    }
+}
+```
+
+**Fix 2:** Kill silent fallbacks at lines 1706 and 1728:
+```rust
+// qtype_to_dtype line 1706: _ => "F32"  →  _ => panic!("Unknown GGML qtype: {}", qtype)
+// dtype_to_byte line 1728:  _ => 0      →  _ => panic!("Unknown dtype string: {}", dtype)
+```
+
+**Fix 3:** Add round-trip invariant test:
+```rust
+#[test]
+fn dtype_byte_roundtrip() {
+    for dtype in ["F32", "F16", "BF16", "Q4_K", "Q5_K", "Q6_K", "Q8_0", "Q4_0", "Q3_K", "Q2_K"] {
+        let byte = dtype_to_byte(dtype);
+        let back = byte_to_dtype(byte).unwrap();
+        assert_eq!(dtype, back, "Round-trip failed: {} → {} → {}", dtype, byte, back);
+    }
+}
+```
 
 ---
 

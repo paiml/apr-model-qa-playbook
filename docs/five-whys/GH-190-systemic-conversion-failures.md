@@ -248,15 +248,28 @@ Every week we don't implement the Golden Rule Test:
 
 ## Action Items
 
-| # | Action | Owner | Priority |
-|---|--------|-------|----------|
-| 1 | Add Golden Rule Test to aprender CI | aprender team | P0 (this week) |
-| 2 | Add Golden Rule Test to realizar CI | realizar team | P0 (this week) |
-| 3 | Define canonical tensor naming in APR v2 spec | spec owner | P0 |
-| 4 | Add Stage 11 (behavioral) to `apr check` | apr-cli team | P1 |
-| 5 | Audit all `_ =>` match arms in format code | aprender team | P1 |
-| 6 | Create shared contract test crate | platform team | P1 |
-| 7 | Replace 22 symptom gates with 5 invariants | apr-qa team | P2 |
+| # | Action | Owner | Priority | Status |
+|---|--------|-------|----------|--------|
+| 1 | Add Golden Rule Test to aprender CI | aprender team | P0 (this week) | BLOCKED on GH-191 |
+| 2 | Add Golden Rule Test to realizar CI | realizar team | P0 (this week) | BLOCKED on GH-191 |
+| 3 | Define canonical tensor naming in APR v2 spec | spec owner | P0 | ✅ PMAT-205 |
+| 4 | Add Stage 11 (behavioral) to `apr check` | apr-cli team | P1 | NOT STARTED |
+| 5 | Audit all `_ =>` match arms in format code | aprender team | P1 | ✅ DONE — found 3 in `realizar/src/gguf/loader.rs` |
+| 6 | Create shared contract test crate | platform team | P1 | NOT STARTED |
+| 7 | Replace 22 symptom gates with 5 invariants | apr-qa team | P2 | IN PROGRESS |
+
+---
+
+## Post-Script: GH-191 Confirms This Analysis (Same Day)
+
+Hours after writing this document, PMAT-205 (GH-190 naming fix) landed and the Golden Rule Test was re-run. **It still fails.** GH-191 was discovered hiding underneath — a dtype byte mapping mismatch in `realizar/src/gguf/loader.rs` where `dtype_to_byte()` writes `8` for `Q4_K` but `from_binary()` reads byte `8` as `"Q4"` (not `"Q4_K"`).
+
+**This is exactly what this document predicted:**
+- Item 5 (audit `_ =>` fallbacks) found **3 silent F32 fallbacks in the same file**
+- The GH-186 pattern ("silent `_ => F32` defaults are the #1 cause") struck again
+- Writer and reader disagree on conventions — this time within the **same crate**
+
+See: [GH-191 Five Whys](GH-191-why-still-broken-after-five-whys.md) for the full meta-analysis.
 
 ---
 
