@@ -74,6 +74,18 @@ enum Commands {
         /// Run APR tool coverage tests (inspect, validate, bench, check, trace, profile)
         #[arg(long)]
         run_tool_tests: bool,
+
+        /// Run profile CI assertions (throughput, latency thresholds)
+        #[arg(long)]
+        profile_ci: bool,
+
+        /// Skip differential tests (tensor_diff, inference_compare)
+        #[arg(long)]
+        no_differential: bool,
+
+        /// Skip trace payload tests (forward pass, garbage detection)
+        #[arg(long)]
+        no_trace_payload: bool,
     },
 
     /// Run APR tool coverage tests
@@ -205,6 +217,9 @@ fn main() {
             no_gpu,
             skip_conversion_tests,
             run_tool_tests,
+            profile_ci,
+            no_differential,
+            no_trace_payload,
         } => {
             run_playbook(
                 &playbook,
@@ -218,6 +233,9 @@ fn main() {
                 no_gpu,
                 skip_conversion_tests,
                 run_tool_tests,
+                profile_ci,
+                no_differential,
+                no_trace_payload,
             );
         }
         Commands::Tools {
@@ -280,6 +298,9 @@ fn run_playbook(
     no_gpu: bool,
     skip_conversion_tests: bool,
     run_tool_tests_flag: bool,
+    profile_ci: bool,
+    no_differential: bool,
+    no_trace_payload: bool,
 ) {
     println!("Loading playbook: {}", playbook_path.display());
 
@@ -323,6 +344,9 @@ fn run_playbook(
         no_gpu,
         skip_conversion_tests,
         run_tool_tests: run_tool_tests_flag,
+        run_differential_tests: !no_differential,
+        run_profile_ci: profile_ci,
+        run_trace_payload: !no_trace_payload,
     };
 
     let config = match build_execution_config(&run_config) {

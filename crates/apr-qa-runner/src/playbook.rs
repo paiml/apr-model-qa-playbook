@@ -757,14 +757,18 @@ differential_tests:
     gates: ["F-ROSETTA-INF-001"]
 "#;
         let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
-        let diff = playbook.differential_tests.expect("Should have differential tests");
+        let diff = playbook
+            .differential_tests
+            .expect("Should have differential tests");
 
         let tensor = diff.tensor_diff.expect("Should have tensor diff");
         assert!(tensor.enabled);
         assert_eq!(tensor.filter, Some("embed,lm_head".to_string()));
         assert_eq!(tensor.gates.len(), 2);
 
-        let inf = diff.inference_compare.expect("Should have inference compare");
+        let inf = diff
+            .inference_compare
+            .expect("Should have inference compare");
         assert!(inf.enabled);
         assert_eq!(inf.prompt, Some("What is 2+2?".to_string()));
         assert_eq!(inf.max_tokens, 10);

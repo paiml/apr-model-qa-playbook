@@ -71,6 +71,12 @@ pub struct PlaybookRunConfig {
     pub skip_conversion_tests: bool,
     /// Run APR tool coverage tests
     pub run_tool_tests: bool,
+    /// Run differential tests (tensor_diff, inference_compare)
+    pub run_differential_tests: bool,
+    /// Run profile CI assertions (throughput, latency)
+    pub run_profile_ci: bool,
+    /// Run trace payload tests (forward pass, garbage detection)
+    pub run_trace_payload: bool,
 }
 
 impl Default for PlaybookRunConfig {
@@ -85,6 +91,9 @@ impl Default for PlaybookRunConfig {
             no_gpu: false,
             skip_conversion_tests: false,
             run_tool_tests: false,
+            run_differential_tests: true,
+            run_profile_ci: false,
+            run_trace_payload: true,
         }
     }
 }
@@ -267,6 +276,9 @@ pub fn build_execution_config(config: &PlaybookRunConfig) -> Result<ExecutionCon
         default_timeout_ms: config.timeout,
         no_gpu: config.no_gpu,
         run_conversion_tests: !config.skip_conversion_tests,
+        run_differential_tests: config.run_differential_tests,
+        run_profile_ci: config.run_profile_ci,
+        run_trace_payload: config.run_trace_payload,
     })
 }
 

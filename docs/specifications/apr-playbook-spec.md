@@ -29,8 +29,11 @@
 - **feat(conversion):** Add bug classification (GH-187)
   - ConversionBugType enum with 6 classifications
   - Gates: F-CONV-EMBED-001, F-CONV-TOK-001, F-CONV-WEIGHT-001, etc.
+- **feat(executor):** Add ExecutionConfig for phase control
+  - run_differential_tests, run_profile_ci, run_trace_payload options
+  - CLI flags: --profile-ci, --no-differential, --no-trace-payload
 - **Total gates:** 82+ (up from 56+)
-- **Tests:** 225 passing
+- **Tests:** 227 passing
 
 ### v1.2.0 (2026-01-30)
 - Initial bug classification gates
@@ -3568,6 +3571,89 @@ else
     exit 1
 fi
 ```
+
+### 12.5 Execution Configuration
+
+The `ExecutionConfig` struct controls which test phases are executed during playbook runs. This allows fine-grained control over differential testing, profiling, and trace payload execution.
+
+#### 12.5.1 Configuration Options
+
+```rust
+// crates/apr-qa-runner/src/executor.rs
+
+/// Configuration options for playbook execution.
+/// Controls which test phases are run and how.
+pub struct ExecutionConfig {
+    /// Whether to run differential tests (tensor_diff, inference_compare).
+    /// Default: true
+    ///
+    /// When enabled, differential testing compares APR format outputs
+    /// against reference implementations to detect:
+    /// - Embedding layout mismatches (F-ROSETTA-DIFF-001)
+    /// - Weight transposition bugs (F-ROSETTA-DIFF-002)
+    /// - Inference divergence (F-ROSETTA-INF-001)
+    pub run_differential_tests: bool,
+
+    /// Whether to run profile CI assertions.
+    /// Default: false (expensive, typically CI-only)
+    ///
+    /// When enabled, measures throughput and latency to verify:
+    /// - Minimum throughput met (F-PROFILE-CI-001)
+    /// - P99 latency under threshold (F-PROFILE-CI-002)
+    pub run_profile_ci: bool,
+
+    /// Whether to run trace payload tests.
+    /// Default: true
+    ///
+    /// When enabled, executes real forward passes to detect:
+    /// - NaN/Inf in tensor outputs (F-TRACE-PAYLOAD-001)
+    /// - Garbage output patterns (F-TRACE-PAYLOAD-002)
+    pub run_trace_payload: bool,
+}
+
+impl Default for ExecutionConfig {
+    fn default() -> Self {
+        Self {
+            run_differential_tests: true,
+            run_profile_ci: false,
+            run_trace_payload: true,
+        }
+    }
+}
+```
+
+#### 12.5.2 CLI Flags
+
+```bash
+# Run with all test phases (CI mode)
+apr-qa run playbook.yaml --profile-ci
+
+# Run without differential testing (quick validation)
+apr-qa run playbook.yaml --no-differential
+
+# Run without trace payload (skip forward pass)
+apr-qa run playbook.yaml --no-trace-payload
+
+# Minimal run (gates only)
+apr-qa run playbook.yaml --no-differential --no-trace-payload
+```
+
+#### 12.5.3 Phase Dependencies
+
+| Phase | Depends On | Gates Verified |
+|-------|------------|----------------|
+| Differential Tests | Model loaded, reference available | F-ROSETTA-DIFF-*, F-ROSETTA-INF-* |
+| Profile CI | Basic inference passing | F-PROFILE-CI-001, F-PROFILE-CI-002 |
+| Trace Payload | Model loaded | F-TRACE-PAYLOAD-001, F-TRACE-PAYLOAD-002 |
+
+#### 12.5.4 Recommended Configurations
+
+| Context | Config | Rationale |
+|---------|--------|-----------|
+| Local development | Default | Quick feedback, catches major issues |
+| PR validation | `--profile-ci` | Full verification before merge |
+| Model qualification | All enabled | Complete falsification testing |
+| Bisection/debugging | `--no-profile-ci` | Fast iteration, skip expensive assertions |
 
 ---
 

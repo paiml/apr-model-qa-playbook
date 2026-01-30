@@ -64,8 +64,8 @@ impl Default for ExecutionConfig {
             no_gpu: false,
             run_conversion_tests: true, // P0 CRITICAL: Always run by default
             run_differential_tests: true, // v1.3.0: Differential testing enabled by default
-            run_profile_ci: false, // Only enable for CI pipelines
-            run_trace_payload: true, // v1.3.0: Trace payload enabled by default
+            run_profile_ci: false,      // Only enable for CI pipelines
+            run_trace_payload: true,    // v1.3.0: Trace payload enabled by default
         }
     }
 }
