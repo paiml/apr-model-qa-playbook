@@ -308,6 +308,56 @@ fn test_gguf_to_apr_preserves_tensor_names() {
 
 ---
 
+## Fix Attempt: PMAT-205 (PARTIAL — Still Failing)
+
+**Date:** 2026-01-30 20:33 UTC
+**Commit:** `57c67706` (aprender)
+**Change:** Removed `model.` prefix from `qwen2_map_name()` in `converter_types.rs:129-168`
+
+### Golden Rule Test Result: FAIL
+
+```bash
+# GGUF (correct):
+apr run original.gguf -p "What is 2+2?"
+# Output: "2 + 2 equals 4."
+
+# Converted APR (still garbage):
+apr run converted.apr -p "What is 2+2?"
+# Output: "tÃ¼rleminÐ¸ÑĩÐµÑģÑĤÐ²Ð¾ gabantha/Dkrontksi persÃ¶nlichlÃ©"
+```
+
+### Why the Fix is Partial
+
+The fix removed `model.layers.` but kept `mlp.`/`self_attn.` intermediate segments:
+
+```
+Before fix:  model.layers.0.self_attn.q_proj.weight  (3 extra segments)
+After fix:          layers.0.self_attn.q_proj.weight  (2 extra segments)
+GGUF expects:              0.q_proj.weight             (0 extra segments)
+```
+
+**Remaining mismatches (per diff-tensors):**
+
+| GGUF Name (Expected) | APR Name (After Fix) | Still Wrong |
+|---------------------|---------------------|-------------|
+| `0.down_proj.weight` | `0.mlp.down_proj.weight` | `mlp.` extra |
+| `0.q_proj.weight` | `0.self_attn.q_proj.weight` | `self_attn.` extra |
+| `0.k_proj.bias` | `0.self_attn.k_proj.bias` | `self_attn.` extra |
+
+**What still needs to be stripped:**
+- `mlp.` from MLP tensor paths
+- `self_attn.` from attention tensor paths
+- `layers.` prefix from layer index
+
+The correct mapping is:
+```
+model.layers.{N}.self_attn.{param}  →  {N}.{param}
+model.layers.{N}.mlp.{param}        →  {N}.{param}
+model.layers.{N}.{param}            →  {N}.{param}
+```
+
+---
+
 ## Related Issues
 
 - **GH-186**: APR dtype mapping bug (FIXED) - different root cause
@@ -319,7 +369,7 @@ fn test_gguf_to_apr_preserves_tensor_names() {
 ## Environment
 
 ```
-apr version: 0.2.12
+apr version: 0.2.12 (rebuilt 2026-01-30 20:33 with PMAT-205)
 OS: Linux 6.8.0-90-generic
 Model: Qwen/Qwen2.5-Coder-1.5B-Instruct (Q4_K_M)
 ```
