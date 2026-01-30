@@ -1,9 +1,9 @@
 # APR Model QA Playbook Specification
 
-**Version:** 1.1.0
+**Version:** 1.1.1
 **Status:** DRAFT - Awaiting Peer Review
 **Author:** PAIML Engineering
-**Date:** 2026-01-29
+**Date:** 2026-01-30
 **PMAT Compliance:** Required (95% coverage, zero SATD)
 **Quality Philosophy:** Toyota Way + Popperian Falsification + Black Swan Theory
 
@@ -439,7 +439,7 @@ All format conversions MUST be tested in both directions:
 
 **Note:** Current implementation tests CPU and GPU backends (36 conversions each = 72 total per model). WASM backend support is planned for future releases.
 
-**Backend Equivalence Assertion:** Output from CPU and GPU backends MUST match within floating-point tolerance ε = 1e-6. See Section 4.8 for precise ε definition.
+**Backend Equivalence Assertion:** Output from CPU and GPU backends MUST match within floating-point tolerance ε = 1e-6. See Section 4.9 for precise ε definition.
 
 ### 4.4 Conversion Falsification Gates (P0)
 
