@@ -3318,13 +3318,13 @@ mod tests {
 
 | ID | Description | Condition | Points | Status |
 |----|-------------|-----------|--------|--------|
-| F-CONV-001 | GGUF → APR | Output tensors match within $\epsilon$ | 5 | ⚠️ TESTED (upstream bug #172) |
-| F-CONV-002 | APR → GGUF | Output tensors match within $\epsilon$ | 5 | ⚠️ TESTED (upstream bug #172) |
-| F-CONV-003 | GGUF → SafeTensors | Output tensors match within $\epsilon$ | 5 | ⚠️ TESTED (upstream bug #172) |
-| F-CONV-004 | SafeTensors → GGUF | Output tensors match within $\epsilon$ | 5 | ⚠️ TESTED (upstream bug #172) |
-| F-CONV-005 | APR → SafeTensors | Output tensors match within $\epsilon$ | 5 | ⚠️ TESTED (upstream bug #172) |
-| F-CONV-006 | SafeTensors → APR | Output tensors match within $\epsilon$ | 5 | ⚠️ TESTED (upstream bug #172) |
-| F-CONV-RT-001 | Round-Trip A→B→A | Bitwise identical to original | 10 | ⚠️ TESTED (NaN corruption found) |
+| F-CONV-001 | GGUF → APR | Output tensors match within $\epsilon$ | 5 | ✅ PASS (apr #172 fixed) |
+| F-CONV-002 | APR → GGUF | Output tensors match within $\epsilon$ | 5 | ✅ PASS (apr #172 fixed) |
+| F-CONV-003 | GGUF → SafeTensors | Output tensors match within $\epsilon$ | 5 | ✅ PASS (apr #172 fixed) |
+| F-CONV-004 | SafeTensors → GGUF | Output tensors match within $\epsilon$ | 5 | ✅ PASS (apr #172 fixed) |
+| F-CONV-005 | APR → SafeTensors | Output tensors match within $\epsilon$ | 5 | ✅ PASS (apr #172 fixed) |
+| F-CONV-006 | SafeTensors → APR | Output tensors match within $\epsilon$ | 5 | ✅ PASS (apr #172 fixed) |
+| F-CONV-RT-001 | Round-Trip A→B→A | Bitwise identical to original | 10 | ✅ PASS (apr #172 fixed - NaN protection) |
 | F-CONV-BE-001 | Backend Equivalence | CPU output == GPU output | 10 | ✅ PASS (via ToolExecutor) |
 
 ### 15.4 Integration Falsification (40 points)
@@ -3336,7 +3336,7 @@ mod tests {
 | F-INTEG-003 | `apr serve` lifecycle correct | Start, request, shutdown clean | 5 | ✅ PASS (via ToolExecutor) |
 | F-INTEG-004 | CPU backend works | Inference completes without --gpu | 5 | ✅ PASS |
 | F-INTEG-005 | GPU backend works | Inference completes with --gpu | 5 | ✅ PASS |
-| F-INTEG-006 | Cross-format parity | GGUF argmax == SafeTensors argmax | 5 | ⚠️ TESTED (fails - upstream) |
+| F-INTEG-006 | Cross-format parity | GGUF argmax == SafeTensors argmax | 5 | ✅ PASS (apr #172 fixed) |
 | F-INTEG-007 | Batuta orchestration | Pipeline stages execute in order | 5 | ✅ PASS |
 | F-INTEG-008 | Report generation | HTML/JSON/JUnit all valid | 5 | ✅ PASS |
 
@@ -3391,7 +3391,7 @@ mod tests {
 |---------|------------|----------|--------|
 | Infrastructure | 30 | 30 | ✅ 100% |
 | Oracle & Demarcation | 35 | 35 | ✅ 100% |
-| Format Conversion | 50 | 50 | ✅ 100% (tests implemented, bugs tracked in #172) |
+| Format Conversion | 50 | 50 | ✅ 100% (apr #172 fixed - conversions now lossless) |
 | Integration | 40 | 40 | ✅ 100% |
 | Property Tests | 35 | 35 | ✅ 100% |
 | Tracing & Profiling | 40 | 30 | ⚠️ 75% (blocked on apr #173, #174) |
@@ -3401,11 +3401,19 @@ mod tests {
 
 **Certification Status:** 240/280 points (86%) - NEAR CERTIFICATION
 - Infrastructure, Oracle, Format Conversion, Integration, Property Tests, and Ticket requirements met (100%)
-- Format Conversion: All tests implemented including backend equivalence (F-CONV-BE-001)
+- Format Conversion: All conversions now lossless (apr #172 fixed with scale factor validation)
 - Profile flamegraph/focus tests implemented (blocked on apr #173, #174)
 - ML Tuning blocked on apr feature implementation (30 points unavailable)
 - Required: 245/280 (87%) for full certification
 - Gap: 5 points (blocked on upstream apr features - need #173 OR #174 fixed)
+
+**Upstream Issue Status (2026-01-30):**
+| Issue | Title | Status |
+|-------|-------|--------|
+| #172 | P0 Format Conversion (NaN/lossy) | ✅ **FIXED** (PMAT-177) |
+| #173 | `--focus` option for profile | ❌ OPEN |
+| #174 | `--profile-output` flamegraph | ❌ OPEN |
+| #175 | TensorStats cross-format validation | ✅ **FIXED** (aacf224e) |
 
 **Test Coverage Implementation (2026-01-30):**
 - 406 unit tests across all crates (148 runner, 124 report, 104 gen, 30 cli)
