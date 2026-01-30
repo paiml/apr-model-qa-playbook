@@ -79,7 +79,7 @@ differential_tests:
     prompt: "What is 2+2?"
     max_tokens: 10
     tolerance: 1e-5
-    gates: ["F-ROSETTA-INF-001"]
+    gates: ["F-ROSETTA-INF-001", "F-ROSETTA-INF-003"]
   # Fingerprint (PMAT-201)
   fingerprint:
     enabled: true
@@ -94,7 +94,7 @@ differential_tests:
       layernorm: 0.001
       embedding: 0.1
       attention: 0.01
-    gates: ["F-ROSETTA-STATS-001", "F-ROSETTA-STATS-002"]
+    gates: ["F-ROSETTA-STATS-001", "F-ROSETTA-STATS-002", "F-ROSETTA-STATS-005", "F-ROSETTA-STATS-006"]
 
 # Profile CI Assertions (v1.3.0)
 profile_ci:
