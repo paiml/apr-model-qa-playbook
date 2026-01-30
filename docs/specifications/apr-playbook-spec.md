@@ -3369,12 +3369,12 @@ mod tests {
 
 | ID | Description | Condition | Points | Status |
 |----|-------------|-----------|--------|--------|
-| F-TUNE-001 | Freeze base works | Frozen params unchanged after train step | 5 | ⏳ PENDING (apr feature) |
-| F-TUNE-002 | Unfreeze works | All params trainable after unfreeze | 5 | ⏳ PENDING (apr feature) |
-| F-TUNE-003 | MultiTaskHead routing | Correct head selected per task | 5 | ⏳ PENDING (apr feature) |
-| F-TUNE-004 | LoRA rank applies | Output differs from base by rank | 5 | ⏳ PENDING (apr feature) |
-| F-DRIFT-001 | DDM Stable→Warning | Warning triggered at threshold | 5 | ⏳ PENDING (apr feature) |
-| F-DRIFT-002 | DDM Warning→Drift | Drift confirmed after sustained errors | 5 | ⏳ PENDING (apr feature) |
+| F-TUNE-001 | Freeze base works | Frozen params unchanged after train step | 5 | ⏳ PENDING (apr #176) |
+| F-TUNE-002 | Unfreeze works | All params trainable after unfreeze | 5 | ⏳ PENDING (apr #176) |
+| F-TUNE-003 | MultiTaskHead routing | Correct head selected per task | 5 | ⏳ PENDING (apr #176) |
+| F-TUNE-004 | LoRA rank applies | Output differs from base by rank | 5 | ⏳ PENDING (apr #176) |
+| F-DRIFT-001 | DDM Stable→Warning | Warning triggered at threshold | 5 | ⏳ PENDING (apr #176) |
+| F-DRIFT-002 | DDM Warning→Drift | Drift confirmed after sustained errors | 5 | ⏳ PENDING (apr #176) |
 
 ### 15.8 Upstream Ticket Falsification (20 points)
 
@@ -3395,7 +3395,7 @@ mod tests {
 | Integration | 40 | 40 | ✅ 100% |
 | Property Tests | 35 | 35 | ✅ 100% |
 | Tracing & Profiling | 40 | 40 | ✅ 100% (apr #173, #174 fixed) |
-| ML Tuning | 30 | 0 | ⏳ 0% (apr feature not yet implemented) |
+| ML Tuning | 30 | 0 | ⏳ 0% (apr #176 - tuning features) |
 | Upstream Tickets | 20 | 20 | ✅ 100% |
 | **TOTAL** | **280** | **250** | **89%** |
 
@@ -3403,7 +3403,7 @@ mod tests {
 - Infrastructure, Oracle, Format Conversion, Integration, Property Tests, Tracing/Profiling, and Ticket requirements met (100%)
 - Format Conversion: All conversions now lossless (apr #172 fixed with scale factor validation)
 - Profile flamegraph and focus filtering now working (apr #173, #174 fixed)
-- ML Tuning blocked on apr feature implementation (30 points unavailable)
+- ML Tuning blocked on apr #176 (30 points available when implemented)
 - Required: 245/280 (87%) for certification - **ACHIEVED**
 
 **Upstream Issue Status (2026-01-30):**
@@ -3413,9 +3413,10 @@ mod tests {
 | #173 | `--focus` option for profile | ✅ **CLOSED** (filter_results_by_focus) |
 | #174 | `--profile-output` flamegraph | ✅ **CLOSED** (--output/-o flag) |
 | #175 | TensorStats cross-format validation | ✅ **CLOSED** (aacf224e) |
+| #176 | ML tuning: freeze, LoRA, drift | ⏳ **OPEN** (would add 30 points) |
 
 **Test Coverage Implementation (2026-01-30):**
-- 406 unit tests across all crates (148 runner, 124 report, 104 gen, 30 cli)
+- 419 unit tests across all crates (148 runner, 124 report, 117 gen, 30 cli)
 - CLI refactored into library module with comprehensive unit tests
 - Library modules: 93%+ line coverage
 - Subprocess-dependent modules verified via integration tests with actual `apr` binary
