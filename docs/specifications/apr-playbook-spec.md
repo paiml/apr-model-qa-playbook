@@ -3362,8 +3362,8 @@ mod tests {
 | F-TRACE-004 | Trace level `payload` works | Full tensor values captured | 5 | ✅ PASS (via ToolExecutor) |
 | F-TRACE-005 | NaN/Inf detection | Anomalies flagged in trace output | 5 | ✅ PASS (conversion tests) |
 | F-PROFILE-001 | Profile hotspots detected | At least attention+mlp identified | 5 | ✅ PASS (via ToolExecutor) |
-| F-PROFILE-002 | Flamegraph output valid | SVG renders correctly | 5 | ⚠️ TESTED (blocked on apr #174) |
-| F-PROFILE-003 | Focus filtering works | `--focus attention` limits scope | 5 | ⚠️ TESTED (blocked on apr #173) |
+| F-PROFILE-002 | Flamegraph output valid | SVG renders correctly | 5 | ✅ PASS (apr #174 fixed) |
+| F-PROFILE-003 | Focus filtering works | `--focus attention` limits scope | 5 | ✅ PASS (apr #173 fixed) |
 
 ### 15.7 ML Tuning Falsification (30 points)
 
@@ -3394,25 +3394,24 @@ mod tests {
 | Format Conversion | 50 | 50 | ✅ 100% (apr #172 fixed - conversions now lossless) |
 | Integration | 40 | 40 | ✅ 100% |
 | Property Tests | 35 | 35 | ✅ 100% |
-| Tracing & Profiling | 40 | 30 | ⚠️ 75% (blocked on apr #173, #174) |
-| ML Tuning | 30 | 0 | ⏳ 0% (apr feature) |
+| Tracing & Profiling | 40 | 40 | ✅ 100% (apr #173, #174 fixed) |
+| ML Tuning | 30 | 0 | ⏳ 0% (apr feature not yet implemented) |
 | Upstream Tickets | 20 | 20 | ✅ 100% |
-| **TOTAL** | **280** | **240** | **86%** |
+| **TOTAL** | **280** | **250** | **89%** |
 
-**Certification Status:** 240/280 points (86%) - NEAR CERTIFICATION
-- Infrastructure, Oracle, Format Conversion, Integration, Property Tests, and Ticket requirements met (100%)
+**Certification Status:** 250/280 points (89%) - ✅ **CERTIFIED**
+- Infrastructure, Oracle, Format Conversion, Integration, Property Tests, Tracing/Profiling, and Ticket requirements met (100%)
 - Format Conversion: All conversions now lossless (apr #172 fixed with scale factor validation)
-- Profile flamegraph/focus tests implemented (blocked on apr #173, #174)
+- Profile flamegraph and focus filtering now working (apr #173, #174 fixed)
 - ML Tuning blocked on apr feature implementation (30 points unavailable)
-- Required: 245/280 (87%) for full certification
-- Gap: 5 points (blocked on upstream apr features - need #173 OR #174 fixed)
+- Required: 245/280 (87%) for certification - **ACHIEVED**
 
 **Upstream Issue Status (2026-01-30):**
 | Issue | Title | Status |
 |-------|-------|--------|
 | #172 | P0 Format Conversion (NaN/lossy) | ✅ **FIXED** (PMAT-177) |
-| #173 | `--focus` option for profile | ❌ OPEN |
-| #174 | `--profile-output` flamegraph | ❌ OPEN |
+| #173 | `--focus` option for profile | ✅ **FIXED** (filter_results_by_focus) |
+| #174 | `--profile-output` flamegraph | ✅ **FIXED** (--output/-o flag) |
 | #175 | TensorStats cross-format validation | ✅ **FIXED** (aacf224e) |
 
 **Test Coverage Implementation (2026-01-30):**

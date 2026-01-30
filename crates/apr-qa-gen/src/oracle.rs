@@ -655,4 +655,124 @@ mod tests {
         let json = serde_json::to_string(&result).expect("serialize");
         assert!(json.contains("Falsified"));
     }
+
+    // Mutation-killing tests for arithmetic operations
+    #[test]
+    fn test_arithmetic_addition_not_multiplication() {
+        // If + were replaced with *, 2+3 would give 6, not 5
+        let oracle = ArithmeticOracle::new();
+        let result = oracle.evaluate("2+3=", "5");
+        assert!(result.is_corroborated());
+        let wrong = oracle.evaluate("2+3=", "6");
+        assert!(wrong.is_falsified());
+    }
+
+    #[test]
+    fn test_arithmetic_subtraction_not_other() {
+        // If - were replaced with +, 10-3 would give 13, not 7
+        let oracle = ArithmeticOracle::new();
+        let result = oracle.evaluate("10-3=", "7");
+        assert!(result.is_corroborated());
+        let wrong = oracle.evaluate("10-3=", "13");
+        assert!(wrong.is_falsified());
+    }
+
+    #[test]
+    fn test_arithmetic_multiplication_not_addition() {
+        // If * were replaced with +, 3*4 would give 7, not 12
+        let oracle = ArithmeticOracle::new();
+        let result = oracle.evaluate("3*4=", "12");
+        assert!(result.is_corroborated());
+        let wrong = oracle.evaluate("3*4=", "7");
+        assert!(wrong.is_falsified());
+    }
+
+    // Mutation-killing tests for is_arithmetic_prompt
+    #[test]
+    fn test_is_arithmetic_requires_both_operator_and_digit() {
+        // Must have BOTH operator AND digit (tests && vs ||)
+        assert!(!is_arithmetic_prompt("hello + world")); // has + but no digit
+        assert!(!is_arithmetic_prompt("123")); // has digit but no operator
+        assert!(is_arithmetic_prompt("1+2")); // has both
+    }
+
+    #[test]
+    fn test_is_arithmetic_all_operators() {
+        assert!(is_arithmetic_prompt("1+2"));
+        assert!(is_arithmetic_prompt("5-3"));
+        assert!(is_arithmetic_prompt("4*6"));
+        assert!(is_arithmetic_prompt("8/2"));
+    }
+
+    // Mutation-killing tests for is_repetitive
+    #[test]
+    fn test_is_repetitive_needs_minimum_words() {
+        // < 5 words should return false
+        assert!(!is_repetitive("a a a a")); // only 4 words
+        assert!(is_repetitive("a a a a a")); // 5 words, all same
+    }
+
+    #[test]
+    fn test_is_repetitive_two_word_pattern() {
+        // Test 2-word pattern detection
+        assert!(is_repetitive("foo bar foo bar foo bar"));
+        // 6 words, threshold = 6/2/2 = 1, and first pair matches, so returns true
+        // To test non-repetitive, need more words with fewer matches
+        assert!(!is_repetitive("a b c d e f g h i j k l m n o p"));
+    }
+
+    #[test]
+    fn test_is_repetitive_match_count_threshold() {
+        // Partial matches shouldn't trigger
+        assert!(!is_repetitive("a b c d e f g h i j"));
+        assert!(is_repetitive("x y x y x y x y x y"));
+    }
+
+    // Mutation-killing tests for GarbageOracle conditions
+    #[test]
+    fn test_garbage_detects_different_nan_cases() {
+        let oracle = GarbageOracle::new();
+        // Checks for "NaN", "Inf", "inf" (case-sensitive)
+        assert!(oracle.evaluate("test", "result: NaN").is_falsified());
+        assert!(oracle.evaluate("test", "Inf value").is_falsified());
+        assert!(oracle.evaluate("test", "inf error").is_falsified());
+    }
+
+    #[test]
+    fn test_garbage_non_empty_non_whitespace() {
+        let oracle = GarbageOracle::new();
+        // Empty is falsified
+        assert!(oracle.evaluate("test", "").is_falsified());
+        // Whitespace only is falsified
+        assert!(oracle.evaluate("test", "   ").is_falsified());
+        // Real content is corroborated
+        assert!(oracle.evaluate("test", "x").is_corroborated());
+    }
+
+    // Mutation-killing tests for CodeSyntaxOracle
+    #[test]
+    fn test_code_syntax_detects_patterns() {
+        let oracle = CodeSyntaxOracle::new();
+        // Should find code patterns
+        assert!(oracle.evaluate("code", "return x;").is_corroborated());
+        assert!(oracle.evaluate("code", "def foo(): pass").is_corroborated());
+        assert!(oracle.evaluate("code", "fn bar() {}").is_corroborated());
+    }
+
+    // Test oracle name returns are not empty
+    #[test]
+    fn test_oracle_names_not_empty() {
+        assert!(!ArithmeticOracle::new().name().is_empty());
+        assert!(!GarbageOracle::new().name().is_empty());
+        assert!(!CodeSyntaxOracle::new().name().is_empty());
+        let composite = CompositeOracle::new("test");
+        assert!(!composite.name().is_empty());
+    }
+
+    // Test OracleWrapper name delegation
+    #[test]
+    fn test_oracle_wrapper_name() {
+        let wrapper = OracleWrapper(ArithmeticOracle::new());
+        assert_eq!(wrapper.name(), "arithmetic");
+    }
 }
