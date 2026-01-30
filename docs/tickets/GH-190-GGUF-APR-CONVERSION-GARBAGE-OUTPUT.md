@@ -334,4 +334,83 @@ Model: Qwen/Qwen2.5-Coder-1.5B-Instruct (Q4_K_M)
 
 ---
 
+## Systemic Analysis: Five Whys (Why This Keeps Happening)
+
+This is the **fourth P0 conversion bug in one sprint** (GH-185, GH-186, GH-189, GH-190). All four are silent failures at format boundaries. A Five Whys analysis reveals they share a single systemic root cause.
+
+### The Pattern: Same Bug, Four Masks
+
+| Bug | Writer Assumes | Reader Assumes | Result |
+|-----|---------------|----------------|--------|
+| GH-186 | dtype 12 = Q4K | dtype 12 = F32 (fallback) | NaN logits, PAD flood |
+| GH-189 | LayerNorm written as-is | LayerNorm must be non-zero | Zeroed weights, garbage |
+| GH-190 | HuggingFace tensor names | GGUF tensor names | Names not found, garbage |
+| GH-185 | Tokenizer in metadata | Tokenizer in alt path | Missing tokenizer |
+
+### Five Whys
+
+```
+WHY 1: Writer and reader disagree on conventions (names, dtypes, layout)
+  ↓
+WHY 2: No integration test converts AND runs inference on the result
+  ↓
+WHY 3: Writer (aprender) and loader (realizar) are separate repos with separate CI
+  ↓
+WHY 4: We treat conversion as a serialization problem, not a behavioral contract
+  ↓
+WHY 5: We optimized for fast CI (structural checks) over correctness (semantic checks)
+```
+
+### Why 220 Gates Didn't Catch It
+
+Our 220 gates are **reactive** (detect known bug symptoms) not **proactive** (prevent unknown bugs). We're playing whack-a-mole:
+
+```
+Bug found → Write gate → Add to spec → Next bug found → Write gate → ...
+```
+
+`apr check` validates *syntax* (can we parse it?) not *semantics* (does it produce correct output?). This is why it reports 10/10 PASS on a model that outputs garbage.
+
+### The Golden Rule Test (Would Have Caught All 4 Bugs)
+
+One 20-second test prevents the entire class of bugs:
+
+```bash
+# THE GOLDEN RULE: convert → inference → diff
+apr run original.gguf -p "What is 2+2?" --max-tokens 10 > expected.txt
+apr convert original.gguf -o converted.apr
+apr run converted.apr -p "What is 2+2?" --max-tokens 10 > actual.txt
+diff expected.txt actual.txt   # MUST be identical
+```
+
+This test encodes the **only invariant that matters**: converted models must produce the same output as the original.
+
+### Required Systemic Fixes
+
+| # | Fix | Why It Matters |
+|---|-----|---------------|
+| 1 | **Golden Rule Test in CI** | Catches ALL conversion bugs, not just known ones |
+| 2 | **Shared contract crate** between aprender/realizar | Single source of truth for tensor names, dtypes |
+| 3 | **Kill silent fallbacks** | `_ => F32` defaults are the #1 cause (GH-186 pattern) |
+| 4 | **Behavioral Stage 11 in `apr check`** | Validation must test inference, not just structure |
+| 5 | **Canonical tensor naming in APR v2 spec** | No more independent naming assumptions |
+
+### 5 Invariants > 220 Symptom Gates
+
+| Invariant | What It Tests | Catches |
+|-----------|--------------|---------|
+| **I-1**: Round-trip identity | convert(model) produces same inference | ALL conversion bugs |
+| **I-2**: Tensor name bijection | writer names == loader names | GH-190 |
+| **I-3**: No silent fallbacks | unknown input → error, never default | GH-186 |
+| **I-4**: Statistical preservation | tensor stats unchanged after conversion | GH-189 |
+| **I-5**: Tokenizer roundtrip | encode(decode(tokens)) == tokens | GH-185 |
+
+### The Bottom Line
+
+> *"We don't have a testing problem. We have an architecture problem. The conversion pipeline has no single source of truth for tensor naming, dtype mapping, or behavioral correctness. Until writer and reader share a contract, every fix creates the conditions for the next bug."*
+
+Full analysis: [docs/five-whys/GH-190-systemic-conversion-failures.md](../five-whys/GH-190-systemic-conversion-failures.md)
+
+---
+
 **Toyota Way Principle:** STOP THE LINE. Do not ship models converted with current GGUF→APR pipeline until this is fixed.
