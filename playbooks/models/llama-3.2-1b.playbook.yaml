@@ -62,6 +62,35 @@ property_tests:
   cases: 100
   max_shrink_iters: 1000
 
+# Differential Testing (v1.3.0)
+differential_tests:
+  tensor_diff:
+    enabled: true
+    filter: "embed,lm_head"
+    gates: ["F-ROSETTA-DIFF-001", "F-ROSETTA-DIFF-002"]
+  inference_compare:
+    enabled: true
+    prompt: "What is 2+2?"
+    max_tokens: 10
+    tolerance: 1e-5
+    gates: ["F-ROSETTA-INF-001"]
+
+# Profile CI Assertions (v1.3.0)
+profile_ci:
+  enabled: true
+  warmup: 3
+  measure: 10
+  assertions:
+    min_throughput: 8.0
+    max_p99_ms: 400
+  gates: ["F-PROFILE-CI-001", "F-PROFILE-CI-002"]
+
+# Trace Payload (v1.3.0)
+trace_payload:
+  enabled: true
+  prompt: "Hello, how are you?"
+  gates: ["F-TRACE-PAYLOAD-001", "F-TRACE-PAYLOAD-002"]
+
 metadata:
   author: "apr-qa-gen"
   architecture: "llama"
