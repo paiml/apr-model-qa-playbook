@@ -582,4 +582,53 @@ mod tests {
         let html = dashboard.render_falsifications(&popperian);
         assert!(html.contains("G1-CRASH"));
     }
+
+    #[test]
+    fn test_html_dashboard_without_charts() {
+        let dashboard = HtmlDashboard::new("Test").without_charts();
+        assert!(!dashboard.include_charts);
+    }
+
+    #[test]
+    fn test_html_dashboard_default() {
+        let dashboard = HtmlDashboard::default();
+        assert!(dashboard.title.is_empty());
+    }
+
+    #[test]
+    fn test_html_dashboard_debug() {
+        let dashboard = HtmlDashboard::new("Test");
+        let debug_str = format!("{dashboard:?}");
+        assert!(debug_str.contains("HtmlDashboard"));
+    }
+
+    #[test]
+    fn test_html_zero_tests() {
+        let mut mqs = test_mqs();
+        mqs.total_tests = 0;
+        mqs.tests_passed = 0;
+        mqs.tests_failed = 0;
+
+        let dashboard = HtmlDashboard::new("Test");
+        let collector = EvidenceCollector::new();
+
+        let html = dashboard
+            .generate(&mqs, &test_popperian(), &collector)
+            .expect("Failed to generate");
+
+        // Should handle zero tests gracefully
+        assert!(html.contains("<!DOCTYPE html>"));
+    }
+
+    #[test]
+    fn test_grade_color_unknown() {
+        // Test fallback for unknown grade
+        let color = HtmlDashboard::grade_color("Z");
+        assert_eq!(color, "#ff4757"); // Falls through to F case
+    }
+
+    #[test]
+    fn test_html_escaping_special_chars() {
+        assert_eq!(HtmlDashboard::escape_html("test<>test"), "test&lt;&gt;test");
+    }
 }
