@@ -24,6 +24,7 @@ clap = { workspace = true }
 apr-qa-gen = { workspace = true }
 apr-qa-runner = { workspace = true }
 apr-qa-report = { workspace = true }
+ctrlc = { workspace = true }
 
 [lints]
 workspace = true

@@ -37,6 +37,9 @@ colored = "2.2"
 # Time
 chrono = { version = "0.4", features = ["serde"] }
 
+# Signal handling
+ctrlc = "3.4"
+
 # Workspace crates
 apr-qa-gen = { path = "crates/apr-qa-gen" }
 apr-qa-runner = { path = "crates/apr-qa-runner" }

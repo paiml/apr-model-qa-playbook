@@ -173,7 +173,23 @@ enum Commands {
     },
 }
 
+/// Setup SIGINT handler for Jidoka cleanup
+///
+/// Toyota Way: Stop the line, clean up, never leave orphan processes.
+fn setup_signal_handler() {
+    if let Err(e) = ctrlc::set_handler(move || {
+        let count = apr_qa_runner::process::kill_all_registered();
+        eprintln!("\n[JIDOKA] SIGINT received. Reaping {count} child process(es)...");
+        eprintln!("[JIDOKA] Toyota Way: Stop the line, clean up, exit.");
+        std::process::exit(130); // 128 + SIGINT(2)
+    }) {
+        eprintln!("Warning: Failed to set signal handler: {e}");
+    }
+}
+
 fn main() {
+    setup_signal_handler();
+
     let cli = Cli::parse();
 
     match cli.command {

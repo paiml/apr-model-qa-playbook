@@ -28,6 +28,7 @@ pub mod evidence;
 pub mod executor;
 pub mod parallel;
 pub mod playbook;
+pub mod process;
 
 pub use conversion::{
     ConversionConfig, ConversionEvidence, ConversionExecutionResult, ConversionExecutor,

@@ -3154,40 +3154,46 @@ Child processes spawned during test execution must be properly tracked and clean
 
 ```rust
 // crates/apr-qa-runner/src/process.rs
+// Pattern derived from repartir's task lifecycle management (sovereign tool)
 
+use std::process::Child;
 use std::sync::{Arc, Mutex, OnceLock};
 
-/// Global registry of spawned process PIDs for cleanup
-static PROCESS_REGISTRY: OnceLock<Arc<Mutex<Vec<u32>>>> = OnceLock::new();
+/// Global registry of spawned child processes for cleanup
+static PROCESS_REGISTRY: OnceLock<Arc<Mutex<Vec<Child>>>> = OnceLock::new();
 
-fn get_registry() -> &'static Arc<Mutex<Vec<u32>>> {
+fn get_registry() -> &'static Arc<Mutex<Vec<Child>>> {
     PROCESS_REGISTRY.get_or_init(|| Arc::new(Mutex::new(Vec::new())))
 }
 
-pub fn register_process(pid: u32) {
+/// Register a child process for tracking
+pub fn register_child(child: Child) -> usize {
     if let Ok(mut registry) = get_registry().lock() {
-        registry.push(pid);
+        let idx = registry.len();
+        registry.push(child);
+        idx
+    } else {
+        0
     }
 }
 
-pub fn unregister_process(pid: u32) {
-    if let Ok(mut registry) = get_registry().lock() {
-        registry.retain(|&p| p != pid);
-    }
-}
-
+/// Kill and reap all registered child processes (Jidoka cleanup)
 pub fn kill_all_registered() -> usize {
     if let Ok(mut registry) = get_registry().lock() {
         let count = registry.len();
-        for pid in registry.drain(..) {
-            let _ = unsafe { libc::kill(pid as i32, libc::SIGKILL) };
+        for child in registry.iter_mut() {
+            let _ = child.kill();  // Safe: uses std::process::Child::kill()
+            let _ = child.wait();
         }
+        registry.clear();
         count
     } else {
         0
     }
 }
 ```
+
+**Note:** This implementation stores `Child` handles directly instead of PIDs, allowing use of safe `Child::kill()` from `std::process`. No unsafe code required.
 
 #### 12.4.2 ProcessGuard RAII
 
@@ -3197,19 +3203,16 @@ pub fn kill_all_registered() -> usize {
 use std::process::Child;
 
 /// RAII guard that ensures child process cleanup on drop
+/// Implements Jidoka: if dropped without explicit completion, child is killed.
 pub struct ProcessGuard {
     child: Option<Child>,
     pid: u32,
 }
 
 impl ProcessGuard {
-    pub fn new(mut child: Child) -> Self {
+    pub fn new(child: Child) -> Self {
         let pid = child.id();
-        register_process(pid);
-        Self {
-            child: Some(child),
-            pid,
-        }
+        Self { child: Some(child), pid }
     }
 
     pub fn wait(&mut self) -> std::io::Result<std::process::ExitStatus> {
@@ -3223,8 +3226,18 @@ impl ProcessGuard {
         }
     }
 
+    pub fn wait_with_output(mut self) -> std::io::Result<std::process::Output> {
+        if let Some(child) = self.child.take() {
+            child.wait_with_output()
+        } else {
+            Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                "Process already consumed",
+            ))
+        }
+    }
+
     pub fn take(mut self) -> Option<Child> {
-        unregister_process(self.pid);
         self.child.take()
     }
 }
@@ -3235,7 +3248,6 @@ impl Drop for ProcessGuard {
             eprintln!("[JIDOKA] Cleaning up child process {}", self.pid);
             let _ = child.kill();
             let _ = child.wait();
-            unregister_process(self.pid);
         }
     }
 }
@@ -3246,8 +3258,10 @@ impl Drop for ProcessGuard {
 ```rust
 // crates/apr-qa-cli/src/main.rs
 
-pub fn setup_signal_handler() -> Result<(), Box<dyn std::error::Error>> {
-    ctrlc::set_handler(move || {
+/// Setup SIGINT handler for Jidoka cleanup
+/// Toyota Way: Stop the line, clean up, never leave orphan processes.
+fn setup_signal_handler() {
+    if let Err(e) = ctrlc::set_handler(move || {
         let count = apr_qa_runner::process::kill_all_registered();
         eprintln!(
             "\n[JIDOKA] SIGINT received. Reaping {} child process(es)...",
@@ -3255,8 +3269,14 @@ pub fn setup_signal_handler() -> Result<(), Box<dyn std::error::Error>> {
         );
         eprintln!("[JIDOKA] Toyota Way: Stop the line, clean up, exit.");
         std::process::exit(130); // 128 + SIGINT(2)
-    })?;
-    Ok(())
+    }) {
+        eprintln!("Warning: Failed to set signal handler: {e}");
+    }
+}
+
+fn main() {
+    setup_signal_handler();
+    // ... rest of main
 }
 ```
 
