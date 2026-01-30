@@ -3426,14 +3426,16 @@ mod tests {
 
 ### 15.6 Tracing & Profiling Falsification (45 points)
 
+> **Note:** Trace level tests (F-TRACELEVEL-*) verify that each level works. Trace command tests (F-TRACE-*) verify detailed trace functionality per Section 4.4.8.
+
 | ID | Description | Condition | Points | Status |
 |----|-------------|-----------|--------|--------|
-| F-TRACE-001 | Trace level `none` works | No output overhead, inference succeeds | 5 | ✅ PASS (via ToolExecutor) |
-| F-TRACE-002 | Trace level `basic` works | Timing + token counts captured | 5 | ✅ PASS (via ToolExecutor) |
-| F-TRACE-003 | Trace level `layer` works | Per-layer mean/std/L2 stats | 5 | ✅ PASS (via ToolExecutor) |
-| F-TRACE-004 | Trace level `payload` works | Full tensor values captured | 5 | ✅ PASS (via ToolExecutor) |
-| F-TRACE-005 | NaN/Inf detection | Anomalies flagged in trace output | 5 | ✅ PASS (conversion tests) |
-| F-TRACE-006 | Output equivalence | `--trace-level none` == `--trace-level payload` output (with same seed) | 5 | ⚠️ NOT TESTED |
+| F-TRACELEVEL-001 | Trace level `none` works | `apr run --trace-level none` succeeds | 5 | ✅ PASS (via ToolExecutor) |
+| F-TRACELEVEL-002 | Trace level `basic` works | Timing + token counts captured | 5 | ✅ PASS (via ToolExecutor) |
+| F-TRACELEVEL-003 | Trace level `layer` works | Per-layer mean/std/L2 stats | 5 | ✅ PASS (via ToolExecutor) |
+| F-TRACELEVEL-004 | Trace level `payload` works | Full tensor values captured | 5 | ✅ PASS (via ToolExecutor) |
+| F-TRACE-003 | NaN detection | `trace(model_with_nan).anomalies.contains('NaN')` | 5 | ✅ PASS (conversion tests) |
+| F-TRACELEVEL-005 | Output equivalence | `--trace-level none` == `--trace-level payload` output (with same seed) | 5 | ⚠️ NOT TESTED |
 | F-PROFILE-001 | Profile hotspots detected | At least attention+mlp identified | 5 | ✅ PASS (via ToolExecutor) |
 | F-PROFILE-002 | Flamegraph output valid | SVG renders correctly | 5 | ✅ PASS (apr #174 fixed) |
 | F-PROFILE-003 | Focus filtering works | `--focus attention` limits scope | 5 | ✅ PASS (apr #173 fixed) |
@@ -3487,19 +3489,22 @@ mod tests {
 - All major categories achieved 100% or near-complete
 - ML Tuning: `apr tune --plan` now provides LoRA/QLoRA config planning (25/30 points)
 - Only F-DRIFT-001 (DDM drift detection) remains pending (5 points)
-- Required: 261/300 (87%) for certification - **EXCEEDED**
+- Required: 265/305 (87%) for certification - **EXCEEDED**
 
 **Upstream Issue Status (2026-01-30):**
-| Issue | Title | Status |
-|-------|-------|--------|
-| #160 | Tool calling support | ⏳ **OPEN** (P2 - needs implementation) |
-| #169 | Make --output optional | ⏳ **OPEN** (P3 - low priority) |
-| #171 | QA report | ℹ️ **INFO** (informational) |
-| #172 | P0 Format Conversion (NaN/lossy) | ✅ **CLOSED** (PMAT-177) |
-| #173 | `--focus` option for profile | ✅ **CLOSED** (filter_results_by_focus) |
-| #174 | `--profile-output` flamegraph | ✅ **CLOSED** (--output/-o flag) |
-| #175 | TensorStats cross-format validation | ✅ **CLOSED** (aacf224e) |
-| #176 | ML tuning: freeze, LoRA, drift | ✅ **PARTIAL** (tune --plan done, drift pending) |
+| Issue | Title | Priority | Status |
+|-------|-------|----------|--------|
+| #160 | Tool calling support | P2 | ⏳ **OPEN** |
+| #169 | Make --output optional | P3 | ⏳ **OPEN** |
+| #171 | QA report | INFO | ℹ️ **INFO** |
+| #172 | P0 Format Conversion (NaN/lossy) | P0 | ✅ **CLOSED** |
+| #173 | `--focus` option for profile | P1 | ✅ **CLOSED** |
+| #174 | `--profile-output` flamegraph | P1 | ✅ **CLOSED** |
+| #175 | TensorStats cross-format validation | P1 | ✅ **CLOSED** |
+| #176 | ML tuning: freeze, LoRA, drift | P1 | ✅ **PARTIAL** |
+| #177 | Format conversion NaN/Inf corruption | P0 | ⏳ **OPEN** (detection works, root cause pending) |
+| #178 | apr validate rejects GGUF v3 | P2 | ⏳ **OPEN** |
+| #179 | Tool test coverage gaps (69%) | P2 | ⏳ **OPEN** |
 
 **Test Coverage Implementation (2026-01-30):**
 - 461 unit tests across all crates (30 cli + 131 gen + 130 report + 170 runner)
