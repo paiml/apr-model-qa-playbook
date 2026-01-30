@@ -81,39 +81,115 @@ This is **wrong** (doesn't answer "What is 2+2?") but is **coherent English**, u
 
 ---
 
-## Root Cause Hypothesis
+## Root Cause: CONFIRMED — DType Byte Mapping Mismatch Between Converter and Reader
 
-### Most Likely: Q4_K_M Bytes Written as F32 Metadata
+**Status: ROOT CAUSE FOUND (2026-01-30 21:05)**
 
-The converter reads Q4_K_M quantized tensor data (packed 4-bit blocks) but writes the APR file with F32 dtype metadata. When the APR loader reads the file:
+The converter and reader have **completely different dtype byte mappings**. The converter writes a dtype byte, the reader interprets it as a different type, and the `_ => F32` silent fallback turns every unrecognized quantized type into F32.
 
-1. It sees dtype = F32 in the tensor header
-2. It reads the raw bytes as 32-bit floats
-3. But the bytes are actually Q4_K_M packed blocks (different layout)
-4. Result: Every weight is garbage → every matmul is garbage → garbage output
+### The Full Mismatch Chain
+
+For Q4_K_M tensors:
 
 ```
-Q4_K_M packed block (32 bytes):
-[scale_f16][min_f16][quant_nibble_0][quant_nibble_1]...[quant_nibble_31]
-
-Reinterpreted as F32 (32 bytes = 8 floats):
-[garbage_float][garbage_float]...[garbage_float]
+1. Converter writes dtype byte 8 for Q4_K           → correct from converter's perspective
+2. APR TensorEntry::from_binary (line 781):
+   dtype byte 8 → string "Q4"                       → WRONG (should be "Q4_K")
+3. dtype_to_ggml_qtype (line 537):
+   matches "Q4_K" but NOT "Q4"                       → NO MATCH
+4. Result: "Q4" → None → treated as F32              → GARBAGE OUTPUT
 ```
 
-### Alternative: De-quantization Applied Incorrectly
+### Complete DType Mapping Table
 
-The converter might be intentionally de-quantizing Q4_K_M → F32 for APR format, but:
-- Using the wrong de-quantization formula
-- Applying scale factors incorrectly
-- Missing the min/max adjustment step
-- Block size mismatch
+```
+┌───────────┬───────────────────────┬────────────────────────────┬──────────────────────────────┐
+│ GGML type │ Converter writes byte │ Reader maps byte to string │ dtype_to_ggml_qtype matches? │
+├───────────┼───────────────────────┼────────────────────────────┼──────────────────────────────┤
+│ Q4_K (12) │ 8                     │ "Q4"                       │ NO ("Q4_K" expected)         │
+├───────────┼───────────────────────┼────────────────────────────┼──────────────────────────────┤
+│ Q5_K (13) │ 8                     │ "Q4"                       │ NO                           │
+├───────────┼───────────────────────┼────────────────────────────┼──────────────────────────────┤
+│ Q6_K (14) │ 9                     │ "Q8_0"                     │ NO ("Q6_K" expected)         │
+├───────────┼───────────────────────┼────────────────────────────┼──────────────────────────────┤
+│ Q8_0 (8)  │ 10                    │ unknown → "F32"            │ NO                           │
+├───────────┼───────────────────────┼────────────────────────────┼──────────────────────────────┤
+│ F32 (0)   │ 0                     │ "F32"                      │ Correct (None = F32)         │
+├───────────┼───────────────────────┼────────────────────────────┼──────────────────────────────┤
+│ F16 (1)   │ 1                     │ "F16"                      │ Correct (None = F16)         │
+└───────────┴───────────────────────┴────────────────────────────┴──────────────────────────────┘
+```
 
-### Alternative: Tensor Data Offset Corruption
+**Every quantized type is wrong. Only F32 and F16 map correctly.**
 
-The converter might write correct data but with wrong offsets in the APR header:
-- Tensor A's header points to Tensor B's data region
-- All tensor headers shifted by a fixed offset
-- Padding/alignment error in the APR v2 format writer
+### Why This Is GH-186 All Over Again
+
+This is the **exact same pattern** as GH-186:
+
+| | GH-186 | GH-191 |
+|--|--------|--------|
+| Writer | Writes GGML dtype 12 (Q4_K) | Writes APR byte 8 (meaning Q4_K) |
+| Reader | Reads byte 12, falls back to F32 | Reads byte 8 as "Q4", no match → F32 |
+| Fallback | `_ => F32` silent default | `None → treated as F32` |
+| Result | Garbage | Garbage |
+
+**The silent fallback pattern strikes again.** The Five Whys (GH-190) identified invariant I-3 ("no silent fallbacks") as the fix. It was never implemented. Here we are.
+
+### Code Locations
+
+```
+Converter (aprender):
+  - dtype_to_apr_byte(): Maps GGML types to APR byte values
+  - Uses its own byte numbering scheme (8 = Q4_K, 9 = Q6_K, 10 = Q8_0)
+
+Reader (realizar):
+  - TensorEntry::from_binary() line 781: Maps APR byte to string
+  - Uses DIFFERENT numbering (8 = "Q4", 9 = "Q8_0", 10 = unknown)
+  - dtype_to_ggml_qtype() line 537: Maps string to GGML type
+  - String "Q4" has no match → None → F32 fallback
+
+The bug: converter's byte 8 means Q4_K, reader's byte 8 means "Q4".
+Two codebases, two enums, no shared definition.
+```
+
+### The Fix
+
+The reader's mapping at `TensorEntry::from_binary` (line 772-790) is the canonical APR format spec. The converter must match it, OR both must be updated to use a shared dtype enum.
+
+**Preferred fix:** Add all K-quant types to the reader's byte mapping:
+```
+byte 8 → "Q4_K" (not "Q4")
+byte 9 → "Q5_K" (add new)
+byte 10 → "Q6_K" (add new)
+byte 11 → "Q8_0" (add new)
+```
+
+**Required invariant (I-3):** After fix, add assertion:
+```rust
+// NEVER silently fall back to F32
+match dtype_string.as_str() {
+    "F32" | "F16" | "BF16" | "Q4_K" | "Q5_K" | "Q6_K" | "Q8_0" => Ok(dtype),
+    unknown => Err(format!("Unknown APR dtype: '{}' — refusing to fallback", unknown)),
+}
+```
+
+---
+
+## Root Cause Hypothesis (SUPERSEDED)
+
+~~The sections below were the pre-diagnosis hypotheses. Root cause is now confirmed above.~~
+
+### ~~Most Likely: Q4_K_M Bytes Written as F32 Metadata~~
+
+PARTIALLY CORRECT — the converter writes the correct bytes for Q4_K, but the reader interprets the dtype byte differently, causing it to load quantized data as F32.
+
+### ~~Alternative: De-quantization Applied Incorrectly~~
+
+NOT THE CAUSE — no de-quantization is attempted. The reader simply misidentifies the dtype.
+
+### ~~Alternative: Tensor Data Offset Corruption~~
+
+NOT THE CAUSE — tensor data is intact, only dtype metadata interpretation differs.
 
 ---
 
