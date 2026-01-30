@@ -2034,6 +2034,70 @@ apr rosetta compare-inference model.gguf model.apr --prompt "Hello"
 # RESULT: ✗ FAIL (0/10 tokens match)
 ```
 
+#### 6.6.4a APR Format Validation (GH-186 Root Cause)
+
+The GH-186 bug was caused by dtype byte mapping mismatch between APR writer and reader:
+- APR format v2 uses dtype 12 for Q4K, 14 for Q6K
+- Reader incorrectly mapped dtype 12 to F32 (fallback)
+- Result: Quantized weights interpreted as uninitialized F32 → NaN logits
+
+**Validation checks:**
+
+```bash
+# Verify APR format integrity
+apr check model.apr
+# Output:
+# APR Format Validation (GH-186 Prevention)
+# ════════════════════════════════════════════════════════════
+# Stage 1: Header Check
+#   ✅ Magic: 0x415052 (APR)
+#   ✅ Version: 2
+#   ✅ Tensor count: 291
+#
+# Stage 2: DType Mapping
+#   ✅ Q4_K (dtype=12): 145 tensors
+#   ✅ Q6_K (dtype=14): 0 tensors
+#   ✅ F16 (dtype=1): 145 tensors
+#   ✅ F32 (dtype=0): 1 tensor
+#   ✅ No unknown dtype codes
+#
+# Stage 3: Tensor Alignment
+#   ✅ All tensors 64-byte aligned
+#
+# RESULT: ✅ PASS (9/10 stages)
+```
+
+**Falsification Gates:**
+
+| Gate ID | Assertion | Severity |
+|---------|-----------|----------|
+| **F-APR-FORMAT-001** | DType byte matches APR v2 spec | P0 |
+| **F-APR-FORMAT-002** | Tensor alignment correct (64-byte) | P0 |
+| **F-APR-FORMAT-003** | Header magic/version valid | P0 |
+
+**GH-186 Root Cause Detection:**
+
+```rust
+// DType mapping that MUST match APR v2 spec (aprender/src/format/v2.rs)
+const DTYPE_F32: u8 = 0;
+const DTYPE_F16: u8 = 1;
+const DTYPE_Q4_K: u8 = 12;  // GH-186: was incorrectly read as F32
+const DTYPE_Q5_K: u8 = 13;
+const DTYPE_Q6_K: u8 = 14;
+
+// Validation: reject unknown dtype codes instead of defaulting to F32
+fn validate_dtype(byte: u8) -> Result<DType, Error> {
+    match byte {
+        0 => Ok(DType::F32),
+        1 => Ok(DType::F16),
+        12 => Ok(DType::Q4K),  // NOT F32!
+        13 => Ok(DType::Q5K),
+        14 => Ok(DType::Q6K),
+        _ => Err(Error::UnknownDType(byte)),  // Fail fast, don't default
+    }
+}
+```
+
 #### 6.6.5 Profile CI Mode (PMAT-192)
 
 CI-friendly performance assertions for automated pipelines:
@@ -2265,6 +2329,7 @@ All gates from all specs, unified:
 | `F-VALID-*` | GH-187 | 3 | E7 |
 | `F-ERR-*` | GH-187 | 2 | E8 |
 | `F-SEC-*` | GH-187 | 2 | E9 |
+| `F-APR-FORMAT-*` | GH-186 | 3 | B5a-B5c |
 | `F-ROSETTA-DIFF-*` | GH-188 | 2 | B6-B7 |
 | `F-ROSETTA-INF-*` | PMAT-114/GH-186 | 3 | B8-B10 |
 | `F-ROSETTA-FP-*` | PMAT-201/JAX-STAT-001 | 3 | B11-B13 |
@@ -2274,7 +2339,7 @@ All gates from all specs, unified:
 | `F-TRACE-PAYLOAD-*` | APR-TRACE-001 | 3 | E1-E3 |
 | `F-TRACE-DIFF-*` | APR-TRACE-001 | 1 | E4 |
 
-**Total Unique Gates: 217**
+**Total Unique Gates: 220**
 
 ---
 
@@ -2784,6 +2849,22 @@ properties:
     type: object
     description: "Rosetta differential testing configuration"
     properties:
+      format_validation:
+        type: object
+        description: "APR format validation (GH-186 prevention)"
+        properties:
+          enabled:
+            type: boolean
+            default: true
+          checks:
+            type: array
+            items:
+              type: string
+              enum: ["dtype_mapping", "tensor_alignment", "header_integrity"]
+          gates:
+            type: array
+            items:
+              type: string
       tensor_diff:
         type: object
         properties:
@@ -3018,6 +3099,11 @@ state_machine:
 
 # v1.3.0: Differential Testing Configuration
 differential_tests:
+  # v1.3.1: Format validation (GH-186 root cause)
+  format_validation:
+    enabled: true
+    checks: ["dtype_mapping", "tensor_alignment", "header_integrity"]
+    gates: ["F-APR-FORMAT-001", "F-APR-FORMAT-002", "F-APR-FORMAT-003"]
   tensor_diff:
     enabled: true
     filter: "embed,lm_head"
@@ -4731,6 +4817,7 @@ mod tests {
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
+| 1.3.1 | 2026-01-30 | PAIML Engineering | GH-186 FIXED: APR format validation gates (F-APR-FORMAT-*), 220 gates |
 | 1.3.0 | 2026-01-30 | PAIML Engineering | Rosetta differential testing, GH-186/189 detection, 217 gates |
 | 1.2.0 | 2026-01-30 | PAIML Engineering | Bug classification, process lifecycle (Jidoka) |
 | 1.1.0 | 2026-01-29 | PAIML Engineering | Enhanced citations and philosophy (Popper/Taleb) |

@@ -305,6 +305,9 @@ fn default_timeout() -> u64 {
 /// Differential test configuration (GH-188, PMAT-114, PMAT-201, PMAT-202)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DifferentialTestConfig {
+    /// Format validation configuration (GH-186 prevention)
+    #[serde(default)]
+    pub format_validation: Option<FormatValidationConfig>,
     /// Tensor diff configuration
     #[serde(default)]
     pub tensor_diff: Option<TensorDiffConfig>,
@@ -317,6 +320,20 @@ pub struct DifferentialTestConfig {
     /// Validate stats configuration (PMAT-202)
     #[serde(default)]
     pub validate_stats: Option<ValidateStatsConfig>,
+}
+
+/// Format validation configuration (GH-186 prevention)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FormatValidationConfig {
+    /// Enable format validation
+    #[serde(default)]
+    pub enabled: bool,
+    /// Checks to run: dtype_mapping, tensor_alignment, header_integrity
+    #[serde(default)]
+    pub checks: Vec<String>,
+    /// Gates to verify
+    #[serde(default)]
+    pub gates: Vec<String>,
 }
 
 /// Tensor diff configuration

@@ -1,10 +1,11 @@
 # Qwen2.5-Coder-1.5B Model Qualification Playbook
 # Model: Qwen/Qwen2.5-Coder-1.5B-Instruct
 # Generated: 2026-01-30
+# Updated: 2026-01-30 (GH-186 dtype fix verified)
 # MQS Target: 85+
 
 name: qwen2.5-coder-1.5b
-version: "1.0.0"
+version: "1.1.0"
 description: "Qualification playbook for Qwen2.5-Coder-1.5B-Instruct"
 
 model:
@@ -64,8 +65,20 @@ property_tests:
     oracle: "is_valid_syntax(output, lang)"
     count: 50
 
-# Differential Testing (GH-188, PMAT-114, PMAT-192)
+# Differential Testing (GH-186, GH-188, PMAT-114, PMAT-192)
 differential_tests:
+  # APR format validation - dtype mapping verification (GH-186 root cause)
+  format_validation:
+    enabled: true
+    checks:
+      - dtype_mapping        # Q4K=12, Q5K=13, Q6K=14 match APR spec
+      - tensor_alignment     # 64-byte alignment for SIMD
+      - header_integrity     # Magic bytes and version
+    gates:
+      - F-APR-FORMAT-001     # Dtype byte matches APR v2 spec
+      - F-APR-FORMAT-002     # Tensor alignment correct
+      - F-APR-FORMAT-003     # Header magic/version valid
+
   # Rosetta tensor diff - detect layout mismatches
   tensor_diff:
     enabled: true
