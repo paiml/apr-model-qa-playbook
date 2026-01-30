@@ -2202,6 +2202,23 @@ apr rosetta validate-stats model.apr --reference ref.json \
 | **F-ROSETTA-STATS-003** | Attention weights within tolerance | P1 |
 | **F-ROSETTA-STATS-004** | All tensors validated | P1 |
 
+**Root Cause Detection - LayerNorm Zero Bug (GH-189):**
+
+The fingerprint diff specifically catches the class of bugs where conversion corrupts LayerNorm weights:
+
+```
+ANOMALY DETECTED: attn_norm.weight
+  GGUF: mean=0.9998, std=0.012
+  APR:  mean=0.0000, std=0.000  ← ZEROED!
+
+ROOT CAUSE: RMSNorm multiplies by zero → garbage output
+```
+
+| Gate ID | Assertion | Severity |
+|---------|-----------|----------|
+| **F-ROSETTA-STATS-005** | LayerNorm mean ≈ 1.0 (not 0.0) | P0 |
+| **F-ROSETTA-STATS-006** | LayerNorm std > 0.0 (not zeroed) | P0 |
+
 ---
 
 ### 7.7 Consolidated Gate Registry
