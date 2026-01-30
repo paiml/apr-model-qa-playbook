@@ -338,9 +338,55 @@ After fix:        layers.0.self_attn.q_proj.weight   ← correct
 
 **NOTE:** An earlier QA analysis (commit `13882af`) incorrectly compared APR names against raw GGUF names via `rosetta diff-tensors`. This was a false alarm — GGUF and APR use intentionally different naming conventions. The `self_attn.`/`mlp.` segments are correct and required by the loader.
 
-### Verification Pending
+### Verification: Golden Rule Test Re-Run (2026-01-30)
 
-Golden Rule Test needs re-run with confirmed fresh binary to verify end-to-end.
+**Result: PMAT-205 naming fix CONFIRMED CORRECT — but garbage output persists.**
+
+Golden Rule Test re-run with fresh PMAT-205 binary:
+
+```bash
+# Step 1: Fresh conversion with PMAT-205 binary
+apr convert ~/.apr/cache/hf/Qwen/.../qwen2.5-coder-1.5b-instruct-q4_k_m.gguf \
+    -o /tmp/golden-test.apr --verbose
+
+# Verbose output confirms PMAT-205 mapping is active:
+# [PMAT-205] layers.0.mlp.down_proj.weight
+# [PMAT-205] layers.0.self_attn.q_proj.weight
+# ... (all 339 tensors correctly named)
+```
+
+```bash
+# Step 2: GGUF baseline (correct)
+apr run ...qwen2.5-coder-1.5b-instruct-q4_k_m.gguf -p "What is 2+2?" --max-tokens 10
+# Output: "2 + 2 equals 4."  ✅
+
+# Step 3: Converted APR (STILL GARBAGE)
+apr run /tmp/golden-test.apr -p "What is 2+2?" --max-tokens 10
+# Output: "türleminÐ¸ÑĩÐµÑģÑĤÐ²Ð¾ gabantha..."  ❌
+```
+
+**Critical finding: The naming fix alone does NOT resolve garbage output.**
+
+### Second Bug: Quantization Data Loss During Conversion
+
+The trace payload revealed the real smoking gun:
+
+```
+[AprV2ModelCuda] Pre-cached 10550 MB of weights on GPU
+  (28 layers, 0 quantized, 308 F32 tensors)
+```
+
+**Expected:** Q4_K_M model → quantized tensors → ~1.1 GB
+**Actual:** All 308 tensors loaded as F32 → 10550 MB (10.3 GB)
+
+This means the converter is either:
+1. **De-quantizing Q4_K_M → F32 incorrectly** (wrong de-quantization kernel)
+2. **Writing raw Q4_K_M bytes but tagging them as F32** (dtype metadata mismatch)
+3. **Dropping quantization entirely** (reading quantized data, writing garbage F32)
+
+The naming fix (PMAT-205) resolved one bug. This dtype/quantization handling bug is a **separate issue** that also causes garbage output.
+
+**See:** [GH-191](GH-191-APR-QUANTIZATION-DATA-LOSS.md) for dedicated tracking.
 
 ---
 
