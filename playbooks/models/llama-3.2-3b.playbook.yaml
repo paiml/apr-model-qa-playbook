@@ -79,6 +79,19 @@ differential_tests:
     max_tokens: 10
     tolerance: 1e-5
     gates: ["F-ROSETTA-INF-001"]
+  fingerprint:
+    enabled: true
+    tensors: "all"
+    stats: ["mean", "std", "min", "max", "checksum"]
+    gates: ["F-ROSETTA-FP-001", "F-ROSETTA-FP-002"]
+  validate_stats:
+    enabled: true
+    reference: "llama-3.2-3b-reference.json"
+    tolerance:
+      layernorm: 0.001
+      embedding: 0.1
+      attention: 0.01
+    gates: ["F-ROSETTA-STATS-001", "F-ROSETTA-STATS-002"]
 
 # Profile CI Assertions (v1.3.0)
 profile_ci:
