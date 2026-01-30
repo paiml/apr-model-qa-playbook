@@ -1,0 +1,36 @@
+//! APR QA Scenario Generator
+//!
+//! Property-based test scenario generation for model qualification.
+//! Implements the Popperian falsification methodology from the APR Playbook Spec.
+//!
+//! # Design Philosophy
+//!
+//! > "The criterion of the scientific status of a theory is its falsifiability."
+//! > — Karl Popper, *Conjectures and Refutations* (1963)
+//!
+//! Every generated scenario is a falsifiable hypothesis about model behavior.
+
+#![forbid(unsafe_code)]
+#![warn(missing_docs)]
+// Allow common patterns
+#![allow(clippy::missing_const_for_fn)]
+#![allow(clippy::cast_precision_loss)]
+#![allow(clippy::cast_lossless)]
+#![allow(clippy::doc_markdown)]
+#![allow(clippy::needless_pass_by_value)]
+#![allow(clippy::needless_raw_string_hashes)]
+// Allow common patterns in test code
+#![cfg_attr(test, allow(clippy::expect_used, clippy::unwrap_used))]
+#![cfg_attr(test, allow(clippy::redundant_closure_for_method_calls))]
+#![cfg_attr(test, allow(clippy::redundant_clone))]
+
+pub mod error;
+pub mod models;
+pub mod oracle;
+pub mod proptest_impl;
+pub mod scenario;
+
+pub use error::{Error, Result};
+pub use models::{ModelId, ModelRegistry, SizeCategory};
+pub use oracle::{Oracle, OracleResult};
+pub use scenario::{Backend, Format, Modality, QaScenario, ScenarioGenerator, TraceLevel};

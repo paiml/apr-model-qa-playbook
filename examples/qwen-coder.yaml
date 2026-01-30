@@ -1,0 +1,220 @@
+# QA Playbook: Qwen2.5-Coder-1.5B-Instruct
+#
+# This playbook tests the Qwen2.5-Coder-1.5B-Instruct model across
+# all modalities, backends, and formats supported by apr-cli.
+#
+# Toyota Way Principles Applied:
+# - Jidoka: Stop on P0 failures (critical defects)
+# - Poka-Yoke: Error-proofing through comprehensive edge case testing
+# - Genchi Genbutsu: Evidence-based testing with actual model outputs
+# - Heijunka: Balanced test distribution across categories
+# - Kaizen: Continuous improvement through regression testing
+
+name: qwen-coder-1.5b-qualification
+version: "1.0.0"
+
+model:
+  hf_repo: "Qwen/Qwen2.5-Coder-1.5B-Instruct"
+  formats:
+    - gguf
+    - safetensors
+    - apr
+  quantizations:
+    - q4_k_m
+    - q5_k_m
+    - q8_0
+
+test_matrix:
+  modalities:
+    - run
+    - chat
+    - serve
+  backends:
+    - cpu
+    - gpu
+  scenario_count: 100
+
+# Property tests for model behavior
+property_tests:
+  - name: arithmetic_correctness
+    generator: "arithmetic(a: i32, b: i32, op: +|-|*)"
+    oracle: "eval(a op b) == parse_int(output)"
+    count: 50
+
+  - name: code_syntax_validity
+    generator: "code_prompt(lang: rust|python|js)"
+    oracle: "is_valid_syntax(output, lang)"
+    count: 50
+
+  - name: response_non_empty
+    generator: "any_prompt()"
+    oracle: "output.len() > 0"
+    count: 100
+
+  - name: no_garbage_output
+    generator: "any_prompt()"
+    oracle: "!is_garbage(output)"
+    count: 100
+
+# Falsification gates (Popperian)
+falsification_gates:
+  # Gateway checks (G1-G4) - failure zeros the score
+  - id: G1-LOAD
+    description: "Model loads successfully within timeout"
+    condition: "load_time_ms < 60000 && !error"
+    severity: P0
+
+  - id: G2-INFER
+    description: "Basic inference produces output"
+    condition: "output.len() > 0"
+    severity: P0
+
+  - id: G3-STABLE
+    description: "No crashes during execution"
+    condition: "exit_code == 0"
+    severity: P0
+
+  - id: G4-VALID
+    description: "Output is not garbage"
+    condition: "!is_garbage(output)"
+    severity: P0
+
+  # Quality gates (QUAL)
+  - id: F-QUAL-001
+    description: "Arithmetic responses are correct"
+    condition: "arithmetic_oracle(prompt, output)"
+    severity: P1
+
+  - id: F-QUAL-002
+    description: "Code completions are syntactically valid"
+    condition: "syntax_check(output, lang)"
+    severity: P1
+
+  - id: F-QUAL-003
+    description: "Responses are contextually relevant"
+    condition: "semantic_similarity(prompt, output) > 0.3"
+    severity: P2
+
+  # Performance gates (PERF)
+  - id: F-PERF-001
+    description: "Tokens per second meets minimum threshold"
+    condition: "tokens_per_second >= 10.0"
+    severity: P1
+
+  - id: F-PERF-002
+    description: "Time to first token under 5 seconds"
+    condition: "ttft_ms < 5000"
+    severity: P1
+
+  - id: F-PERF-003
+    description: "Memory usage under 8GB"
+    condition: "memory_peak_mb < 8192"
+    severity: P2
+
+  # Stability gates (STAB)
+  - id: F-STAB-001
+    description: "Consistent output for same seed"
+    condition: "output_hash(seed) == expected_hash(seed)"
+    severity: P1
+
+  - id: F-STAB-002
+    description: "No memory leaks over 100 iterations"
+    condition: "memory_growth_rate < 0.01"
+    severity: P1
+
+  - id: F-STAB-003
+    description: "Handles concurrent requests"
+    condition: "concurrent_success_rate > 0.99"
+    severity: P2
+
+  # Compatibility gates (COMP)
+  - id: F-COMP-001
+    description: "Works with all supported quantizations"
+    condition: "all_quants_pass"
+    severity: P1
+
+  - id: F-COMP-002
+    description: "Works on CPU and GPU backends"
+    condition: "all_backends_pass"
+    severity: P1
+
+  - id: F-COMP-003
+    description: "All modalities function correctly"
+    condition: "all_modalities_pass"
+    severity: P1
+
+  # Edge case gates (EDGE)
+  - id: F-EDGE-001
+    description: "Handles empty prompt gracefully"
+    condition: "!crash && !garbage"
+    severity: P2
+
+  - id: F-EDGE-002
+    description: "Handles max token limit"
+    condition: "output.tokens <= max_tokens"
+    severity: P2
+
+  - id: F-EDGE-003
+    description: "Handles unicode input"
+    condition: "unicode_output_valid"
+    severity: P2
+
+  - id: F-EDGE-004
+    description: "Handles very long prompts"
+    condition: "!crash && !timeout"
+    severity: P2
+
+  # Regression gates (REGR)
+  - id: F-REGR-001
+    description: "No regression from baseline"
+    condition: "mqs_score >= baseline_score"
+    severity: P1
+
+  - id: F-REGR-002
+    description: "Performance not degraded >10%"
+    condition: "perf_ratio > 0.9"
+    severity: P2
+
+# State machine for complex workflows (optional)
+state_machine:
+  initial: idle
+  states:
+    idle:
+      transitions:
+        - event: start
+          target: loading
+    loading:
+      on_enter:
+        - action: "load_model"
+      transitions:
+        - event: loaded
+          target: ready
+          guards:
+            - "model.is_loaded()"
+        - event: error
+          target: failed
+    ready:
+      transitions:
+        - event: run_test
+          target: testing
+        - event: stop
+          target: idle
+    testing:
+      on_enter:
+        - action: "run_scenario"
+      transitions:
+        - event: pass
+          target: ready
+          action: "record_pass"
+        - event: fail
+          target: ready
+          action: "record_fail"
+        - event: crash
+          target: failed
+          action: "record_crash"
+    failed:
+      on_enter:
+        - action: "cleanup"
+      transitions:
+        - event: reset
+          target: idle

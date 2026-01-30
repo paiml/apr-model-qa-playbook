@@ -1,0 +1,611 @@
+//! Playbook definition and parsing
+//!
+//! Playbooks define test scenarios in YAML format.
+
+use apr_qa_gen::{Backend, Format, Modality, ModelId, QaScenario};
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::path::Path;
+
+use crate::error::{Error, Result};
+
+/// A complete playbook for model qualification
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Playbook {
+    /// Playbook name
+    pub name: String,
+    /// Version
+    pub version: String,
+    /// Model configuration
+    pub model: ModelConfig,
+    /// Test matrix configuration
+    pub test_matrix: TestMatrix,
+    /// Property test definitions
+    #[serde(default)]
+    pub property_tests: Vec<PropertyTest>,
+    /// Falsification gates
+    #[serde(default)]
+    pub falsification_gates: Vec<FalsificationGate>,
+    /// State machine definition (optional)
+    #[serde(default)]
+    pub state_machine: Option<StateMachine>,
+}
+
+impl Playbook {
+    /// Load a playbook from a YAML file
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the file cannot be read or parsed.
+    pub fn from_file(path: impl AsRef<Path>) -> Result<Self> {
+        let content = std::fs::read_to_string(path)?;
+        Self::from_yaml(&content)
+    }
+
+    /// Parse a playbook from YAML string
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the YAML is invalid.
+    pub fn from_yaml(yaml: &str) -> Result<Self> {
+        serde_yaml::from_str(yaml).map_err(Error::from)
+    }
+
+    /// Convert to YAML string
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if serialization fails.
+    pub fn to_yaml(&self) -> Result<String> {
+        serde_yaml::to_string(self).map_err(Error::from)
+    }
+
+    /// Generate all scenarios from this playbook
+    #[must_use]
+    pub fn generate_scenarios(&self) -> Vec<QaScenario> {
+        let mut scenarios = Vec::new();
+        let mut seed: u64 = 0;
+
+        let model_id = ModelId::new(&self.model.hf_org(), &self.model.hf_name());
+
+        for modality in &self.test_matrix.modalities {
+            for backend in &self.test_matrix.backends {
+                for format in &self.model.formats {
+                    for _ in 0..self.test_matrix.scenario_count {
+                        // Use a simple prompt for now
+                        let prompt = "What is 2+2?".to_string();
+                        scenarios.push(QaScenario::new(
+                            model_id.clone(),
+                            *modality,
+                            *backend,
+                            *format,
+                            prompt,
+                            seed,
+                        ));
+                        seed = seed.wrapping_add(1);
+                    }
+                }
+            }
+        }
+
+        scenarios
+    }
+
+    /// Get total expected test count
+    #[must_use]
+    pub fn total_tests(&self) -> usize {
+        self.test_matrix.modalities.len()
+            * self.test_matrix.backends.len()
+            * self.model.formats.len()
+            * self.test_matrix.scenario_count
+    }
+}
+
+/// Model configuration
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ModelConfig {
+    /// HuggingFace repository
+    pub hf_repo: String,
+    /// Optional local path
+    pub local_path: Option<String>,
+    /// Supported formats
+    #[serde(default = "default_formats")]
+    pub formats: Vec<Format>,
+    /// Quantizations to test
+    #[serde(default = "default_quantizations")]
+    pub quantizations: Vec<String>,
+}
+
+impl ModelConfig {
+    /// Extract org from hf_repo
+    #[must_use]
+    pub fn hf_org(&self) -> String {
+        self.hf_repo
+            .split('/')
+            .next()
+            .unwrap_or("unknown")
+            .to_string()
+    }
+
+    /// Extract name from hf_repo
+    #[must_use]
+    pub fn hf_name(&self) -> String {
+        self.hf_repo
+            .split('/')
+            .nth(1)
+            .unwrap_or(&self.hf_repo)
+            .to_string()
+    }
+}
+
+fn default_formats() -> Vec<Format> {
+    vec![Format::Gguf, Format::SafeTensors, Format::Apr]
+}
+
+fn default_quantizations() -> Vec<String> {
+    vec!["q4_k_m".to_string()]
+}
+
+/// Test matrix configuration
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TestMatrix {
+    /// Modalities to test
+    #[serde(default = "default_modalities")]
+    pub modalities: Vec<Modality>,
+    /// Backends to test
+    #[serde(default = "default_backends")]
+    pub backends: Vec<Backend>,
+    /// Number of scenarios per combination
+    #[serde(default = "default_scenario_count")]
+    pub scenario_count: usize,
+}
+
+fn default_modalities() -> Vec<Modality> {
+    vec![Modality::Run, Modality::Chat, Modality::Serve]
+}
+
+fn default_backends() -> Vec<Backend> {
+    vec![Backend::Cpu, Backend::Gpu]
+}
+
+fn default_scenario_count() -> usize {
+    100
+}
+
+impl Default for TestMatrix {
+    fn default() -> Self {
+        Self {
+            modalities: default_modalities(),
+            backends: default_backends(),
+            scenario_count: default_scenario_count(),
+        }
+    }
+}
+
+/// Property test definition
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PropertyTest {
+    /// Test name
+    pub name: String,
+    /// Generator expression
+    pub generator: String,
+    /// Oracle expression
+    pub oracle: String,
+    /// Number of test cases
+    #[serde(default = "default_proptest_count")]
+    pub count: usize,
+}
+
+fn default_proptest_count() -> usize {
+    100
+}
+
+/// Falsification gate definition
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FalsificationGate {
+    /// Gate ID (e.g., "F-QUAL-001")
+    pub id: String,
+    /// Description
+    pub description: String,
+    /// Condition expression
+    pub condition: String,
+    /// Severity (P0, P1, P2)
+    #[serde(default = "default_severity")]
+    pub severity: String,
+}
+
+fn default_severity() -> String {
+    "P1".to_string()
+}
+
+/// State machine for complex workflows
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StateMachine {
+    /// Initial state
+    pub initial: String,
+    /// State definitions
+    pub states: HashMap<String, State>,
+}
+
+/// State in a state machine
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct State {
+    /// Actions to execute on entering this state
+    #[serde(default)]
+    pub on_enter: Vec<Action>,
+    /// Actions to execute on exiting this state
+    #[serde(default)]
+    pub on_exit: Vec<Action>,
+    /// Transitions from this state
+    #[serde(default)]
+    pub transitions: Vec<Transition>,
+}
+
+/// Action to execute
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Action {
+    /// Action name or command
+    pub action: String,
+}
+
+/// Transition between states
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Transition {
+    /// Event that triggers this transition
+    pub event: String,
+    /// Target state
+    pub target: String,
+    /// Optional action to execute
+    pub action: Option<String>,
+    /// Guard conditions
+    #[serde(default)]
+    pub guards: Vec<String>,
+}
+
+/// A single step in a playbook
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PlaybookStep {
+    /// Step name
+    pub name: String,
+    /// Command to execute
+    pub command: String,
+    /// Timeout in milliseconds
+    #[serde(default = "default_timeout")]
+    pub timeout_ms: u64,
+    /// Expected exit code
+    #[serde(default)]
+    pub expected_exit_code: i32,
+    /// Expected output patterns
+    #[serde(default)]
+    pub expected_patterns: Vec<String>,
+    /// Forbidden output patterns
+    #[serde(default)]
+    pub forbidden_patterns: Vec<String>,
+}
+
+fn default_timeout() -> u64 {
+    60000 // 60 seconds
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_default_formats() {
+        let formats = default_formats();
+        assert_eq!(formats.len(), 3);
+        assert!(formats.contains(&Format::Gguf));
+        assert!(formats.contains(&Format::SafeTensors));
+        assert!(formats.contains(&Format::Apr));
+    }
+
+    #[test]
+    fn test_default_quantizations() {
+        let quants = default_quantizations();
+        assert_eq!(quants, vec!["q4_k_m"]);
+    }
+
+    #[test]
+    fn test_default_modalities() {
+        let modalities = default_modalities();
+        assert_eq!(modalities.len(), 3);
+        assert!(modalities.contains(&Modality::Run));
+        assert!(modalities.contains(&Modality::Chat));
+        assert!(modalities.contains(&Modality::Serve));
+    }
+
+    #[test]
+    fn test_default_backends() {
+        let backends = default_backends();
+        assert_eq!(backends.len(), 2);
+        assert!(backends.contains(&Backend::Cpu));
+        assert!(backends.contains(&Backend::Gpu));
+    }
+
+    #[test]
+    fn test_default_scenario_count() {
+        assert_eq!(default_scenario_count(), 100);
+    }
+
+    #[test]
+    fn test_default_proptest_count() {
+        assert_eq!(default_proptest_count(), 100);
+    }
+
+    #[test]
+    fn test_default_timeout() {
+        assert_eq!(default_timeout(), 60000);
+    }
+
+    #[test]
+    fn test_default_severity() {
+        assert_eq!(default_severity(), "P1");
+    }
+
+    #[test]
+    fn test_test_matrix_default() {
+        let matrix = TestMatrix::default();
+        assert_eq!(matrix.modalities.len(), 3);
+        assert_eq!(matrix.backends.len(), 2);
+        assert_eq!(matrix.scenario_count, 100);
+    }
+
+    #[test]
+    fn test_playbook_to_yaml() {
+        let yaml = r#"
+name: test-playbook
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 5
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let output = playbook.to_yaml().expect("Failed to serialize");
+        assert!(output.contains("test-playbook"));
+        assert!(output.contains("test/model"));
+    }
+
+    #[test]
+    fn test_playbook_with_defaults() {
+        // Test playbook that uses default values for model config
+        let yaml = r#"
+name: minimal
+version: "1.0.0"
+model:
+  hf_repo: "org/model"
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 100
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        assert_eq!(playbook.model.formats.len(), 3);
+        assert_eq!(playbook.model.quantizations, vec!["q4_k_m"]);
+        assert_eq!(playbook.test_matrix.scenario_count, 100);
+    }
+
+    #[test]
+    fn test_playbook_with_state_machine() {
+        let yaml = r#"
+name: state-test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+state_machine:
+  initial: "ready"
+  states:
+    ready:
+      on_enter:
+        - action: "log 'entering ready'"
+      transitions:
+        - event: "start"
+          target: "running"
+          action: "initialize"
+          guards:
+            - "model_loaded"
+    running:
+      on_exit:
+        - action: "cleanup"
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let state_machine = playbook.state_machine.expect("Should have state machine");
+        assert_eq!(state_machine.initial, "ready");
+        assert_eq!(state_machine.states.len(), 2);
+
+        let ready_state = &state_machine.states["ready"];
+        assert_eq!(ready_state.on_enter.len(), 1);
+        assert_eq!(ready_state.transitions.len(), 1);
+
+        let transition = &ready_state.transitions[0];
+        assert_eq!(transition.event, "start");
+        assert_eq!(transition.target, "running");
+        assert!(transition.action.is_some());
+        assert_eq!(transition.guards.len(), 1);
+    }
+
+    #[test]
+    fn test_playbook_with_property_tests() {
+        let yaml = r#"
+name: prop-test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+property_tests:
+  - name: "arithmetic"
+    generator: "random_arithmetic"
+    oracle: "check_arithmetic"
+    count: 50
+  - name: "code"
+    generator: "random_code"
+    oracle: "check_code"
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        assert_eq!(playbook.property_tests.len(), 2);
+
+        let first = &playbook.property_tests[0];
+        assert_eq!(first.name, "arithmetic");
+        assert_eq!(first.count, 50);
+
+        let second = &playbook.property_tests[1];
+        assert_eq!(second.name, "code");
+        assert_eq!(second.count, 100); // default
+    }
+
+    #[test]
+    fn test_playbook_with_falsification_gates() {
+        let yaml = r#"
+name: gate-test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+falsification_gates:
+  - id: F-QUAL-001
+    description: "Output is valid"
+    condition: "output.len() > 0"
+    severity: P0
+  - id: F-QUAL-002
+    description: "No errors"
+    condition: "!output.contains('error')"
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        assert_eq!(playbook.falsification_gates.len(), 2);
+
+        let first = &playbook.falsification_gates[0];
+        assert_eq!(first.severity, "P0");
+
+        let second = &playbook.falsification_gates[1];
+        assert_eq!(second.severity, "P1"); // default
+    }
+
+    #[test]
+    fn test_model_config_no_slash() {
+        let config = ModelConfig {
+            hf_repo: "model-name".to_string(),
+            local_path: None,
+            formats: vec![Format::Gguf],
+            quantizations: vec![],
+        };
+        assert_eq!(config.hf_org(), "model-name");
+        assert_eq!(config.hf_name(), "model-name");
+    }
+
+    #[test]
+    fn test_model_config_with_local_path() {
+        let config = ModelConfig {
+            hf_repo: "org/model".to_string(),
+            local_path: Some("/path/to/model".to_string()),
+            formats: default_formats(),
+            quantizations: default_quantizations(),
+        };
+        assert!(config.local_path.is_some());
+    }
+
+    #[test]
+    fn test_playbook_step() {
+        let step = PlaybookStep {
+            name: "test-step".to_string(),
+            command: "echo test".to_string(),
+            timeout_ms: default_timeout(),
+            expected_exit_code: 0,
+            expected_patterns: vec!["test".to_string()],
+            forbidden_patterns: vec!["error".to_string()],
+        };
+        assert_eq!(step.timeout_ms, 60000);
+        assert_eq!(step.expected_exit_code, 0);
+    }
+
+    #[test]
+    fn test_playbook_parse() {
+        let yaml = r#"
+name: test-playbook
+version: "1.0.0"
+model:
+  hf_repo: "Qwen/Qwen2.5-Coder-1.5B-Instruct"
+  formats: [gguf, safetensors]
+test_matrix:
+  modalities: [run, chat]
+  backends: [cpu]
+  scenario_count: 10
+falsification_gates:
+  - id: F-TEST-001
+    description: "Output is non-empty"
+    condition: "output.len() > 0"
+"#;
+
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse playbook");
+        assert_eq!(playbook.name, "test-playbook");
+        assert_eq!(playbook.model.hf_repo, "Qwen/Qwen2.5-Coder-1.5B-Instruct");
+        assert_eq!(playbook.test_matrix.modalities.len(), 2);
+        assert_eq!(playbook.falsification_gates.len(), 1);
+    }
+
+    #[test]
+    fn test_playbook_generate_scenarios() {
+        let yaml = r#"
+name: test-playbook
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 5
+"#;
+
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let scenarios = playbook.generate_scenarios();
+
+        // 1 modality × 1 backend × 1 format × 5 scenarios = 5
+        assert_eq!(scenarios.len(), 5);
+    }
+
+    #[test]
+    fn test_model_config_parse() {
+        let config = ModelConfig {
+            hf_repo: "Qwen/Qwen2.5-Coder-1.5B-Instruct".to_string(),
+            local_path: None,
+            formats: vec![Format::Gguf],
+            quantizations: vec!["q4_k_m".to_string()],
+        };
+
+        assert_eq!(config.hf_org(), "Qwen");
+        assert_eq!(config.hf_name(), "Qwen2.5-Coder-1.5B-Instruct");
+    }
+
+    #[test]
+    fn test_total_tests() {
+        let yaml = r#"
+name: test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf, safetensors, apr]
+test_matrix:
+  modalities: [run, chat, serve]
+  backends: [cpu, gpu]
+  scenario_count: 100
+"#;
+
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        // 3 modalities × 2 backends × 3 formats × 100 = 1800
+        assert_eq!(playbook.total_tests(), 1800);
+    }
+}

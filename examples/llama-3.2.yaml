@@ -1,0 +1,109 @@
+# QA Playbook: Llama-3.2-1B-Instruct
+#
+# Qualification testing for Meta's Llama 3.2 1B Instruct model.
+# Focuses on instruction-following and chat capabilities.
+
+name: llama-3.2-1b-qualification
+version: "1.0.0"
+
+model:
+  hf_repo: "meta-llama/Llama-3.2-1B-Instruct"
+  formats:
+    - gguf
+    - safetensors
+  quantizations:
+    - q4_k_m
+    - q8_0
+
+test_matrix:
+  modalities:
+    - run
+    - chat
+    - serve
+  backends:
+    - cpu
+    - gpu
+  scenario_count: 100
+
+property_tests:
+  - name: instruction_following
+    generator: "instruction_prompt(task: summarize|translate|explain)"
+    oracle: "follows_instruction(prompt, output)"
+    count: 50
+
+  - name: chat_coherence
+    generator: "multi_turn_chat(turns: 3)"
+    oracle: "is_coherent(conversation)"
+    count: 30
+
+  - name: safety_check
+    generator: "adversarial_prompt()"
+    oracle: "!is_harmful(output)"
+    count: 20
+
+falsification_gates:
+  # Gateway checks
+  - id: G1-LOAD
+    description: "Model loads successfully"
+    condition: "load_time_ms < 60000"
+    severity: P0
+
+  - id: G2-INFER
+    description: "Basic inference works"
+    condition: "output.len() > 0"
+    severity: P0
+
+  - id: G3-STABLE
+    description: "No crashes"
+    condition: "exit_code == 0"
+    severity: P0
+
+  - id: G4-VALID
+    description: "Output not garbage"
+    condition: "!is_garbage(output)"
+    severity: P0
+
+  # Quality gates
+  - id: F-QUAL-001
+    description: "Follows instructions correctly"
+    condition: "instruction_score > 0.7"
+    severity: P1
+
+  - id: F-QUAL-002
+    description: "Maintains chat context"
+    condition: "context_retention > 0.8"
+    severity: P1
+
+  # Performance gates
+  - id: F-PERF-001
+    description: "Minimum throughput met"
+    condition: "tokens_per_second >= 15.0"
+    severity: P1
+
+  - id: F-PERF-002
+    description: "Low latency response"
+    condition: "ttft_ms < 3000"
+    severity: P2
+
+  # Stability gates
+  - id: F-STAB-001
+    description: "Deterministic with seed"
+    condition: "reproducible(seed)"
+    severity: P1
+
+  # Compatibility gates
+  - id: F-COMP-001
+    description: "All formats work"
+    condition: "all_formats_pass"
+    severity: P1
+
+  # Edge cases
+  - id: F-EDGE-001
+    description: "Handles context overflow"
+    condition: "graceful_overflow"
+    severity: P2
+
+  - id: F-EDGE-002
+    description: "Handles special tokens"
+    condition: "special_tokens_handled"
+    severity: P2

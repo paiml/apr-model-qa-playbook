@@ -1,0 +1,30 @@
+# Qwen2.5-Coder-1.5B CI Qualification
+# ~50 tests for CI/CD integration
+
+name: qwen2.5-coder-1.5b-ci
+version: "1.0.0"
+
+model:
+  hf_repo: "Qwen/Qwen2.5-Coder-1.5B-Instruct"
+  formats:
+    - gguf
+  quantizations:
+    - q4_k_m
+
+test_matrix:
+  modalities:
+    - run
+    - chat
+  backends:
+    - cpu
+  scenario_count: 25
+
+property_tests:
+  - name: arithmetic
+    generator: "arithmetic()"
+    oracle: "correct"
+    count: 25
+  - name: code_completion
+    generator: "code_prompt()"
+    oracle: "valid_syntax"
+    count: 25

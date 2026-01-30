@@ -1,0 +1,87 @@
+# QA Playbook: Phi-3-mini-4k-instruct
+#
+# Qualification testing for Microsoft's Phi-3 mini model.
+# Known for strong reasoning capabilities in small form factor.
+
+name: phi-3-mini-qualification
+version: "1.0.0"
+
+model:
+  hf_repo: "microsoft/Phi-3-mini-4k-instruct"
+  formats:
+    - gguf
+    - safetensors
+  quantizations:
+    - q4_k_m
+    - q5_k_m
+
+test_matrix:
+  modalities:
+    - run
+    - chat
+  backends:
+    - cpu
+    - gpu
+  scenario_count: 100
+
+property_tests:
+  - name: reasoning_tasks
+    generator: "reasoning_prompt(type: logic|math|coding)"
+    oracle: "reasoning_correct(prompt, output)"
+    count: 50
+
+  - name: coding_tasks
+    generator: "coding_prompt(lang: python|rust)"
+    oracle: "code_correct(prompt, output)"
+    count: 30
+
+falsification_gates:
+  # Gateway checks
+  - id: G1-LOAD
+    description: "Model loads"
+    condition: "loaded"
+    severity: P0
+
+  - id: G2-INFER
+    description: "Inference works"
+    condition: "has_output"
+    severity: P0
+
+  - id: G3-STABLE
+    description: "No crashes"
+    condition: "stable"
+    severity: P0
+
+  - id: G4-VALID
+    description: "Valid output"
+    condition: "valid"
+    severity: P0
+
+  # Quality gates
+  - id: F-QUAL-001
+    description: "Reasoning accuracy"
+    condition: "reasoning_score > 0.6"
+    severity: P1
+
+  - id: F-QUAL-002
+    description: "Code correctness"
+    condition: "code_passes_tests"
+    severity: P1
+
+  # Performance gates
+  - id: F-PERF-001
+    description: "Fast inference"
+    condition: "tokens_per_second >= 20"
+    severity: P1
+
+  # Stability gates
+  - id: F-STAB-001
+    description: "Reproducible"
+    condition: "deterministic"
+    severity: P1
+
+  # Compatibility gates
+  - id: F-COMP-001
+    description: "Format compatibility"
+    condition: "formats_work"
+    severity: P1

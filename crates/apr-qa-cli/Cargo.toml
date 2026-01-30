@@ -1,0 +1,25 @@
+[package]
+name = "apr-qa-cli"
+description = "CLI for APR model qualification testing"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[[bin]]
+name = "apr-qa"
+path = "src/main.rs"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_yaml = { workspace = true }
+clap = { workspace = true }
+apr-qa-gen = { workspace = true }
+apr-qa-runner = { workspace = true }
+apr-qa-report = { workspace = true }
+
+[lints]
+workspace = true

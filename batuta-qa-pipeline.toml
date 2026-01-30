@@ -1,0 +1,196 @@
+# Batuta QA Pipeline Configuration
+# Orchestrates full model qualification testing workflow
+#
+# Philosophy: Toyota Way + Popperian Falsification
+# - Jidoka: Stop on first P0 failure
+# - Genchi Genbutsu: All metrics from actual inference
+# - Falsification: Test to fail, not to pass
+
+[pipeline]
+name = "apr-model-qa"
+version = "1.0.0"
+description = "APR Model Qualification Pipeline"
+
+# Fail-fast on P0 failures (Jidoka)
+failure_policy = "stop_on_p0"
+
+# Evidence collection
+evidence_dir = "evidence"
+report_dir = "report"
+
+# Parallelism settings
+[parallel]
+max_workers = 8
+timeout_ms = 60000
+mode = "rayon"
+
+# Stage 1: Model Download & Validation
+[stages.download]
+name = "Model Download"
+description = "Download and validate model files from HuggingFace"
+command = "apr download ${MODEL} --format gguf --quant q4_k_m"
+timeout_ms = 300000
+retry = 2
+gates = ["G1-LOAD"]
+
+# Stage 2: Format Conversion
+[stages.convert]
+name = "Format Conversion"
+description = "Convert to APR format and validate"
+depends_on = ["download"]
+command = "apr convert ${MODEL_PATH} --to apr --validate"
+timeout_ms = 300000
+gates = ["F-COMP-001"]
+
+# Stage 3: Quick Sanity Check
+[stages.sanity]
+name = "Sanity Check"
+description = "Fast smoke test to catch obvious issues"
+depends_on = ["convert"]
+playbook = "playbooks/templates/quick-check.yaml"
+timeout_ms = 60000
+gates = ["G1-LOAD", "G2-INFER", "G3-STABLE", "G4-VALID"]
+
+# Stage 4: CPU Qualification
+[stages.cpu_qual]
+name = "CPU Qualification"
+description = "Full CPU inference testing"
+depends_on = ["sanity"]
+command = "apr-qa-runner run --backend cpu --playbook playbooks/models/${MODEL_NAME}.playbook.yaml"
+timeout_ms = 600000
+gates = ["F-QUAL-*", "F-PERF-001"]
+
+# Stage 5: GPU Qualification (if available)
+[stages.gpu_qual]
+name = "GPU Qualification"
+description = "Full GPU inference testing"
+depends_on = ["sanity"]
+command = "apr-qa-runner run --backend gpu --playbook playbooks/models/${MODEL_NAME}.playbook.yaml"
+timeout_ms = 600000
+condition = "has_gpu"
+gates = ["F-QUAL-*", "F-PERF-002", "F-PERF-004"]
+
+# Stage 6: Serve Mode Testing
+[stages.serve]
+name = "Serve Mode"
+description = "HTTP API testing"
+depends_on = ["cpu_qual"]
+command = "apr-qa-runner run --modality serve --playbook playbooks/models/${MODEL_NAME}.playbook.yaml"
+timeout_ms = 300000
+gates = ["F-HTTP-001", "F-HTTP-002", "F-HTTP-003"]
+
+# Stage 7: Chat Mode Testing
+[stages.chat]
+name = "Chat Mode"
+description = "Interactive chat testing"
+depends_on = ["cpu_qual"]
+command = "apr-qa-runner run --modality chat --playbook playbooks/models/${MODEL_NAME}.playbook.yaml"
+timeout_ms = 300000
+gates = ["F-QUAL-003"]
+
+# Stage 8: Property Tests
+[stages.property]
+name = "Property Tests"
+description = "proptest-based random input testing"
+depends_on = ["cpu_qual"]
+command = "cargo test --package apr-qa-gen -- --test-threads=1"
+timeout_ms = 600000
+env = { PROPTEST_CASES = "1000" }
+
+# Stage 9: Stability Tests
+[stages.stability]
+name = "Stability Tests"
+description = "Long-running stability and memory leak tests"
+depends_on = ["cpu_qual", "gpu_qual"]
+command = "apr-qa-runner run --scenario-count 1000 --check-memory"
+timeout_ms = 1800000
+optional = true
+gates = ["F-STAB-001", "F-STAB-002"]
+
+# Stage 10: Report Generation
+[stages.report]
+name = "Report Generation"
+description = "Generate JUnit, HTML, and MQS reports"
+depends_on = ["cpu_qual", "gpu_qual", "serve", "chat"]
+command = "apr-qa-report generate --evidence ${EVIDENCE_DIR} --output ${REPORT_DIR}"
+outputs = ["report/index.html", "report/junit.xml", "report/mqs.json"]
+
+# Stage 11: Certification
+[stages.certify]
+name = "Certification"
+description = "Final MQS score calculation and certification"
+depends_on = ["report"]
+command = "apr-qa-report certify --threshold 85"
+condition = "mqs_score >= 85"
+outputs = ["report/certificate.json"]
+
+# Model registry for batch processing
+[models]
+# Top HuggingFace models to qualify
+registry = [
+    "Qwen/Qwen2.5-Coder-1.5B-Instruct",
+    "Qwen/Qwen2.5-Coder-7B-Instruct",
+    "meta-llama/Llama-3.2-1B-Instruct",
+    "meta-llama/Llama-3.2-3B-Instruct",
+    "mistralai/Mistral-7B-Instruct-v0.3",
+    "microsoft/Phi-3-mini-4k-instruct",
+    "google/gemma-2-2b-it",
+    "google/gemma-2-9b-it",
+    "deepseek-ai/deepseek-coder-1.3b-instruct",
+    "codellama/CodeLlama-7b-Instruct-hf",
+]
+
+# Quantizations to test per model
+quantizations = ["q4_k_m", "q5_k_m", "q8_0"]
+
+# Formats to test
+formats = ["gguf", "safetensors", "apr"]
+
+# MQS Scoring Configuration
+[mqs]
+# Gateway weights (P0 - must pass or score is 0)
+[mqs.gateways]
+G1_LOAD = { weight = 0, required = true }
+G2_INFER = { weight = 0, required = true }
+G3_STABLE = { weight = 0, required = true }
+G4_VALID = { weight = 0, required = true }
+
+# Category weights (P1/P2)
+[mqs.categories]
+quality = { weight = 30, prefix = "F-QUAL" }
+performance = { weight = 25, prefix = "F-PERF" }
+stability = { weight = 20, prefix = "F-STAB" }
+compatibility = { weight = 15, prefix = "F-COMP" }
+edge_cases = { weight = 10, prefix = "F-EDGE" }
+
+# Grade thresholds
+[mqs.grades]
+"A+" = 95
+"A"  = 90
+"A-" = 85
+"B+" = 80
+"B"  = 75
+"B-" = 70
+"C"  = 60
+"D"  = 50
+"F"  = 0
+
+# CI/CD Integration
+[ci]
+# GitHub Actions workflow integration
+github_actions = true
+# JUnit report path for CI systems
+junit_path = "report/junit.xml"
+# Fail CI if MQS below threshold
+mqs_threshold = 85
+# Artifact retention
+artifact_retention_days = 30
+
+# Notifications
+[notifications]
+# Slack webhook for failures
+slack_webhook = "${SLACK_WEBHOOK_URL}"
+# Email for critical failures (P0)
+email_recipients = ["qa@example.com"]
+# Only notify on P0/P1 failures
+severity_threshold = "P1"

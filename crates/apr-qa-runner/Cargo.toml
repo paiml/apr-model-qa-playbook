@@ -1,0 +1,29 @@
+[package]
+name = "apr-qa-runner"
+description = "Playbook executor for APR model qualification testing"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_yaml = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+tokio = { workspace = true }
+chrono = { workspace = true }
+apr-qa-gen = { workspace = true }
+hostname = "0.4"
+rayon = "1.10"
+num_cpus = "1.16"
+
+[dev-dependencies]
+proptest = { workspace = true }
+tokio = { workspace = true, features = ["test-util"] }
+
+[lints]
+workspace = true
