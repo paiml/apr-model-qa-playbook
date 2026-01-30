@@ -3027,7 +3027,22 @@ differential_tests:
     prompt: "What is 2+2?"
     max_tokens: 10
     tolerance: 1e-5
-    gates: ["F-ROSETTA-INF-001"]
+    gates: ["F-ROSETTA-INF-001", "F-ROSETTA-INF-003"]
+  # v1.3.0: Fingerprint (PMAT-201)
+  fingerprint:
+    enabled: true
+    tensors: "all"
+    stats: ["mean", "std", "min", "max", "checksum"]
+    gates: ["F-ROSETTA-FP-001", "F-ROSETTA-FP-002"]
+  # v1.3.0: Validate Stats (PMAT-202, GH-189)
+  validate_stats:
+    enabled: true
+    reference: "qwen2.5-coder-1.5b-reference.json"
+    tolerance:
+      layernorm: 0.001
+      embedding: 0.1
+      attention: 0.01
+    gates: ["F-ROSETTA-STATS-001", "F-ROSETTA-STATS-005", "F-ROSETTA-STATS-006"]
 
 # v1.3.0: Profile CI Configuration
 profile_ci:
