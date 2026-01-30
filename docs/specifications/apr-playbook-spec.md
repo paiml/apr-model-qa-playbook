@@ -1,6 +1,6 @@
 # APR Model QA Playbook Specification
 
-**Version:** 1.1.1
+**Version:** 1.2.0
 **Status:** DRAFT - Awaiting Peer Review
 **Author:** PAIML Engineering
 **Date:** 2026-01-30
@@ -480,6 +480,30 @@ These gates are **P0 CRITICAL** - any failure zeros the entire MQS score.
 | **F-CONV-INF-002** | Inference(GGUF) ≈ Inference(SafeTensors) | P0 |
 | **F-CONV-INF-003** | Inference(APR) ≈ Inference(SafeTensors) | P0 |
 | **F-CONV-INF-004** | Inference output identical across backends | P0 |
+
+#### 4.4.5 Bug Classification Gates (GH-187)
+
+Systematic detection of common format conversion failures:
+
+| Gate ID | Bug Type | Detection Criteria | Severity |
+|---------|----------|-------------------|----------|
+| **F-CONV-EMBED-001** | EmbeddingTransposition | Tensor layout `[hidden,vocab]` vs `[vocab,hidden]` | P0 |
+| **F-CONV-TOK-001** | TokenizerMissing | APR file lacks embedded tokenizer (PMAT-172 error) | P0 |
+| **F-CONV-WEIGHT-001** | WeightCorruption | NaN/Inf/zeros in tensor values | P0 |
+| **F-CONV-SHAPE-001** | ShapeMismatch | Tensor dimensions don't match config | P0 |
+| **F-CONV-SEMANTIC-001** | SemanticDrift | Output structurally valid but semantically wrong | P0 |
+
+**Garbage Output Patterns** (indicate TokenizerMissing or SemanticDrift):
+- PAD tokens: `"PAD"`, `"<pad>"`, `"<|endoftext|>"`
+- Token IDs: `"151935"`, numeric sequences
+- Null bytes: `"\u0000"`
+- Generic text: `"1. What is the difference"`
+
+**Validation Strategy**: Run inference on known inputs (e.g., `"2+2="`) and verify:
+1. Source format produces expected output (`"4"`, `"four"`, etc.)
+2. Target format produces semantically equivalent output
+3. No garbage patterns in target output
+4. No PMAT-172 tokenizer errors in stderr
 
 ### 4.5 Conversion Test Protocol
 
