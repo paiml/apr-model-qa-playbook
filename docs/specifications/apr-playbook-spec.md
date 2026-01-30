@@ -3144,6 +3144,161 @@ impl Default for FailurePolicy {
 }
 ```
 
+### 12.4 Process Lifecycle Management (Jidoka)
+
+**Issue:** [paiml/apr-model-qa-playbook#1](https://github.com/paiml/apr-model-qa-playbook/issues/1)
+
+Child processes spawned during test execution must be properly tracked and cleaned up to prevent resource leaks. This implements the Toyota Way Jidoka principle: stop the line and clean up, never leave defects (orphan processes) in the system.
+
+#### 12.4.1 Process Registry
+
+```rust
+// crates/apr-qa-runner/src/process.rs
+
+use std::sync::{Arc, Mutex, OnceLock};
+
+/// Global registry of spawned process PIDs for cleanup
+static PROCESS_REGISTRY: OnceLock<Arc<Mutex<Vec<u32>>>> = OnceLock::new();
+
+fn get_registry() -> &'static Arc<Mutex<Vec<u32>>> {
+    PROCESS_REGISTRY.get_or_init(|| Arc::new(Mutex::new(Vec::new())))
+}
+
+pub fn register_process(pid: u32) {
+    if let Ok(mut registry) = get_registry().lock() {
+        registry.push(pid);
+    }
+}
+
+pub fn unregister_process(pid: u32) {
+    if let Ok(mut registry) = get_registry().lock() {
+        registry.retain(|&p| p != pid);
+    }
+}
+
+pub fn kill_all_registered() -> usize {
+    if let Ok(mut registry) = get_registry().lock() {
+        let count = registry.len();
+        for pid in registry.drain(..) {
+            let _ = unsafe { libc::kill(pid as i32, libc::SIGKILL) };
+        }
+        count
+    } else {
+        0
+    }
+}
+```
+
+#### 12.4.2 ProcessGuard RAII
+
+```rust
+// crates/apr-qa-runner/src/process.rs
+
+use std::process::Child;
+
+/// RAII guard that ensures child process cleanup on drop
+pub struct ProcessGuard {
+    child: Option<Child>,
+    pid: u32,
+}
+
+impl ProcessGuard {
+    pub fn new(mut child: Child) -> Self {
+        let pid = child.id();
+        register_process(pid);
+        Self {
+            child: Some(child),
+            pid,
+        }
+    }
+
+    pub fn wait(&mut self) -> std::io::Result<std::process::ExitStatus> {
+        if let Some(ref mut child) = self.child {
+            child.wait()
+        } else {
+            Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                "Process already consumed",
+            ))
+        }
+    }
+
+    pub fn take(mut self) -> Option<Child> {
+        unregister_process(self.pid);
+        self.child.take()
+    }
+}
+
+impl Drop for ProcessGuard {
+    fn drop(&mut self) {
+        if let Some(ref mut child) = self.child {
+            eprintln!("[JIDOKA] Cleaning up child process {}", self.pid);
+            let _ = child.kill();
+            let _ = child.wait();
+            unregister_process(self.pid);
+        }
+    }
+}
+```
+
+#### 12.4.3 Signal Handler Setup
+
+```rust
+// crates/apr-qa-cli/src/main.rs
+
+pub fn setup_signal_handler() -> Result<(), Box<dyn std::error::Error>> {
+    ctrlc::set_handler(move || {
+        let count = apr_qa_runner::process::kill_all_registered();
+        eprintln!(
+            "\n[JIDOKA] SIGINT received. Reaping {} child process(es)...",
+            count
+        );
+        eprintln!("[JIDOKA] Toyota Way: Stop the line, clean up, exit.");
+        std::process::exit(130); // 128 + SIGINT(2)
+    })?;
+    Ok(())
+}
+```
+
+#### 12.4.4 Falsification Gates
+
+| Gate | Description | Condition | Severity |
+|------|-------------|-----------|----------|
+| F-PROC-001 | SIGINT cleanup | `kill -INT $PID` → 0 orphan processes | P0 |
+| F-PROC-002 | Drop cleanup | ProcessGuard drop → child killed | P0 |
+| F-PROC-003 | Registry tracking | Spawned process appears in registry | P1 |
+| F-PROC-004 | Jidoka messaging | SIGINT → "[JIDOKA]" message printed | P2 |
+
+#### 12.4.5 Verification Test
+
+```bash
+#!/bin/bash
+# test_process_cleanup.sh
+
+# Start long-running test in background
+apr-qa run playbook.yaml --subprocess --model-path model.gguf &
+PID=$!
+sleep 5
+
+# Count child processes before
+BEFORE=$(pgrep -P $PID | wc -l)
+
+# Send SIGINT
+kill -INT $PID
+sleep 2
+
+# Count orphan apr processes
+ORPHANS=$(ps aux | grep -E '[a]pr' | wc -l)
+
+# Verify
+if [ "$ORPHANS" -eq 0 ]; then
+    echo "✅ F-PROC-001: PASS - No orphan processes"
+else
+    echo "❌ F-PROC-001: FAIL - Found $ORPHANS orphan processes"
+    exit 1
+fi
+```
+
 ---
 
 ## 13. Coverage Requirements
