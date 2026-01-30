@@ -302,7 +302,7 @@ fn default_timeout() -> u64 {
     60000 // 60 seconds
 }
 
-/// Differential test configuration (GH-188, PMAT-114)
+/// Differential test configuration (GH-188, PMAT-114, PMAT-201, PMAT-202)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DifferentialTestConfig {
     /// Tensor diff configuration
@@ -311,6 +311,12 @@ pub struct DifferentialTestConfig {
     /// Inference comparison configuration
     #[serde(default)]
     pub inference_compare: Option<InferenceCompareConfig>,
+    /// Fingerprint configuration (PMAT-201)
+    #[serde(default)]
+    pub fingerprint: Option<FingerprintConfig>,
+    /// Validate stats configuration (PMAT-202)
+    #[serde(default)]
+    pub validate_stats: Option<ValidateStatsConfig>,
 }
 
 /// Tensor diff configuration
@@ -353,6 +359,80 @@ fn default_max_tokens() -> usize {
 
 fn default_tolerance() -> f64 {
     1e-5
+}
+
+/// Fingerprint configuration (PMAT-201, JAX-STAT-001)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FingerprintConfig {
+    /// Enable fingerprint testing
+    #[serde(default)]
+    pub enabled: bool,
+    /// Tensors to fingerprint ("all" or comma-separated list)
+    #[serde(default = "default_fingerprint_tensors")]
+    pub tensors: String,
+    /// Statistics to compute
+    #[serde(default = "default_fingerprint_stats")]
+    pub stats: Vec<String>,
+    /// Gates to verify
+    #[serde(default)]
+    pub gates: Vec<String>,
+}
+
+fn default_fingerprint_tensors() -> String {
+    "all".to_string()
+}
+
+fn default_fingerprint_stats() -> Vec<String> {
+    vec![
+        "mean".to_string(),
+        "std".to_string(),
+        "min".to_string(),
+        "max".to_string(),
+        "checksum".to_string(),
+    ]
+}
+
+/// Validate stats configuration (PMAT-202)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ValidateStatsConfig {
+    /// Enable stats validation
+    #[serde(default)]
+    pub enabled: bool,
+    /// Reference file for comparison
+    #[serde(default)]
+    pub reference: Option<String>,
+    /// Role-specific tolerances
+    #[serde(default)]
+    pub tolerance: StatsToleranceConfig,
+    /// Gates to verify
+    #[serde(default)]
+    pub gates: Vec<String>,
+}
+
+/// Per-role tolerance configuration for validate-stats
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct StatsToleranceConfig {
+    /// Tolerance for LayerNorm tensors (strict)
+    #[serde(default = "default_layernorm_tolerance")]
+    pub layernorm: f64,
+    /// Tolerance for embedding tensors (loose)
+    #[serde(default = "default_embedding_tolerance")]
+    pub embedding: f64,
+    /// Tolerance for attention tensors (medium)
+    #[serde(default = "default_attention_tolerance")]
+    pub attention: f64,
+}
+
+fn default_layernorm_tolerance() -> f64 {
+    0.001
+}
+
+fn default_embedding_tolerance() -> f64 {
+    0.1
+}
+
+fn default_attention_tolerance() -> f64 {
+    0.01
 }
 
 /// Profile CI configuration (PMAT-192)
@@ -849,5 +929,90 @@ trace_payload:
     #[test]
     fn test_default_measure() {
         assert_eq!(default_measure(), 10);
+    }
+
+    #[test]
+    fn test_playbook_with_fingerprint() {
+        let yaml = r#"
+name: fingerprint-test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+differential_tests:
+  fingerprint:
+    enabled: true
+    tensors: "embed,lm_head"
+    stats: ["mean", "std", "checksum"]
+    gates: ["F-ROSETTA-FP-001", "F-ROSETTA-FP-002"]
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let diff = playbook
+            .differential_tests
+            .expect("Should have differential tests");
+
+        let fp = diff.fingerprint.expect("Should have fingerprint");
+        assert!(fp.enabled);
+        assert_eq!(fp.tensors, "embed,lm_head");
+        assert_eq!(fp.stats.len(), 3);
+        assert_eq!(fp.gates.len(), 2);
+    }
+
+    #[test]
+    fn test_playbook_with_validate_stats() {
+        let yaml = r#"
+name: validate-stats-test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+differential_tests:
+  validate_stats:
+    enabled: true
+    reference: "reference.json"
+    tolerance:
+      layernorm: 0.001
+      embedding: 0.1
+      attention: 0.01
+    gates: ["F-ROSETTA-STATS-001", "F-ROSETTA-STATS-002"]
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let diff = playbook
+            .differential_tests
+            .expect("Should have differential tests");
+
+        let stats = diff.validate_stats.expect("Should have validate_stats");
+        assert!(stats.enabled);
+        assert_eq!(stats.reference, Some("reference.json".to_string()));
+        assert!((stats.tolerance.layernorm - 0.001).abs() < 1e-10);
+        assert!((stats.tolerance.embedding - 0.1).abs() < 1e-10);
+        assert!((stats.tolerance.attention - 0.01).abs() < 1e-10);
+        assert_eq!(stats.gates.len(), 2);
+    }
+
+    #[test]
+    fn test_default_fingerprint_tensors() {
+        assert_eq!(default_fingerprint_tensors(), "all");
+    }
+
+    #[test]
+    fn test_default_fingerprint_stats() {
+        let stats = default_fingerprint_stats();
+        assert_eq!(stats.len(), 5);
+        assert!(stats.contains(&"mean".to_string()));
+        assert!(stats.contains(&"checksum".to_string()));
+    }
+
+    #[test]
+    fn test_default_tolerance_values() {
+        assert!((default_layernorm_tolerance() - 0.001).abs() < 1e-10);
+        assert!((default_embedding_tolerance() - 0.1).abs() < 1e-10);
+        assert!((default_attention_tolerance() - 0.01).abs() < 1e-10);
     }
 }

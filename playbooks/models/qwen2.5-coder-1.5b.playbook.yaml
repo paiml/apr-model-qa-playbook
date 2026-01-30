@@ -84,6 +84,27 @@ differential_tests:
       - F-ROSETTA-INF-001   # Argmax match
       - F-ROSETTA-INF-002   # Logit diff within tolerance
 
+  # Rosetta fingerprint - statistical corruption detection (PMAT-201)
+  fingerprint:
+    enabled: true
+    tensors: "all"
+    stats: ["mean", "std", "min", "max", "checksum"]
+    gates:
+      - F-ROSETTA-FP-001    # No NaN/Inf in tensor stats
+      - F-ROSETTA-FP-002    # Checksum matches reference
+
+  # Rosetta validate-stats - anomaly detection (PMAT-202)
+  validate_stats:
+    enabled: true
+    reference: "qwen2.5-coder-1.5b-reference.json"
+    tolerance:
+      layernorm: 0.001      # Strict for normalization
+      embedding: 0.1        # Loose for embeddings
+      attention: 0.01       # Medium for attention
+    gates:
+      - F-ROSETTA-STATS-001 # LayerNorm within tolerance
+      - F-ROSETTA-STATS-002 # Embedding deviation acceptable
+
 # Profile CI Assertions (PMAT-192)
 profile_ci:
   enabled: true

@@ -15,7 +15,9 @@
 - **feat(differential):** Add Rosetta differential testing (GH-188, PMAT-114)
   - `apr rosetta diff-tensors`: Tensor layout mismatch detection
   - `apr rosetta compare-inference`: Token-by-token inference comparison
-  - Gates: F-ROSETTA-DIFF-001/002, F-ROSETTA-INF-001/002
+  - `apr rosetta fingerprint`: Per-tensor statistics (PMAT-201, JAX-STAT-001)
+  - `apr rosetta validate-stats`: Role-specific validation (PMAT-202)
+  - Gates: F-ROSETTA-DIFF/INF/FP/STATS-*
 - **feat(profile):** Add CI assertion mode (PMAT-192)
   - `apr profile --ci --assert-throughput --assert-p99 --assert-p50`
   - Differential benchmarking: `apr profile A B --diff-benchmark`
@@ -35,8 +37,8 @@
 - **docs(spec):** Add sections 12.6-12.7 implementation documentation
   - PatternDetector with 12 heuristics (12.6)
   - DifferentialExecutor with Rosetta integration (12.7)
-- **Total gates:** 207 unique gate IDs documented
-- **Tests:** 518 passing (227 in apr-qa-runner)
+- **Total gates:** 214 unique gate IDs documented
+- **Tests:** 523 passing (232 in apr-qa-runner)
 
 ### v1.2.0 (2026-01-30)
 - Initial bug classification gates
@@ -2115,6 +2117,91 @@ apr trace model.apr --reference model.gguf --diff
 | **F-TRACE-PAYLOAD-003** | Layer outputs within expected range | P1 |
 | **F-TRACE-DIFF-001** | Layer cosine similarity > 0.99 vs reference | P1 |
 
+#### 6.6.8 Rosetta Fingerprint (PMAT-201, JAX-STAT-001)
+
+Per-tensor statistical fingerprinting for corruption detection:
+
+```bash
+# Generate fingerprint for a model
+apr rosetta fingerprint model.gguf --output fp.json
+# Output:
+# FINGERPRINT REPORT (PMAT-201)
+# ════════════════════════════════════════════════════════════
+# token_embd.weight [32000, 4096]
+#   mean: 0.00012, std: 0.0234, min: -0.891, max: 0.892
+#   percentiles: p5=-0.042, p50=0.0001, p95=0.041
+#   checksum: 0x7a3f9c2e
+# output_norm.weight [4096]
+#   mean: 0.999, std: 0.012, min: 0.962, max: 1.041
+#   checksum: 0x1b4e8d3a
+# ════════════════════════════════════════════════════════════
+# Total tensors: 291, Total size: 1.6GB
+
+# Compare fingerprints
+apr rosetta fingerprint --diff fp_before.json fp_after.json
+# Highlights statistical deviations
+```
+
+**Corruption Detection:**
+- NaN/Inf values in any tensor
+- Checksum mismatches after conversion
+- Statistical anomalies (std=0, mean drift)
+- Silent weight corruption (GH-186 class bugs)
+
+**Falsification Gates:**
+
+| Gate ID | Assertion | Severity |
+|---------|-----------|----------|
+| **F-ROSETTA-FP-001** | No NaN/Inf in tensor statistics | P0 |
+| **F-ROSETTA-FP-002** | Checksum matches reference | P0 |
+| **F-ROSETTA-FP-003** | Statistical deviation within tolerance | P1 |
+
+#### 6.6.9 Rosetta Validate-Stats (PMAT-202)
+
+Role-specific statistical validation against reference:
+
+```bash
+# Validate model stats against reference
+apr rosetta validate-stats model.apr --reference qwen-ref.json
+# Output:
+# STATS VALIDATION REPORT (PMAT-202)
+# ════════════════════════════════════════════════════════════
+# Role: LayerNorm (strict tolerance: 0.001)
+#   model.layers.0.input_layernorm.weight: ✓ PASS (dev: 0.0002)
+#   model.layers.0.post_attention_layernorm.weight: ✓ PASS (dev: 0.0001)
+# Role: Embedding (loose tolerance: 0.1)
+#   model.embed_tokens.weight: ✓ PASS (dev: 0.023)
+# Role: Attention (medium tolerance: 0.01)
+#   model.layers.0.self_attn.q_proj.weight: ✓ PASS (dev: 0.0045)
+# ════════════════════════════════════════════════════════════
+# Result: 291/291 tensors VALID
+
+# With custom tolerances
+apr rosetta validate-stats model.apr --reference ref.json \
+    --layernorm-tol 0.0001 \
+    --embedding-tol 0.05 \
+    --attention-tol 0.005
+```
+
+**Role-Specific Tolerances:**
+
+| Role | Default Tolerance | Rationale |
+|------|-------------------|-----------|
+| LayerNorm | 0.001 | Normalization must be precise |
+| Embedding | 0.1 | Large matrices, small variations expected |
+| Attention | 0.01 | QKV projections, medium sensitivity |
+| FFN | 0.01 | Feed-forward weights |
+| LM Head | 0.05 | Output projection, tied with embeddings |
+
+**Falsification Gates:**
+
+| Gate ID | Assertion | Severity |
+|---------|-----------|----------|
+| **F-ROSETTA-STATS-001** | LayerNorm tensors within tolerance | P0 |
+| **F-ROSETTA-STATS-002** | Embedding deviation acceptable | P1 |
+| **F-ROSETTA-STATS-003** | Attention weights within tolerance | P1 |
+| **F-ROSETTA-STATS-004** | All tensors validated | P1 |
+
 ---
 
 ### 7.7 Consolidated Gate Registry
@@ -2141,6 +2228,8 @@ All gates from all specs, unified:
 | `F-ERR-*` | GH-187 | 2 | E8 |
 | `F-SEC-*` | GH-187 | 2 | E9 |
 | `F-ROSETTA-*` | GH-188/PMAT-114 | 4 | B6-B9 |
+| `F-ROSETTA-FP-*` | PMAT-201/JAX-STAT-001 | 3 | B10-B12 |
+| `F-ROSETTA-STATS-*` | PMAT-202 | 4 | B13-B16 |
 | `F-PROFILE-CI-*` | PMAT-192 | 3 | D1-D3 |
 | `F-PROFILE-DIFF-*` | PMAT-192 | 2 | D4-D5 |
 | `F-TRACE-PAYLOAD-*` | APR-TRACE-001 | 3 | E1-E3 |
@@ -2684,6 +2773,54 @@ properties:
           tolerance:
             type: number
             default: 1e-5
+          gates:
+            type: array
+            items:
+              type: string
+      # v1.3.0: Fingerprint (PMAT-201)
+      fingerprint:
+        type: object
+        description: "Per-tensor statistical fingerprinting"
+        properties:
+          enabled:
+            type: boolean
+            default: true
+          tensors:
+            type: string
+            default: "all"
+            description: "Tensors to fingerprint ('all' or comma-separated)"
+          stats:
+            type: array
+            items:
+              type: string
+            default: ["mean", "std", "min", "max", "checksum"]
+          gates:
+            type: array
+            items:
+              type: string
+      # v1.3.0: Validate Stats (PMAT-202)
+      validate_stats:
+        type: object
+        description: "Role-specific statistical validation"
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          reference:
+            type: string
+            description: "Reference file for comparison"
+          tolerance:
+            type: object
+            properties:
+              layernorm:
+                type: number
+                default: 0.001
+              embedding:
+                type: number
+                default: 0.1
+              attention:
+                type: number
+                default: 0.01
           gates:
             type: array
             items:
