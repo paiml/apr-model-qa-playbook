@@ -2650,6 +2650,91 @@ properties:
         severity:
           enum: [P0, P1, P2]
           default: P1
+
+  # v1.3.0: Differential Testing Configuration
+  differential_tests:
+    type: object
+    description: "Rosetta differential testing configuration"
+    properties:
+      tensor_diff:
+        type: object
+        properties:
+          enabled:
+            type: boolean
+            default: true
+          filter:
+            type: string
+            description: "Tensor name filter (e.g., 'embed,lm_head')"
+          gates:
+            type: array
+            items:
+              type: string
+      inference_compare:
+        type: object
+        properties:
+          enabled:
+            type: boolean
+            default: true
+          prompt:
+            type: string
+            description: "Test prompt for inference comparison"
+          max_tokens:
+            type: integer
+            default: 10
+          tolerance:
+            type: number
+            default: 1e-5
+          gates:
+            type: array
+            items:
+              type: string
+
+  # v1.3.0: Profile CI Configuration
+  profile_ci:
+    type: object
+    description: "CI mode performance assertions"
+    properties:
+      enabled:
+        type: boolean
+        default: false
+      warmup:
+        type: integer
+        default: 3
+      measure:
+        type: integer
+        default: 10
+      assertions:
+        type: object
+        properties:
+          min_throughput:
+            type: number
+            description: "Minimum tokens/second required"
+          max_p99_ms:
+            type: number
+            description: "Maximum P99 latency in milliseconds"
+          max_p50_ms:
+            type: number
+            description: "Maximum P50 latency in milliseconds"
+      gates:
+        type: array
+        items:
+          type: string
+
+  # v1.3.0: Trace Payload Configuration
+  trace_payload:
+    type: object
+    description: "Real forward pass with anomaly detection"
+    properties:
+      enabled:
+        type: boolean
+        default: true
+      prompt:
+        type: string
+        description: "Test prompt for trace payload"
+      gates:
+        type: array
+        items:
+          type: string
 ```
 
 ### 9.2 Example Playbook
@@ -2754,6 +2839,35 @@ state_machine:
       on_enter:
         - action: "record_evidence('FALSIFIED')"
         - action: "stop_line"  # Jidoka: halt pipeline
+
+# v1.3.0: Differential Testing Configuration
+differential_tests:
+  tensor_diff:
+    enabled: true
+    filter: "embed,lm_head"
+    gates: ["F-ROSETTA-DIFF-001", "F-ROSETTA-DIFF-002"]
+  inference_compare:
+    enabled: true
+    prompt: "What is 2+2?"
+    max_tokens: 10
+    tolerance: 1e-5
+    gates: ["F-ROSETTA-INF-001"]
+
+# v1.3.0: Profile CI Configuration
+profile_ci:
+  enabled: true
+  warmup: 3
+  measure: 10
+  assertions:
+    min_throughput: 5.0
+    max_p99_ms: 800
+  gates: ["F-PROFILE-CI-001", "F-PROFILE-CI-002"]
+
+# v1.3.0: Trace Payload Configuration
+trace_payload:
+  enabled: true
+  prompt: "Explain what a neural network is."
+  gates: ["F-TRACE-PAYLOAD-001", "F-TRACE-PAYLOAD-002"]
 
 falsification_gates:
   - id: F-QUAL-001
