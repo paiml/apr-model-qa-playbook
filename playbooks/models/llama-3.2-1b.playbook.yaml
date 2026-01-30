@@ -58,9 +58,14 @@ oracles:
 failure_policy: stop_on_p0
 
 property_tests:
-  enabled: true
-  cases: 100
-  max_shrink_iters: 1000
+  - name: arithmetic_correctness
+    generator: "arithmetic(a: i32, b: i32, op: +|-|*)"
+    oracle: "eval(a op b) == parse_int(output)"
+    count: 50
+  - name: general_qa
+    generator: "qa_prompt()"
+    oracle: "is_coherent(output)"
+    count: 50
 
 # Differential Testing (v1.3.0)
 differential_tests:

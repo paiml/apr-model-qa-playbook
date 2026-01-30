@@ -59,9 +59,14 @@ oracles:
 failure_policy: stop_on_p0
 
 property_tests:
-  enabled: true
-  cases: 100
-  max_shrink_iters: 1000
+  - name: arithmetic_correctness
+    generator: "arithmetic(a: i32, b: i32, op: +|-|*)"
+    oracle: "eval(a op b) == parse_int(output)"
+    count: 50
+  - name: code_generation
+    generator: "code_prompt(lang: python|rust|go|js)"
+    oracle: "is_valid_syntax(output, lang)"
+    count: 50
 
 # Differential Testing (v1.3.0)
 differential_tests:
