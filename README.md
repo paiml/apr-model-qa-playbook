@@ -59,6 +59,17 @@ We don't test to pass—we **test to fail**. No amount of passing tests proves c
 - **JUnit XML and HTML reports** for CI/CD integration
 - **Playbook YAML format** with JSON Schema validation
 - **1.8M+ test assertions** across all model/format/backend combinations
+- **82+ falsification gates** across conversion, inference, and security domains
+
+### New in v1.3.0
+
+| Feature | Description |
+|---------|-------------|
+| **Rosetta Differential Testing** | Tensor layout mismatch detection, token-by-token inference comparison |
+| **Profile CI Mode** | Performance assertions for CI/CD (`--assert-throughput`, `--assert-p99`) |
+| **Trace Payload Mode** | Real forward pass with NaN/Inf and garbage output detection |
+| **Bug Pattern Detection** | 12 cross-project patterns from aprender/realizar analysis |
+| **Bug Classification** | 6 conversion bug types (tokenizer missing, embedding transposition, etc.) |
 
 ## Quick Start
 
@@ -102,9 +113,18 @@ cargo run --bin apr-qa -- run playbooks/models/*.yaml --workers 8
 | Crate | Purpose |
 |-------|---------|
 | `apr-qa-gen` | Scenario generation with proptest, oracle definitions |
-| `apr-qa-runner` | Playbook execution with Rayon parallelism |
+| `apr-qa-runner` | Playbook execution, differential testing, bug patterns |
 | `apr-qa-report` | MQS scoring, JUnit/HTML report generation |
 | `apr-qa-cli` | Command-line interface |
+
+### Key Modules (apr-qa-runner)
+
+| Module | Purpose |
+|--------|---------|
+| `conversion.rs` | Format conversion testing with bug classification |
+| `differential.rs` | Rosetta diff-tensors, compare-inference, profile CI |
+| `patterns.rs` | Cross-project bug pattern detection (12 patterns) |
+| `process.rs` | Jidoka process lifecycle management |
 
 ## Test Matrix
 
@@ -169,6 +189,29 @@ scenarios:
     prompt: "Write a Python function to reverse a string"
     oracle: code_syntax
     language: python
+
+# Differential Testing (v1.3.0)
+differential_tests:
+  tensor_diff:
+    enabled: true
+    filter: "embed,lm_head"
+    gates: ["F-ROSETTA-DIFF-001"]
+  inference_compare:
+    enabled: true
+    prompt: "What is 2+2?"
+    tolerance: 1e-5
+
+# Profile CI Assertions (v1.3.0)
+profile_ci:
+  enabled: true
+  assertions:
+    min_throughput: 10.0  # tok/s
+    max_p99_ms: 500       # ms
+
+# Trace Payload (v1.3.0)
+trace_payload:
+  enabled: true
+  gates: ["F-TRACE-PAYLOAD-001", "F-TRACE-PAYLOAD-002"]
 ```
 
 ## Project Structure
