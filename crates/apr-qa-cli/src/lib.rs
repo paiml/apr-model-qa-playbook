@@ -279,6 +279,8 @@ pub fn build_execution_config(config: &PlaybookRunConfig) -> Result<ExecutionCon
         run_differential_tests: config.run_differential_tests,
         run_profile_ci: config.run_profile_ci,
         run_trace_payload: config.run_trace_payload,
+        run_golden_rule_test: config.subprocess, // Auto-enable when subprocess mode
+        golden_reference_path: None,
     })
 }
 

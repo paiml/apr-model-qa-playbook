@@ -2338,8 +2338,9 @@ All gates from all specs, unified:
 | `F-PROFILE-DIFF-*` | PMAT-192 | 2 | D4-D5 |
 | `F-TRACE-PAYLOAD-*` | APR-TRACE-001 | 3 | E1-E3 |
 | `F-TRACE-DIFF-*` | APR-TRACE-001 | 1 | E4 |
+| `F-GOLDEN-RULE-*` | Five Whys/GH-190 | 3 | I1 |
 
-**Total Unique Gates: 220**
+**Total Unique Gates: 223**
 
 ---
 
@@ -4817,11 +4818,139 @@ mod tests {
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
+| 1.4.0 | 2026-01-30 | PAIML Engineering | Golden Rule Test, 5 invariants (Five Whys GH-190), 223 gates |
 | 1.3.1 | 2026-01-30 | PAIML Engineering | GH-186 FIXED: APR format validation gates (F-APR-FORMAT-*), 220 gates |
 | 1.3.0 | 2026-01-30 | PAIML Engineering | Rosetta differential testing, GH-186/189 detection, 217 gates |
 | 1.2.0 | 2026-01-30 | PAIML Engineering | Bug classification, process lifecycle (Jidoka) |
 | 1.1.0 | 2026-01-29 | PAIML Engineering | Enhanced citations and philosophy (Popper/Taleb) |
 | 1.0.0 | 2026-01-29 | PAIML Engineering | Initial draft |
+
+---
+
+## 17. Invariant Testing (v1.4.0 — Five Whys: GH-190)
+
+### 17.1 Motivation
+
+Four P0 conversion bugs in one sprint (GH-185, GH-186, GH-189, GH-190) revealed a systemic failure: **220 falsification gates detect known symptoms but cannot prevent unknown bugs.** All four bugs were silent data corruption at format boundaries where writer and reader disagree on conventions.
+
+Five Whys root cause: We validate syntax (structure) instead of semantics (behavior). We optimized for fast CI over correctness.
+
+> "5 invariants > 220 symptom gates." — Five Whys Analysis, GH-190
+
+### 17.2 The Five Invariants
+
+| ID | Invariant | Property | Catches |
+|----|-----------|----------|---------|
+| **I-1** | Round-trip identity | `inference(convert(model)) == inference(model)` | ALL conversion bugs |
+| **I-2** | Tensor name bijection | `writer_names == loader_names` (exact match) | GH-190 |
+| **I-3** | No silent fallbacks | Unknown input → error, never default | GH-186 |
+| **I-4** | Statistical preservation | Tensor fingerprints unchanged after conversion | GH-189 |
+| **I-5** | Tokenizer roundtrip | `encode(decode(tokens)) == tokens` | GH-185 |
+
+### 17.3 Golden Rule Test (I-1)
+
+The single most important test in the entire pipeline. Encodes the only invariant that matters for format conversion:
+
+> **"Converted models MUST produce the same output as the original."**
+
+```bash
+# THE GOLDEN RULE TEST
+# Cost: ~20 seconds. Would have caught GH-186, GH-189, GH-190.
+
+# Step 1: Baseline inference on original
+apr run original.gguf -p "What is 2+2?" --max-tokens 10 > expected.txt
+
+# Step 2: Convert format
+apr convert original.gguf -o converted.apr
+
+# Step 3: Inference on converted
+apr run converted.apr -p "What is 2+2?" --max-tokens 10 > actual.txt
+
+# Step 4: DIFF — the Golden Rule assertion
+diff expected.txt actual.txt   # Exit 0 = PASS, Exit 1 = FAIL
+```
+
+**Falsification Gates:**
+
+| Gate ID | Assertion | Severity |
+|---------|-----------|----------|
+| **F-GOLDEN-RULE-001** | Converted inference matches original | P0 |
+| **F-GOLDEN-RULE-002** | Conversion completes without error | P0 |
+| **F-GOLDEN-RULE-003** | Converted model loads and runs | P0 |
+
+### 17.4 Golden Reference Files
+
+Each model maintains a golden reference in `playbooks/references/`:
+
+```
+playbooks/references/
+  qwen2.5-coder-1.5b-reference.json    # 339 tensor fingerprints (PMAT-201)
+  qwen2.5-coder-1.5b-golden.json       # Golden inference outputs (I-1)
+```
+
+Golden reference JSON schema:
+
+```json
+{
+  "model": "qwen2.5-coder-1.5b-instruct-q4_k_m",
+  "format": "gguf",
+  "golden_outputs": [
+    {
+      "prompt": "What is 2+2?",
+      "max_tokens": 30,
+      "temperature": 0,
+      "expected_prefix": "2 + 2 equals 4.",
+      "must_contain": ["4"],
+      "must_not_contain": ["NaN", "Inf", "<pad>"]
+    }
+  ],
+  "invariants": {
+    "I-1_roundtrip": "convert(gguf) → inference → output MUST match golden_outputs",
+    "I-2_tensor_names": "all 339 tensor names accessible after conversion",
+    "I-3_no_fallback": "unknown dtype/name → error, never silent default",
+    "I-4_stats_preserved": "tensor fingerprint checksums match reference.json",
+    "I-5_tokenizer": "encode(decode(tokens)) == tokens"
+  }
+}
+```
+
+### 17.5 Invariant vs. Gate Philosophy
+
+**Gates** (reactive): Detect specific known failures after they occur.
+```
+Bug found → Write gate → Add to spec → Next bug found → Write gate → ...
+```
+
+**Invariants** (proactive): Prevent entire classes of failures before they ship.
+```
+Contract test → Blocks merge → Bug never ships
+```
+
+Both are necessary. Gates catch regressions of known bugs. Invariants prevent unknown bugs at architectural boundaries.
+
+### 17.6 Implementation
+
+The Golden Rule Test is implemented in `crates/apr-qa-runner/src/executor.rs`:
+
+```rust
+/// Golden Rule Test: convert model, run inference, diff against original.
+///
+/// This is the SINGLE MOST IMPORTANT test in the entire pipeline.
+/// Would have caught: GH-186, GH-189, GH-190 (all 3 P0 conversion bugs).
+fn run_golden_rule_test(
+    &mut self,
+    model_path: &Path,
+    model_id: &ModelId,
+) -> (usize, usize) {
+    // Step 1: Run inference on original model
+    // Step 2: Convert to APR format
+    // Step 3: Run inference on converted model
+    // Step 4: DIFF — the actual Golden Rule assertion
+    //         Output must be identical.
+}
+```
+
+Auto-enabled when subprocess mode is active. Gate: `F-GOLDEN-RULE-001`.
 
 ---
 

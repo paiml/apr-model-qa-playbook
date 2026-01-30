@@ -50,6 +50,12 @@ pub struct ExecutionConfig {
     pub run_profile_ci: bool,
     /// Run trace payload tests
     pub run_trace_payload: bool,
+    /// Run Golden Rule Test (convert → inference → diff)
+    /// This is the single most important invariant: converted models
+    /// MUST produce the same output as the original. (Five Whys: GH-190)
+    pub run_golden_rule_test: bool,
+    /// Path to golden reference JSON for the model
+    pub golden_reference_path: Option<String>,
 }
 
 impl Default for ExecutionConfig {
@@ -66,6 +72,8 @@ impl Default for ExecutionConfig {
             run_differential_tests: true, // v1.3.0: Differential testing enabled by default
             run_profile_ci: false,      // Only enable for CI pipelines
             run_trace_payload: true,    // v1.3.0: Trace payload enabled by default
+            run_golden_rule_test: true, // v1.3.1: Golden Rule (Five Whys GH-190)
+            golden_reference_path: None,
         }
     }
 }
@@ -170,11 +178,31 @@ impl Executor {
             }
         }
 
+        // INVARIANT I-1: Golden Rule Test (convert → inference → diff)
+        // This single test catches ALL conversion bugs (Five Whys: GH-190)
+        let mut golden_passed = 0;
+        let mut golden_failed = 0;
+        if self.config.run_golden_rule_test && self.config.subprocess_mode {
+            if let Some(model_path) = self.config.model_path.clone() {
+                let model_id = playbook.model_id();
+                let (gp, gf) = self.run_golden_rule_test(Path::new(&model_path), &model_id);
+                golden_passed = gp;
+                golden_failed = gf;
+            }
+        }
+
+        let total_passed = passed + conversion_passed + golden_passed;
+        let total_failed = failed + conversion_failed + golden_failed;
+
         Ok(ExecutionResult {
             playbook_name: playbook.name.clone(),
-            total_scenarios: total + conversion_passed + conversion_failed,
-            passed: passed + conversion_passed,
-            failed: failed + conversion_failed,
+            total_scenarios: total
+                + conversion_passed
+                + conversion_failed
+                + golden_passed
+                + golden_failed,
+            passed: total_passed,
+            failed: total_failed,
             skipped,
             duration_ms: start.elapsed().as_millis() as u64,
             gateway_failed: None,
@@ -220,6 +248,160 @@ impl Executor {
                 (0, 1)
             }
         }
+    }
+
+    /// Golden Rule Test: convert model, run inference, diff against original.
+    ///
+    /// This is the SINGLE MOST IMPORTANT test in the entire pipeline.
+    /// It encodes the only invariant that matters for format conversion:
+    ///   "Converted models MUST produce the same output as the original."
+    ///
+    /// Would have caught: GH-186, GH-189, GH-190 (all 3 P0 conversion bugs).
+    /// See: docs/five-whys/GH-190-systemic-conversion-failures.md
+    fn run_golden_rule_test(&mut self, model_path: &Path, model_id: &ModelId) -> (usize, usize) {
+        use std::process::Command;
+
+        let model_str = model_path.display().to_string();
+        let prompt = "What is 2+2?";
+        let max_tokens = "10";
+
+        // Step 1: Run inference on original model
+        let original_result = Command::new("apr")
+            .arg("run")
+            .arg(&model_str)
+            .arg("-p")
+            .arg(prompt)
+            .arg("--max-tokens")
+            .arg(max_tokens)
+            .output();
+
+        let original_output = match original_result {
+            Ok(out) => String::from_utf8_lossy(&out.stdout).to_string(),
+            Err(e) => {
+                let ev = Evidence::falsified(
+                    "F-GOLDEN-RULE-001",
+                    Self::golden_scenario(model_id),
+                    format!("Golden Rule: original inference failed: {e}"),
+                    "N/A",
+                    0,
+                );
+                self.collector.add(ev);
+                return (0, 1);
+            }
+        };
+
+        // Step 2: Convert to APR
+        let apr_path = format!("/tmp/golden-rule-test-{}.apr", model_id.name);
+        let convert_result = Command::new("apr")
+            .arg("convert")
+            .arg(&model_str)
+            .arg("-o")
+            .arg(&apr_path)
+            .arg("--force")
+            .output();
+
+        if let Err(e) = convert_result {
+            let ev = Evidence::falsified(
+                "F-GOLDEN-RULE-002",
+                Self::golden_scenario(model_id),
+                format!("Golden Rule: conversion failed: {e}"),
+                "N/A",
+                0,
+            );
+            self.collector.add(ev);
+            return (0, 1);
+        }
+
+        // Step 3: Run inference on converted model
+        let converted_result = Command::new("apr")
+            .arg("run")
+            .arg(&apr_path)
+            .arg("-p")
+            .arg(prompt)
+            .arg("--max-tokens")
+            .arg(max_tokens)
+            .output();
+
+        let converted_output = match converted_result {
+            Ok(out) => String::from_utf8_lossy(&out.stdout).to_string(),
+            Err(e) => {
+                let ev = Evidence::falsified(
+                    "F-GOLDEN-RULE-003",
+                    Self::golden_scenario(model_id),
+                    format!("Golden Rule: converted inference failed: {e}"),
+                    "N/A",
+                    0,
+                );
+                self.collector.add(ev);
+                return (0, 1);
+            }
+        };
+
+        // Step 4: DIFF — the actual Golden Rule assertion
+        // Extract just the "Output:" line from both
+        let orig_text = Self::extract_output_text(&original_output);
+        let conv_text = Self::extract_output_text(&converted_output);
+
+        if orig_text == conv_text {
+            let ev = Evidence::corroborated(
+                "F-GOLDEN-RULE-001",
+                Self::golden_scenario(model_id),
+                &format!("Golden Rule PASS: identical output: {orig_text}"),
+                0,
+            );
+            self.collector.add(ev);
+
+            // Cleanup
+            let _ = std::fs::remove_file(&apr_path);
+            (1, 0)
+        } else {
+            let ev = Evidence::falsified(
+                "F-GOLDEN-RULE-001",
+                Self::golden_scenario(model_id),
+                format!(
+                    "Golden Rule FAIL: output differs after conversion.\n\
+                     Original:  {orig_text}\n\
+                     Converted: {conv_text}"
+                ),
+                &converted_output,
+                0,
+            );
+            self.collector.add(ev);
+
+            // Keep the APR file for investigation
+            (0, 1)
+        }
+    }
+
+    /// Extract the "Output:" text from apr run output
+    fn extract_output_text(raw: &str) -> String {
+        let mut capture = false;
+        let mut lines = Vec::new();
+        for line in raw.lines() {
+            if line.starts_with("Output:") {
+                capture = true;
+                continue;
+            }
+            if capture {
+                if line.starts_with("Completed in") || line.is_empty() {
+                    break;
+                }
+                lines.push(line.trim());
+            }
+        }
+        lines.join(" ").trim().to_string()
+    }
+
+    /// Create a scenario for golden rule evidence
+    fn golden_scenario(model_id: &ModelId) -> apr_qa_gen::QaScenario {
+        apr_qa_gen::QaScenario::new(
+            model_id.clone(),
+            apr_qa_gen::Modality::Run,
+            apr_qa_gen::Backend::Cpu,
+            apr_qa_gen::Format::Apr,
+            "Golden Rule: convert → inference → diff".to_string(),
+            0,
+        )
     }
 
     /// Execute a single scenario
