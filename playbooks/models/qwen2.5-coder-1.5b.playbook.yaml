@@ -83,6 +83,7 @@ differential_tests:
     gates:
       - F-ROSETTA-INF-001   # Argmax match
       - F-ROSETTA-INF-002   # Logit diff within tolerance
+      - F-ROSETTA-INF-003   # No PAD token flood (GH-186)
 
   # Rosetta fingerprint - statistical corruption detection (PMAT-201)
   fingerprint:
@@ -104,6 +105,8 @@ differential_tests:
     gates:
       - F-ROSETTA-STATS-001 # LayerNorm within tolerance
       - F-ROSETTA-STATS-002 # Embedding deviation acceptable
+      - F-ROSETTA-STATS-005 # LayerNorm mean ≈ 1.0 (not 0.0)
+      - F-ROSETTA-STATS-006 # LayerNorm std > 0.0 (not zeroed)
 
 # Profile CI Assertions (PMAT-192)
 profile_ci:
