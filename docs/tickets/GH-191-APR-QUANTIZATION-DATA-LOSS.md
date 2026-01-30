@@ -374,6 +374,12 @@ apr convert model.gguf -o model.apr --quantize q4k     → 1.04 GiB (Q4K preserv
 
 Even with `--quantize q4k`, the inference still produces garbage (`"3,}, helf helf.How helf"`), though the model loads with correct quantization counts (197 quantized, 112 F32). This suggests a **third layer** to the conversion bug beyond naming (GH-190) and dtype mapping (GH-191) — possibly a Q4_K dequantization kernel bug or tensor shape/transpose issue in the APR GPU loader.
 
+### External Confirmation: aprender#189
+
+[paiml/aprender#189](https://github.com/paiml/aprender/issues/189) independently confirms the third onion layer. User ran `apr chat` with `qwen2.5-1.5b-instruct-q4_k_m.apr` and got pure "VILLEVILLEVILLEVILLE..." repetition. Their load trace shows `197 quantized, 112 F32 tensors` — dtype mapping is correct, but inference is still garbage. This matches our `--quantize q4k` finding exactly.
+
+The bug is NOT in the dtype mapping (fixed) or naming (fixed). It's in the **Q4_K inference path** — the CUDA dequantization kernel, tensor shape handling, or block alignment during matmul.
+
 ### What Must Happen Before Re-Qualification
 
 1. GH-190 naming fix (PMAT-205) — ✅ DONE
