@@ -64,6 +64,49 @@ property_tests:
     oracle: "is_valid_syntax(output, lang)"
     count: 50
 
+# Differential Testing (GH-188, PMAT-114, PMAT-192)
+differential_tests:
+  # Rosetta tensor diff - detect layout mismatches
+  tensor_diff:
+    enabled: true
+    filter: "embed,lm_head"
+    gates:
+      - F-ROSETTA-DIFF-001  # No transposed dimensions
+      - F-ROSETTA-DIFF-002  # Shapes match after conversion
+
+  # Rosetta inference comparison - token-by-token
+  inference_compare:
+    enabled: true
+    prompt: "What is 2+2?"
+    max_tokens: 10
+    tolerance: 1e-5
+    gates:
+      - F-ROSETTA-INF-001   # Argmax match
+      - F-ROSETTA-INF-002   # Logit diff within tolerance
+
+# Profile CI Assertions (PMAT-192)
+profile_ci:
+  enabled: true
+  warmup: 3
+  measure: 10
+  assertions:
+    min_throughput: 5.0     # tok/s (CPU baseline)
+    max_p99_ms: 500         # 500ms max p99 latency
+    max_p50_ms: 200         # 200ms max p50 latency
+  gates:
+    - F-PROFILE-CI-001      # Throughput meets minimum
+    - F-PROFILE-CI-002      # p99 within limit
+    - F-PROFILE-CI-003      # p50 within limit
+
+# Trace Payload Testing (APR-TRACE-001)
+trace_payload:
+  enabled: true
+  prompt: "Write a Python function to add two numbers."
+  gates:
+    - F-TRACE-PAYLOAD-001   # No NaN/Inf in any layer
+    - F-TRACE-PAYLOAD-002   # No garbage output
+    - F-TRACE-PAYLOAD-003   # Layer outputs in range
+
 metadata:
   author: "apr-qa-gen"
   architecture: "qwen2"

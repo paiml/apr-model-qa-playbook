@@ -29,6 +29,15 @@ pub struct Playbook {
     /// State machine definition (optional)
     #[serde(default)]
     pub state_machine: Option<StateMachine>,
+    /// Differential tests (GH-188, PMAT-114)
+    #[serde(default)]
+    pub differential_tests: Option<DifferentialTestConfig>,
+    /// Profile CI assertions (PMAT-192)
+    #[serde(default)]
+    pub profile_ci: Option<ProfileCiConfig>,
+    /// Trace payload testing (APR-TRACE-001)
+    #[serde(default)]
+    pub trace_payload: Option<TracePayloadConfig>,
 }
 
 impl Playbook {
@@ -291,6 +300,115 @@ pub struct PlaybookStep {
 
 fn default_timeout() -> u64 {
     60000 // 60 seconds
+}
+
+/// Differential test configuration (GH-188, PMAT-114)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DifferentialTestConfig {
+    /// Tensor diff configuration
+    #[serde(default)]
+    pub tensor_diff: Option<TensorDiffConfig>,
+    /// Inference comparison configuration
+    #[serde(default)]
+    pub inference_compare: Option<InferenceCompareConfig>,
+}
+
+/// Tensor diff configuration
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TensorDiffConfig {
+    /// Enable tensor diff
+    #[serde(default)]
+    pub enabled: bool,
+    /// Filter pattern for tensor names
+    #[serde(default)]
+    pub filter: Option<String>,
+    /// Gates to verify
+    #[serde(default)]
+    pub gates: Vec<String>,
+}
+
+/// Inference comparison configuration
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InferenceCompareConfig {
+    /// Enable inference comparison
+    #[serde(default)]
+    pub enabled: bool,
+    /// Prompt to use for comparison
+    #[serde(default)]
+    pub prompt: Option<String>,
+    /// Maximum tokens to generate
+    #[serde(default = "default_max_tokens")]
+    pub max_tokens: usize,
+    /// Tolerance for logit comparison
+    #[serde(default = "default_tolerance")]
+    pub tolerance: f64,
+    /// Gates to verify
+    #[serde(default)]
+    pub gates: Vec<String>,
+}
+
+fn default_max_tokens() -> usize {
+    10
+}
+
+fn default_tolerance() -> f64 {
+    1e-5
+}
+
+/// Profile CI configuration (PMAT-192)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProfileCiConfig {
+    /// Enable profile CI
+    #[serde(default)]
+    pub enabled: bool,
+    /// Warmup iterations
+    #[serde(default = "default_warmup")]
+    pub warmup: usize,
+    /// Measurement iterations
+    #[serde(default = "default_measure")]
+    pub measure: usize,
+    /// Assertions to verify
+    #[serde(default)]
+    pub assertions: ProfileCiAssertions,
+    /// Gates to verify
+    #[serde(default)]
+    pub gates: Vec<String>,
+}
+
+fn default_warmup() -> usize {
+    3
+}
+
+fn default_measure() -> usize {
+    10
+}
+
+/// Profile CI assertions
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct ProfileCiAssertions {
+    /// Minimum throughput in tok/s
+    #[serde(default)]
+    pub min_throughput: Option<f64>,
+    /// Maximum p99 latency in ms
+    #[serde(default)]
+    pub max_p99_ms: Option<f64>,
+    /// Maximum p50 latency in ms
+    #[serde(default)]
+    pub max_p50_ms: Option<f64>,
+}
+
+/// Trace payload configuration (APR-TRACE-001)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TracePayloadConfig {
+    /// Enable trace payload
+    #[serde(default)]
+    pub enabled: bool,
+    /// Prompt for trace
+    #[serde(default)]
+    pub prompt: Option<String>,
+    /// Gates to verify
+    #[serde(default)]
+    pub gates: Vec<String>,
 }
 
 #[cfg(test)]

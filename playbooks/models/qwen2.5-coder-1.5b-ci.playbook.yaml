@@ -28,3 +28,23 @@ property_tests:
     generator: "code_prompt()"
     oracle: "valid_syntax"
     count: 25
+
+# Profile CI Assertions (PMAT-192) - Critical for CI/CD
+profile_ci:
+  enabled: true
+  warmup: 2
+  measure: 5
+  assertions:
+    min_throughput: 3.0     # tok/s (relaxed for CI)
+    max_p99_ms: 1000        # 1s max p99 latency
+  gates:
+    - F-PROFILE-CI-001      # Throughput gate
+    - F-PROFILE-CI-002      # Latency gate
+
+# Trace Payload - Quick sanity check
+trace_payload:
+  enabled: true
+  prompt: "2+2="
+  gates:
+    - F-TRACE-PAYLOAD-001   # No NaN/Inf
+    - F-TRACE-PAYLOAD-002   # No garbage
