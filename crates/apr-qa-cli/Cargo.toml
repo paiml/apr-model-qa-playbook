@@ -8,6 +8,10 @@ license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
 
+[lib]
+name = "apr_qa_cli"
+path = "src/lib.rs"
+
 [[bin]]
 name = "apr-qa"
 path = "src/main.rs"

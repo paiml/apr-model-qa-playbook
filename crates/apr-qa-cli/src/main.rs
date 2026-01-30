@@ -4,13 +4,17 @@
 
 #![allow(clippy::doc_markdown)]
 #![allow(clippy::too_many_arguments)]
+#![allow(clippy::needless_pass_by_value)]
+#![allow(clippy::ptr_arg)]
 
-use apr_qa_gen::{ModelId, ModelRegistry, ScenarioGenerator};
-use apr_qa_report::{
-    html::HtmlDashboard, junit::JunitReport, mqs::MqsCalculator, popperian::PopperianCalculator,
-    ticket::TicketGenerator,
+use apr_qa_cli::{
+    PlaybookRunConfig, build_execution_config, calculate_mqs_score, calculate_popperian_score,
+    collect_evidence, execute_playbook, filter_models_by_size, generate_html_report,
+    generate_junit_report, generate_model_scenarios, generate_tickets_from_evidence,
+    list_all_models, load_playbook, parse_evidence, parse_failure_policy, scenarios_to_json,
+    scenarios_to_yaml,
 };
-use apr_qa_runner::{ExecutionConfig, Executor, FailurePolicy, Playbook};
+use apr_qa_runner::ToolExecutor;
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 
@@ -263,23 +267,19 @@ fn run_playbook(
 ) {
     println!("Loading playbook: {}", playbook_path.display());
 
-    let playbook = match Playbook::from_file(playbook_path) {
+    let playbook = match load_playbook(playbook_path) {
         Ok(p) => p,
         Err(e) => {
-            eprintln!("Error loading playbook: {e}");
+            eprintln!("{e}");
             std::process::exit(1);
         }
     };
 
-    let policy = match failure_policy {
-        "stop-on-first" => FailurePolicy::StopOnFirst,
-        "stop-on-p0" => FailurePolicy::StopOnP0,
-        "collect-all" => FailurePolicy::CollectAll,
-        _ => {
-            eprintln!("Unknown failure policy: {failure_policy}");
-            std::process::exit(1);
-        }
-    };
+    // Validate failure policy
+    if parse_failure_policy(failure_policy).is_err() {
+        eprintln!("Unknown failure policy: {failure_policy}");
+        std::process::exit(1);
+    }
 
     // Validate subprocess mode requirements
     if subprocess && model_path.is_none() {
@@ -297,15 +297,24 @@ fn run_playbook(
     println!("  Workers: {workers}");
     println!("  Timeout: {timeout}ms");
 
-    let config = ExecutionConfig {
-        failure_policy: policy,
+    let run_config = PlaybookRunConfig {
+        failure_policy: failure_policy.to_string(),
         dry_run,
-        max_workers: workers,
-        subprocess_mode: subprocess,
-        model_path,
-        default_timeout_ms: timeout,
+        workers,
+        subprocess,
+        model_path: model_path.clone(),
+        timeout,
         no_gpu,
-        run_conversion_tests: !skip_conversion_tests,
+        skip_conversion_tests,
+        run_tool_tests: run_tool_tests_flag,
+    };
+
+    let config = match build_execution_config(&run_config) {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("{e}");
+            std::process::exit(1);
+        }
     };
 
     // Print conversion test status (P0 CRITICAL)
@@ -320,12 +329,9 @@ fn run_playbook(
         println!("  Tool tests: ENABLED");
     }
 
-    let mut executor = Executor::with_config(config);
-
     // Run tool tests if enabled
     if run_tool_tests_flag && subprocess {
-        if let Some(ref mp) = executor.config().model_path {
-            use apr_qa_runner::ToolExecutor;
+        if let Some(ref mp) = model_path {
             println!("\n=== Running APR Tool Tests ===");
             let tool_executor = ToolExecutor::new(mp.clone(), no_gpu, timeout);
             let tool_results = tool_executor.execute_all();
@@ -335,7 +341,7 @@ fn run_playbook(
         }
     }
 
-    match executor.execute(&playbook) {
+    match execute_playbook(&playbook, config) {
         Ok(result) => {
             println!("\n=== Execution Results ===");
             println!("  Total scenarios: {}", result.total_scenarios);
@@ -369,39 +375,25 @@ fn run_playbook(
             }
         }
         Err(e) => {
-            eprintln!("Execution failed: {e}");
+            eprintln!("{e}");
             std::process::exit(1);
         }
     }
 }
 
 fn generate_scenarios(model_id: &str, count: usize, format: &str) {
-    let parts: Vec<&str> = model_id.split('/').collect();
-    let (org, name) = if parts.len() >= 2 {
-        (parts[0], parts[1])
-    } else {
-        ("unknown", model_id)
-    };
-
-    let model = ModelId::new(org, name);
-    let generator = ScenarioGenerator::new(model).with_scenarios_per_combination(count);
-
-    let scenarios = generator.generate();
+    let scenarios = generate_model_scenarios(model_id, count);
 
     println!("Generated {} scenarios for {model_id}", scenarios.len());
 
     match format {
-        "yaml" => {
-            for scenario in &scenarios {
-                match serde_yaml::to_string(scenario) {
-                    Ok(yaml) => println!("---\n{yaml}"),
-                    Err(e) => eprintln!("Error serializing scenario: {e}"),
-                }
-            }
-        }
-        "json" => match serde_json::to_string_pretty(&scenarios) {
+        "yaml" => match scenarios_to_yaml(&scenarios) {
+            Ok(yaml) => println!("{yaml}"),
+            Err(e) => eprintln!("{e}"),
+        },
+        "json" => match scenarios_to_json(&scenarios) {
             Ok(json) => println!("{json}"),
-            Err(e) => eprintln!("Error serializing scenarios: {e}"),
+            Err(e) => eprintln!("{e}"),
         },
         _ => {
             eprintln!("Unknown format: {format}");
@@ -419,21 +411,17 @@ fn calculate_score(evidence_path: &PathBuf, model_id: &str) {
         }
     };
 
-    let evidence: Vec<apr_qa_runner::Evidence> = match serde_json::from_str(&evidence_json) {
+    let evidence = match parse_evidence(&evidence_json) {
         Ok(e) => e,
         Err(e) => {
-            eprintln!("Error parsing evidence JSON: {e}");
+            eprintln!("{e}");
             std::process::exit(1);
         }
     };
 
-    let mut collector = apr_qa_runner::EvidenceCollector::new();
-    for e in evidence {
-        collector.add(e);
-    }
+    let collector = collect_evidence(evidence);
 
-    let calculator = MqsCalculator::new();
-    match calculator.calculate(model_id, &collector) {
+    match calculate_mqs_score(model_id, &collector) {
         Ok(score) => {
             println!("=== Model Qualification Score (MQS) ===");
             println!("Model: {}", score.model_id);
@@ -461,7 +449,7 @@ fn calculate_score(evidence_path: &PathBuf, model_id: &str) {
             }
         }
         Err(e) => {
-            eprintln!("Error calculating score: {e}");
+            eprintln!("{e}");
             std::process::exit(1);
         }
     }
@@ -476,31 +464,26 @@ fn generate_report(evidence_path: &PathBuf, output_dir: &PathBuf, formats: &str,
         }
     };
 
-    let evidence: Vec<apr_qa_runner::Evidence> = match serde_json::from_str(&evidence_json) {
+    let evidence = match parse_evidence(&evidence_json) {
         Ok(e) => e,
         Err(e) => {
-            eprintln!("Error parsing evidence JSON: {e}");
+            eprintln!("{e}");
             std::process::exit(1);
         }
     };
 
-    let mut collector = apr_qa_runner::EvidenceCollector::new();
-    for e in evidence {
-        collector.add(e);
-    }
+    let collector = collect_evidence(evidence);
 
     // Calculate scores
-    let mqs_calculator = MqsCalculator::new();
-    let mqs_score = match mqs_calculator.calculate(model_id, &collector) {
+    let mqs_score = match calculate_mqs_score(model_id, &collector) {
         Ok(s) => s,
         Err(e) => {
-            eprintln!("Error calculating MQS: {e}");
+            eprintln!("{e}");
             std::process::exit(1);
         }
     };
 
-    let popperian_calculator = PopperianCalculator::new();
-    let popperian_score = popperian_calculator.calculate(model_id, &collector);
+    let popperian_score = calculate_popperian_score(model_id, &collector);
 
     // Create output directory
     if let Err(e) = std::fs::create_dir_all(output_dir) {
@@ -508,12 +491,16 @@ fn generate_report(evidence_path: &PathBuf, output_dir: &PathBuf, formats: &str,
         std::process::exit(1);
     }
 
-    let generate_html = formats == "all" || formats == "html";
-    let generate_junit = formats == "all" || formats == "junit";
+    let gen_html = formats == "all" || formats == "html";
+    let gen_junit = formats == "all" || formats == "junit";
 
-    if generate_html {
-        let dashboard = HtmlDashboard::new(format!("MQS Report: {model_id}"));
-        match dashboard.generate(&mqs_score, &popperian_score, &collector) {
+    if gen_html {
+        match generate_html_report(
+            &format!("MQS Report: {model_id}"),
+            &mqs_score,
+            &popperian_score,
+            &collector,
+        ) {
             Ok(html) => {
                 let path = output_dir.join("report.html");
                 if let Err(e) = std::fs::write(&path, html) {
@@ -522,13 +509,12 @@ fn generate_report(evidence_path: &PathBuf, output_dir: &PathBuf, formats: &str,
                     println!("HTML report: {}", path.display());
                 }
             }
-            Err(e) => eprintln!("Error generating HTML: {e}"),
+            Err(e) => eprintln!("{e}"),
         }
     }
 
-    if generate_junit {
-        let junit = JunitReport::new(model_id);
-        match junit.generate(&collector, &mqs_score) {
+    if gen_junit {
+        match generate_junit_report(model_id, &collector, &mqs_score) {
             Ok(xml) => {
                 let path = output_dir.join("junit.xml");
                 if let Err(e) = std::fs::write(&path, xml) {
@@ -537,7 +523,7 @@ fn generate_report(evidence_path: &PathBuf, output_dir: &PathBuf, formats: &str,
                     println!("JUnit report: {}", path.display());
                 }
             }
-            Err(e) => eprintln!("Error generating JUnit: {e}"),
+            Err(e) => eprintln!("{e}"),
         }
     }
 
@@ -556,19 +542,17 @@ fn generate_report(evidence_path: &PathBuf, output_dir: &PathBuf, formats: &str,
 }
 
 fn list_models(size_filter: Option<&str>) {
-    let registry = ModelRegistry::with_defaults();
-    let models = registry.all();
+    let models = list_all_models();
 
     println!("=== Available Models ===\n");
 
-    for model in models {
-        if let Some(filter) = size_filter {
-            let size_str = format!("{:?}", model.size).to_lowercase();
-            if !size_str.contains(&filter.to_lowercase()) {
-                continue;
-            }
-        }
+    let filtered_models = if let Some(filter) = size_filter {
+        filter_models_by_size(&models, filter)
+    } else {
+        models
+    };
 
+    for model in filtered_models {
         println!("  {} ({:?})", model.id.hf_repo(), model.size);
     }
 }
@@ -590,21 +574,16 @@ fn generate_tickets(
         }
     };
 
-    let evidence: Vec<apr_qa_runner::Evidence> = match serde_json::from_str(&evidence_json) {
+    let evidence = match parse_evidence(&evidence_json) {
         Ok(e) => e,
         Err(e) => {
-            eprintln!("Error parsing evidence JSON: {e}");
+            eprintln!("{e}");
             std::process::exit(1);
         }
     };
 
-    let mut generator = TicketGenerator::new(repo).with_min_occurrences(min_occurrences);
-
-    if black_swans_only {
-        generator = generator.black_swans_only();
-    }
-
-    let tickets = generator.generate_from_evidence(&evidence);
+    let tickets =
+        generate_tickets_from_evidence(&evidence, repo, black_swans_only, min_occurrences);
 
     if is_draft {
         // F-TICKET-004: Draft mode - only print, don't create files

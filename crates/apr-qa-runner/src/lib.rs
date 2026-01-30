@@ -36,6 +36,8 @@ pub use conversion::{
 };
 pub use error::{Error, Result};
 pub use evidence::{Evidence, EvidenceCollector, Outcome, PerformanceMetrics};
-pub use executor::{ExecutionConfig, Executor, FailurePolicy, ToolExecutor, ToolTestResult};
+pub use executor::{
+    ExecutionConfig, ExecutionResult, Executor, FailurePolicy, ToolExecutor, ToolTestResult,
+};
 pub use parallel::{ExecutionMode, ParallelConfig, ParallelExecutor, ParallelResult};
 pub use playbook::{Playbook, PlaybookStep};
