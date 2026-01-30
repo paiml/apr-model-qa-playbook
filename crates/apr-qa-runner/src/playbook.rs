@@ -732,4 +732,118 @@ test_matrix:
         // 3 modalities × 2 backends × 3 formats × 100 = 1800
         assert_eq!(playbook.total_tests(), 1800);
     }
+
+    #[test]
+    fn test_playbook_with_differential_tests() {
+        let yaml = r#"
+name: diff-test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+differential_tests:
+  tensor_diff:
+    enabled: true
+    filter: "embed,lm_head"
+    gates: ["F-ROSETTA-DIFF-001", "F-ROSETTA-DIFF-002"]
+  inference_compare:
+    enabled: true
+    prompt: "What is 2+2?"
+    max_tokens: 10
+    tolerance: 0.00001
+    gates: ["F-ROSETTA-INF-001"]
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let diff = playbook.differential_tests.expect("Should have differential tests");
+
+        let tensor = diff.tensor_diff.expect("Should have tensor diff");
+        assert!(tensor.enabled);
+        assert_eq!(tensor.filter, Some("embed,lm_head".to_string()));
+        assert_eq!(tensor.gates.len(), 2);
+
+        let inf = diff.inference_compare.expect("Should have inference compare");
+        assert!(inf.enabled);
+        assert_eq!(inf.prompt, Some("What is 2+2?".to_string()));
+        assert_eq!(inf.max_tokens, 10);
+    }
+
+    #[test]
+    fn test_playbook_with_profile_ci() {
+        let yaml = r#"
+name: profile-test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+profile_ci:
+  enabled: true
+  warmup: 5
+  measure: 20
+  assertions:
+    min_throughput: 10.0
+    max_p99_ms: 500.0
+    max_p50_ms: 200.0
+  gates: ["F-PROFILE-CI-001", "F-PROFILE-CI-002"]
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let profile = playbook.profile_ci.expect("Should have profile CI");
+
+        assert!(profile.enabled);
+        assert_eq!(profile.warmup, 5);
+        assert_eq!(profile.measure, 20);
+        assert_eq!(profile.assertions.min_throughput, Some(10.0));
+        assert_eq!(profile.assertions.max_p99_ms, Some(500.0));
+        assert_eq!(profile.assertions.max_p50_ms, Some(200.0));
+        assert_eq!(profile.gates.len(), 2);
+    }
+
+    #[test]
+    fn test_playbook_with_trace_payload() {
+        let yaml = r#"
+name: trace-test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+trace_payload:
+  enabled: true
+  prompt: "Test prompt"
+  gates: ["F-TRACE-PAYLOAD-001", "F-TRACE-PAYLOAD-002"]
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let trace = playbook.trace_payload.expect("Should have trace payload");
+
+        assert!(trace.enabled);
+        assert_eq!(trace.prompt, Some("Test prompt".to_string()));
+        assert_eq!(trace.gates.len(), 2);
+    }
+
+    #[test]
+    fn test_default_max_tokens() {
+        assert_eq!(default_max_tokens(), 10);
+    }
+
+    #[test]
+    fn test_default_tolerance() {
+        assert!((default_tolerance() - 1e-5).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_default_warmup() {
+        assert_eq!(default_warmup(), 3);
+    }
+
+    #[test]
+    fn test_default_measure() {
+        assert_eq!(default_measure(), 10);
+    }
 }
