@@ -310,4 +310,78 @@ APR GPU load: 10550 MB (308 F32 tensors, 0 quantized)
 
 ---
 
-**Toyota Way Principle:** STOP THE LINE. The GGUF→APR pipeline has TWO independent corruption bugs. GH-190 (naming) is fixed. This bug (quantization data loss) remains. No quantized models should be shipped via APR until both are resolved.
+## Full Qualification Results: All Qwen Coder Models (2026-01-30)
+
+Qualified all 5 Qwen2.5-Coder sizes (0.5B through 14B) using quick playbooks (10 scenarios each, subprocess mode, GGUF Q4_K_M format).
+
+### Results Table
+
+```
+┌──────────────────────┬───────────┬───────┬──────────┬──────────────┬─────────────────┐
+│ Model                │ MQS       │ Grade │ Pass/Tot │ GGUF Infer   │ Conversion      │
+├──────────────────────┼───────────┼───────┼──────────┼──────────────┼─────────────────┤
+│ Qwen2.5-Coder-0.5B  │ 24.2/100  │ F     │ 10/22    │ 10/10 PASS   │ 0/12 (ALL FAIL) │
+│ Qwen2.5-Coder-1.5B  │ 24.2/100  │ F     │ 10/22    │ 10/10 PASS   │ 0/12 (ALL FAIL) │
+│ Qwen2.5-Coder-3B    │ 24.2/100  │ F     │ 10/22    │ 10/10 PASS   │ 0/12 (ALL FAIL) │
+│ Qwen2.5-Coder-7B    │ 24.2/100  │ F     │ 10/22    │ 10/10 PASS   │ 0/12 (ALL FAIL) │
+│ Qwen2.5-Coder-14B   │ 24.2/100  │ F     │ 10/22    │ 10/10 PASS   │ 0/12 (ALL FAIL) │
+└──────────────────────┴───────────┴───────┴──────────┴──────────────┴─────────────────┘
+```
+
+### Category Breakdown (Identical Across All Models)
+
+```
+QUAL:  83/200   ← GGUF inference quality tests pass
+REGR:   0/150   ← Blocked by conversion failures
+EDGE:   0/150   ← Blocked by conversion failures
+PERF:   0/150   ← Blocked by conversion failures
+STAB:   0/200   ← Blocked by conversion failures
+COMP:   0/150   ← Blocked by conversion failures
+─────────────
+Total: 83/1000  → 24.2/100 (Grade F)
+```
+
+### Key Findings
+
+1. **GGUF inference is 100% clean across all 5 sizes.** The models themselves work perfectly in native GGUF format. All 10 inference tests (arithmetic, code syntax, response quality) pass for every model from 0.5B to 14B.
+
+2. **Conversion tests fail identically for all sizes.** The GGUF→APR pipeline bug is not model-specific — it's a systemic dtype mapping issue (GH-191) that affects every quantized conversion regardless of model size or architecture variant.
+
+3. **MQS is artificially capped at 24.2.** The 83 points come entirely from QUAL (inference quality). Five categories score 0 because they depend on format conversion working. Once GH-190 + GH-191 are fully fixed, MQS should jump to 85+ (the target).
+
+4. **No model-specific failures detected.** The uniform 10/22 pattern across 0.5B–14B confirms this is purely a pipeline bug, not a model compatibility issue. The Qwen2 architecture is correctly supported in the inference engine.
+
+### Execution Details
+
+| Model | Duration | Model Path |
+|-------|----------|------------|
+| 0.5B | 435s (7.2m) | `~/.apr/cache/hf/Qwen/Qwen2.5-Coder-0.5B-Instruct-GGUF/...q4_k_m.gguf` |
+| 1.5B | 344s (5.7m) | `~/.apr/cache/hf/Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF/...q4_k_m.gguf` |
+| 3B | 575s (9.6m) | `~/.cache/pacha/models/e06917441dd7f96d.gguf` |
+| 7B | 635s (10.6m) | `~/.cache/pacha/models/e0abfc1f71fa8f14.gguf` |
+| 14B | 1215s (20.3m) | `~/.cache/pacha/models/515504422eb74a68.gguf` |
+
+**Total qualification time: 53.4 minutes for 5 models (110 scenarios total).**
+
+### Additional Finding: Converter Code Path Issue
+
+During investigation, discovered the `apr convert` default path (without `--quantize q4k`) silently dequantizes Q4_K_M to F32 before writing APR. The raw Q4K pass-through only triggers with explicit `--quantize q4k` flag:
+
+```
+apr convert model.gguf -o model.apr                    → 6.62 GiB (F32, broken)
+apr convert model.gguf -o model.apr --quantize q4k     → 1.04 GiB (Q4K preserved, still broken)
+```
+
+Even with `--quantize q4k`, the inference still produces garbage (`"3,}, helf helf.How helf"`), though the model loads with correct quantization counts (197 quantized, 112 F32). This suggests a **third layer** to the conversion bug beyond naming (GH-190) and dtype mapping (GH-191) — possibly a Q4_K dequantization kernel bug or tensor shape/transpose issue in the APR GPU loader.
+
+### What Must Happen Before Re-Qualification
+
+1. GH-190 naming fix (PMAT-205) — ✅ DONE
+2. GH-191 dtype mapping fix — ✅ IN SOURCE (needs rebuild + verify)
+3. Q4_K dequantization / shape correctness — ❓ UNKNOWN (layer 3 of the onion)
+4. Golden Rule Test must PASS on at least one model
+5. Re-qualify all 5 models with full playbooks (not quick)
+
+---
+
+**Toyota Way Principle:** STOP THE LINE. The GGUF→APR pipeline has at least THREE layers of bugs. GGUF inference is clean — the models are fine. The conversion pipeline is broken for every model, every size. No quantized models should be shipped via APR until the Golden Rule Test passes.

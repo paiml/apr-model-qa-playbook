@@ -495,4 +495,26 @@ Full analysis: [docs/five-whys/GH-190-systemic-conversion-failures.md](../five-w
 
 ---
 
+## Cross-Model Qualification Results (2026-01-30)
+
+All 5 Qwen2.5-Coder models qualified. The conversion failure is **universal** — not model-specific.
+
+```
+┌──────────────────────┬───────────┬───────┬──────────────┬─────────────────┐
+│ Model                │ MQS       │ Grade │ GGUF Infer   │ Conversion      │
+├──────────────────────┼───────────┼───────┼──────────────┼─────────────────┤
+│ Qwen2.5-Coder-0.5B  │ 24.2/100  │ F     │ 10/10 PASS   │ 0/12 (ALL FAIL) │
+│ Qwen2.5-Coder-1.5B  │ 24.2/100  │ F     │ 10/10 PASS   │ 0/12 (ALL FAIL) │
+│ Qwen2.5-Coder-3B    │ 24.2/100  │ F     │ 10/10 PASS   │ 0/12 (ALL FAIL) │
+│ Qwen2.5-Coder-7B    │ 24.2/100  │ F     │ 10/10 PASS   │ 0/12 (ALL FAIL) │
+│ Qwen2.5-Coder-14B   │ 24.2/100  │ F     │ 10/10 PASS   │ 0/12 (ALL FAIL) │
+└──────────────────────┴───────────┴───────┴──────────────┴─────────────────┘
+```
+
+**The models are fine. The pipeline is broken.** GGUF inference is 100% clean across all sizes. MQS is artificially capped at 24.2 because 5/6 scoring categories depend on APR conversion.
+
+See: [GH-191](GH-191-APR-QUANTIZATION-DATA-LOSS.md) for the dtype mapping root cause and full qualification details.
+
+---
+
 **Toyota Way Principle:** STOP THE LINE. Do not ship models converted with current GGUF→APR pipeline until this is fixed.
