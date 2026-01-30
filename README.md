@@ -59,17 +59,18 @@ We don't test to pass—we **test to fail**. No amount of passing tests proves c
 - **JUnit XML and HTML reports** for CI/CD integration
 - **Playbook YAML format** with JSON Schema validation
 - **1.8M+ test assertions** across all model/format/backend combinations
-- **207 falsification gates** across conversion, inference, patterns, and security domains
+- **217 falsification gates** across conversion, inference, patterns, and security domains
 
 ### New in v1.3.0
 
 | Feature | Description |
 |---------|-------------|
-| **Rosetta Differential Testing** | Tensor layout mismatch detection, token-by-token inference comparison |
+| **Rosetta Differential Testing** | Tensor layout mismatch, token comparison, fingerprint, stats validation |
 | **Profile CI Mode** | Performance assertions for CI/CD (`--assert-throughput`, `--assert-p99`) |
 | **Trace Payload Mode** | Real forward pass with NaN/Inf and garbage output detection |
 | **Bug Pattern Detection** | 12 cross-project patterns from aprender/realizar analysis |
 | **Bug Classification** | 6 conversion bug types (tokenizer missing, embedding transposition, etc.) |
+| **GH-186 Detection** | PAD token flood and LayerNorm zero detection gates |
 
 ## Quick Start
 
