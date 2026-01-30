@@ -1,0 +1,11 @@
+# Proptest Configuration
+# Regression files store failing test cases for reproducibility
+
+[regression]
+# Store regression files in a dedicated directory
+# These files are auto-generated when proptests fail
+path = "proptest-regressions"
+
+[source_file]
+# Enable regression file persistence for all source files
+persist = true

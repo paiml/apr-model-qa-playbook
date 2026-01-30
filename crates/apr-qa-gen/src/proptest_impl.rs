@@ -194,7 +194,13 @@ mod tests {
     }
 
     proptest! {
-        #![proptest_config(ProptestConfig::with_cases(100))]
+        // Configure proptest with regression file support (F-PROP-006)
+        // Failing cases are stored in proptest-regressions/ for reproducibility
+        #![proptest_config(ProptestConfig {
+            cases: 100,
+            failure_persistence: Some(Box::new(proptest::test_runner::FileFailurePersistence::WithSource("proptest-regressions"))),
+            ..ProptestConfig::default()
+        })]
 
         #[test]
         fn prop_arithmetic_prompts_contain_operator(prompt in arithmetic_prompt_strategy()) {

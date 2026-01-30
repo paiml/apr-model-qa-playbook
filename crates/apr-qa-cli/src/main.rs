@@ -85,6 +85,10 @@ enum Commands {
         /// Output directory for results
         #[arg(short, long, default_value = "output")]
         output: PathBuf,
+
+        /// Include serve lifecycle test (F-INTEG-003)
+        #[arg(long)]
+        include_serve: bool,
     },
 
     /// Generate scenarios for a model
@@ -156,6 +160,12 @@ enum Commands {
         /// Minimum occurrences before creating ticket
         #[arg(long, default_value = "1")]
         min_occurrences: usize,
+
+        /// Ticket generation mode (F-TICKET-004)
+        /// - create: Generate ticket files (default)
+        /// - draft: Only print ticket content without creating files
+        #[arg(long, default_value = "create")]
+        ticket_mode: String,
     },
 }
 
@@ -194,8 +204,9 @@ fn main() {
             model_path,
             no_gpu,
             output,
+            include_serve,
         } => {
-            run_tool_tests(&model_path, no_gpu, &output);
+            run_tool_tests(&model_path, no_gpu, &output, include_serve);
         }
         Commands::Generate {
             model,
@@ -223,8 +234,15 @@ fn main() {
             repo,
             black_swans_only,
             min_occurrences,
+            ticket_mode,
         } => {
-            generate_tickets(&evidence, &repo, black_swans_only, min_occurrences);
+            generate_tickets(
+                &evidence,
+                &repo,
+                black_swans_only,
+                min_occurrences,
+                &ticket_mode,
+            );
         }
     }
 }
@@ -560,7 +578,10 @@ fn generate_tickets(
     repo: &str,
     black_swans_only: bool,
     min_occurrences: usize,
+    ticket_mode: &str,
 ) {
+    let is_draft = ticket_mode == "draft";
+
     let evidence_json = match std::fs::read_to_string(evidence_path) {
         Ok(s) => s,
         Err(e) => {
@@ -585,29 +606,59 @@ fn generate_tickets(
 
     let tickets = generator.generate_from_evidence(&evidence);
 
-    println!("=== Generated Tickets ({}) ===\n", tickets.len());
+    if is_draft {
+        // F-TICKET-004: Draft mode - only print, don't create files
+        println!("=== Ticket Drafts ({}) ===", tickets.len());
+        println!("(Draft mode: No files created)\n");
 
-    for ticket in &tickets {
-        println!("--- {} ---", ticket.title);
-        println!("Priority: {}", ticket.priority);
-        println!("Category: {}", ticket.category);
-        println!("Labels: {}", ticket.labels.join(", "));
-        println!();
-        println!("gh command:");
-        println!("  {}\n", ticket.to_gh_command(repo));
+        for ticket in &tickets {
+            println!("--- {} ---", ticket.title);
+            println!("Priority: {}", ticket.priority);
+            println!("Category: {}", ticket.category);
+            println!("Labels: {}", ticket.labels.join(", "));
+            println!();
+            println!("Body:");
+            println!("{}", ticket.body);
+            println!();
+            println!("gh command (would run):");
+            println!("  {}\n", ticket.to_gh_command(repo));
+            println!("{}", "=".repeat(60));
+        }
+    } else {
+        // Create mode - generate files and show commands
+        println!("=== Generated Tickets ({}) ===\n", tickets.len());
+
+        for ticket in &tickets {
+            println!("--- {} ---", ticket.title);
+            println!("Priority: {}", ticket.priority);
+            println!("Category: {}", ticket.category);
+            println!("Labels: {}", ticket.labels.join(", "));
+            println!();
+            println!("gh command:");
+            println!("  {}\n", ticket.to_gh_command(repo));
+        }
     }
 }
 
-fn run_tool_tests(model_path: &std::path::Path, no_gpu: bool, output_dir: &std::path::Path) {
+fn run_tool_tests(
+    model_path: &std::path::Path,
+    no_gpu: bool,
+    output_dir: &std::path::Path,
+    include_serve: bool,
+) {
     use apr_qa_runner::ToolExecutor;
 
     println!("=== APR Tool Coverage Tests ===\n");
     println!("Model: {}", model_path.display());
-    println!("GPU: {}\n", if no_gpu { "disabled" } else { "enabled" });
+    println!("GPU: {}", if no_gpu { "disabled" } else { "enabled" });
+    println!(
+        "Serve test: {}\n",
+        if include_serve { "enabled" } else { "disabled" }
+    );
 
     let executor = ToolExecutor::new(model_path.to_string_lossy().to_string(), no_gpu, 120_000);
 
-    let results = executor.execute_all();
+    let results = executor.execute_all_with_serve(include_serve);
 
     let mut passed = 0;
     let mut failed = 0;

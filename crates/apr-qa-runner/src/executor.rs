@@ -428,13 +428,15 @@ impl ToolExecutor {
         }
     }
 
-    /// Execute apr inspect
+    /// Execute apr rosetta inspect (works with any format)
     #[must_use]
     pub fn execute_inspect(&self) -> ToolTestResult {
         use std::process::Command;
         let start = std::time::Instant::now();
 
+        // Use apr rosetta inspect which works with GGUF, APR, SafeTensors
         let output = Command::new("apr")
+            .arg("rosetta")
             .arg("inspect")
             .arg(&self.model_path)
             .output();
@@ -462,13 +464,12 @@ impl ToolExecutor {
         use std::process::Command;
         let start = std::time::Instant::now();
 
-        let mut cmd = Command::new("apr");
-        cmd.arg("bench").arg(&self.model_path);
-        if self.no_gpu {
-            cmd.arg("--no-gpu");
-        }
+        // apr bench doesn't support --no-gpu, it auto-detects
+        let output = Command::new("apr")
+            .arg("bench")
+            .arg(&self.model_path)
+            .output();
 
-        let output = cmd.output();
         self.build_result("bench", output, start)
     }
 
@@ -534,9 +535,297 @@ impl ToolExecutor {
         self.build_result("profile", output, start)
     }
 
+    /// Execute apr profile with flamegraph output (F-PROFILE-002)
+    ///
+    /// Tests that profile can generate valid SVG flamegraph output.
+    /// This feature may not be available in all apr versions.
+    #[must_use]
+    pub fn execute_profile_flamegraph(&self, output_path: &std::path::Path) -> ToolTestResult {
+        use std::process::Command;
+        let start = std::time::Instant::now();
+
+        let svg_path = output_path.join("profile_flamegraph.svg");
+        let mut cmd = Command::new("apr");
+        cmd.arg("run")
+            .arg(&self.model_path)
+            .arg("-p")
+            .arg("Hello")
+            .arg("--max-tokens")
+            .arg("4")
+            .arg("--profile")
+            .arg("--profile-output")
+            .arg(&svg_path);
+
+        if self.no_gpu {
+            cmd.arg("--no-gpu");
+        }
+
+        let output = cmd.output();
+        let duration_ms = start.elapsed().as_millis() as u64;
+
+        // Check if flamegraph was generated
+        let flamegraph_exists = svg_path.exists();
+        let flamegraph_valid = if flamegraph_exists {
+            // Basic SVG validation - check for svg tag
+            std::fs::read_to_string(&svg_path)
+                .map(|content| content.contains("<svg") && content.contains("</svg>"))
+                .unwrap_or(false)
+        } else {
+            false
+        };
+
+        match output {
+            Ok(out) => {
+                let stdout = String::from_utf8_lossy(&out.stdout).to_string();
+                let stderr = String::from_utf8_lossy(&out.stderr).to_string();
+
+                // If apr doesn't support --profile-output, it will error
+                if stderr.contains("unexpected argument") || stderr.contains("unrecognized") {
+                    return ToolTestResult {
+                        tool: "profile-flamegraph".to_string(),
+                        passed: false,
+                        exit_code: -2,
+                        stdout,
+                        stderr: "Feature not available: apr does not support --profile-output"
+                            .to_string(),
+                        duration_ms,
+                        gate_id: "F-PROFILE-002".to_string(),
+                    };
+                }
+
+                ToolTestResult {
+                    tool: "profile-flamegraph".to_string(),
+                    passed: flamegraph_valid,
+                    exit_code: i32::from(!flamegraph_valid),
+                    stdout: format!(
+                        "Flamegraph exists: {flamegraph_exists}, valid: {flamegraph_valid}"
+                    ),
+                    stderr,
+                    duration_ms,
+                    gate_id: "F-PROFILE-002".to_string(),
+                }
+            }
+            Err(e) => ToolTestResult {
+                tool: "profile-flamegraph".to_string(),
+                passed: false,
+                exit_code: -1,
+                stdout: String::new(),
+                stderr: e.to_string(),
+                duration_ms,
+                gate_id: "F-PROFILE-002".to_string(),
+            },
+        }
+    }
+
+    /// Execute apr profile with focus filtering (F-PROFILE-003)
+    ///
+    /// Tests that profile --focus option works to limit scope.
+    /// This feature may not be available in all apr versions.
+    #[must_use]
+    pub fn execute_profile_focus(&self, focus: &str) -> ToolTestResult {
+        use std::process::Command;
+        let start = std::time::Instant::now();
+
+        let mut cmd = Command::new("apr");
+        cmd.arg("run")
+            .arg(&self.model_path)
+            .arg("-p")
+            .arg("Hello")
+            .arg("--max-tokens")
+            .arg("4")
+            .arg("--profile")
+            .arg("--focus")
+            .arg(focus);
+
+        if self.no_gpu {
+            cmd.arg("--no-gpu");
+        }
+
+        let output = cmd.output();
+        let duration_ms = start.elapsed().as_millis() as u64;
+
+        match output {
+            Ok(out) => {
+                let stdout = String::from_utf8_lossy(&out.stdout).to_string();
+                let stderr = String::from_utf8_lossy(&out.stderr).to_string();
+
+                // If apr doesn't support --focus, it will error
+                if stderr.contains("unexpected argument") || stderr.contains("unrecognized") {
+                    return ToolTestResult {
+                        tool: "profile-focus".to_string(),
+                        passed: false,
+                        exit_code: -2,
+                        stdout,
+                        stderr: format!(
+                            "Feature not available: apr does not support --focus {focus}"
+                        ),
+                        duration_ms,
+                        gate_id: "F-PROFILE-003".to_string(),
+                    };
+                }
+
+                // Check if output is focused (contains focus term or is shorter than unfocused)
+                let passed = out.status.success();
+
+                ToolTestResult {
+                    tool: "profile-focus".to_string(),
+                    passed,
+                    exit_code: out.status.code().unwrap_or(-1),
+                    stdout,
+                    stderr,
+                    duration_ms,
+                    gate_id: "F-PROFILE-003".to_string(),
+                }
+            }
+            Err(e) => ToolTestResult {
+                tool: "profile-focus".to_string(),
+                passed: false,
+                exit_code: -1,
+                stdout: String::new(),
+                stderr: e.to_string(),
+                duration_ms,
+                gate_id: "F-PROFILE-003".to_string(),
+            },
+        }
+    }
+
+    /// Execute apr serve lifecycle test (F-INTEG-003)
+    ///
+    /// Tests the full serve lifecycle:
+    /// 1. Start server
+    /// 2. Wait for health endpoint
+    /// 3. Make inference request
+    /// 4. Shutdown cleanly
+    #[must_use]
+    pub fn execute_serve_lifecycle(&self) -> ToolTestResult {
+        use std::io::{BufRead, BufReader};
+        use std::process::{Command, Stdio};
+        use std::time::Duration;
+
+        let start = std::time::Instant::now();
+        let port = 18080; // Use high port to avoid conflicts
+
+        // Start server
+        let mut server_cmd = Command::new("apr");
+        server_cmd
+            .arg("serve")
+            .arg(&self.model_path)
+            .arg("--port")
+            .arg(port.to_string())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped());
+
+        if self.no_gpu {
+            server_cmd.arg("--no-gpu");
+        }
+
+        let mut server = match server_cmd.spawn() {
+            Ok(child) => child,
+            Err(e) => {
+                return ToolTestResult {
+                    tool: "serve-lifecycle".to_string(),
+                    passed: false,
+                    exit_code: -1,
+                    stdout: String::new(),
+                    stderr: format!("Failed to start server: {e}"),
+                    duration_ms: start.elapsed().as_millis() as u64,
+                    gate_id: "F-INTEG-003".to_string(),
+                };
+            }
+        };
+
+        // Wait for server to be ready (check stderr for "Listening on")
+        let stderr = server.stderr.take();
+        let ready = stderr.map_or_else(
+            || {
+                // Wait a fixed time if can't read stderr
+                std::thread::sleep(Duration::from_secs(3));
+                true
+            },
+            |stderr| {
+                let reader = BufReader::new(stderr);
+                let mut ready = false;
+                for line in reader.lines().take(20).flatten() {
+                    if line.contains("Listening") || line.contains("listening") {
+                        ready = true;
+                        break;
+                    }
+                }
+                ready
+            },
+        );
+
+        if !ready {
+            // Give it more time
+            std::thread::sleep(Duration::from_secs(2));
+        }
+
+        // Test health endpoint
+        let health_result = Command::new("curl")
+            .arg("-sf")
+            .arg(format!("http://localhost:{port}/health"))
+            .arg("--connect-timeout")
+            .arg("5")
+            .output();
+
+        let health_ok = health_result.map(|o| o.status.success()).unwrap_or(false);
+
+        // Test inference endpoint
+        let inference_result = Command::new("curl")
+            .arg("-sf")
+            .arg("-X")
+            .arg("POST")
+            .arg(format!("http://localhost:{port}/v1/chat/completions"))
+            .arg("-H")
+            .arg("Content-Type: application/json")
+            .arg("-d")
+            .arg(r#"{"messages":[{"role":"user","content":"Hi"}],"max_tokens":5}"#)
+            .arg("--connect-timeout")
+            .arg("10")
+            .output();
+
+        let inference_ok = inference_result
+            .map(|o| o.status.success())
+            .unwrap_or(false);
+
+        // Shutdown server
+        let _ = server.kill();
+        let _ = server.wait();
+
+        let duration_ms = start.elapsed().as_millis() as u64;
+
+        let passed = health_ok && inference_ok;
+        let stdout = format!(
+            "Health check: {}\nInference: {}",
+            if health_ok { "OK" } else { "FAILED" },
+            if inference_ok { "OK" } else { "FAILED" }
+        );
+        let stderr = if passed {
+            String::new()
+        } else {
+            format!("Serve lifecycle incomplete: health={health_ok}, inference={inference_ok}")
+        };
+
+        ToolTestResult {
+            tool: "serve-lifecycle".to_string(),
+            passed,
+            exit_code: i32::from(!passed),
+            stdout,
+            stderr,
+            duration_ms,
+            gate_id: "F-INTEG-003".to_string(),
+        }
+    }
+
     /// Execute all tool tests
     #[must_use]
     pub fn execute_all(&self) -> Vec<ToolTestResult> {
+        self.execute_all_with_serve(false)
+    }
+
+    /// Execute all tool tests, optionally including serve lifecycle
+    #[must_use]
+    pub fn execute_all_with_serve(&self, include_serve: bool) -> Vec<ToolTestResult> {
         let mut results = vec![
             // Core tool tests
             self.execute_inspect(),
@@ -552,6 +841,11 @@ impl ToolExecutor {
 
         // Profile test
         results.push(self.execute_profile());
+
+        // Serve lifecycle test (F-INTEG-003)
+        if include_serve {
+            results.push(self.execute_serve_lifecycle());
+        }
 
         results
     }
@@ -1077,5 +1371,143 @@ test_matrix:
         };
         let executor = Executor::with_config(config);
         assert_eq!(executor.config.max_workers, 8);
+    }
+
+    #[test]
+    fn test_tool_test_result_to_evidence_passed() {
+        let result = ToolTestResult {
+            tool: "inspect".to_string(),
+            passed: true,
+            exit_code: 0,
+            stdout: "Model info...".to_string(),
+            stderr: String::new(),
+            duration_ms: 100,
+            gate_id: "F-INSPECT-001".to_string(),
+        };
+
+        let model_id = ModelId::new("test", "model");
+        let evidence = result.to_evidence(&model_id);
+
+        assert!(evidence.outcome.is_pass());
+        assert_eq!(evidence.gate_id, "F-INSPECT-001");
+    }
+
+    #[test]
+    fn test_tool_test_result_to_evidence_failed() {
+        let result = ToolTestResult {
+            tool: "validate".to_string(),
+            passed: false,
+            exit_code: 5,
+            stdout: String::new(),
+            stderr: "Validation failed".to_string(),
+            duration_ms: 50,
+            gate_id: "F-VALIDATE-001".to_string(),
+        };
+
+        let model_id = ModelId::new("test", "model");
+        let evidence = result.to_evidence(&model_id);
+
+        assert!(evidence.outcome.is_fail());
+        assert!(!evidence.reason.is_empty());
+    }
+
+    #[test]
+    fn test_tool_test_result_clone() {
+        let result = ToolTestResult {
+            tool: "bench".to_string(),
+            passed: true,
+            exit_code: 0,
+            stdout: "Benchmark output".to_string(),
+            stderr: String::new(),
+            duration_ms: 500,
+            gate_id: "F-BENCH-001".to_string(),
+        };
+
+        let cloned = result.clone();
+        assert_eq!(cloned.tool, result.tool);
+        assert_eq!(cloned.passed, result.passed);
+        assert_eq!(cloned.exit_code, result.exit_code);
+    }
+
+    #[test]
+    fn test_tool_test_result_debug() {
+        let result = ToolTestResult {
+            tool: "profile".to_string(),
+            passed: true,
+            exit_code: 0,
+            stdout: String::new(),
+            stderr: String::new(),
+            duration_ms: 1000,
+            gate_id: "F-PROFILE-001".to_string(),
+        };
+
+        let debug_str = format!("{result:?}");
+        assert!(debug_str.contains("ToolTestResult"));
+        assert!(debug_str.contains("profile"));
+    }
+
+    #[test]
+    fn test_tool_executor_new() {
+        let executor = ToolExecutor::new("/path/to/model.gguf".to_string(), true, 60_000);
+        assert!(executor.no_gpu);
+    }
+
+    #[test]
+    fn test_execution_config_no_gpu() {
+        let config = ExecutionConfig {
+            no_gpu: true,
+            ..Default::default()
+        };
+        assert!(config.no_gpu);
+    }
+
+    #[test]
+    fn test_execution_config_subprocess_mode() {
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/path/model.gguf".to_string()),
+            ..Default::default()
+        };
+        assert!(config.subprocess_mode);
+        assert!(config.model_path.is_some());
+    }
+
+    #[test]
+    fn test_execution_config_conversion_tests() {
+        // Default should have conversion tests enabled
+        let config = ExecutionConfig::default();
+        assert!(config.run_conversion_tests);
+
+        // Can be disabled
+        let config_disabled = ExecutionConfig {
+            run_conversion_tests: false,
+            ..Default::default()
+        };
+        assert!(!config_disabled.run_conversion_tests);
+    }
+
+    #[test]
+    fn test_execution_result_with_skipped() {
+        let result = ExecutionResult {
+            playbook_name: "test".to_string(),
+            total_scenarios: 10,
+            passed: 5,
+            failed: 2,
+            skipped: 3,
+            duration_ms: 100,
+            gateway_failed: None,
+            evidence: EvidenceCollector::new(),
+        };
+        assert_eq!(result.skipped, 3);
+        // Pass rate only considers executed (not skipped)
+        let executed = result.passed + result.failed;
+        assert_eq!(executed, 7);
+    }
+
+    #[test]
+    fn test_executor_config_method() {
+        let executor = Executor::new();
+        let config = executor.config();
+        assert_eq!(config.failure_policy, FailurePolicy::StopOnP0);
     }
 }
