@@ -4731,6 +4731,8 @@ mod tests {
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
+| 1.3.0 | 2026-01-30 | PAIML Engineering | Rosetta differential testing, GH-186/189 detection, 217 gates |
+| 1.2.0 | 2026-01-30 | PAIML Engineering | Bug classification, process lifecycle (Jidoka) |
 | 1.1.0 | 2026-01-29 | PAIML Engineering | Enhanced citations and philosophy (Popper/Taleb) |
 | 1.0.0 | 2026-01-29 | PAIML Engineering | Initial draft |
 
