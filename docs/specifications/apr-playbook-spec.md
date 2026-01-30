@@ -505,6 +505,44 @@ Systematic detection of common format conversion failures:
 3. No garbage patterns in target output
 4. No PMAT-172 tokenizer errors in stderr
 
+#### 4.4.6 Cross-Project Pattern Gates
+
+Bug patterns identified from mutation testing and fix analysis across aprender/realizar:
+
+| Gate ID | Pattern | Description | Severity | Source |
+|---------|---------|-------------|----------|--------|
+| **F-PATH-ALT-001** | AlternatePathMissing | Feature in primary path but missing in alternate | P0 | aprender GH-185 |
+| **F-PATH-ALGO-001** | AlgorithmMismatch | Two implementations with incompatible layouts | P0 | aprender GH-177 |
+| **F-STATE-FALLBACK-001** | SilentFallbackWrongResource | Fallback silently uses wrong resource | P0 | realizar 33e18c2 |
+| **F-STATE-TIMING-001** | StateAdvancementTiming | State advanced at wrong pipeline stage | P1 | realizar 62147f9 |
+| **F-STATE-CORRUPT-001** | SharedStateCorruption | Prior operation corrupts shared state | P1 | realizar 9f9f985 |
+| **F-VALID-POST-001** | MissingPostTransformValidation | No validation after transformation | P0 | aprender GH-177 |
+| **F-VALID-TYPE-001** | MissingTypeDetection | No format/type detection before processing | P1 | realizar f13f39b |
+| **F-VALID-COMPANION-001** | MissingCompanionData | Required companion files missing | P2 | aprender GH-182 |
+| **F-ERR-UNWRAP-001** | UnwrapOnFallible | `.unwrap()` on fallible operation | P1 | aprender PMAT-189 |
+| **F-ERR-PROP-001** | ErrorPropagationGap | Error not propagated on alternate path | P2 | multiple |
+| **F-SEC-PATH-001** | PathTraversal | Untrusted path allows reading arbitrary files | P0 | realizar 04d2774 |
+| **F-SEC-INJECT-001** | PromptInjection | Special tokens not escaped | P0 | realizar 1b51030 |
+
+**Detection Heuristics:**
+
+1. **Tensor Validity Check** (F-VALID-POST-001):
+   - Check for NaN/Inf values after transformation
+   - Verify mean value is within bounds (|mean| < 100)
+   - Fail fast on corrupted values
+
+2. **Path Safety Check** (F-SEC-PATH-001):
+   - Reject paths containing `../`, `..\\`, `/etc/`, `C:\\Windows`
+   - Check for null byte injection
+
+3. **Prompt Safety Check** (F-SEC-INJECT-001):
+   - Detect unescaped `<|`, `|>`, `[INST]`, `<<SYS>>` patterns
+   - Flag BOS/EOS tokens in user input
+
+4. **Fallback Consistency Check** (F-STATE-FALLBACK-001):
+   - Compare output from primary vs fallback resource
+   - Require >80% Jaccard similarity to confirm correct resource
+
 ### 4.5 Conversion Test Protocol
 
 ```rust

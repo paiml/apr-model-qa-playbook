@@ -27,6 +27,7 @@ pub mod error;
 pub mod evidence;
 pub mod executor;
 pub mod parallel;
+pub mod patterns;
 pub mod playbook;
 pub mod process;
 
@@ -42,4 +43,8 @@ pub use executor::{
     ExecutionConfig, ExecutionResult, Executor, FailurePolicy, ToolExecutor, ToolTestResult,
 };
 pub use parallel::{ExecutionMode, ParallelConfig, ParallelExecutor, ParallelResult};
+pub use patterns::{
+    BugPattern, CompanionCheckResult, PathSafetyResult, PathViolation, PatternDetector,
+    PromptPattern, PromptSafetyResult, TensorValidityResult,
+};
 pub use playbook::{Playbook, PlaybookStep};
