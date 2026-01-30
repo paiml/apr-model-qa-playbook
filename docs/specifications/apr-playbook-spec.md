@@ -933,6 +933,15 @@ gates:
     condition: |
       apr run model "prompt" --trace-payload
       assert trace_level_used == "payload"
+  - id: F-TRACELEVEL-005
+    description: "Tracing does not affect inference output"
+    condition: |
+      # Output equivalence test: tracing must be observational only
+      output_none = apr run model "prompt" --trace-level none --seed 42
+      output_layer = apr run model "prompt" --trace-level layer --seed 42
+      output_payload = apr run model "prompt" --trace-level payload --seed 42
+      assert output_none.text == output_layer.text == output_payload.text
+      # Heisenberg principle violation: if tracing changes output, it's a bug
 ```
 
 #### 4.4.11 `apr canary` (F-CANARY-*)
@@ -3415,7 +3424,7 @@ mod tests {
 | F-PROP-006 | Regression file updated | `proptest-regressions/` populated | 5 | ✅ PASS (proptest.toml configured) |
 | F-PROP-007 | Rare "Black Swan" inputs generated | Strategy uses weighted sampling | 5 | ✅ PASS |
 
-### 15.6 Tracing & Profiling Falsification (40 points)
+### 15.6 Tracing & Profiling Falsification (45 points)
 
 | ID | Description | Condition | Points | Status |
 |----|-------------|-----------|--------|--------|
@@ -3424,6 +3433,7 @@ mod tests {
 | F-TRACE-003 | Trace level `layer` works | Per-layer mean/std/L2 stats | 5 | ✅ PASS (via ToolExecutor) |
 | F-TRACE-004 | Trace level `payload` works | Full tensor values captured | 5 | ✅ PASS (via ToolExecutor) |
 | F-TRACE-005 | NaN/Inf detection | Anomalies flagged in trace output | 5 | ✅ PASS (conversion tests) |
+| F-TRACE-006 | Output equivalence | `--trace-level none` == `--trace-level payload` output (with same seed) | 5 | ⚠️ NOT TESTED |
 | F-PROFILE-001 | Profile hotspots detected | At least attention+mlp identified | 5 | ✅ PASS (via ToolExecutor) |
 | F-PROFILE-002 | Flamegraph output valid | SVG renders correctly | 5 | ✅ PASS (apr #174 fixed) |
 | F-PROFILE-003 | Focus filtering works | `--focus attention` limits scope | 5 | ✅ PASS (apr #173 fixed) |
@@ -3464,16 +3474,16 @@ mod tests {
 | Format Conversion | 70 | 70 | ✅ 100% (apr #172 fixed - conversions now lossless) |
 | Integration | 40 | 40 | ✅ 100% |
 | Property Tests | 35 | 35 | ✅ 100% |
-| Tracing & Profiling | 40 | 40 | ✅ 100% (apr #173, #174 fixed) |
+| Tracing & Profiling | 45 | 40 | ⚠️ 89% (F-TRACE-006 output equivalence not yet tested) |
 | ML Tuning | 30 | 25 | ⚠️ 83% (apr tune --plan implemented) |
 | Upstream Tickets | 20 | 20 | ✅ 100% |
-| **TOTAL** | **300** | **295** | **98%** |
+| **TOTAL** | **305** | **295** | **97%** |
 
 **Arithmetic Verification:**
-- Max: 30 + 35 + 70 + 40 + 35 + 40 + 30 + 20 = **300** ✓
+- Max: 30 + 35 + 70 + 40 + 35 + 45 + 30 + 20 = **305** ✓
 - Achieved: 30 + 35 + 70 + 40 + 35 + 40 + 25 + 20 = **295** ✓
 
-**Certification Status:** 295/300 points (98%) - ✅ **CERTIFIED**
+**Certification Status:** 295/305 points (97%) - ✅ **CERTIFIED**
 - All major categories achieved 100% or near-complete
 - ML Tuning: `apr tune --plan` now provides LoRA/QLoRA config planning (25/30 points)
 - Only F-DRIFT-001 (DDM drift detection) remains pending (5 points)
