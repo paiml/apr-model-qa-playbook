@@ -1183,4 +1183,86 @@ mod tests {
         let indices = test.find_diff_indices("ab", "abc");
         assert!(indices.is_empty()); // first 2 chars match
     }
+
+    #[test]
+    fn test_conversion_execution_result_all_passed() {
+        let result = ConversionExecutionResult {
+            passed: 10,
+            failed: 0,
+            total: 10,
+            evidence: vec![],
+            results: vec![],
+            duration_ms: 1000,
+        };
+        assert!(result.all_passed());
+    }
+
+    #[test]
+    fn test_conversion_execution_result_not_all_passed() {
+        let result = ConversionExecutionResult {
+            passed: 8,
+            failed: 2,
+            total: 10,
+            evidence: vec![],
+            results: vec![],
+            duration_ms: 1000,
+        };
+        assert!(!result.all_passed());
+    }
+
+    #[test]
+    fn test_conversion_execution_result_pass_rate() {
+        let result = ConversionExecutionResult {
+            passed: 8,
+            failed: 2,
+            total: 10,
+            evidence: vec![],
+            results: vec![],
+            duration_ms: 1000,
+        };
+        let rate = result.pass_rate();
+        assert!((rate - 80.0).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn test_conversion_execution_result_pass_rate_zero_total() {
+        let result = ConversionExecutionResult {
+            passed: 0,
+            failed: 0,
+            total: 0,
+            evidence: vec![],
+            results: vec![],
+            duration_ms: 0,
+        };
+        let rate = result.pass_rate();
+        assert!((rate - 100.0).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn test_conversion_execution_result_pass_rate_all_passed() {
+        let result = ConversionExecutionResult {
+            passed: 5,
+            failed: 0,
+            total: 5,
+            evidence: vec![],
+            results: vec![],
+            duration_ms: 500,
+        };
+        let rate = result.pass_rate();
+        assert!((rate - 100.0).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn test_conversion_execution_result_pass_rate_none_passed() {
+        let result = ConversionExecutionResult {
+            passed: 0,
+            failed: 5,
+            total: 5,
+            evidence: vec![],
+            results: vec![],
+            duration_ms: 500,
+        };
+        let rate = result.pass_rate();
+        assert!((rate - 0.0).abs() < f64::EPSILON);
+    }
 }
