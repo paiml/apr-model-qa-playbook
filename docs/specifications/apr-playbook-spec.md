@@ -3409,10 +3409,10 @@ mod tests {
 **Upstream Issue Status (2026-01-30):**
 | Issue | Title | Status |
 |-------|-------|--------|
-| #172 | P0 Format Conversion (NaN/lossy) | ✅ **FIXED** (PMAT-177) |
-| #173 | `--focus` option for profile | ✅ **FIXED** (filter_results_by_focus) |
-| #174 | `--profile-output` flamegraph | ✅ **FIXED** (--output/-o flag) |
-| #175 | TensorStats cross-format validation | ✅ **FIXED** (aacf224e) |
+| #172 | P0 Format Conversion (NaN/lossy) | ✅ **CLOSED** (PMAT-177) |
+| #173 | `--focus` option for profile | ✅ **CLOSED** (filter_results_by_focus) |
+| #174 | `--profile-output` flamegraph | ✅ **CLOSED** (--output/-o flag) |
+| #175 | TensorStats cross-format validation | ✅ **CLOSED** (aacf224e) |
 
 **Test Coverage Implementation (2026-01-30):**
 - 406 unit tests across all crates (148 runner, 124 report, 104 gen, 30 cli)
