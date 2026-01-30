@@ -1,11 +1,44 @@
 # APR Model QA Playbook Specification
 
-**Version:** 1.2.0
+**Version:** 1.3.0
 **Status:** DRAFT - Awaiting Peer Review
 **Author:** PAIML Engineering
 **Date:** 2026-01-30
 **PMAT Compliance:** Required (95% coverage, zero SATD)
 **Quality Philosophy:** Toyota Way + Popperian Falsification + Black Swan Theory
+
+---
+
+## Changelog
+
+### v1.3.0 (2026-01-30)
+- **feat(differential):** Add Rosetta differential testing (GH-188, PMAT-114)
+  - `apr rosetta diff-tensors`: Tensor layout mismatch detection
+  - `apr rosetta compare-inference`: Token-by-token inference comparison
+  - Gates: F-ROSETTA-DIFF-001/002, F-ROSETTA-INF-001/002
+- **feat(profile):** Add CI assertion mode (PMAT-192)
+  - `apr profile --ci --assert-throughput --assert-p99 --assert-p50`
+  - Differential benchmarking: `apr profile A B --diff-benchmark`
+  - Gates: F-PROFILE-CI-001/002/003, F-PROFILE-DIFF-001/002
+- **feat(trace):** Add payload mode (APR-TRACE-001)
+  - `apr trace --payload`: Real forward pass with garbage detection
+  - Gates: F-TRACE-PAYLOAD-001/002/003, F-TRACE-DIFF-001
+- **feat(patterns):** Add cross-project bug pattern detection (GH-187)
+  - 12 patterns from aprender/realizar analysis
+  - Gates: F-PATH-*, F-STATE-*, F-VALID-*, F-ERR-*, F-SEC-*
+- **feat(conversion):** Add bug classification (GH-187)
+  - ConversionBugType enum with 6 classifications
+  - Gates: F-CONV-EMBED-001, F-CONV-TOK-001, F-CONV-WEIGHT-001, etc.
+- **Total gates:** 82+ (up from 56+)
+- **Tests:** 225 passing
+
+### v1.2.0 (2026-01-30)
+- Initial bug classification gates
+- Process lifecycle management (Jidoka)
+
+### v1.1.1 (2026-01-29)
+- Profile CI tests
+- Verification playbooks
 
 ---
 
