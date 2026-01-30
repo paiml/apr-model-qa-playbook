@@ -23,3 +23,9 @@ property_tests:
     generator: "arithmetic()"
     oracle: "correct"
     count: 10
+
+# Minimal Differential Testing (v1.3.0)
+trace_payload:
+  enabled: true
+  prompt: "2+2="
+  gates: ["F-TRACE-PAYLOAD-001"]

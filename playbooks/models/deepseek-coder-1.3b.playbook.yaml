@@ -61,9 +61,43 @@ oracles:
 failure_policy: stop_on_p0
 
 property_tests:
+  - name: arithmetic_correctness
+    generator: "arithmetic(a: i32, b: i32, op: +|-|*)"
+    oracle: "eval(a op b) == parse_int(output)"
+    count: 50
+  - name: code_generation
+    generator: "code_prompt(lang: python|rust|go|js|java|cpp)"
+    oracle: "is_valid_syntax(output, lang)"
+    count: 50
+
+# Differential Testing (v1.3.0)
+differential_tests:
+  tensor_diff:
+    enabled: true
+    filter: "embed,lm_head"
+    gates: ["F-ROSETTA-DIFF-001", "F-ROSETTA-DIFF-002"]
+  inference_compare:
+    enabled: true
+    prompt: "What is 2+2?"
+    max_tokens: 10
+    tolerance: 1e-5
+    gates: ["F-ROSETTA-INF-001"]
+
+# Profile CI Assertions (v1.3.0)
+profile_ci:
   enabled: true
-  cases: 100
-  max_shrink_iters: 1000
+  warmup: 3
+  measure: 10
+  assertions:
+    min_throughput: 8.0
+    max_p99_ms: 400
+  gates: ["F-PROFILE-CI-001", "F-PROFILE-CI-002"]
+
+# Trace Payload (v1.3.0)
+trace_payload:
+  enabled: true
+  prompt: "Write a Python function to calculate factorial."
+  gates: ["F-TRACE-PAYLOAD-001", "F-TRACE-PAYLOAD-002"]
 
 metadata:
   author: "apr-qa-gen"
