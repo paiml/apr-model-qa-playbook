@@ -44,6 +44,12 @@ pub struct ExecutionConfig {
     pub no_gpu: bool,
     /// Run P0 format conversion tests (CRITICAL - should be true by default)
     pub run_conversion_tests: bool,
+    /// Run differential tests (tensor diff, inference compare)
+    pub run_differential_tests: bool,
+    /// Run profile CI assertions
+    pub run_profile_ci: bool,
+    /// Run trace payload tests
+    pub run_trace_payload: bool,
 }
 
 impl Default for ExecutionConfig {
@@ -57,6 +63,9 @@ impl Default for ExecutionConfig {
             model_path: None,
             no_gpu: false,
             run_conversion_tests: true, // P0 CRITICAL: Always run by default
+            run_differential_tests: true, // v1.3.0: Differential testing enabled by default
+            run_profile_ci: false, // Only enable for CI pipelines
+            run_trace_payload: true, // v1.3.0: Trace payload enabled by default
         }
     }
 }
@@ -1830,5 +1839,28 @@ test_matrix:
         let executor = Executor::new();
         let config = executor.config();
         assert_eq!(config.failure_policy, FailurePolicy::StopOnP0);
+    }
+
+    #[test]
+    fn test_execution_config_differential_defaults() {
+        let config = ExecutionConfig::default();
+        // v1.3.0: Differential testing enabled by default
+        assert!(config.run_differential_tests);
+        assert!(config.run_trace_payload);
+        // Profile CI disabled by default (only for CI pipelines)
+        assert!(!config.run_profile_ci);
+    }
+
+    #[test]
+    fn test_execution_config_differential_custom() {
+        let config = ExecutionConfig {
+            run_differential_tests: false,
+            run_profile_ci: true,
+            run_trace_payload: false,
+            ..Default::default()
+        };
+        assert!(!config.run_differential_tests);
+        assert!(config.run_profile_ci);
+        assert!(!config.run_trace_payload);
     }
 }
