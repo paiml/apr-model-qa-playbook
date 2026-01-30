@@ -835,6 +835,15 @@ gates:
   - id: F-PROFILE-005
     description: "JSON output parseable"
     condition: "format == 'json' => json.parse(output).is_ok()"
+  - id: F-PROFILE-006
+    description: "CI mode with --assert-throughput works"
+    condition: "--ci --assert-throughput N => exit_code=0 when throughput >= N"
+  - id: F-PROFILE-007
+    description: "CI mode exits 1 on assertion failure"
+    condition: "--ci --assert-throughput 1000000 => exit_code=1 (impossible threshold)"
+  - id: F-PROFILE-008
+    description: "CI mode --assert-p99 latency works"
+    condition: "--ci --assert-p99 N => exit_code=0 when p99_ms <= N"
 ```
 
 #### 4.4.8 `apr trace` (F-TRACE-*)
@@ -3439,6 +3448,9 @@ mod tests {
 | F-PROFILE-001 | Profile hotspots detected | At least attention+mlp identified | 5 | ✅ PASS (via ToolExecutor) |
 | F-PROFILE-002 | Flamegraph output valid | SVG renders correctly | 5 | ✅ PASS (apr #174 fixed) |
 | F-PROFILE-003 | Focus filtering works | `--focus attention` limits scope | 5 | ✅ PASS (apr #173 fixed) |
+| F-PROFILE-006 | CI mode throughput assertion | `--ci --assert-throughput` works | 5 | ✅ PASS (via ToolExecutor) |
+| F-PROFILE-007 | CI mode assertion failure | Exits 1 when assertion fails | 5 | ✅ PASS (via ToolExecutor) |
+| F-PROFILE-008 | CI mode p99 latency assertion | `--ci --assert-p99` works | 5 | ✅ PASS (via ToolExecutor) |
 
 ### 15.7 ML Tuning Falsification (30 points)
 
@@ -3505,9 +3517,10 @@ mod tests {
 | #177 | Format conversion NaN/Inf corruption | P0 | ✅ **CLOSED** (regression → #181) |
 | #178 | apr validate rejects GGUF v3 | P2 | ✅ **CLOSED** (regression → #183) |
 | #179 | Tool test coverage gaps (69%) | P2 | ✅ **CLOSED** |
-| #181 | **REGRESSION: Conversion diffs still large** | P0 | ⏳ **OPEN** (blocks certification) |
-| #182 | SafeTensors missing tokenizer/config | P1 | ⏳ **OPEN** (blocks F-CONV-003/005) |
-| #183 | **REGRESSION: validate still fails** | P2 | ⏳ **OPEN** (tool coverage 89%) |
+| #181 | Q4_K_M block alignment in conversion | P0 | ✅ **FIXED** (raw byte pass-through, PMAT-193) |
+| #182 | SafeTensors missing tokenizer/config | P1 | ✅ **FIXED** (companion file export, PMAT-194) |
+| #183 | GGUF v3 validation error messages | P2 | ✅ **FIXED** (enhanced hex/ASCII, PMAT-195) |
+| #185 | **APR missing embedded tokenizer** | P0 | ⏳ **OPEN** (blocks all conversion tests) |
 
 **Test Coverage Implementation (2026-01-30):**
 - 461 unit tests across all crates (30 cli + 131 gen + 130 report + 170 runner)

@@ -1,5 +1,6 @@
 # Verification Playbook for TICKET-183
-# REGRESSION: apr validate still fails on valid GGUF v3 files
+# VERIFIED: Magic byte comparison was correct; enhanced error messages added
+# Fix Location: src/format/gguf.rs:813-828, src/format/validation.rs:581-602
 #
 # Run with: apr-qa tools <model.gguf> --no-gpu
 
@@ -43,4 +44,7 @@ metadata:
   severity: P2
   component: apr-cli/validate
   discovered: "2026-01-30"
-  regression_from: "#178"
+  fixed: "2026-01-30"
+  fix_location: "src/format/gguf.rs:813-828, src/format/validation.rs:581-602"
+  pmat_contract: "PMAT-195"
+  note: "Original magic byte comparison was correct; added better error messages"

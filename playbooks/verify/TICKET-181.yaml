@@ -1,5 +1,6 @@
 # Verification Playbook for TICKET-181
-# REGRESSION: Format conversion still produces large diffs after #177 fix
+# FIXED: Q4_K_M block alignment via raw byte pass-through
+# Fix Location: src/format/converter.rs:2633-2690
 #
 # Run with: apr-qa run playbooks/verify/TICKET-181.yaml --subprocess --model-path <model.gguf>
 
@@ -76,4 +77,6 @@ metadata:
   severity: P0
   component: apr-rosetta
   discovered: "2026-01-30"
-  regression_from: "#177"
+  fixed: "2026-01-30"
+  fix_location: "src/format/converter.rs:2633-2690"
+  pmat_contract: "PMAT-193"

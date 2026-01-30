@@ -1,5 +1,6 @@
 # Verification Playbook for TICKET-182
-# SafeTensors inference fails: tokenizer.json and config.json not found
+# FIXED: SafeTensors companion file export (tokenizer.json, config.json)
+# Fix Location: src/format/converter.rs:4157-4172 (options), 4360-4451 (helpers)
 #
 # Run with: apr-qa tools <model.gguf> --no-gpu
 
@@ -51,3 +52,6 @@ metadata:
   severity: P1
   component: apr-rosetta
   discovered: "2026-01-30"
+  fixed: "2026-01-30"
+  fix_location: "src/format/converter.rs:4157-4172, 4360-4451"
+  pmat_contract: "PMAT-194"

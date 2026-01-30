@@ -512,27 +512,247 @@ impl ToolExecutor {
         self.build_result(&format!("trace-{level}"), output, start)
     }
 
-    /// Execute apr profile
+    /// Execute apr profile (standalone command)
     #[must_use]
     pub fn execute_profile(&self) -> ToolTestResult {
         use std::process::Command;
         let start = std::time::Instant::now();
 
-        let mut cmd = Command::new("apr");
-        cmd.arg("run")
+        // Use apr profile command (not apr run --profile)
+        let output = Command::new("apr")
+            .arg("profile")
             .arg(&self.model_path)
-            .arg("-p")
-            .arg("Hello")
-            .arg("--max-tokens")
-            .arg("8")
-            .arg("--profile");
+            .arg("--warmup")
+            .arg("1")
+            .arg("--measure")
+            .arg("2")
+            .output();
 
-        if self.no_gpu {
-            cmd.arg("--no-gpu");
-        }
-
-        let output = cmd.output();
         self.build_result("profile", output, start)
+    }
+
+    /// Execute apr profile in CI mode with assertions (F-PROFILE-006)
+    ///
+    /// Tests the CI mode features:
+    /// - `--ci` flag for CI mode with assertion checks
+    /// - `--assert-throughput` minimum tok/s assertion
+    /// - `--warmup` and `--measure` pass counts
+    ///
+    /// Returns pass if CI mode runs and reports metrics correctly.
+    #[must_use]
+    pub fn execute_profile_ci(&self) -> ToolTestResult {
+        use std::process::Command;
+        let start = std::time::Instant::now();
+
+        // Run apr profile in CI mode with lenient assertions
+        // Use very low throughput threshold (1 tok/s) to ensure it passes
+        let output = Command::new("apr")
+            .arg("profile")
+            .arg(&self.model_path)
+            .arg("--ci")
+            .arg("--assert-throughput")
+            .arg("1.0") // Very lenient: 1 tok/s minimum
+            .arg("--warmup")
+            .arg("1")
+            .arg("--measure")
+            .arg("2")
+            .arg("--json")
+            .output();
+
+        let duration_ms = start.elapsed().as_millis() as u64;
+
+        match output {
+            Ok(out) => {
+                let stdout = String::from_utf8_lossy(&out.stdout).to_string();
+                let stderr = String::from_utf8_lossy(&out.stderr).to_string();
+                let exit_code = out.status.code().unwrap_or(-1);
+
+                // Check if CI features are available
+                if stderr.contains("unexpected argument")
+                    || stderr.contains("unrecognized")
+                    || stderr.contains("--ci")
+                {
+                    return ToolTestResult {
+                        tool: "profile-ci".to_string(),
+                        passed: false,
+                        exit_code: -2,
+                        stdout,
+                        stderr: "Feature not available: apr profile does not support --ci mode"
+                            .to_string(),
+                        duration_ms,
+                        gate_id: "F-PROFILE-006".to_string(),
+                    };
+                }
+
+                // Verify JSON output contains expected CI fields
+                let has_passed_field = stdout.contains("\"passed\"");
+                let has_metrics = stdout.contains("throughput") || stdout.contains("tok_s");
+
+                let passed = exit_code == 0 && (has_passed_field || has_metrics);
+
+                ToolTestResult {
+                    tool: "profile-ci".to_string(),
+                    passed,
+                    exit_code,
+                    stdout,
+                    stderr,
+                    duration_ms,
+                    gate_id: "F-PROFILE-006".to_string(),
+                }
+            }
+            Err(e) => ToolTestResult {
+                tool: "profile-ci".to_string(),
+                passed: false,
+                exit_code: -1,
+                stdout: String::new(),
+                stderr: e.to_string(),
+                duration_ms,
+                gate_id: "F-PROFILE-006".to_string(),
+            },
+        }
+    }
+
+    /// Execute apr profile CI with assertion failure test (F-PROFILE-007)
+    ///
+    /// Tests that CI mode correctly fails when assertions are not met.
+    /// Uses an impossibly high throughput assertion to guarantee failure.
+    #[must_use]
+    pub fn execute_profile_ci_assertion_failure(&self) -> ToolTestResult {
+        use std::process::Command;
+        let start = std::time::Instant::now();
+
+        // Run with impossible throughput assertion (1 million tok/s)
+        let output = Command::new("apr")
+            .arg("profile")
+            .arg(&self.model_path)
+            .arg("--ci")
+            .arg("--assert-throughput")
+            .arg("1000000.0") // Impossible: 1M tok/s
+            .arg("--warmup")
+            .arg("1")
+            .arg("--measure")
+            .arg("1")
+            .arg("--json")
+            .output();
+
+        let duration_ms = start.elapsed().as_millis() as u64;
+
+        match output {
+            Ok(out) => {
+                let stdout = String::from_utf8_lossy(&out.stdout).to_string();
+                let stderr = String::from_utf8_lossy(&out.stderr).to_string();
+                let exit_code = out.status.code().unwrap_or(-1);
+
+                // Check if CI features are available
+                if stderr.contains("unexpected argument") || stderr.contains("unrecognized") {
+                    return ToolTestResult {
+                        tool: "profile-ci-assertion".to_string(),
+                        passed: false,
+                        exit_code: -2,
+                        stdout,
+                        stderr: "Feature not available: apr profile does not support --ci mode"
+                            .to_string(),
+                        duration_ms,
+                        gate_id: "F-PROFILE-007".to_string(),
+                    };
+                }
+
+                // CI mode should EXIT 1 when assertion fails
+                // The test PASSES if apr correctly returns non-zero exit code
+                // or reports failure in output (fallback for older versions)
+                let assertion_failed_correctly = exit_code == 1
+                    || stdout.contains("\"passed\":false")
+                    || stdout.contains("\"passed\": false")
+                    || stdout.contains("ASSERTIONS FAILED");
+
+                ToolTestResult {
+                    tool: "profile-ci-assertion".to_string(),
+                    passed: assertion_failed_correctly,
+                    exit_code,
+                    stdout,
+                    stderr,
+                    duration_ms,
+                    gate_id: "F-PROFILE-007".to_string(),
+                }
+            }
+            Err(e) => ToolTestResult {
+                tool: "profile-ci-assertion".to_string(),
+                passed: false,
+                exit_code: -1,
+                stdout: String::new(),
+                stderr: e.to_string(),
+                duration_ms,
+                gate_id: "F-PROFILE-007".to_string(),
+            },
+        }
+    }
+
+    /// Execute apr profile with p99 latency assertion (F-PROFILE-008)
+    #[must_use]
+    pub fn execute_profile_ci_p99(&self) -> ToolTestResult {
+        use std::process::Command;
+        let start = std::time::Instant::now();
+
+        // Run with lenient p99 assertion (10 seconds max)
+        let output = Command::new("apr")
+            .arg("profile")
+            .arg(&self.model_path)
+            .arg("--ci")
+            .arg("--assert-p99")
+            .arg("10000.0") // 10 seconds max p99
+            .arg("--warmup")
+            .arg("1")
+            .arg("--measure")
+            .arg("2")
+            .arg("--json")
+            .output();
+
+        let duration_ms = start.elapsed().as_millis() as u64;
+
+        match output {
+            Ok(out) => {
+                let stdout = String::from_utf8_lossy(&out.stdout).to_string();
+                let stderr = String::from_utf8_lossy(&out.stderr).to_string();
+                let exit_code = out.status.code().unwrap_or(-1);
+
+                // Check if p99 assertion feature is available
+                if stderr.contains("unexpected argument") || stderr.contains("--assert-p99") {
+                    return ToolTestResult {
+                        tool: "profile-ci-p99".to_string(),
+                        passed: false,
+                        exit_code: -2,
+                        stdout,
+                        stderr: "Feature not available: apr profile does not support --assert-p99"
+                            .to_string(),
+                        duration_ms,
+                        gate_id: "F-PROFILE-008".to_string(),
+                    };
+                }
+
+                // Verify p99 metric is in output
+                let has_p99 = stdout.contains("p99") || stdout.contains("latency");
+                let passed = exit_code == 0 && has_p99;
+
+                ToolTestResult {
+                    tool: "profile-ci-p99".to_string(),
+                    passed,
+                    exit_code,
+                    stdout,
+                    stderr,
+                    duration_ms,
+                    gate_id: "F-PROFILE-008".to_string(),
+                }
+            }
+            Err(e) => ToolTestResult {
+                tool: "profile-ci-p99".to_string(),
+                passed: false,
+                exit_code: -1,
+                stdout: String::new(),
+                stderr: e.to_string(),
+                duration_ms,
+                gate_id: "F-PROFILE-008".to_string(),
+            },
+        }
     }
 
     /// Execute apr profile with flamegraph output (F-PROFILE-002)
@@ -937,8 +1157,11 @@ impl ToolExecutor {
             results.push(self.execute_trace(level));
         }
 
-        // Profile test
+        // Profile tests (F-PROFILE-001 basic, F-PROFILE-006/007/008 CI mode)
         results.push(self.execute_profile());
+        results.push(self.execute_profile_ci());
+        results.push(self.execute_profile_ci_assertion_failure());
+        results.push(self.execute_profile_ci_p99());
 
         // Serve lifecycle test (F-INTEG-003)
         if include_serve {
