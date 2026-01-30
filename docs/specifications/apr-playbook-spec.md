@@ -2012,6 +2012,24 @@ apr rosetta compare-inference model.gguf model.apr \
 | **F-ROSETTA-DIFF-002** | Tensor shapes match after conversion | P0 |
 | **F-ROSETTA-INF-001** | Token-by-token argmax match | P0 |
 | **F-ROSETTA-INF-002** | Logit diff within tolerance | P1 |
+| **F-ROSETTA-INF-003** | No PAD token flood (GH-186) | P0 |
+
+**GH-186 PAD Token Flood Detection:**
+
+```bash
+# Detects when APR inference produces only PAD tokens
+apr rosetta compare-inference model.gguf model.apr --prompt "Hello"
+# Output:
+# Token 0: GGUF=15339 APR=151935 ✗ MISMATCH
+# Token 1: GGUF=1917  APR=151935 ✗ MISMATCH
+# Token 2: GGUF=0     APR=151935 ✗ MISMATCH
+#
+# ⚠️  PAD TOKEN FLOOD DETECTED (GH-186)
+#     APR produced 100% PAD tokens (id=151935)
+#     Root cause: APR loader returning zeroed tensors
+#
+# RESULT: ✗ FAIL (0/10 tokens match)
+```
 
 #### 6.6.5 Profile CI Mode (PMAT-192)
 
