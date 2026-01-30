@@ -131,6 +131,86 @@ impl std::fmt::Display for Format {
     }
 }
 
+/// APR tool/subcommand to test
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum AprTool {
+    /// `apr run` - Direct inference
+    Run,
+    /// `apr chat` - Interactive chat
+    Chat,
+    /// `apr serve` - HTTP server
+    Serve,
+    /// `apr inspect` - Model inspection
+    Inspect,
+    /// `apr validate` - Model validation
+    Validate,
+    /// `apr bench` - Benchmarking
+    Bench,
+    /// `apr profile` - Profiling
+    Profile,
+    /// `apr trace` - Tracing
+    Trace,
+    /// `apr check` - Self-test
+    Check,
+    /// `apr canary` - Canary tests
+    Canary,
+}
+
+impl AprTool {
+    /// Get all tools
+    #[must_use]
+    pub const fn all() -> [Self; 10] {
+        [
+            Self::Run,
+            Self::Chat,
+            Self::Serve,
+            Self::Inspect,
+            Self::Validate,
+            Self::Bench,
+            Self::Profile,
+            Self::Trace,
+            Self::Check,
+            Self::Canary,
+        ]
+    }
+
+    /// Get the CLI subcommand
+    #[must_use]
+    pub const fn command(&self) -> &'static str {
+        match self {
+            Self::Run => "run",
+            Self::Chat => "chat",
+            Self::Serve => "serve",
+            Self::Inspect => "inspect",
+            Self::Validate => "validate",
+            Self::Bench => "bench",
+            Self::Profile => "profile",
+            Self::Trace => "trace",
+            Self::Check => "check",
+            Self::Canary => "canary",
+        }
+    }
+
+    /// Check if this tool requires a prompt
+    #[must_use]
+    pub const fn requires_prompt(&self) -> bool {
+        matches!(self, Self::Run | Self::Chat)
+    }
+
+    /// Check if this tool supports trace levels
+    #[must_use]
+    pub const fn supports_trace(&self) -> bool {
+        matches!(self, Self::Run | Self::Trace)
+    }
+}
+
+impl std::fmt::Display for AprTool {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.command())
+    }
+}
+
 /// Trace level for debugging
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]

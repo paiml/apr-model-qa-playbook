@@ -58,6 +58,33 @@ enum Commands {
         /// Timeout per test in milliseconds
         #[arg(long, default_value = "60000")]
         timeout: u64,
+
+        /// Disable GPU acceleration (use CPU only)
+        #[arg(long)]
+        no_gpu: bool,
+
+        /// Skip P0 format conversion tests (NOT RECOMMENDED - these are critical)
+        #[arg(long)]
+        skip_conversion_tests: bool,
+
+        /// Run APR tool coverage tests (inspect, validate, bench, check, trace, profile)
+        #[arg(long)]
+        run_tool_tests: bool,
+    },
+
+    /// Run APR tool coverage tests
+    Tools {
+        /// Path to model file
+        #[arg(value_name = "MODEL_PATH")]
+        model_path: PathBuf,
+
+        /// Disable GPU acceleration
+        #[arg(long)]
+        no_gpu: bool,
+
+        /// Output directory for results
+        #[arg(short, long, default_value = "output")]
+        output: PathBuf,
     },
 
     /// Generate scenarios for a model
@@ -145,6 +172,9 @@ fn main() {
             subprocess,
             model_path,
             timeout,
+            no_gpu,
+            skip_conversion_tests,
+            run_tool_tests,
         } => {
             run_playbook(
                 &playbook,
@@ -155,7 +185,17 @@ fn main() {
                 subprocess,
                 model_path,
                 timeout,
+                no_gpu,
+                skip_conversion_tests,
+                run_tool_tests,
             );
+        }
+        Commands::Tools {
+            model_path,
+            no_gpu,
+            output,
+        } => {
+            run_tool_tests(&model_path, no_gpu, &output);
         }
         Commands::Generate {
             model,
@@ -189,6 +229,7 @@ fn main() {
     }
 }
 
+#[allow(clippy::fn_params_excessive_bools)]
 fn run_playbook(
     playbook_path: &PathBuf,
     output_dir: &PathBuf,
@@ -198,6 +239,9 @@ fn run_playbook(
     subprocess: bool,
     model_path: Option<String>,
     timeout: u64,
+    no_gpu: bool,
+    skip_conversion_tests: bool,
+    run_tool_tests_flag: bool,
 ) {
     println!("Loading playbook: {}", playbook_path.display());
 
@@ -242,9 +286,36 @@ fn run_playbook(
         subprocess_mode: subprocess,
         model_path,
         default_timeout_ms: timeout,
+        no_gpu,
+        run_conversion_tests: !skip_conversion_tests,
     };
 
+    // Print conversion test status (P0 CRITICAL)
+    if !skip_conversion_tests && subprocess {
+        println!("  Conversion tests: ENABLED (P0 CRITICAL)");
+    } else if skip_conversion_tests {
+        println!("  Conversion tests: DISABLED (WARNING: P0 tests skipped)");
+    }
+
+    // Print tool test status
+    if run_tool_tests_flag && subprocess {
+        println!("  Tool tests: ENABLED");
+    }
+
     let mut executor = Executor::with_config(config);
+
+    // Run tool tests if enabled
+    if run_tool_tests_flag && subprocess {
+        if let Some(ref mp) = executor.config().model_path {
+            use apr_qa_runner::ToolExecutor;
+            println!("\n=== Running APR Tool Tests ===");
+            let tool_executor = ToolExecutor::new(mp.clone(), no_gpu, timeout);
+            let tool_results = tool_executor.execute_all();
+            let tool_passed = tool_results.iter().filter(|r| r.passed).count();
+            let tool_failed = tool_results.len() - tool_passed;
+            println!("  Tool tests: {tool_passed} passed, {tool_failed} failed");
+        }
+    }
 
     match executor.execute(&playbook) {
         Ok(result) => {
@@ -524,5 +595,74 @@ fn generate_tickets(
         println!();
         println!("gh command:");
         println!("  {}\n", ticket.to_gh_command(repo));
+    }
+}
+
+fn run_tool_tests(model_path: &std::path::Path, no_gpu: bool, output_dir: &std::path::Path) {
+    use apr_qa_runner::ToolExecutor;
+
+    println!("=== APR Tool Coverage Tests ===\n");
+    println!("Model: {}", model_path.display());
+    println!("GPU: {}\n", if no_gpu { "disabled" } else { "enabled" });
+
+    let executor = ToolExecutor::new(model_path.to_string_lossy().to_string(), no_gpu, 120_000);
+
+    let results = executor.execute_all();
+
+    let mut passed = 0;
+    let mut failed = 0;
+
+    println!("{:<20} {:<10} {:<10} Duration", "Tool", "Status", "Exit");
+    println!("{}", "-".repeat(60));
+
+    for result in &results {
+        let status = if result.passed {
+            "✅ PASS"
+        } else {
+            "❌ FAIL"
+        };
+        println!(
+            "{:<20} {:<10} {:<10} {}ms",
+            result.tool, status, result.exit_code, result.duration_ms
+        );
+
+        if result.passed {
+            passed += 1;
+        } else {
+            failed += 1;
+        }
+    }
+
+    println!("{}", "-".repeat(60));
+    println!("Total: {passed} passed, {failed} failed\n");
+
+    // Save results to JSON
+    if let Err(e) = std::fs::create_dir_all(output_dir) {
+        eprintln!("Error creating output directory: {e}");
+        return;
+    }
+
+    let results_json = serde_json::to_string_pretty(
+        &results
+            .iter()
+            .map(|r| {
+                serde_json::json!({
+                    "tool": r.tool,
+                    "passed": r.passed,
+                    "exit_code": r.exit_code,
+                    "duration_ms": r.duration_ms,
+                    "gate_id": r.gate_id,
+                    "stderr": r.stderr,
+                })
+            })
+            .collect::<Vec<_>>(),
+    )
+    .unwrap_or_default();
+
+    let results_path = output_dir.join("tool_tests.json");
+    if let Err(e) = std::fs::write(&results_path, results_json) {
+        eprintln!("Error saving tool test results: {e}");
+    } else {
+        println!("Results saved to: {}", results_path.display());
     }
 }

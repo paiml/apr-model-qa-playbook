@@ -30,11 +30,12 @@ pub mod parallel;
 pub mod playbook;
 
 pub use conversion::{
-    ConversionEvidence, ConversionResult, ConversionTest, EPSILON, RoundTripTest, all_backends,
-    all_conversion_pairs, generate_conversion_tests,
+    ConversionConfig, ConversionEvidence, ConversionExecutionResult, ConversionExecutor,
+    ConversionResult, ConversionTest, EPSILON, RoundTripTest, all_backends, all_conversion_pairs,
+    generate_conversion_tests,
 };
 pub use error::{Error, Result};
 pub use evidence::{Evidence, EvidenceCollector, Outcome, PerformanceMetrics};
-pub use executor::{ExecutionConfig, Executor, FailurePolicy};
+pub use executor::{ExecutionConfig, Executor, FailurePolicy, ToolExecutor, ToolTestResult};
 pub use parallel::{ExecutionMode, ParallelConfig, ParallelExecutor, ParallelResult};
 pub use playbook::{Playbook, PlaybookStep};

@@ -99,6 +99,12 @@ impl Playbook {
             * self.model.formats.len()
             * self.test_matrix.scenario_count
     }
+
+    /// Get the model ID for this playbook
+    #[must_use]
+    pub fn model_id(&self) -> ModelId {
+        ModelId::new(&self.model.hf_org(), &self.model.hf_name())
+    }
 }
 
 /// Model configuration

@@ -4,10 +4,12 @@
 
 #![allow(clippy::cast_possible_truncation)]
 
+use crate::conversion::{ConversionConfig, ConversionExecutor};
 use crate::error::Result;
 use crate::evidence::{Evidence, EvidenceCollector, PerformanceMetrics};
 use crate::playbook::Playbook;
-use apr_qa_gen::QaScenario;
+use apr_qa_gen::{Backend, Format, Modality, ModelId, QaScenario};
+use std::path::Path;
 use std::time::Instant;
 
 /// Failure handling policy (Jidoka)
@@ -24,6 +26,7 @@ pub enum FailurePolicy {
 
 /// Execution configuration
 #[derive(Debug, Clone)]
+#[allow(clippy::struct_excessive_bools)]
 pub struct ExecutionConfig {
     /// Failure handling policy
     pub failure_policy: FailurePolicy,
@@ -37,6 +40,10 @@ pub struct ExecutionConfig {
     pub subprocess_mode: bool,
     /// Path to the model file for subprocess mode
     pub model_path: Option<String>,
+    /// Disable GPU acceleration
+    pub no_gpu: bool,
+    /// Run P0 format conversion tests (CRITICAL - should be true by default)
+    pub run_conversion_tests: bool,
 }
 
 impl Default for ExecutionConfig {
@@ -48,6 +55,8 @@ impl Default for ExecutionConfig {
             dry_run: false,
             subprocess_mode: false,
             model_path: None,
+            no_gpu: false,
+            run_conversion_tests: true, // P0 CRITICAL: Always run by default
         }
     }
 }
@@ -140,16 +149,68 @@ impl Executor {
             self.collector.add(evidence);
         }
 
+        // P0 CRITICAL: Run format conversion tests
+        let mut conversion_passed = 0;
+        let mut conversion_failed = 0;
+        if self.config.run_conversion_tests && self.config.subprocess_mode {
+            if let Some(model_path) = self.config.model_path.clone() {
+                let model_id = playbook.model_id();
+                let (cp, cf) = self.run_conversion_tests(Path::new(&model_path), &model_id);
+                conversion_passed = cp;
+                conversion_failed = cf;
+            }
+        }
+
         Ok(ExecutionResult {
             playbook_name: playbook.name.clone(),
-            total_scenarios: total,
-            passed,
-            failed,
+            total_scenarios: total + conversion_passed + conversion_failed,
+            passed: passed + conversion_passed,
+            failed: failed + conversion_failed,
             skipped,
             duration_ms: start.elapsed().as_millis() as u64,
             gateway_failed: None,
             evidence: self.collector.clone(),
         })
+    }
+
+    /// Run P0 format conversion tests
+    fn run_conversion_tests(&mut self, model_path: &Path, model_id: &ModelId) -> (usize, usize) {
+        let config = if self.config.no_gpu {
+            ConversionConfig::cpu_only()
+        } else {
+            ConversionConfig::default()
+        };
+
+        let executor = ConversionExecutor::new(config);
+
+        match executor.execute_all(model_path, model_id) {
+            Ok(result) => {
+                // Add all conversion evidence to collector
+                for ev in result.evidence {
+                    self.collector.add(ev);
+                }
+                (result.passed, result.failed)
+            }
+            Err(e) => {
+                // Critical conversion infrastructure failure
+                let ev = Evidence::falsified(
+                    "F-CONV-INFRA-001",
+                    apr_qa_gen::QaScenario::new(
+                        model_id.clone(),
+                        apr_qa_gen::Modality::Run,
+                        apr_qa_gen::Backend::Cpu,
+                        apr_qa_gen::Format::Gguf,
+                        "Conversion infrastructure".to_string(),
+                        0,
+                    ),
+                    format!("Conversion infrastructure failure: {e}"),
+                    "N/A",
+                    0,
+                );
+                self.collector.add(ev);
+                (0, 1)
+            }
+        }
     }
 
     /// Execute a single scenario
@@ -239,17 +300,23 @@ impl Executor {
         let timeout_secs = self.config.default_timeout_ms / 1000;
 
         // Build the apr run command
-        let result = Command::new("apr")
-            .arg("run")
-            .arg(model_path)
-            .arg("-p")
+        let mut cmd = Command::new("apr");
+        cmd.arg("run").arg(model_path);
+
+        // Add --no-gpu if configured
+        if self.config.no_gpu {
+            cmd.arg("--no-gpu");
+        }
+
+        cmd.arg("-p")
             .arg(&scenario.prompt)
             .arg("--max-tokens")
             .arg("32")
             .arg("--benchmark")
             .arg("--json")
-            .env("APR_TIMEOUT", timeout_secs.to_string())
-            .output();
+            .env("APR_TIMEOUT", timeout_secs.to_string());
+
+        let result = cmd.output();
 
         match result {
             Ok(output) => {
@@ -327,11 +394,248 @@ impl Executor {
     pub fn evidence(&self) -> &EvidenceCollector {
         &self.collector
     }
+
+    /// Get configuration
+    #[must_use]
+    pub fn config(&self) -> &ExecutionConfig {
+        &self.config
+    }
 }
 
 impl Default for Executor {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+/// APR Tool test executor for comprehensive tool coverage
+#[derive(Debug)]
+#[allow(dead_code)] // timeout_ms reserved for future timeout enforcement
+pub struct ToolExecutor {
+    model_path: String,
+    no_gpu: bool,
+    timeout_ms: u64,
+}
+
+impl ToolExecutor {
+    /// Create a new tool executor
+    #[must_use]
+    pub fn new(model_path: String, no_gpu: bool, timeout_ms: u64) -> Self {
+        Self {
+            model_path,
+            no_gpu,
+            timeout_ms,
+        }
+    }
+
+    /// Execute apr inspect
+    #[must_use]
+    pub fn execute_inspect(&self) -> ToolTestResult {
+        use std::process::Command;
+        let start = std::time::Instant::now();
+
+        let output = Command::new("apr")
+            .arg("inspect")
+            .arg(&self.model_path)
+            .output();
+
+        self.build_result("inspect", output, start)
+    }
+
+    /// Execute apr validate
+    #[must_use]
+    pub fn execute_validate(&self) -> ToolTestResult {
+        use std::process::Command;
+        let start = std::time::Instant::now();
+
+        let output = Command::new("apr")
+            .arg("validate")
+            .arg(&self.model_path)
+            .output();
+
+        self.build_result("validate", output, start)
+    }
+
+    /// Execute apr bench
+    #[must_use]
+    pub fn execute_bench(&self) -> ToolTestResult {
+        use std::process::Command;
+        let start = std::time::Instant::now();
+
+        let mut cmd = Command::new("apr");
+        cmd.arg("bench").arg(&self.model_path);
+        if self.no_gpu {
+            cmd.arg("--no-gpu");
+        }
+
+        let output = cmd.output();
+        self.build_result("bench", output, start)
+    }
+
+    /// Execute apr check
+    #[must_use]
+    pub fn execute_check(&self) -> ToolTestResult {
+        use std::process::Command;
+        let start = std::time::Instant::now();
+
+        let output = Command::new("apr")
+            .arg("check")
+            .arg(&self.model_path)
+            .output();
+
+        self.build_result("check", output, start)
+    }
+
+    /// Execute apr trace with specified level
+    #[must_use]
+    pub fn execute_trace(&self, level: &str) -> ToolTestResult {
+        use std::process::Command;
+        let start = std::time::Instant::now();
+
+        let mut cmd = Command::new("apr");
+        cmd.arg("run")
+            .arg(&self.model_path)
+            .arg("-p")
+            .arg("What is 2+2?")
+            .arg("--max-tokens")
+            .arg("8")
+            .arg("--trace")
+            .arg("--trace-level")
+            .arg(level);
+
+        if self.no_gpu {
+            cmd.arg("--no-gpu");
+        }
+
+        let output = cmd.output();
+        self.build_result(&format!("trace-{level}"), output, start)
+    }
+
+    /// Execute apr profile
+    #[must_use]
+    pub fn execute_profile(&self) -> ToolTestResult {
+        use std::process::Command;
+        let start = std::time::Instant::now();
+
+        let mut cmd = Command::new("apr");
+        cmd.arg("run")
+            .arg(&self.model_path)
+            .arg("-p")
+            .arg("Hello")
+            .arg("--max-tokens")
+            .arg("8")
+            .arg("--profile");
+
+        if self.no_gpu {
+            cmd.arg("--no-gpu");
+        }
+
+        let output = cmd.output();
+        self.build_result("profile", output, start)
+    }
+
+    /// Execute all tool tests
+    #[must_use]
+    pub fn execute_all(&self) -> Vec<ToolTestResult> {
+        let mut results = vec![
+            // Core tool tests
+            self.execute_inspect(),
+            self.execute_validate(),
+            self.execute_check(),
+            self.execute_bench(),
+        ];
+
+        // Trace level tests
+        for level in &["none", "basic", "layer", "payload"] {
+            results.push(self.execute_trace(level));
+        }
+
+        // Profile test
+        results.push(self.execute_profile());
+
+        results
+    }
+
+    fn build_result(
+        &self,
+        tool: &str,
+        output: std::io::Result<std::process::Output>,
+        start: std::time::Instant,
+    ) -> ToolTestResult {
+        let duration_ms = start.elapsed().as_millis() as u64;
+
+        match output {
+            Ok(out) => {
+                let stdout = String::from_utf8_lossy(&out.stdout).to_string();
+                let stderr = String::from_utf8_lossy(&out.stderr).to_string();
+                let exit_code = out.status.code().unwrap_or(-1);
+
+                ToolTestResult {
+                    tool: tool.to_string(),
+                    passed: exit_code == 0,
+                    exit_code,
+                    stdout,
+                    stderr,
+                    duration_ms,
+                    gate_id: format!("F-{}-001", tool.to_uppercase().replace('-', "_")),
+                }
+            }
+            Err(e) => ToolTestResult {
+                tool: tool.to_string(),
+                passed: false,
+                exit_code: -1,
+                stdout: String::new(),
+                stderr: e.to_string(),
+                duration_ms,
+                gate_id: format!("F-{}-001", tool.to_uppercase().replace('-', "_")),
+            },
+        }
+    }
+}
+
+/// Result of a tool test
+#[derive(Debug, Clone)]
+pub struct ToolTestResult {
+    /// Tool name
+    pub tool: String,
+    /// Whether test passed
+    pub passed: bool,
+    /// Exit code
+    pub exit_code: i32,
+    /// Stdout output
+    pub stdout: String,
+    /// Stderr output
+    pub stderr: String,
+    /// Duration in ms
+    pub duration_ms: u64,
+    /// Gate ID for this test
+    pub gate_id: String,
+}
+
+impl ToolTestResult {
+    /// Convert to Evidence
+    #[must_use]
+    pub fn to_evidence(&self, model_id: &ModelId) -> Evidence {
+        let scenario = QaScenario::new(
+            model_id.clone(),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            format!("apr {} test", self.tool),
+            0,
+        );
+
+        if self.passed {
+            Evidence::corroborated(&self.gate_id, scenario, &self.stdout, self.duration_ms)
+        } else {
+            Evidence::falsified(
+                &self.gate_id,
+                scenario,
+                format!("Exit code: {}, stderr: {}", self.exit_code, self.stderr),
+                &self.stdout,
+                self.duration_ms,
+            )
+        }
     }
 }
 

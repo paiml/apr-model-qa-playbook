@@ -183,7 +183,7 @@ impl ConversionTest {
         Ok(String::from_utf8_lossy(&output.stdout).to_string())
     }
 
-    /// Convert model to target format
+    /// Convert model to target format using apr rosetta
     fn convert_model(&self, source_path: &Path) -> Result<std::path::PathBuf> {
         let target_ext = match self.target_format {
             Format::Gguf => "gguf",
@@ -191,14 +191,15 @@ impl ConversionTest {
             Format::Apr => "apr",
         };
 
-        let target_path = source_path.with_extension(target_ext);
+        // Create target path with new extension (format determined by extension)
+        let target_path = source_path.with_extension(format!("converted.{target_ext}"));
 
+        // Use apr rosetta convert: apr rosetta convert <SOURCE> <TARGET>
+        // Format is inferred from output file extension
         let output = Command::new("apr")
+            .arg("rosetta")
             .arg("convert")
             .arg(source_path)
-            .arg("--to")
-            .arg(target_ext)
-            .arg("-o")
             .arg(&target_path)
             .output()
             .map_err(Error::Io)?;
@@ -385,14 +386,15 @@ fn convert_to_format(source_path: &Path, target_format: Format) -> Result<std::p
         Format::Apr => "apr",
     };
 
-    let target_path = source_path.with_extension(target_ext);
+    // Create target path with new extension (format determined by extension)
+    let target_path = source_path.with_extension(format!("converted.{target_ext}"));
 
+    // Use apr rosetta convert: apr rosetta convert <SOURCE> <TARGET>
+    // Format is inferred from output file extension
     let output = Command::new("apr")
+        .arg("rosetta")
         .arg("convert")
         .arg(source_path)
-        .arg("--to")
-        .arg(target_ext)
-        .arg("-o")
         .arg(&target_path)
         .output()
         .map_err(Error::Io)?;
@@ -405,6 +407,221 @@ fn convert_to_format(source_path: &Path, target_format: Format) -> Result<std::p
     }
 
     Ok(target_path)
+}
+
+/// Configuration for conversion executor
+#[derive(Debug, Clone)]
+pub struct ConversionConfig {
+    /// Test all format pairs
+    pub test_all_pairs: bool,
+    /// Test round-trips
+    pub test_round_trips: bool,
+    /// Backends to test
+    pub backends: Vec<Backend>,
+    /// Use CPU only (no GPU)
+    pub no_gpu: bool,
+}
+
+impl Default for ConversionConfig {
+    fn default() -> Self {
+        Self {
+            test_all_pairs: true,
+            test_round_trips: true,
+            backends: vec![Backend::Cpu, Backend::Gpu],
+            no_gpu: false,
+        }
+    }
+}
+
+impl ConversionConfig {
+    /// Create config for CPU-only testing
+    #[must_use]
+    pub fn cpu_only() -> Self {
+        Self {
+            test_all_pairs: true,
+            test_round_trips: true,
+            backends: vec![Backend::Cpu],
+            no_gpu: true,
+        }
+    }
+}
+
+/// Executor for running P0 format conversion tests
+#[derive(Debug)]
+pub struct ConversionExecutor {
+    config: ConversionConfig,
+}
+
+impl ConversionExecutor {
+    /// Create a new conversion executor
+    #[must_use]
+    pub fn new(config: ConversionConfig) -> Self {
+        Self { config }
+    }
+
+    /// Create with default config
+    #[must_use]
+    pub fn with_defaults() -> Self {
+        Self::new(ConversionConfig::default())
+    }
+
+    /// Execute all conversion tests for a model
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if a critical conversion failure occurs.
+    pub fn execute_all(
+        &self,
+        model_path: &Path,
+        model_id: &ModelId,
+    ) -> Result<ConversionExecutionResult> {
+        let mut results = Vec::new();
+        let mut evidence = Vec::new();
+        let start = std::time::Instant::now();
+
+        // Determine backends to test
+        let backends: Vec<Backend> = if self.config.no_gpu {
+            vec![Backend::Cpu]
+        } else {
+            self.config.backends.clone()
+        };
+
+        // Test all format pairs
+        if self.config.test_all_pairs {
+            for (source, target) in all_conversion_pairs() {
+                for backend in &backends {
+                    let test = ConversionTest::new(source, target, *backend, model_id.clone());
+
+                    match test.execute(model_path) {
+                        Ok(result) => {
+                            let ev: Evidence = result.clone().into();
+                            evidence.push(ev);
+                            results.push(result);
+                        }
+                        Err(e) => {
+                            // Conversion infrastructure failure - record as falsified
+                            let ev = Evidence::falsified(
+                                &test.gate_id(),
+                                QaScenario::new(
+                                    model_id.clone(),
+                                    Modality::Run,
+                                    *backend,
+                                    target,
+                                    format!("Convert {source:?} to {target:?}"),
+                                    0,
+                                ),
+                                format!("Conversion infrastructure error: {e}"),
+                                "N/A",
+                                0,
+                            );
+                            evidence.push(ev);
+                            results.push(ConversionResult::Falsified {
+                                gate_id: test.gate_id(),
+                                reason: e.to_string(),
+                                evidence: ConversionEvidence {
+                                    source_hash: String::new(),
+                                    converted_hash: String::new(),
+                                    max_diff: f64::MAX,
+                                    diff_indices: vec![],
+                                    source_format: source,
+                                    target_format: target,
+                                    backend: *backend,
+                                },
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        // Test round-trips (GGUF → APR → SafeTensors → GGUF)
+        if self.config.test_round_trips {
+            for backend in &backends {
+                let rt = RoundTripTest::new(
+                    vec![Format::Gguf, Format::Apr, Format::SafeTensors, Format::Gguf],
+                    *backend,
+                    model_id.clone(),
+                );
+
+                match rt.execute(model_path) {
+                    Ok(result) => {
+                        let ev: Evidence = result.clone().into();
+                        evidence.push(ev);
+                        results.push(result);
+                    }
+                    Err(e) => {
+                        let ev = Evidence::falsified(
+                            "F-CONV-RT-001",
+                            QaScenario::new(
+                                model_id.clone(),
+                                Modality::Run,
+                                *backend,
+                                Format::Gguf,
+                                "Round-trip conversion".to_string(),
+                                0,
+                            ),
+                            format!("Round-trip failed: {e}"),
+                            "N/A",
+                            0,
+                        );
+                        evidence.push(ev);
+                    }
+                }
+            }
+        }
+
+        let duration_ms = start.elapsed().as_millis() as u64;
+
+        let passed = results
+            .iter()
+            .filter(|r| matches!(r, ConversionResult::Corroborated { .. }))
+            .count();
+        let failed = results.len() - passed;
+
+        Ok(ConversionExecutionResult {
+            total: results.len(),
+            passed,
+            failed,
+            duration_ms,
+            results,
+            evidence,
+        })
+    }
+}
+
+/// Result of conversion test execution
+#[derive(Debug)]
+pub struct ConversionExecutionResult {
+    /// Total tests run
+    pub total: usize,
+    /// Tests passed
+    pub passed: usize,
+    /// Tests failed
+    pub failed: usize,
+    /// Duration in milliseconds
+    pub duration_ms: u64,
+    /// Individual results
+    pub results: Vec<ConversionResult>,
+    /// Evidence collected
+    pub evidence: Vec<Evidence>,
+}
+
+impl ConversionExecutionResult {
+    /// Check if all conversion tests passed
+    #[must_use]
+    pub fn all_passed(&self) -> bool {
+        self.failed == 0
+    }
+
+    /// Get pass rate as percentage
+    #[must_use]
+    pub fn pass_rate(&self) -> f64 {
+        if self.total == 0 {
+            100.0
+        } else {
+            (self.passed as f64 / self.total as f64) * 100.0
+        }
+    }
 }
 
 /// Convert ConversionResult to Evidence

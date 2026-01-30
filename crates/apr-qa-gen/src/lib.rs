@@ -33,4 +33,4 @@ pub mod scenario;
 pub use error::{Error, Result};
 pub use models::{ModelId, ModelRegistry, SizeCategory};
 pub use oracle::{Oracle, OracleResult};
-pub use scenario::{Backend, Format, Modality, QaScenario, ScenarioGenerator, TraceLevel};
+pub use scenario::{AprTool, Backend, Format, Modality, QaScenario, ScenarioGenerator, TraceLevel};
