@@ -3502,9 +3502,12 @@ mod tests {
 | #174 | `--profile-output` flamegraph | P1 | ✅ **CLOSED** |
 | #175 | TensorStats cross-format validation | P1 | ✅ **CLOSED** |
 | #176 | ML tuning: freeze, LoRA, drift | P1 | ✅ **PARTIAL** |
-| #177 | Format conversion NaN/Inf corruption | P0 | ⏳ **OPEN** (detection works, root cause pending) |
-| #178 | apr validate rejects GGUF v3 | P2 | ⏳ **OPEN** |
-| #179 | Tool test coverage gaps (69%) | P2 | ⏳ **OPEN** |
+| #177 | Format conversion NaN/Inf corruption | P0 | ✅ **CLOSED** (regression → #181) |
+| #178 | apr validate rejects GGUF v3 | P2 | ✅ **CLOSED** (regression → #183) |
+| #179 | Tool test coverage gaps (69%) | P2 | ✅ **CLOSED** |
+| #181 | **REGRESSION: Conversion diffs still large** | P0 | ⏳ **OPEN** (blocks certification) |
+| #182 | SafeTensors missing tokenizer/config | P1 | ⏳ **OPEN** (blocks F-CONV-003/005) |
+| #183 | **REGRESSION: validate still fails** | P2 | ⏳ **OPEN** (tool coverage 89%) |
 
 **Test Coverage Implementation (2026-01-30):**
 - 461 unit tests across all crates (30 cli + 131 gen + 130 report + 170 runner)
