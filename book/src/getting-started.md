@@ -76,3 +76,20 @@ gates:
 ```bash
 cargo run --bin apr-qa -- run playbooks/models/my-model.playbook.yaml
 ```
+
+## Running Examples
+
+Run the included examples to see the libraries in action:
+
+```bash
+# Generate QA scenarios
+cargo run --example generate_scenarios -p apr-qa-gen
+
+# Collect test evidence
+cargo run --example collect_evidence -p apr-qa-runner
+
+# Calculate MQS scores
+cargo run --example calculate_mqs -p apr-qa-report
+```
+
+See the [Code Examples](./examples.md) chapter for detailed documentation.

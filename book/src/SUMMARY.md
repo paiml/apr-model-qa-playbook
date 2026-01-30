@@ -7,6 +7,7 @@
 - [Getting Started](./getting-started.md)
 - [Playbook Format](./playbook-format.md)
 - [Running Tests](./running-tests.md)
+- [Code Examples](./examples.md)
 
 # Architecture
 
