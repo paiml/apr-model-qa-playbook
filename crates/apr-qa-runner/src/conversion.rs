@@ -10,6 +10,17 @@
 //! 3. Why are subtle errors dangerous? They pass basic checks but produce wrong outputs.
 //! 4. Why can't normal tests catch this? They verify "runs" not "identical output".
 //! 5. Why P0? A single bit flip invalidates millions of inferences.
+//!
+//! # Bug Classification (GH-187)
+//!
+//! This module implements detection for common conversion bugs that have
+//! occurred 50+ times:
+//!
+//! - **EMBEDDING_TRANSPOSITION**: Embedding stored as `[hidden_dim, vocab_size]`
+//!   but `embed()` expects `[vocab_size, hidden_dim]`. Causes garbage output.
+//! - **TOKENIZER_MISSING**: APR file doesn't include embedded tokenizer.
+//! - **WEIGHT_CORRUPTION**: Tensor values corrupted during conversion.
+//! - **SHAPE_MISMATCH**: Tensor dimensions don't match expected config.
 
 #![allow(clippy::trivially_copy_pass_by_ref)]
 #![allow(clippy::if_not_else)]
@@ -24,6 +35,72 @@ use std::process::Command;
 
 /// Tolerance for floating-point comparison
 pub const EPSILON: f64 = 1e-6;
+
+/// Classification of conversion bugs (GH-187)
+///
+/// These bugs have been observed 50+ times in production.
+/// Detection enables faster root cause analysis.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ConversionBugType {
+    /// Embedding stored as [hidden_dim, vocab_size] instead of [vocab_size, hidden_dim]
+    /// Symptom: Output is garbage tokens (often PAD tokens or random sequences)
+    EmbeddingTransposition,
+    /// APR file missing embedded tokenizer from GGUF metadata
+    /// Symptom: [PMAT-172] error, output doesn't match prompt semantics
+    TokenizerMissing,
+    /// Tensor values corrupted during conversion (NaN, Inf, zeros)
+    /// Symptom: All-zero output or NaN propagation
+    WeightCorruption,
+    /// Tensor dimensions don't match model config
+    /// Symptom: Runtime shape mismatch errors
+    ShapeMismatch,
+    /// Output semantically wrong but structurally valid
+    /// Symptom: Model "runs" but produces completely wrong answers
+    SemanticDrift,
+    /// Unknown bug type - requires manual investigation
+    Unknown,
+}
+
+impl ConversionBugType {
+    /// Get the gate ID for this bug type
+    #[must_use]
+    pub fn gate_id(&self) -> &'static str {
+        match self {
+            Self::EmbeddingTransposition => "F-CONV-EMBED-001",
+            Self::TokenizerMissing => "F-CONV-TOK-001",
+            Self::WeightCorruption => "F-CONV-WEIGHT-001",
+            Self::ShapeMismatch => "F-CONV-SHAPE-001",
+            Self::SemanticDrift => "F-CONV-SEMANTIC-001",
+            Self::Unknown => "F-CONV-UNKNOWN-001",
+        }
+    }
+
+    /// Get a human-readable description
+    #[must_use]
+    pub fn description(&self) -> &'static str {
+        match self {
+            Self::EmbeddingTransposition => "Embedding tensor transposition bug",
+            Self::TokenizerMissing => "Embedded tokenizer missing from APR file",
+            Self::WeightCorruption => "Weight tensor corruption (NaN/Inf/zeros)",
+            Self::ShapeMismatch => "Tensor shape mismatch with model config",
+            Self::SemanticDrift => "Semantic drift - structurally valid but wrong output",
+            Self::Unknown => "Unknown conversion bug - requires investigation",
+        }
+    }
+}
+
+/// Patterns that indicate specific bug types
+const GARBAGE_PATTERNS: &[&str] = &[
+    "PAD",
+    "<pad>",
+    "<|endoftext|>",
+    "1. What is the difference",
+    "151935", // Common garbage token ID
+    "\u{0000}",
+];
+
+/// Expected patterns for arithmetic test "What is 2+2?"
+const ARITHMETIC_EXPECTED: &[&str] = &["4", "four", "Four", "2+2=4", "2 + 2 = 4", "equals 4"];
 
 /// Conversion test configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -248,6 +325,219 @@ impl ConversionTest {
         let mut hasher = DefaultHasher::new();
         output.hash(&mut hasher);
         format!("{:016x}", hasher.finish())
+    }
+}
+
+/// Semantic conversion test that detects embedding/weight bugs (GH-187)
+///
+/// This test compares actual inference output between formats to detect
+/// the class of bugs that have occurred 50+ times.
+#[derive(Debug, Clone)]
+pub struct SemanticConversionTest {
+    /// Source format (typically GGUF as ground truth)
+    pub source_format: Format,
+    /// Target format to test
+    pub target_format: Format,
+    /// Backend to use
+    pub backend: Backend,
+    /// Model ID
+    pub model_id: ModelId,
+}
+
+impl SemanticConversionTest {
+    /// Create a new semantic conversion test
+    #[must_use]
+    pub fn new(source: Format, target: Format, backend: Backend, model_id: ModelId) -> Self {
+        Self {
+            source_format: source,
+            target_format: target,
+            backend,
+            model_id,
+        }
+    }
+
+    /// Execute the semantic test and classify any bug found
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if inference fails.
+    pub fn execute(&self, model_path: &Path) -> Result<SemanticTestResult> {
+        // Run inference on source (GGUF - ground truth)
+        let source_output = self.run_inference(model_path)?;
+
+        // Convert to target format
+        let converted_path = self.convert_model(model_path)?;
+
+        // Run inference on converted model
+        let target_output = self.run_inference(&converted_path)?;
+
+        // Check for stderr containing tokenizer error
+        let has_tokenizer_error = target_output.stderr.contains("PMAT-172")
+            || target_output.stderr.contains("missing embedded tokenizer");
+
+        // Classify the bug type
+        let bug_type = self.classify_bug(
+            &source_output.stdout,
+            &target_output.stdout,
+            has_tokenizer_error,
+        );
+
+        if let Some(bug) = bug_type {
+            Ok(SemanticTestResult::Falsified {
+                bug_type: bug,
+                source_output: source_output.stdout,
+                target_output: target_output.stdout,
+                stderr: target_output.stderr,
+            })
+        } else {
+            Ok(SemanticTestResult::Corroborated {
+                source_output: source_output.stdout,
+                target_output: target_output.stdout,
+            })
+        }
+    }
+
+    /// Classify the bug type based on output patterns
+    fn classify_bug(
+        &self,
+        source: &str,
+        target: &str,
+        has_tokenizer_error: bool,
+    ) -> Option<ConversionBugType> {
+        // Check for tokenizer missing
+        if has_tokenizer_error {
+            return Some(ConversionBugType::TokenizerMissing);
+        }
+
+        // Check for garbage output patterns
+        let has_garbage = GARBAGE_PATTERNS.iter().any(|p| target.contains(p));
+        let source_has_expected = ARITHMETIC_EXPECTED.iter().any(|p| source.contains(p));
+        let target_has_expected = ARITHMETIC_EXPECTED.iter().any(|p| target.contains(p));
+
+        // Source produces correct answer but target produces garbage
+        if source_has_expected && has_garbage {
+            return Some(ConversionBugType::EmbeddingTransposition);
+        }
+
+        // Source correct, target wrong (but not garbage)
+        if source_has_expected && !target_has_expected && !target.is_empty() {
+            return Some(ConversionBugType::SemanticDrift);
+        }
+
+        // Target is empty or all whitespace
+        if target.trim().is_empty() && !source.trim().is_empty() {
+            return Some(ConversionBugType::WeightCorruption);
+        }
+
+        // Outputs match - no bug
+        if source.trim() == target.trim() {
+            return None;
+        }
+
+        // Outputs differ but no clear pattern
+        Some(ConversionBugType::Unknown)
+    }
+
+    /// Run inference and capture both stdout and stderr
+    fn run_inference(&self, model_path: &Path) -> Result<InferenceOutput> {
+        let backend_flag = match self.backend {
+            Backend::Cpu => vec!["--no-gpu".to_string()],
+            Backend::Gpu => vec!["--gpu".to_string()],
+        };
+
+        let output = Command::new("apr")
+            .arg("run")
+            .arg(model_path)
+            .arg("-p")
+            .arg("What is 2+2?")
+            .arg("--max-tokens")
+            .arg("32")
+            .args(&backend_flag)
+            .output()
+            .map_err(Error::Io)?;
+
+        Ok(InferenceOutput {
+            stdout: String::from_utf8_lossy(&output.stdout).to_string(),
+            stderr: String::from_utf8_lossy(&output.stderr).to_string(),
+            exit_code: output.status.code().unwrap_or(-1),
+        })
+    }
+
+    /// Convert model to target format
+    fn convert_model(&self, source_path: &Path) -> Result<std::path::PathBuf> {
+        let target_ext = match self.target_format {
+            Format::Gguf => "gguf",
+            Format::SafeTensors => "safetensors",
+            Format::Apr => "apr",
+        };
+
+        let target_path = source_path.with_extension(format!("semantic_test.{target_ext}"));
+
+        let output = Command::new("apr")
+            .arg("rosetta")
+            .arg("convert")
+            .arg(source_path)
+            .arg(&target_path)
+            .output()
+            .map_err(Error::Io)?;
+
+        if !output.status.success() {
+            return Err(Error::Execution(format!(
+                "Conversion failed: {}",
+                String::from_utf8_lossy(&output.stderr)
+            )));
+        }
+
+        Ok(target_path)
+    }
+}
+
+/// Output from inference command
+#[derive(Debug, Clone)]
+struct InferenceOutput {
+    stdout: String,
+    stderr: String,
+    #[allow(dead_code)]
+    exit_code: i32,
+}
+
+/// Result of semantic conversion test
+#[derive(Debug, Clone)]
+pub enum SemanticTestResult {
+    /// Conversion preserved semantics
+    Corroborated {
+        /// Source model output
+        source_output: String,
+        /// Target model output
+        target_output: String,
+    },
+    /// Conversion introduced semantic errors
+    Falsified {
+        /// Classified bug type
+        bug_type: ConversionBugType,
+        /// Source model output (ground truth)
+        source_output: String,
+        /// Target model output (buggy)
+        target_output: String,
+        /// Stderr from target inference
+        stderr: String,
+    },
+}
+
+impl SemanticTestResult {
+    /// Check if test passed
+    #[must_use]
+    pub fn is_pass(&self) -> bool {
+        matches!(self, Self::Corroborated { .. })
+    }
+
+    /// Get the bug type if test failed
+    #[must_use]
+    pub fn bug_type(&self) -> Option<ConversionBugType> {
+        match self {
+            Self::Falsified { bug_type, .. } => Some(*bug_type),
+            Self::Corroborated { .. } => None,
+        }
     }
 }
 
@@ -1264,5 +1554,189 @@ mod tests {
         };
         let rate = result.pass_rate();
         assert!((rate - 0.0).abs() < f64::EPSILON);
+    }
+
+    // Tests for ConversionBugType (GH-187)
+
+    #[test]
+    fn test_bug_type_gate_ids() {
+        assert_eq!(
+            ConversionBugType::EmbeddingTransposition.gate_id(),
+            "F-CONV-EMBED-001"
+        );
+        assert_eq!(
+            ConversionBugType::TokenizerMissing.gate_id(),
+            "F-CONV-TOK-001"
+        );
+        assert_eq!(
+            ConversionBugType::WeightCorruption.gate_id(),
+            "F-CONV-WEIGHT-001"
+        );
+        assert_eq!(
+            ConversionBugType::ShapeMismatch.gate_id(),
+            "F-CONV-SHAPE-001"
+        );
+        assert_eq!(
+            ConversionBugType::SemanticDrift.gate_id(),
+            "F-CONV-SEMANTIC-001"
+        );
+        assert_eq!(ConversionBugType::Unknown.gate_id(), "F-CONV-UNKNOWN-001");
+    }
+
+    #[test]
+    fn test_bug_type_descriptions() {
+        assert!(
+            ConversionBugType::EmbeddingTransposition
+                .description()
+                .contains("transposition")
+        );
+        assert!(
+            ConversionBugType::TokenizerMissing
+                .description()
+                .contains("tokenizer")
+        );
+        assert!(
+            ConversionBugType::WeightCorruption
+                .description()
+                .contains("corruption")
+        );
+    }
+
+    #[test]
+    fn test_bug_type_clone() {
+        let bug = ConversionBugType::EmbeddingTransposition;
+        let cloned = bug;
+        assert_eq!(bug, cloned);
+    }
+
+    #[test]
+    fn test_bug_type_debug() {
+        let debug_str = format!("{:?}", ConversionBugType::TokenizerMissing);
+        assert!(debug_str.contains("TokenizerMissing"));
+    }
+
+    #[test]
+    fn test_semantic_test_new() {
+        let test = SemanticConversionTest::new(
+            Format::Gguf,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        assert_eq!(test.source_format, Format::Gguf);
+        assert_eq!(test.target_format, Format::Apr);
+    }
+
+    #[test]
+    fn test_semantic_test_clone() {
+        let test = SemanticConversionTest::new(
+            Format::Gguf,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        let cloned = test.clone();
+        assert_eq!(test.source_format, cloned.source_format);
+    }
+
+    #[test]
+    fn test_semantic_test_debug() {
+        let test = SemanticConversionTest::new(
+            Format::Gguf,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        let debug_str = format!("{test:?}");
+        assert!(debug_str.contains("SemanticConversionTest"));
+    }
+
+    #[test]
+    fn test_semantic_result_is_pass() {
+        let pass = SemanticTestResult::Corroborated {
+            source_output: "4".to_string(),
+            target_output: "4".to_string(),
+        };
+        assert!(pass.is_pass());
+
+        let fail = SemanticTestResult::Falsified {
+            bug_type: ConversionBugType::EmbeddingTransposition,
+            source_output: "4".to_string(),
+            target_output: "garbage".to_string(),
+            stderr: String::new(),
+        };
+        assert!(!fail.is_pass());
+    }
+
+    #[test]
+    fn test_semantic_result_bug_type() {
+        let pass = SemanticTestResult::Corroborated {
+            source_output: "4".to_string(),
+            target_output: "4".to_string(),
+        };
+        assert!(pass.bug_type().is_none());
+
+        let fail = SemanticTestResult::Falsified {
+            bug_type: ConversionBugType::TokenizerMissing,
+            source_output: "4".to_string(),
+            target_output: "garbage".to_string(),
+            stderr: String::new(),
+        };
+        assert_eq!(fail.bug_type(), Some(ConversionBugType::TokenizerMissing));
+    }
+
+    #[test]
+    fn test_garbage_patterns_detection() {
+        // These patterns should trigger embedding transposition detection
+        let garbage_outputs = [
+            "1. What is the difference between",
+            "<pad><pad><pad>",
+            "PAD PAD PAD",
+            "token 151935 151935",
+        ];
+
+        for output in garbage_outputs {
+            let has_garbage = GARBAGE_PATTERNS.iter().any(|p| output.contains(p));
+            assert!(has_garbage, "Should detect garbage in: {output}");
+        }
+    }
+
+    #[test]
+    fn test_arithmetic_expected_detection() {
+        // These patterns should be recognized as correct answers
+        let correct_outputs = [
+            "The answer is 4",
+            "2+2=4",
+            "equals 4.",
+            "It's four",
+            "Four is the answer",
+        ];
+
+        for output in correct_outputs {
+            let has_expected = ARITHMETIC_EXPECTED.iter().any(|p| output.contains(p));
+            assert!(has_expected, "Should detect correct answer in: {output}");
+        }
+    }
+
+    #[test]
+    fn test_semantic_result_clone() {
+        let result = SemanticTestResult::Corroborated {
+            source_output: "test".to_string(),
+            target_output: "test".to_string(),
+        };
+        let cloned = result.clone();
+        assert!(cloned.is_pass());
+    }
+
+    #[test]
+    fn test_semantic_result_debug() {
+        let result = SemanticTestResult::Falsified {
+            bug_type: ConversionBugType::Unknown,
+            source_output: "a".to_string(),
+            target_output: "b".to_string(),
+            stderr: String::new(),
+        };
+        let debug_str = format!("{result:?}");
+        assert!(debug_str.contains("Falsified"));
     }
 }

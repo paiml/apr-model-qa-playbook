@@ -31,8 +31,9 @@ pub mod playbook;
 pub mod process;
 
 pub use conversion::{
-    ConversionConfig, ConversionEvidence, ConversionExecutionResult, ConversionExecutor,
-    ConversionResult, ConversionTest, EPSILON, RoundTripTest, all_backends, all_conversion_pairs,
+    ConversionBugType, ConversionConfig, ConversionEvidence, ConversionExecutionResult,
+    ConversionExecutor, ConversionResult, ConversionTest, EPSILON, RoundTripTest,
+    SemanticConversionTest, SemanticTestResult, all_backends, all_conversion_pairs,
     generate_conversion_tests,
 };
 pub use error::{Error, Result};
