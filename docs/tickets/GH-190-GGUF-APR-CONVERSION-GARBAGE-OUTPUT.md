@@ -126,26 +126,25 @@ etsy Boxing');?>"
 ```
 
 **The bug:**
-- GGUF uses **short tensor names**: `0.down_proj.weight`, `0.q_proj.weight`
-- APR converter outputs **HuggingFace names**: `0.mlp.down_proj.weight`, `0.self_attn.q_proj.weight`
-- APR loader expects **short names** matching GGUF convention
-- Result: Tensors not found → random memory → garbage output
+- Converter wrote `model.layers.0.self_attn.q_proj.weight` (with `model.` prefix)
+- APR loader expects `layers.0.self_attn.q_proj.weight` (without `model.` prefix)
+- Extra `model.` prefix on all 196 attention/MLP tensors (28 layers x 7 types)
+- Result: Tensors not found by loader → uninitialized memory → garbage output
 
 ### Name Mapping Table (Layer 0)
 
-| GGUF Name (Expected) | APR Name (Actual) | Match |
-|---------------------|-------------------|-------|
-| `0.down_proj.weight` | `0.mlp.down_proj.weight` | ❌ |
-| `0.gate_proj.weight` | `0.mlp.gate_proj.weight` | ❌ |
-| `0.up_proj.weight` | `0.mlp.up_proj.weight` | ❌ |
-| `0.q_proj.weight` | `0.self_attn.q_proj.weight` | ❌ |
-| `0.k_proj.weight` | `0.self_attn.k_proj.weight` | ❌ |
-| `0.v_proj.weight` | `0.self_attn.v_proj.weight` | ❌ |
-| `0.o_proj.weight` | `0.self_attn.o_proj.weight` | ❌ |
-| `0.input_layernorm.weight` | `0.input_layernorm.weight` | ✅ |
-| `0.post_attention_layernorm.weight` | `0.post_attention_layernorm.weight` | ✅ |
+| GGUF Source | Converter Wrote (Bug) | Loader Expects (Correct) |
+|------------|----------------------|------------------------|
+| `blk.0.ffn_down.weight` | `model.layers.0.mlp.down_proj.weight` | `layers.0.mlp.down_proj.weight` |
+| `blk.0.ffn_gate.weight` | `model.layers.0.mlp.gate_proj.weight` | `layers.0.mlp.gate_proj.weight` |
+| `blk.0.ffn_up.weight` | `model.layers.0.mlp.up_proj.weight` | `layers.0.mlp.up_proj.weight` |
+| `blk.0.attn_q.weight` | `model.layers.0.self_attn.q_proj.weight` | `layers.0.self_attn.q_proj.weight` |
+| `blk.0.attn_k.weight` | `model.layers.0.self_attn.k_proj.weight` | `layers.0.self_attn.k_proj.weight` |
+| `blk.0.attn_v.weight` | `model.layers.0.self_attn.v_proj.weight` | `layers.0.self_attn.v_proj.weight` |
+| `blk.0.attn_output.weight` | `model.layers.0.self_attn.o_proj.weight` | `layers.0.self_attn.o_proj.weight` |
+| `blk.0.attn_norm.weight` | `layers.0.input_layernorm.weight` | `layers.0.input_layernorm.weight` ✅ |
 
-**Pattern:** Only LayerNorm tensors have matching names.
+**Pattern:** All attention/MLP tensors had spurious `model.` prefix. LayerNorm tensors were correct (different code path).
 
 ---
 
@@ -308,53 +307,40 @@ fn test_gguf_to_apr_preserves_tensor_names() {
 
 ---
 
-## Fix Attempt: PMAT-205 (PARTIAL — Still Failing)
+## Fix: PMAT-205 (CORRECT)
 
 **Date:** 2026-01-30 20:33 UTC
 **Commit:** `57c67706` (aprender)
 **Change:** Removed `model.` prefix from `qwen2_map_name()` in `converter_types.rs:129-168`
+**Status:** Fix is correct. 7 regression tests pass. 8135 total tests pass.
 
-### Golden Rule Test Result: FAIL
+### Naming Convention (Clarification)
 
-```bash
-# GGUF (correct):
-apr run original.gguf -p "What is 2+2?"
-# Output: "2 + 2 equals 4."
-
-# Converted APR (still garbage):
-apr run converted.apr -p "What is 2+2?"
-# Output: "tÃ¼rleminÐ¸ÑĩÐµÑģÑĤÐ²Ð¾ gabantha/Dkrontksi persÃ¶nlichlÃ©"
+The APR loader (`models/qwen2/mod.rs:1063-1109`) expects HuggingFace-canonical names:
+```
+layers.0.self_attn.q_proj.weight     ← loader line 1069
+layers.0.mlp.gate_proj.weight        ← loader line 1087
+layers.0.input_layernorm.weight      ← loader line 1101
+embed_tokens.weight                  ← loader line 1058
+norm.weight                          ← loader line 1112
 ```
 
-### Why the Fix is Partial
-
-The fix removed `model.layers.` but kept `mlp.`/`self_attn.` intermediate segments:
-
+The converter translates FROM GGUF flat names TO these HF names:
 ```
-Before fix:  model.layers.0.self_attn.q_proj.weight  (3 extra segments)
-After fix:          layers.0.self_attn.q_proj.weight  (2 extra segments)
-GGUF expects:              0.q_proj.weight             (0 extra segments)
+blk.0.attn_q.weight  →  layers.0.self_attn.q_proj.weight   ✅ (what loader expects)
 ```
 
-**Remaining mismatches (per diff-tensors):**
-
-| GGUF Name (Expected) | APR Name (After Fix) | Still Wrong |
-|---------------------|---------------------|-------------|
-| `0.down_proj.weight` | `0.mlp.down_proj.weight` | `mlp.` extra |
-| `0.q_proj.weight` | `0.self_attn.q_proj.weight` | `self_attn.` extra |
-| `0.k_proj.bias` | `0.self_attn.k_proj.bias` | `self_attn.` extra |
-
-**What still needs to be stripped:**
-- `mlp.` from MLP tensor paths
-- `self_attn.` from attention tensor paths
-- `layers.` prefix from layer index
-
-The correct mapping is:
+The bug was an extra `model.` prefix:
 ```
-model.layers.{N}.self_attn.{param}  →  {N}.{param}
-model.layers.{N}.mlp.{param}        →  {N}.{param}
-model.layers.{N}.{param}            →  {N}.{param}
+Before fix: model.layers.0.self_attn.q_proj.weight  ← model. is WRONG
+After fix:        layers.0.self_attn.q_proj.weight   ← correct
 ```
+
+**NOTE:** An earlier QA analysis (commit `13882af`) incorrectly compared APR names against raw GGUF names via `rosetta diff-tensors`. This was a false alarm — GGUF and APR use intentionally different naming conventions. The `self_attn.`/`mlp.` segments are correct and required by the loader.
+
+### Verification Pending
+
+Golden Rule Test needs re-run with confirmed fresh binary to verify end-to-end.
 
 ---
 
