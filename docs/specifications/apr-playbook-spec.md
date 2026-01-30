@@ -1936,6 +1936,146 @@ apr rosetta chain \
     --verify-each
 ```
 
+#### 6.6.4 Rosetta Differential Testing (GH-188, PMAT-114)
+
+New capabilities for detecting tensor layout mismatches and inference discrepancies:
+
+```bash
+# Diff tensors between two models (GH-188)
+apr rosetta diff-tensors model_a.gguf model_b.apr \
+    --mismatches-only \
+    --filter "embed"
+# Output:
+# TENSOR DIFF REPORT (GH-188: Layout Mismatch Detection)
+# ├─ token_embd.weight: [4096, 32000] vs [32000, 4096] ⚠️ TRANSPOSED
+# ├─ lm_head.weight: [4096, 32000] vs [32000, 4096] ⚠️ TRANSPOSED
+# └─ Layout mismatches: 2 tensors (GGML vs standard convention)
+
+# Compare inference token-by-token (PMAT-114)
+apr rosetta compare-inference model.gguf model.apr \
+    --prompt "What is 2+2?" \
+    --max-tokens 10 \
+    --tolerance 1e-5
+# Output:
+# Token 0: GGUF=17 APR=17 ✓ MATCH (logit diff: 1.2e-6)
+# Token 1: GGUF=42 APR=42 ✓ MATCH (logit diff: 8.3e-7)
+# ...
+# RESULT: ✓ PASS (10/10 tokens match, max diff: 1.2e-6)
+```
+
+**Falsification Gates:**
+
+| Gate ID | Assertion | Severity |
+|---------|-----------|----------|
+| **F-ROSETTA-DIFF-001** | No transposed tensor dimensions | P0 |
+| **F-ROSETTA-DIFF-002** | Tensor shapes match after conversion | P0 |
+| **F-ROSETTA-INF-001** | Token-by-token argmax match | P0 |
+| **F-ROSETTA-INF-002** | Logit diff within tolerance | P1 |
+
+#### 6.6.5 Profile CI Mode (PMAT-192)
+
+CI-friendly performance assertions for automated pipelines:
+
+```bash
+# CI mode with throughput assertion
+apr profile model.gguf --ci \
+    --assert-throughput 10.0 \
+    --warmup 3 \
+    --measure 10
+# Output:
+# CI PROFILE REPORT (PMAT-192)
+# ════════════════════════════════════════════════════════════
+#   Throughput:  12.8 tok/s
+#   Latency p50: 78.2 ms
+#   Latency p99: 156.5 ms
+#
+# ASSERTIONS
+#   ✅ PASS throughput: 12.8 tok/s (expected >= 10.0 tok/s)
+# Exit code: 0
+
+# CI mode with multiple assertions
+apr profile model.gguf --ci \
+    --assert-throughput 100 \
+    --assert-p99 50 \
+    --assert-p50 30
+# Exit code 1 if ANY assertion fails
+```
+
+**Falsification Gates:**
+
+| Gate ID | Assertion | Severity |
+|---------|-----------|----------|
+| **F-PROFILE-CI-001** | Throughput meets minimum | P1 |
+| **F-PROFILE-CI-002** | p99 latency within limit | P1 |
+| **F-PROFILE-CI-003** | p50 latency within limit | P2 |
+
+#### 6.6.6 Differential Benchmarking (PMAT-192 Phase 4)
+
+Compare performance between two models to detect regressions:
+
+```bash
+# Diff benchmark two models
+apr profile model_old.gguf model_new.gguf --diff-benchmark
+# Output:
+# DIFFERENTIAL BENCHMARK REPORT
+# ════════════════════════════════════════════════════════════
+#              | model_old | model_new | Delta
+# ─────────────┼───────────┼───────────┼──────────
+# Throughput   | 12.3 t/s  | 11.8 t/s  | -4.1% ⚠️
+# Latency p50  | 78.2 ms   | 82.1 ms   | +5.0% ⚠️
+# Latency p99  | 156.5 ms  | 148.2 ms  | -5.3% ✅
+# ─────────────┼───────────┼───────────┼──────────
+# REGRESSION DETECTED: throughput -4.1%, latency +5.0%
+```
+
+**Falsification Gates:**
+
+| Gate ID | Assertion | Severity |
+|---------|-----------|----------|
+| **F-PROFILE-DIFF-001** | Throughput regression < 5% | P1 |
+| **F-PROFILE-DIFF-002** | Latency regression < 10% | P2 |
+
+#### 6.6.7 Trace Payload Mode (APR-TRACE-001)
+
+Real forward pass with garbage detection and anomaly analysis:
+
+```bash
+# Traced inference with payload
+apr trace model.gguf --payload \
+    --prompt "What is 2+2?"
+# Output:
+# TRACE REPORT (Payload Mode)
+# ════════════════════════════════════════════════════════════
+# Layer 0: attn_norm
+#   Input:  mean=0.0012, std=0.89, L2=142.3, NaN=0, Inf=0
+#   Output: mean=0.0008, std=0.92, L2=147.1, NaN=0, Inf=0
+#   Anomalies: None
+# Layer 1: attention
+#   ...
+# ════════════════════════════════════════════════════════════
+# GARBAGE DETECTION: None (output is coherent)
+# FINAL OUTPUT: "4"
+
+# Trace with reference comparison
+apr trace model.apr --reference model.gguf --diff
+# Compares layer-by-layer outputs
+```
+
+**Garbage Detection Patterns:**
+- Repeated words (>50% repetition)
+- Unusual Unicode (E000-F8FF, 20000-2FFFF ranges)
+- Known garbage patterns (`random_*`, `domainuster`, `pandas`)
+- Nonsensical word combinations
+
+**Falsification Gates:**
+
+| Gate ID | Assertion | Severity |
+|---------|-----------|----------|
+| **F-TRACE-PAYLOAD-001** | No NaN/Inf in any layer | P0 |
+| **F-TRACE-PAYLOAD-002** | No garbage output detected | P0 |
+| **F-TRACE-PAYLOAD-003** | Layer outputs within expected range | P1 |
+| **F-TRACE-DIFF-001** | Layer cosine similarity > 0.99 vs reference | P1 |
+
 ---
 
 ### 7.7 Consolidated Gate Registry
@@ -1947,12 +2087,27 @@ All gates from all specs, unified:
 | `F-HTTP-*` | SPEC-002 | 20 | A5, A6 |
 | `F-TRACE-*` | SPEC-002 | 7 | E1-E4 |
 | `F-CONV-*` | SPEC-005 | 17 | B1-B10 |
+| `F-CONV-EMBED-*` | GH-187 | 1 | B1 |
+| `F-CONV-TOK-*` | GH-187 | 1 | B2 |
+| `F-CONV-WEIGHT-*` | GH-187 | 1 | B3 |
+| `F-CONV-SHAPE-*` | GH-187 | 1 | B4 |
+| `F-CONV-SEMANTIC-*` | GH-187 | 1 | B5 |
 | `F-STAGE-*` | SPEC-003 | N+2 | A7, E6 |
 | `F-DRIFT-*` | SPEC-004 | 4 | Cat F |
 | `F-CLASS-A*` | SPEC-001 | 4 | A1-A4, B1-B2 |
 | `F-CLASS-B*` | SPEC-001 | 4 | A1-A4, B3-B4 |
+| `F-PATH-*` | GH-187 | 2 | E5 |
+| `F-STATE-*` | GH-187 | 3 | E6 |
+| `F-VALID-*` | GH-187 | 3 | E7 |
+| `F-ERR-*` | GH-187 | 2 | E8 |
+| `F-SEC-*` | GH-187 | 2 | E9 |
+| `F-ROSETTA-*` | GH-188/PMAT-114 | 4 | B6-B9 |
+| `F-PROFILE-CI-*` | PMAT-192 | 3 | D1-D3 |
+| `F-PROFILE-DIFF-*` | PMAT-192 | 2 | D4-D5 |
+| `F-TRACE-PAYLOAD-*` | APR-TRACE-001 | 3 | E1-E3 |
+| `F-TRACE-DIFF-*` | APR-TRACE-001 | 1 | E4 |
 
-**Total Unique Gates: 56+**
+**Total Unique Gates: 82+**
 
 ---
 

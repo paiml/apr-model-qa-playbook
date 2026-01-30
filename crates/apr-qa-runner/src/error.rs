@@ -53,6 +53,15 @@ pub enum Error {
     #[error("Execution error: {0}")]
     Execution(String),
 
+    /// Execution failed with details
+    #[error("Execution failed: {command} - {reason}")]
+    ExecutionFailed {
+        /// The command that failed
+        command: String,
+        /// Reason for failure
+        reason: String,
+    },
+
     /// Serialization error
     #[error("Serialization error: {0}")]
     SerializationError(#[from] serde_json::Error),

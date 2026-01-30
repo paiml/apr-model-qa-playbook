@@ -23,6 +23,7 @@
 #![cfg_attr(test, allow(clippy::cast_sign_loss))]
 
 pub mod conversion;
+pub mod differential;
 pub mod error;
 pub mod evidence;
 pub mod executor;
@@ -36,6 +37,11 @@ pub use conversion::{
     ConversionExecutor, ConversionResult, ConversionTest, EPSILON, RoundTripTest,
     SemanticConversionTest, SemanticTestResult, all_backends, all_conversion_pairs,
     generate_conversion_tests,
+};
+pub use differential::{
+    BenchmarkMetrics, CiAssertion, CiProfileResult, DiffBenchmarkResult, DiffConfig,
+    DifferentialExecutor, InferenceComparisonResult, TensorDiffResult, TensorMismatch,
+    TensorMismatchType, TokenComparison, run_diff_benchmark, run_profile_ci,
 };
 pub use error::{Error, Result};
 pub use evidence::{Evidence, EvidenceCollector, Outcome, PerformanceMetrics};
