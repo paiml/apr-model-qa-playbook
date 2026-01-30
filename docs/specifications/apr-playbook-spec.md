@@ -37,7 +37,10 @@
 - **docs(spec):** Add sections 12.6-12.7 implementation documentation
   - PatternDetector with 12 heuristics (12.6)
   - DifferentialExecutor with Rosetta integration (12.7)
-- **Total gates:** 214 unique gate IDs documented
+- **feat(gh186):** Add PAD token flood and LayerNorm zero detection
+  - F-ROSETTA-INF-003: PAD token flood detection
+  - F-ROSETTA-STATS-005/006: LayerNorm zero detection
+- **Total gates:** 217 unique gate IDs documented
 - **Tests:** 523 passing (232 in apr-qa-runner)
 
 ### v1.2.0 (2026-01-30)
@@ -2262,15 +2265,16 @@ All gates from all specs, unified:
 | `F-VALID-*` | GH-187 | 3 | E7 |
 | `F-ERR-*` | GH-187 | 2 | E8 |
 | `F-SEC-*` | GH-187 | 2 | E9 |
-| `F-ROSETTA-*` | GH-188/PMAT-114 | 4 | B6-B9 |
-| `F-ROSETTA-FP-*` | PMAT-201/JAX-STAT-001 | 3 | B10-B12 |
-| `F-ROSETTA-STATS-*` | PMAT-202 | 4 | B13-B16 |
+| `F-ROSETTA-DIFF-*` | GH-188 | 2 | B6-B7 |
+| `F-ROSETTA-INF-*` | PMAT-114/GH-186 | 3 | B8-B10 |
+| `F-ROSETTA-FP-*` | PMAT-201/JAX-STAT-001 | 3 | B11-B13 |
+| `F-ROSETTA-STATS-*` | PMAT-202/GH-189 | 6 | B14-B19 |
 | `F-PROFILE-CI-*` | PMAT-192 | 3 | D1-D3 |
 | `F-PROFILE-DIFF-*` | PMAT-192 | 2 | D4-D5 |
 | `F-TRACE-PAYLOAD-*` | APR-TRACE-001 | 3 | E1-E3 |
 | `F-TRACE-DIFF-*` | APR-TRACE-001 | 1 | E4 |
 
-**Total Unique Gates: 82+**
+**Total Unique Gates: 217**
 
 ---
 
