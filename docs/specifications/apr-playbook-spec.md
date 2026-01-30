@@ -35,8 +35,8 @@
 - **docs(spec):** Add sections 12.6-12.7 implementation documentation
   - PatternDetector with 12 heuristics (12.6)
   - DifferentialExecutor with Rosetta integration (12.7)
-- **Total gates:** 82+ (up from 56+)
-- **Tests:** 227 passing
+- **Total gates:** 207 unique gate IDs documented
+- **Tests:** 518 passing (227 in apr-qa-runner)
 
 ### v1.2.0 (2026-01-30)
 - Initial bug classification gates

@@ -59,7 +59,7 @@ We don't test to pass—we **test to fail**. No amount of passing tests proves c
 - **JUnit XML and HTML reports** for CI/CD integration
 - **Playbook YAML format** with JSON Schema validation
 - **1.8M+ test assertions** across all model/format/backend combinations
-- **82+ falsification gates** across conversion, inference, and security domains
+- **207 falsification gates** across conversion, inference, patterns, and security domains
 
 ### New in v1.3.0
 
