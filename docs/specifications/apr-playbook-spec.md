@@ -32,6 +32,9 @@
 - **feat(executor):** Add ExecutionConfig for phase control
   - run_differential_tests, run_profile_ci, run_trace_payload options
   - CLI flags: --profile-ci, --no-differential, --no-trace-payload
+- **docs(spec):** Add sections 12.6-12.7 implementation documentation
+  - PatternDetector with 12 heuristics (12.6)
+  - DifferentialExecutor with Rosetta integration (12.7)
 - **Total gates:** 82+ (up from 56+)
 - **Tests:** 227 passing
 
@@ -3654,6 +3657,291 @@ apr-qa run playbook.yaml --no-differential --no-trace-payload
 | PR validation | `--profile-ci` | Full verification before merge |
 | Model qualification | All enabled | Complete falsification testing |
 | Bisection/debugging | `--no-profile-ci` | Fast iteration, skip expensive assertions |
+
+### 12.6 Cross-Project Bug Pattern Detection
+
+The `patterns.rs` module implements detection heuristics for 12 common bug patterns identified through cross-project analysis of aprender, realizar, and mutation testing results.
+
+#### 12.6.1 Bug Pattern Taxonomy
+
+```rust
+// crates/apr-qa-runner/src/patterns.rs
+
+/// Bug patterns identified from cross-project mutation testing analysis.
+/// Each pattern maps to a specific falsification gate.
+#[derive(Debug, Clone, PartialEq)]
+pub enum BugPattern {
+    // === Path Coverage Patterns (F-PATH-*) ===
+
+    /// Feature works on primary path but missing on alternate path.
+    /// Example: aprender GH-185 - APR format missing embedded tokenizer.
+    AlternatePathMissing,       // F-PATH-ALT-001
+
+    /// Two implementations use incompatible layouts/algorithms.
+    /// Example: aprender GH-177 - embedding layout [vocab, dim] vs [dim, vocab].
+    AlgorithmMismatch,          // F-PATH-ALGO-001
+
+    // === State Management Patterns (F-STATE-*) ===
+
+    /// Fallback path silently uses wrong resource instead of erroring.
+    /// Example: realizar 33e18c2 - tokenizer fallback used wrong fallback.
+    SilentFallbackWrongResource, // F-STATE-FALLBACK-001
+
+    /// State advanced at wrong stage in pipeline.
+    /// Example: realizar 62147f9 - KV cache position advanced too early.
+    StateAdvancementTiming,     // F-STATE-TIMING-001
+
+    /// Prior operation corrupts shared state for subsequent operations.
+    /// Example: realizar 9f9f985 - GPU context corruption after certain ops.
+    SharedStateCorruption,      // F-STATE-CORRUPT-001
+
+    // === Validation Gap Patterns (F-VALID-*) ===
+
+    /// No validation after transformation step.
+    /// Example: aprender GH-177 - no shape check after embedding transpose.
+    MissingPostTransformValidation, // F-VALID-POST-001
+
+    /// Format/type not detected before processing.
+    /// Example: realizar f13f39b - no token encoding detection.
+    MissingTypeDetection,       // F-VALID-TYPE-001
+
+    /// Required companion files (tokenizer, config) missing.
+    /// Example: aprender GH-182 - metadata.json missing special tokens.
+    MissingCompanionData,       // F-VALID-COMPANION-001
+
+    // === Error Handling Patterns (F-ERR-*) ===
+
+    /// Using .unwrap() on fallible operations.
+    /// Example: aprender PMAT-189 - unwrap on string conversion.
+    UnwrapOnFallible,           // F-ERR-UNWRAP-001
+
+    /// Error not propagated in alternate execution paths.
+    /// Example: multiple - errors swallowed in fallback paths.
+    ErrorPropagationGap,        // F-ERR-PROP-001
+
+    // === Security Patterns (F-SEC-*) ===
+
+    /// Untrusted path allows reading arbitrary files.
+    /// Example: realizar 04d2774 - tokenizer path traversal.
+    PathTraversal,              // F-SEC-PATH-001
+
+    /// Special tokens (EOS, BOS) not properly escaped.
+    /// Example: realizar 1b51030 - prompt injection via EOS token.
+    PromptInjection,            // F-SEC-INJECT-001
+}
+```
+
+#### 12.6.2 Pattern Detection Heuristics
+
+```rust
+/// Detector that scans evidence for patterns indicating specific bug types.
+pub struct PatternDetector {
+    evidence: Vec<FalsificationEvidence>,
+}
+
+impl PatternDetector {
+    /// Detect AlternatePathMissing pattern.
+    /// Trigger: Feature passing on one format but failing on another.
+    fn detect_alternate_path_missing(&self) -> Option<PatternMatch> {
+        let format_results = self.group_by_format();
+        for (feature, results) in format_results {
+            let passing = results.iter().filter(|r| r.passed).count();
+            let failing = results.iter().filter(|r| !r.passed).count();
+            if passing > 0 && failing > 0 {
+                return Some(PatternMatch {
+                    pattern: BugPattern::AlternatePathMissing,
+                    confidence: 0.9,
+                    evidence: format!("Feature '{}' passes on some formats but fails on others", feature),
+                });
+            }
+        }
+        None
+    }
+
+    /// Detect AlgorithmMismatch pattern.
+    /// Trigger: Two models with same weights produce different outputs.
+    fn detect_algorithm_mismatch(&self) -> Option<PatternMatch> {
+        let rosetta_diffs = self.evidence.iter()
+            .filter(|e| e.gate_id.starts_with("F-ROSETTA-DIFF"))
+            .collect::<Vec<_>>();
+
+        for diff in rosetta_diffs {
+            if diff.outcome == Outcome::Falsified {
+                return Some(PatternMatch {
+                    pattern: BugPattern::AlgorithmMismatch,
+                    confidence: 0.95,
+                    evidence: diff.message.clone(),
+                });
+            }
+        }
+        None
+    }
+}
+```
+
+#### 12.6.3 Integration with Playbook Execution
+
+Pattern detection runs automatically after playbook execution:
+
+```rust
+// In executor.rs
+let result = executor.execute(&playbook)?;
+
+// Post-execution pattern analysis
+let detector = PatternDetector::new(&result.evidence);
+let patterns = detector.detect_all();
+
+for pattern in patterns {
+    eprintln!(
+        "[PATTERN] {} detected (confidence: {:.0}%): {}",
+        pattern.pattern.gate_id(),
+        pattern.confidence * 100.0,
+        pattern.evidence
+    );
+}
+```
+
+### 12.7 Differential Testing Implementation
+
+The `differential.rs` module provides tooling integration for Rosetta differential testing and profile CI assertions.
+
+#### 12.7.1 Differential Executor
+
+```rust
+// crates/apr-qa-runner/src/differential.rs
+
+/// Configuration for differential testing operations.
+#[derive(Debug, Clone)]
+pub struct DiffConfig {
+    /// Path to first model (reference).
+    pub model_a: PathBuf,
+    /// Path to second model (under test).
+    pub model_b: PathBuf,
+    /// Tolerance for floating-point comparison.
+    pub tolerance: f64,
+    /// Filter for tensor names (e.g., "embed,lm_head").
+    pub filter: Option<String>,
+    /// Timeout in milliseconds.
+    pub timeout_ms: u64,
+}
+
+/// Executor for differential testing operations.
+pub struct DifferentialExecutor {
+    config: DiffConfig,
+}
+
+impl DifferentialExecutor {
+    /// Run tensor diff between two models.
+    ///
+    /// # Errors
+    /// Returns error if apr rosetta diff-tensors fails or times out.
+    pub fn run_tensor_diff(&self) -> Result<TensorDiffResult, Error> {
+        let mut cmd = Command::new("apr");
+        cmd.args(["rosetta", "diff-tensors"])
+            .arg(&self.config.model_a)
+            .arg(&self.config.model_b)
+            .arg("--mismatches-only");
+
+        if let Some(ref filter) = self.config.filter {
+            cmd.args(["--filter", filter]);
+        }
+
+        let output = cmd.output()?;
+        TensorDiffResult::parse(&output.stdout)
+    }
+
+    /// Run inference comparison between two models.
+    pub fn run_inference_compare(
+        &self,
+        prompt: &str,
+        max_tokens: usize,
+    ) -> Result<InferenceCompareResult, Error> {
+        let output = Command::new("apr")
+            .args(["rosetta", "compare-inference"])
+            .arg(&self.config.model_a)
+            .arg(&self.config.model_b)
+            .args(["--prompt", prompt])
+            .args(["--max-tokens", &max_tokens.to_string()])
+            .args(["--tolerance", &self.config.tolerance.to_string()])
+            .output()?;
+
+        InferenceCompareResult::parse(&output.stdout)
+    }
+}
+```
+
+#### 12.7.2 Profile CI Integration
+
+```rust
+/// Run profile with CI assertions.
+///
+/// # Arguments
+/// * `model_path` - Path to model file
+/// * `warmup` - Number of warmup iterations
+/// * `measure` - Number of measurement iterations
+/// * `assertions` - Throughput and latency assertions
+///
+/// # Errors
+/// Returns error if assertions fail or command times out.
+pub fn run_profile_ci(
+    model_path: &Path,
+    warmup: usize,
+    measure: usize,
+    assertions: &ProfileCiAssertions,
+) -> Result<CiProfileResult, Error> {
+    let mut cmd = Command::new("apr");
+    cmd.args(["profile", "--ci"])
+        .arg(model_path)
+        .args(["--warmup", &warmup.to_string()])
+        .args(["--measure", &measure.to_string()]);
+
+    if let Some(min_tps) = assertions.min_throughput {
+        cmd.args(["--assert-throughput", &min_tps.to_string()]);
+    }
+    if let Some(max_p99) = assertions.max_p99_ms {
+        cmd.args(["--assert-p99", &max_p99.to_string()]);
+    }
+
+    let output = cmd.output()?;
+    CiProfileResult::from_output(&output)
+}
+```
+
+#### 12.7.3 Differential Benchmark
+
+```rust
+/// Run differential benchmark between two models.
+/// Detects throughput regressions between versions.
+pub fn run_diff_benchmark(
+    model_a: &Path,
+    model_b: &Path,
+    warmup: usize,
+    measure: usize,
+) -> Result<DiffBenchmarkResult, Error> {
+    let output = Command::new("apr")
+        .args(["profile", "--diff-benchmark"])
+        .arg(model_a)
+        .arg(model_b)
+        .args(["--warmup", &warmup.to_string()])
+        .args(["--measure", &measure.to_string()])
+        .output()?;
+
+    DiffBenchmarkResult::parse(&output.stdout)
+}
+```
+
+#### 12.7.4 Falsification Gates
+
+| Gate | Description | Severity |
+|------|-------------|----------|
+| F-ROSETTA-DIFF-001 | Tensor shapes match after conversion | P0 |
+| F-ROSETTA-DIFF-002 | Tensor values within tolerance | P1 |
+| F-ROSETTA-INF-001 | Token sequence matches | P0 |
+| F-ROSETTA-INF-002 | Logit differences within tolerance | P1 |
+| F-PROFILE-CI-001 | Throughput above minimum | P1 |
+| F-PROFILE-CI-002 | P99 latency below maximum | P1 |
+| F-PROFILE-DIFF-001 | No throughput regression | P2 |
+| F-PROFILE-DIFF-002 | No latency regression | P2 |
 
 ---
 
