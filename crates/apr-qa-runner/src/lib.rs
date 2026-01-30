@@ -53,4 +53,7 @@ pub use patterns::{
     BugPattern, CompanionCheckResult, PathSafetyResult, PathViolation, PatternDetector,
     PromptPattern, PromptSafetyResult, TensorValidityResult,
 };
-pub use playbook::{Playbook, PlaybookStep};
+pub use playbook::{
+    DifferentialTestConfig, InferenceCompareConfig, Playbook, PlaybookStep, ProfileCiAssertions,
+    ProfileCiConfig, TensorDiffConfig, TracePayloadConfig,
+};
