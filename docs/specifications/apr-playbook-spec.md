@@ -2136,7 +2136,7 @@ fn grade_from_score(score: u32) -> Grade {
 }
 ```
 
-### 16.12 Score Report Format
+### 8.12 Score Report Format
 
 ```
 ╔══════════════════════════════════════════════════════════════════════════╗
@@ -2193,7 +2193,7 @@ fn grade_from_score(score: u32) -> Grade {
 ╚══════════════════════════════════════════════════════════════════════════╝
 ```
 
-### 16.13 Why 100/100 is Difficult
+### 8.13 Why 100/100 is Difficult
 
 To achieve a perfect MQS of 100/100, a model must:
 
@@ -2218,7 +2218,7 @@ To achieve a perfect MQS of 100/100, a model must:
 - 60-69: ~20% of models (needs work)
 - <60: ~10% of models (significant issues)
 
-### 16.14 MQS Leaderboard Schema
+### 8.14 MQS Leaderboard Schema
 
 ```rust
 #[derive(Serialize, Deserialize)]
@@ -2265,7 +2265,7 @@ pub struct ModelEntry {
 
 ## 9. Playbook Schema
 
-### 16.1 YAML Schema Definition
+### 9.1 YAML Schema Definition
 
 ```yaml
 # playbook.schema.yaml
@@ -2387,7 +2387,7 @@ properties:
           default: P1
 ```
 
-### 4.2 Example Playbook
+### 9.2 Example Playbook
 
 ```yaml
 # playbooks/models/qwen2.5-coder-1.5b.playbook.yaml
@@ -2522,7 +2522,7 @@ falsification_gates:
     severity: P0
 ```
 
-### 4.3 Playbook Validation
+### 9.3 Playbook Validation
 
 All playbooks must pass schema validation before execution:
 
@@ -2536,7 +2536,7 @@ bashrs playbook validate playbooks/models/*.yaml
 
 ## 10. Property Test Generation
 
-### 16.1 Proptest Integration
+### 10.1 Proptest Integration
 
 The `apr-qa-gen` crate uses `proptest` (Rust property testing library) to generate diverse test scenarios:
 
@@ -2639,7 +2639,7 @@ fn prompt_strategy() -> impl Strategy<Value = String> {
 }
 ```
 
-### 16.2 Oracle Definitions
+### 10.2 Oracle Definitions
 
 Oracles verify output correctness. Each oracle is a pure function:
 
@@ -2760,7 +2760,7 @@ pub fn is_garbage(output: &str) -> bool {
 }
 ```
 
-### 16.3 Scenario Serialization
+### 10.3 Scenario Serialization
 
 Scenarios serialize to bashrs-compatible YAML:
 
@@ -2814,7 +2814,7 @@ impl QaScenario {
 
 ## 11. Falsification Protocol
 
-### 16.1 Falsification Gate Taxonomy
+### 11.1 Falsification Gate Taxonomy
 
 Gates are organized by category and severity. A **Demarcation Check** is a meta-test ensuring the test itself is valid (falsifiable).
 
@@ -2829,7 +2829,7 @@ Gates are organized by category and severity. A **Demarcation Check** is a meta-
 | **GPU** | F-GPU-001 to F-GPU-099 | P0-P1 | GPU-specific |
 | **REGR** | F-REGR-001 to F-REGR-999 | P0 | Regression tests |
 
-### 16.2 Severity Definitions
+### 11.2 Severity Definitions
 
 | Severity | Definition | Response |
 |----------|------------|----------|
@@ -2837,7 +2837,7 @@ Gates are organized by category and severity. A **Demarcation Check** is a meta-
 | **P1** | Major: Feature does not meet specification | Block release. Fix before next milestone. |
 | **P2** | Minor: Suboptimal but acceptable | Track for improvement. |
 
-### 16.3 Evidence Collection
+### 11.3 Evidence Collection
 
 Every falsification attempt records:
 
@@ -2910,7 +2910,7 @@ pub struct Checksums {
 }
 ```
 
-### 16.4 Popperian Scoring
+### 11.4 Popperian Scoring
 
 The final qualification score reflects the model's **Verisimilitude** (degree of corroboration). It is not a percentage of "correctness," but a measure of how many severe tests the model has survived.
 
