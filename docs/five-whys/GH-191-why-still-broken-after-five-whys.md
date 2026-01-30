@@ -47,43 +47,69 @@ We diagnosed the disease, prescribed the cure, and the patient is still sick. **
 
 The writer and reader of APR dtype bytes live **in the same file** and **disagree with each other**.
 
-### The Writer: `dtype_to_byte()` (lines 1711-1730)
+### The Writer (BEFORE FIX): `dtype_to_byte()` (lines 1711-1730)
+
+`dtype_to_byte()` invented its own byte numbering instead of using GGML type values:
 
 ```rust
+// BEFORE FIX — invented numbering, NOT GGML values
 fn dtype_to_byte(dtype: &str) -> u8 {
     match dtype {
-        "F32" => 0,
-        "F16" => 1,
-        "BF16" => 2,
+        "F32" => 0,      // GGML 0  ✅
+        "F16" => 1,      // GGML 1  ✅
+        "BF16" => 2,     // GGML 30 ❌ (should be 30)
         "I8" => 3,   "I16" => 4,   "I32" => 5,   "I64" => 6,   "U8" => 7,
-        "Q4_K" => 8,        // ← writes 8 for Q4_K
-        "Q6_K" => 9,
-        "Q8_0" => 10,
-        "Q4_0" => 11,
-        "Q5_K" => 12,
-        "Q3_K" => 13,
-        "Q2_K" => 14,
-        _ => 0,             // ← SILENT FALLBACK TO F32
+        "Q4_K" => 8,     // GGML 12 ❌ (should be 12)
+        "Q6_K" => 9,     // GGML 14 ❌ (should be 14)
+        "Q8_0" => 10,    // GGML 8  ❌ (should be 8)
+        "Q4_0" => 11,    // GGML 2  ❌ (should be 2)
+        "Q5_K" => 12,    // GGML 13 ❌ (should be 13)
+        "Q3_K" => 13,    // GGML 11 ❌ (should be 11)
+        "Q2_K" => 14,    // GGML 10 ❌ (should be 10)
+        _ => 0,          // SILENT FALLBACK TO F32
     }
 }
 ```
 
-### The Reader: `TensorEntry::from_binary()` (around line 781)
+### The Reader (BEFORE FIX): `TensorEntry::from_binary()` (line 776)
 
-Maps byte 8 back to `"Q4"` — **NOT** `"Q4_K"`. The forward and reverse mappings are inconsistent within the same file.
+The reader used the GGML numbering. So byte 8 (writer meant Q4_K) was read as "Q8_0" (GGML type 8), or in older code mapped to "Q4". Either way — **wrong**.
 
-### The Matcher: `dtype_to_ggml_qtype()` (around line 537)
-
-Matches against `"Q4_K"` but receives `"Q4"` from the reader. No match → `None` → treated as F32.
-
-### The Full Chain
+### The Full Chain (BEFORE FIX)
 
 ```
-Writer: "Q4_K" → dtype_to_byte() → byte 8       ← WRITES correctly
-Reader: byte 8 → from_binary()   → "Q4"         ← READS incorrectly
-Matcher: "Q4" vs "Q4_K"          → NO MATCH      ← FALLS THROUGH
-Fallback: None                    → F32           ← SILENT CORRUPTION
+Writer: "Q4_K" → dtype_to_byte() → byte 8       ← wrote 8 (invented numbering)
+Reader: byte 8 → from_binary()   → "Q8_0"       ← read 8 as GGML type 8 = Q8_0
+Matcher: "Q8_0" vs expected Q4_K → WRONG TYPE    ← wrong dequantization kernel
+                      OR
+Reader: byte 8 → from_binary()   → "Q4"          ← older code mapped to "Q4"
+Matcher: "Q4" vs "Q4_K"          → NO MATCH       ← falls through
+Fallback: None                    → F32            ← SILENT CORRUPTION
 ```
+
+### The Fix (APPLIED in realizar source)
+
+**Both writer and reader now use GGML type values directly:**
+
+```rust
+// AFTER FIX — dtype_to_byte() line 1714 (GH-191 FIX comment)
+"Q4_K" => 12,   // GGML type 12 ✅
+"Q5_K" => 13,   // GGML type 13 ✅
+"Q6_K" => 14,   // GGML type 14 ✅
+"Q8_0" => 8,    // GGML type 8  ✅
+"Q4_0" => 2,    // GGML type 2  ✅
+"BF16" => 30,   // GGML type 30 ✅
+
+// AFTER FIX — from_binary() line 776 (GH-191 FIX comment)
+12 => "Q4_K",   // GGML type 12 ✅
+13 => "Q5_K",   // GGML type 13 ✅
+14 => "Q6_K",   // GGML type 14 ✅
+8 => "Q8_0",    // GGML type 8  ✅
+2 => "Q4_0",    // GGML type 2  ✅
+30 => "BF16",   // GGML type 30 ✅
+```
+
+The canonical source of truth is `qtype_to_dtype()` (line 1688) which already used GGML values correctly. Both `dtype_to_byte()` and `from_binary()` now mirror it exactly.
 
 ### Complete Mismatch Table
 
@@ -105,20 +131,31 @@ Fallback: None                    → F32           ← SILENT CORRUPTION
 
 **Every quantized type except F32/F16 is broken.** The writer and reader were written independently and never round-trip tested.
 
-### Three Silent Fallbacks in One File
+### Three Silent Fallbacks in One File (Still Present as Warnings)
 
-1. **`dtype_to_byte()` line 1728:** `_ => 0` — unknown string → F32 byte
-2. **`qtype_to_dtype()` line 1706:** `_ => "F32"` — unknown GGML type → F32 string
-3. **`dtype_to_ggml_qtype()`:** `None` → treated as F32 by caller
+1. **`dtype_to_byte()` line 1732:** `_ => { eprintln!("WARN: ..."); 0 }` — unknown string → F32 byte (now warns)
+2. **`qtype_to_dtype()` line 1706:** `_ => "F32"` — unknown GGML type → F32 string (still silent)
+3. **`from_binary()` line 793:** `_ => { eprintln!("WARN: ..."); "F32" }` — unknown byte → F32 (now warns)
 
-Three fallbacks, all to F32, all silent, all in the same file. Any one of them triggers the entire corruption chain.
+Two of three now warn via `eprintln!`. But warnings are not errors. In CI, nobody reads stderr. These should be `Err()` returns, not warnings.
 
 ### Why This Is GH-186 Redux
 
 GH-186 was: "GGML dtype 12 (Q4_K) read as F32 via silent `_ => F32` fallback."
-GH-191 is: "APR byte 8 (Q4_K) read as `"Q4"` via inconsistent reverse mapping → F32 fallback."
+GH-191 is: "APR byte 8 (Q4_K) read as wrong string via inconsistent reverse mapping → F32 fallback."
 
 Same pattern. Same file. Same fallback. Different code path.
+
+### Fix Status
+
+| Component | Location | Bug | Fix Applied? |
+|-----------|----------|-----|-------------|
+| `dtype_to_byte()` | `loader.rs:1714` | Invented numbering (Q4_K→8) | ✅ Now uses GGML values (Q4_K→12) |
+| `from_binary()` | `apr/mod.rs:776` | Mapped 8→"Q4" or 8→"Q8_0" | ✅ Now maps 12→"Q4_K" (GGML values) |
+| `qtype_to_dtype()` | `loader.rs:1688` | Was already correct | ✅ (canonical source of truth) |
+| `_ =>` fallbacks | 3 locations | Silent F32 fallback | ⚠️ 2/3 now warn, but should be errors |
+
+**Needs rebuild + Golden Rule Test re-run to verify end-to-end.**
 
 ---
 

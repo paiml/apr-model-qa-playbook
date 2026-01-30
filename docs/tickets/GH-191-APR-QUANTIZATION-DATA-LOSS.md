@@ -138,38 +138,64 @@ This is the **exact same pattern** as GH-186:
 ### Code Locations
 
 ```
-Converter (aprender):
-  - dtype_to_apr_byte(): Maps GGML types to APR byte values
-  - Uses its own byte numbering scheme (8 = Q4_K, 9 = Q6_K, 10 = Q8_0)
+BOTH writer and reader are in realizar (NOT aprender):
 
-Reader (realizar):
-  - TensorEntry::from_binary() line 781: Maps APR byte to string
-  - Uses DIFFERENT numbering (8 = "Q4", 9 = "Q8_0", 10 = unknown)
-  - dtype_to_ggml_qtype() line 537: Maps string to GGML type
-  - String "Q4" has no match → None → F32 fallback
+Writer: realizar/src/gguf/loader.rs → dtype_to_byte() (line 1714)
+  - BEFORE: Invented numbering (Q4_K=8, Q6_K=9, Q8_0=10, Q4_0=11, ...)
+  - AFTER:  GGML values    (Q4_K=12, Q6_K=14, Q8_0=8, Q4_0=2, ...)
 
-The bug: converter's byte 8 means Q4_K, reader's byte 8 means "Q4".
-Two codebases, two enums, no shared definition.
+Reader: realizar/src/apr/mod.rs → TensorEntry::from_binary() (line 776)
+  - BEFORE: Old mapping (8="Q4" or "Q8_0", 9="Q8_0" or "Q8_1", ...)
+  - AFTER:  GGML values (12="Q4_K", 14="Q6_K", 8="Q8_0", ...)
+
+Canonical source: realizar/src/gguf/loader.rs → qtype_to_dtype() (line 1688)
+  - Was always correct: uses GGML type constants from types.rs
+  - 12→"Q4_K", 14→"Q6_K", 8→"Q8_0"
+
+The bug: dtype_to_byte() invented its own sequential numbering (8,9,10,11,12,13,14)
+instead of using GGML type values (12,14,8,2,13,11,10). Same crate, two functions,
+no shared enum — within the same file.
 ```
 
-### The Fix
+### The Fix (APPLIED in realizar source)
 
-The reader's mapping at `TensorEntry::from_binary` (line 772-790) is the canonical APR format spec. The converter must match it, OR both must be updated to use a shared dtype enum.
+Both `dtype_to_byte()` and `from_binary()` now use GGML type values directly, matching `qtype_to_dtype()`:
 
-**Preferred fix:** Add all K-quant types to the reader's byte mapping:
-```
-byte 8 → "Q4_K" (not "Q4")
-byte 9 → "Q5_K" (add new)
-byte 10 → "Q6_K" (add new)
-byte 11 → "Q8_0" (add new)
-```
-
-**Required invariant (I-3):** After fix, add assertion:
 ```rust
-// NEVER silently fall back to F32
-match dtype_string.as_str() {
-    "F32" | "F16" | "BF16" | "Q4_K" | "Q5_K" | "Q6_K" | "Q8_0" => Ok(dtype),
-    unknown => Err(format!("Unknown APR dtype: '{}' — refusing to fallback", unknown)),
+// dtype_to_byte (writer) — NOW matches GGML values
+"Q4_K" => 12,   // was 8  → now 12 (GGML_TYPE_Q4_K)
+"Q5_K" => 13,   // was 12 → now 13 (GGML_TYPE_Q5_K)
+"Q6_K" => 14,   // was 9  → now 14 (GGML_TYPE_Q6_K)
+"Q8_0" => 8,    // was 10 → now 8  (GGML_TYPE_Q8_0)
+"Q4_0" => 2,    // was 11 → now 2  (GGML_TYPE_Q4_0)
+"Q3_K" => 11,   // was 13 → now 11 (GGML_TYPE_Q3_K)
+"Q2_K" => 10,   // was 14 → now 10 (GGML_TYPE_Q2_K)
+"BF16" => 30,   // was 2  → now 30 (GGML_TYPE_BF16)
+
+// from_binary (reader) — NOW matches writer
+12 => "Q4_K",   // was "Q4" or wrong → now correct
+14 => "Q6_K",   // was wrong → now correct
+8  => "Q8_0",   // was "Q4_K" (invented) → now correct
+```
+
+**Status: Fix applied in realizar source. Needs rebuild + Golden Rule Test re-run to verify.**
+
+**Remaining risk:** All three `_ =>` fallback arms still fall to F32 (2/3 now warn via `eprintln!`, 1 is still silent). These should be `Err()` returns.
+
+### Required invariant test (I-3):
+
+```rust
+#[test]
+fn dtype_byte_roundtrip() {
+    // Every dtype that dtype_to_byte can write, from_binary must read back identically
+    for dtype in ["F32","F16","BF16","Q4_0","Q4_1","Q5_0","Q5_1","Q8_0","Q8_1",
+                  "Q2_K","Q3_K","Q4_K","Q5_K","Q6_K","IQ2_XXS","IQ2_XS"] {
+        let byte = dtype_to_byte(dtype);
+        let (entry, _) = TensorEntry::from_binary(&make_test_entry(byte, "test", &[1]))
+            .expect("parse");
+        assert_eq!(entry.dtype, dtype,
+            "Round-trip failed: '{}' → byte {} → '{}'", dtype, byte, entry.dtype);
+    }
 }
 ```
 
