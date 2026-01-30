@@ -954,4 +954,146 @@ mod tests {
         assert!(json.contains("\"modality\":\"run\""));
         assert!(json.contains("\"backend\":\"cpu\""));
     }
+
+    #[test]
+    fn test_apr_tool_all() {
+        let all = AprTool::all();
+        assert_eq!(all.len(), 10);
+        assert!(all.contains(&AprTool::Run));
+        assert!(all.contains(&AprTool::Canary));
+    }
+
+    #[test]
+    fn test_apr_tool_command() {
+        assert_eq!(AprTool::Run.command(), "run");
+        assert_eq!(AprTool::Chat.command(), "chat");
+        assert_eq!(AprTool::Serve.command(), "serve");
+        assert_eq!(AprTool::Inspect.command(), "inspect");
+        assert_eq!(AprTool::Validate.command(), "validate");
+        assert_eq!(AprTool::Bench.command(), "bench");
+        assert_eq!(AprTool::Profile.command(), "profile");
+        assert_eq!(AprTool::Trace.command(), "trace");
+        assert_eq!(AprTool::Check.command(), "check");
+        assert_eq!(AprTool::Canary.command(), "canary");
+    }
+
+    #[test]
+    fn test_apr_tool_requires_prompt() {
+        assert!(AprTool::Run.requires_prompt());
+        assert!(AprTool::Chat.requires_prompt());
+        assert!(!AprTool::Serve.requires_prompt());
+        assert!(!AprTool::Inspect.requires_prompt());
+        assert!(!AprTool::Validate.requires_prompt());
+        assert!(!AprTool::Bench.requires_prompt());
+    }
+
+    #[test]
+    fn test_apr_tool_supports_trace() {
+        assert!(AprTool::Run.supports_trace());
+        assert!(AprTool::Trace.supports_trace());
+        assert!(!AprTool::Chat.supports_trace());
+        assert!(!AprTool::Serve.supports_trace());
+    }
+
+    #[test]
+    fn test_apr_tool_display() {
+        assert_eq!(format!("{}", AprTool::Run), "run");
+        assert_eq!(format!("{}", AprTool::Profile), "profile");
+        assert_eq!(format!("{}", AprTool::Canary), "canary");
+    }
+
+    #[test]
+    fn test_format_extension() {
+        assert_eq!(Format::Gguf.extension(), ".gguf");
+        assert_eq!(Format::SafeTensors.extension(), ".safetensors");
+        assert_eq!(Format::Apr.extension(), ".apr");
+    }
+
+    #[test]
+    fn test_trace_level_all() {
+        let all = TraceLevel::all();
+        assert_eq!(all.len(), 4);
+        assert!(all.contains(&TraceLevel::None));
+        assert!(all.contains(&TraceLevel::Basic));
+        assert!(all.contains(&TraceLevel::Layer));
+        assert!(all.contains(&TraceLevel::Payload));
+    }
+
+    #[test]
+    fn test_modality_command() {
+        assert_eq!(Modality::Run.command(), "run");
+        assert_eq!(Modality::Chat.command(), "chat");
+        assert_eq!(Modality::Serve.command(), "serve");
+    }
+
+    #[test]
+    fn test_scenario_debug() {
+        let model = ModelId::new("test", "model");
+        let scenario = QaScenario::new(
+            model,
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "test".to_string(),
+            0,
+        );
+        let debug_str = format!("{scenario:?}");
+        assert!(debug_str.contains("QaScenario"));
+    }
+
+    #[test]
+    fn test_scenario_generator_debug() {
+        let model = ModelId::new("test", "model");
+        let generator = ScenarioGenerator::new(model);
+        let debug_str = format!("{generator:?}");
+        assert!(debug_str.contains("ScenarioGenerator"));
+    }
+
+    #[test]
+    fn test_escape_json_tab() {
+        // Verify tabs don't cause issues
+        let result = escape_json("hello\tworld");
+        assert!(result.contains('\t'));
+    }
+
+    #[test]
+    fn test_escape_prompt_no_quotes() {
+        let result = escape_prompt("hello world");
+        assert_eq!(result, "hello world");
+    }
+
+    #[test]
+    fn test_scenario_to_command_with_basic_trace() {
+        let model = ModelId::new("test", "model");
+        let scenario = QaScenario::new(
+            model,
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "Hello".to_string(),
+            0,
+        )
+        .with_trace_level(TraceLevel::Basic);
+
+        let cmd = scenario.to_command("model.gguf");
+        assert!(cmd.contains("--trace"));
+        assert!(cmd.contains("--trace-level basic"));
+    }
+
+    #[test]
+    fn test_scenario_to_command_with_layer_trace() {
+        let model = ModelId::new("test", "model");
+        let scenario = QaScenario::new(
+            model,
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "Hello".to_string(),
+            0,
+        )
+        .with_trace_level(TraceLevel::Layer);
+
+        let cmd = scenario.to_command("model.gguf");
+        assert!(cmd.contains("--trace-level layer"));
+    }
 }

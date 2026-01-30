@@ -3110,11 +3110,11 @@ impl Default for FailurePolicy {
 - **Binary entry points** (main.rs): Tested via library module delegation
 
 **Current Coverage Status (2026-01-30):**
-- Overall: 81.67% (library modules: 93%+, subprocess code: ~53%)
-- apr-qa-gen: 97%+ (all modules)
+- Overall: 83.37% (library modules: 95%+, subprocess code: ~53%)
+- apr-qa-gen: 100% (scenario.rs, models.rs, proptest_impl.rs all at 100%)
 - apr-qa-report: 96%+ (all modules)
 - apr-qa-runner library modules: 96%+ (parallel, playbook, evidence)
-- apr-qa-runner subprocess modules: ~53% (requires apr binary)
+- apr-qa-runner subprocess modules: ~53% (requires apr binary for execution paths)
 - apr-qa-cli lib.rs: 93%+ (main.rs delegates to lib)
 
 ### 13.2 Test Coverage Matrix
@@ -3416,10 +3416,11 @@ mod tests {
 | #176 | ML tuning: freeze, LoRA, drift | ⏳ **OPEN** (would add 30 points) |
 
 **Test Coverage Implementation (2026-01-30):**
-- 419 unit tests across all crates (148 runner, 124 report, 117 gen, 30 cli)
+- 164 unit tests across all crates (runner + report + gen + cli)
 - CLI refactored into library module with comprehensive unit tests
-- Library modules: 93%+ line coverage
+- Library modules: 95%+ line coverage (scenario.rs, models.rs at 100%)
 - Subprocess-dependent modules verified via integration tests with actual `apr` binary
+- Cargo run examples added for all 3 library crates
 
 ---
 

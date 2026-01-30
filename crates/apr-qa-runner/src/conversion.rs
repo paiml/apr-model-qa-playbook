@@ -1013,4 +1013,174 @@ mod tests {
         assert!(has_gguf_to_apr);
         assert!(has_apr_to_safetensors);
     }
+
+    #[test]
+    fn test_conversion_config_default() {
+        let config = ConversionConfig::default();
+        assert!(config.test_all_pairs);
+        assert!(config.test_round_trips);
+        assert_eq!(config.backends.len(), 2);
+        assert!(!config.no_gpu);
+    }
+
+    #[test]
+    fn test_conversion_config_cpu_only() {
+        let config = ConversionConfig::cpu_only();
+        assert!(config.test_all_pairs);
+        assert!(config.test_round_trips);
+        assert_eq!(config.backends.len(), 1);
+        assert_eq!(config.backends[0], Backend::Cpu);
+        assert!(config.no_gpu);
+    }
+
+    #[test]
+    fn test_conversion_executor_new() {
+        let config = ConversionConfig::default();
+        let executor = ConversionExecutor::new(config);
+        assert!(!executor.config.no_gpu);
+    }
+
+    #[test]
+    fn test_conversion_executor_with_defaults() {
+        let executor = ConversionExecutor::with_defaults();
+        assert!(executor.config.test_all_pairs);
+    }
+
+    #[test]
+    fn test_conversion_config_debug() {
+        let config = ConversionConfig::default();
+        let debug_str = format!("{config:?}");
+        assert!(debug_str.contains("ConversionConfig"));
+    }
+
+    #[test]
+    fn test_conversion_config_clone() {
+        let config = ConversionConfig::default();
+        let cloned = config.clone();
+        assert_eq!(cloned.test_all_pairs, config.test_all_pairs);
+        assert_eq!(cloned.no_gpu, config.no_gpu);
+    }
+
+    #[test]
+    fn test_conversion_executor_debug() {
+        let executor = ConversionExecutor::with_defaults();
+        let debug_str = format!("{executor:?}");
+        assert!(debug_str.contains("ConversionExecutor"));
+    }
+
+    #[test]
+    fn test_round_trip_test_debug() {
+        let rt = RoundTripTest::new(
+            vec![Format::Gguf, Format::Apr],
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        let debug_str = format!("{rt:?}");
+        assert!(debug_str.contains("RoundTripTest"));
+    }
+
+    #[test]
+    fn test_round_trip_test_clone() {
+        let rt = RoundTripTest::new(
+            vec![Format::Gguf, Format::Apr],
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        let cloned = rt.clone();
+        assert_eq!(cloned.formats.len(), rt.formats.len());
+        assert_eq!(cloned.backend, rt.backend);
+    }
+
+    #[test]
+    fn test_conversion_test_with_epsilon() {
+        let test = ConversionTest {
+            source_format: Format::Gguf,
+            target_format: Format::Apr,
+            backend: Backend::Cpu,
+            model_id: ModelId::new("test", "model"),
+            epsilon: 1e-9,
+        };
+        assert!((test.epsilon - 1e-9).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn test_conversion_execution_result() {
+        let result = ConversionExecutionResult {
+            passed: 10,
+            failed: 2,
+            total: 12,
+            evidence: vec![],
+            results: vec![],
+            duration_ms: 1000,
+        };
+        assert_eq!(result.passed, 10);
+        assert_eq!(result.failed, 2);
+        assert_eq!(result.total, 12);
+    }
+
+    #[test]
+    fn test_conversion_execution_result_debug() {
+        let result = ConversionExecutionResult {
+            passed: 5,
+            failed: 1,
+            total: 6,
+            evidence: vec![],
+            results: vec![],
+            duration_ms: 500,
+        };
+        let debug_str = format!("{result:?}");
+        assert!(debug_str.contains("ConversionExecutionResult"));
+    }
+
+    #[test]
+    fn test_all_backends_content() {
+        let backends = all_backends();
+        assert!(backends.contains(&Backend::Cpu));
+        assert!(backends.contains(&Backend::Gpu));
+    }
+
+    #[test]
+    fn test_gate_id_all_combinations() {
+        // Test all source/target combinations
+        let combos = [
+            (Format::Gguf, Format::Apr, "F-CONV-G-A"),
+            (Format::Apr, Format::Gguf, "F-CONV-A-G"),
+            (Format::Gguf, Format::SafeTensors, "F-CONV-G-S"),
+            (Format::SafeTensors, Format::Gguf, "F-CONV-S-G"),
+            (Format::Apr, Format::SafeTensors, "F-CONV-A-S"),
+            (Format::SafeTensors, Format::Apr, "F-CONV-S-A"),
+        ];
+
+        for (source, target, expected) in combos {
+            let test = ConversionTest::new(source, target, Backend::Cpu, ModelId::new("t", "m"));
+            assert_eq!(test.gate_id(), expected);
+        }
+    }
+
+    #[test]
+    fn test_compute_diff_partially_matching() {
+        let test = ConversionTest::new(
+            Format::Gguf,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        // "hello" vs "hallo" - 1 char different out of 5
+        let diff = test.compute_diff("hello", "hallo");
+        assert!(diff > 0.0);
+        assert!(diff < 1.0);
+    }
+
+    #[test]
+    fn test_find_diff_indices_longer_second() {
+        let test = ConversionTest::new(
+            Format::Gguf,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        // "ab" vs "abc" - only compares up to shorter length
+        let indices = test.find_diff_indices("ab", "abc");
+        assert!(indices.is_empty()); // first 2 chars match
+    }
 }
