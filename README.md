@@ -1,2 +1,217 @@
-# apr-model-qa-playbook
-A QA playbook system for running through scenario testing
+# APR Model QA Playbook
+
+<p align="center">
+  <img src="assets/hero.svg" alt="APR Model QA Playbook" width="800">
+</p>
+
+<p align="center">
+  <strong>Property-Based Model Qualification Testing for HuggingFace Models</strong>
+</p>
+
+<p align="center">
+  <a href="#philosophy">Philosophy</a> •
+  <a href="#features">Features</a> •
+  <a href="#quick-start">Quick Start</a> •
+  <a href="#architecture">Architecture</a> •
+  <a href="#test-matrix">Test Matrix</a> •
+  <a href="#mqs-scoring">MQS Scoring</a>
+</p>
+
+---
+
+## Philosophy
+
+This framework synthesizes two complementary quality paradigms:
+
+### Toyota Production System (TPS)
+
+> *"Stop the line. Fix it now. Never pass a defect to the next process."*
+> — Taiichi Ohno
+
+| Principle | Application |
+|-----------|-------------|
+| **Jidoka** | Execution halts on first P0 failure |
+| **Poka-Yoke** | Schema validation prevents malformed playbooks |
+| **Genchi Genbutsu** | All metrics from actual inference |
+| **Heijunka** | Load-balanced parallel execution |
+| **Kaizen** | Continuous refinement via mutation testing |
+
+### Popperian Falsificationism
+
+> *"The criterion of the scientific status of a theory is its falsifiability."*
+> — Karl Popper
+
+We don't test to pass—we **test to fail**. No amount of passing tests proves correctness, but a single failure proves a defect.
+
+| Outcome | Meaning |
+|---------|---------|
+| `Corroborated` | Hypothesis survived refutation attempt |
+| `Falsified` | Hypothesis refuted by evidence |
+| `Timeout` | Execution exceeded time limit |
+| `Crashed` | Process terminated abnormally |
+
+## Features
+
+- **Property-based testing** via proptest for comprehensive scenario generation
+- **Parallel execution** with Rayon worker pools
+- **Gateway checks (G1-G4)** that zero the score on critical failures
+- **Model Qualification Score (MQS)** 0-1000 with grade mapping
+- **JUnit XML and HTML reports** for CI/CD integration
+- **Playbook YAML format** with JSON Schema validation
+- **1.8M+ test assertions** across all model/format/backend combinations
+
+## Quick Start
+
+```bash
+# Build all crates
+make build
+
+# Run all tests
+make test
+
+# Generate coverage report
+make coverage
+
+# Run a specific playbook
+cargo run --bin apr-qa -- run playbooks/models/qwen2.5-coder-1.5b.playbook.yaml
+
+# Run with parallel workers
+cargo run --bin apr-qa -- run playbooks/models/*.yaml --workers 8
+```
+
+## Architecture
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                     APR-MODEL-QA-PLAYBOOK                        │
+├──────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐       │
+│  │ apr-qa-gen   │    │ apr-qa-runner│    │apr-qa-report │       │
+│  │              │───▶│              │───▶│              │       │
+│  │ • proptest   │    │ • parallel   │    │ • MQS score  │       │
+│  │ • scenarios  │    │ • execution  │    │ • JUnit XML  │       │
+│  │ • oracles    │    │ • evidence   │    │ • HTML       │       │
+│  └──────────────┘    └──────────────┘    └──────────────┘       │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### Crate Structure
+
+| Crate | Purpose |
+|-------|---------|
+| `apr-qa-gen` | Scenario generation with proptest, oracle definitions |
+| `apr-qa-runner` | Playbook execution with Rayon parallelism |
+| `apr-qa-report` | MQS scoring, JUnit/HTML report generation |
+| `apr-qa-cli` | Command-line interface |
+
+## Test Matrix
+
+The framework tests models across multiple dimensions:
+
+| Dimension | Options |
+|-----------|---------|
+| **Modality** | `run`, `chat`, `serve` |
+| **Backend** | `cpu`, `gpu` |
+| **Format** | `gguf`, `safetensors`, `apr` |
+| **Quantization** | `q4_k_m`, `q5_k_m`, `q8_0`, `f16`, `f32` |
+
+With 100 scenarios per combination across 100 HuggingFace models:
+- 3 modalities × 2 backends × 3 formats × 100 models × 100 scenarios = **1,800,000 tests**
+
+## MQS Scoring
+
+The **Model Qualification Score (MQS)** ranges from 0-1000:
+
+### Gateway Checks (G1-G4)
+
+Any gateway failure **zeros the entire score**:
+
+| Gateway | Check | Failure Impact |
+|---------|-------|----------------|
+| **G1** | Model loads successfully | MQS = 0 |
+| **G2** | Basic inference works | MQS = 0 |
+| **G3** | No crashes or panics | MQS = 0 |
+| **G4** | Output is not garbage | MQS = 0 |
+
+### Grade Mapping
+
+| Score | Grade | Status |
+|-------|-------|--------|
+| 950-1000 | A+ | Production Ready |
+| 900-949 | A | Production Ready |
+| 850-899 | B+ | Conditional |
+| 800-849 | B | Conditional |
+| 700-799 | C | Development Only |
+| 0-699 | F | Blocked |
+
+## Playbook Format
+
+```yaml
+version: "1.0"
+model:
+  id: "Qwen/Qwen2.5-Coder-1.5B"
+  revision: "main"
+
+test_matrix:
+  modalities: [run, chat]
+  backends: [cpu, gpu]
+  formats: [gguf, safetensors]
+
+scenarios:
+  - name: "arithmetic_basic"
+    prompt: "What is 2 + 2?"
+    oracle: arithmetic
+    expected: 4
+
+  - name: "code_generation"
+    prompt: "Write a Python function to reverse a string"
+    oracle: code_syntax
+    language: python
+```
+
+## Project Structure
+
+```
+apr-model-qa-playbook/
+├── crates/
+│   ├── apr-qa-gen/        # Scenario generation + oracles
+│   ├── apr-qa-runner/     # Playbook execution
+│   ├── apr-qa-report/     # MQS scoring + reports
+│   └── apr-qa-cli/        # CLI binary
+├── playbooks/
+│   ├── models/            # Per-model playbooks
+│   ├── templates/         # Reusable templates
+│   ├── verify/            # Ticket verification
+│   └── spec/              # Executable specifications
+├── book/                  # mdBook documentation
+└── docs/
+    └── specifications/    # Full specification
+```
+
+## Development
+
+```bash
+# Run tests with coverage
+make coverage
+
+# Verify PMAT compliance (>= 95%)
+make coverage-check
+
+# Lint with clippy
+make lint
+
+# Full check (fmt + lint + test)
+make check
+```
+
+## License
+
+MIT License - see [LICENSE](LICENSE) for details.
+
+---
+
+<p align="center">
+  Built with Rust • Powered by proptest • Inspired by Toyota & Popper
+</p>
