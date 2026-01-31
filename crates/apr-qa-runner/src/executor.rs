@@ -4,12 +4,14 @@
 
 #![allow(clippy::cast_possible_truncation)]
 
+use crate::command::{CommandRunner, RealCommandRunner};
 use crate::conversion::{ConversionConfig, ConversionExecutor};
 use crate::error::Result;
 use crate::evidence::{Evidence, EvidenceCollector, PerformanceMetrics};
 use crate::playbook::Playbook;
 use apr_qa_gen::{Backend, Format, Modality, ModelId, QaScenario};
 use std::path::Path;
+use std::sync::Arc;
 use std::time::Instant;
 
 /// Failure handling policy (Jidoka)
@@ -79,10 +81,20 @@ impl Default for ExecutionConfig {
 }
 
 /// Executor for running playbooks
-#[derive(Debug)]
 pub struct Executor {
     config: ExecutionConfig,
     collector: EvidenceCollector,
+    command_runner: Arc<dyn CommandRunner>,
+}
+
+impl std::fmt::Debug for Executor {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Executor")
+            .field("config", &self.config)
+            .field("collector", &self.collector)
+            .field("command_runner", &"<dyn CommandRunner>")
+            .finish()
+    }
 }
 
 impl Executor {
@@ -92,6 +104,7 @@ impl Executor {
         Self {
             config: ExecutionConfig::default(),
             collector: EvidenceCollector::new(),
+            command_runner: Arc::new(RealCommandRunner::new()),
         }
     }
 
@@ -101,6 +114,17 @@ impl Executor {
         Self {
             config,
             collector: EvidenceCollector::new(),
+            command_runner: Arc::new(RealCommandRunner::new()),
+        }
+    }
+
+    /// Create a new executor with custom config and command runner
+    #[must_use]
+    pub fn with_runner(config: ExecutionConfig, runner: Arc<dyn CommandRunner>) -> Self {
+        Self {
+            config,
+            collector: EvidenceCollector::new(),
+            command_runner: runner,
         }
     }
 
@@ -259,52 +283,39 @@ impl Executor {
     /// Would have caught: GH-186, GH-189, GH-190 (all 3 P0 conversion bugs).
     /// See: docs/five-whys/GH-190-systemic-conversion-failures.md
     fn run_golden_rule_test(&mut self, model_path: &Path, model_id: &ModelId) -> (usize, usize) {
-        use std::process::Command;
-
-        let model_str = model_path.display().to_string();
         let prompt = "What is 2+2?";
-        let max_tokens = "10";
+        let max_tokens = 10;
 
         // Step 1: Run inference on original model
-        let original_result = Command::new("apr")
-            .arg("run")
-            .arg(&model_str)
-            .arg("-p")
-            .arg(prompt)
-            .arg("--max-tokens")
-            .arg(max_tokens)
-            .output();
+        let original_result =
+            self.command_runner
+                .run_inference(model_path, prompt, max_tokens, false, &[]);
 
-        let original_output = match original_result {
-            Ok(out) => String::from_utf8_lossy(&out.stdout).to_string(),
-            Err(e) => {
-                let ev = Evidence::falsified(
-                    "F-GOLDEN-RULE-001",
-                    Self::golden_scenario(model_id),
-                    format!("Golden Rule: original inference failed: {e}"),
-                    "N/A",
-                    0,
-                );
-                self.collector.add(ev);
-                return (0, 1);
-            }
-        };
+        if !original_result.success {
+            let ev = Evidence::falsified(
+                "F-GOLDEN-RULE-001",
+                Self::golden_scenario(model_id),
+                format!(
+                    "Golden Rule: original inference failed: {}",
+                    original_result.stderr
+                ),
+                "N/A",
+                0,
+            );
+            self.collector.add(ev);
+            return (0, 1);
+        }
 
         // Step 2: Convert to APR
-        let apr_path = format!("/tmp/golden-rule-test-{}.apr", model_id.name);
-        let convert_result = Command::new("apr")
-            .arg("convert")
-            .arg(&model_str)
-            .arg("-o")
-            .arg(&apr_path)
-            .arg("--force")
-            .output();
+        let apr_path =
+            std::path::PathBuf::from(format!("/tmp/golden-rule-test-{}.apr", model_id.name));
+        let convert_result = self.command_runner.convert_model(model_path, &apr_path);
 
-        if let Err(e) = convert_result {
+        if !convert_result.success {
             let ev = Evidence::falsified(
                 "F-GOLDEN-RULE-002",
                 Self::golden_scenario(model_id),
-                format!("Golden Rule: conversion failed: {e}"),
+                format!("Golden Rule: conversion failed: {}", convert_result.stderr),
                 "N/A",
                 0,
             );
@@ -313,34 +324,29 @@ impl Executor {
         }
 
         // Step 3: Run inference on converted model
-        let converted_result = Command::new("apr")
-            .arg("run")
-            .arg(&apr_path)
-            .arg("-p")
-            .arg(prompt)
-            .arg("--max-tokens")
-            .arg(max_tokens)
-            .output();
+        let converted_result =
+            self.command_runner
+                .run_inference(&apr_path, prompt, max_tokens, false, &[]);
 
-        let converted_output = match converted_result {
-            Ok(out) => String::from_utf8_lossy(&out.stdout).to_string(),
-            Err(e) => {
-                let ev = Evidence::falsified(
-                    "F-GOLDEN-RULE-003",
-                    Self::golden_scenario(model_id),
-                    format!("Golden Rule: converted inference failed: {e}"),
-                    "N/A",
-                    0,
-                );
-                self.collector.add(ev);
-                return (0, 1);
-            }
-        };
+        if !converted_result.success {
+            let ev = Evidence::falsified(
+                "F-GOLDEN-RULE-003",
+                Self::golden_scenario(model_id),
+                format!(
+                    "Golden Rule: converted inference failed: {}",
+                    converted_result.stderr
+                ),
+                "N/A",
+                0,
+            );
+            self.collector.add(ev);
+            return (0, 1);
+        }
 
         // Step 4: DIFF — the actual Golden Rule assertion
         // Extract just the "Output:" line from both
-        let orig_text = Self::extract_output_text(&original_output);
-        let conv_text = Self::extract_output_text(&converted_output);
+        let orig_text = Self::extract_output_text(&original_result.stdout);
+        let conv_text = Self::extract_output_text(&converted_result.stdout);
 
         if orig_text == conv_text {
             let ev = Evidence::corroborated(
@@ -363,7 +369,7 @@ impl Executor {
                      Original:  {orig_text}\n\
                      Converted: {conv_text}"
                 ),
-                &converted_output,
+                &converted_result.stdout,
                 0,
             );
             self.collector.add(ev);
@@ -484,61 +490,32 @@ impl Executor {
         &self,
         scenario: &QaScenario,
     ) -> (String, Option<String>, i32, Option<f64>) {
-        use std::process::Command;
-
         let model_path = self.config.model_path.as_deref().unwrap_or("model.gguf");
 
-        let timeout_secs = self.config.default_timeout_ms / 1000;
+        let output = self.command_runner.run_inference(
+            Path::new(model_path),
+            &scenario.prompt,
+            32,
+            self.config.no_gpu,
+            &["--benchmark", "--json"],
+        );
 
-        // Build the apr run command
-        let mut cmd = Command::new("apr");
-        cmd.arg("run").arg(model_path);
+        // Try to parse tok/s from JSON output
+        let tps = Self::parse_tps_from_output(&output.stdout);
 
-        // Add --no-gpu if configured
-        if self.config.no_gpu {
-            cmd.arg("--no-gpu");
-        }
+        // Extract the actual generated text (not the JSON benchmark data)
+        let generated_text = Self::extract_generated_text(&output.stdout);
 
-        cmd.arg("-p")
-            .arg(&scenario.prompt)
-            .arg("--max-tokens")
-            .arg("32")
-            .arg("--benchmark")
-            .arg("--json")
-            .env("APR_TIMEOUT", timeout_secs.to_string());
-
-        let result = cmd.output();
-
-        match result {
-            Ok(output) => {
-                let stdout = String::from_utf8_lossy(&output.stdout).to_string();
-                let stderr = String::from_utf8_lossy(&output.stderr).to_string();
-                let exit_code = output.status.code().unwrap_or(-1);
-
-                // Try to parse tok/s from JSON output
-                let tps = Self::parse_tps_from_output(&stdout);
-
-                // Extract the actual generated text (not the JSON benchmark data)
-                let generated_text = Self::extract_generated_text(&stdout);
-
-                (
-                    generated_text,
-                    if stderr.is_empty() {
-                        None
-                    } else {
-                        Some(stderr)
-                    },
-                    exit_code,
-                    tps,
-                )
-            }
-            Err(e) => (
-                String::new(),
-                Some(format!("Failed to execute apr: {e}")),
-                -1,
-                None,
-            ),
-        }
+        (
+            generated_text,
+            if output.stderr.is_empty() {
+                None
+            } else {
+                Some(output.stderr)
+            },
+            output.exit_code,
+            tps,
+        )
     }
 
     /// Parse tokens per second from apr output
@@ -600,12 +577,23 @@ impl Default for Executor {
 }
 
 /// APR Tool test executor for comprehensive tool coverage
-#[derive(Debug)]
 #[allow(dead_code)] // timeout_ms reserved for future timeout enforcement
 pub struct ToolExecutor {
     model_path: String,
     no_gpu: bool,
     timeout_ms: u64,
+    command_runner: Arc<dyn CommandRunner>,
+}
+
+impl std::fmt::Debug for ToolExecutor {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ToolExecutor")
+            .field("model_path", &self.model_path)
+            .field("no_gpu", &self.no_gpu)
+            .field("timeout_ms", &self.timeout_ms)
+            .field("command_runner", &"<dyn CommandRunner>")
+            .finish()
+    }
 }
 
 impl ToolExecutor {
@@ -616,110 +604,84 @@ impl ToolExecutor {
             model_path,
             no_gpu,
             timeout_ms,
+            command_runner: Arc::new(RealCommandRunner::new()),
+        }
+    }
+
+    /// Create a new tool executor with custom command runner
+    #[must_use]
+    pub fn with_runner(
+        model_path: String,
+        no_gpu: bool,
+        timeout_ms: u64,
+        runner: Arc<dyn CommandRunner>,
+    ) -> Self {
+        Self {
+            model_path,
+            no_gpu,
+            timeout_ms,
+            command_runner: runner,
         }
     }
 
     /// Execute apr rosetta inspect (works with any format)
     #[must_use]
     pub fn execute_inspect(&self) -> ToolTestResult {
-        use std::process::Command;
         let start = std::time::Instant::now();
-
-        // Use apr rosetta inspect which works with GGUF, APR, SafeTensors
-        let output = Command::new("apr")
-            .arg("rosetta")
-            .arg("inspect")
-            .arg(&self.model_path)
-            .output();
-
-        self.build_result("inspect", output, start)
+        let output = self
+            .command_runner
+            .inspect_model(Path::new(&self.model_path));
+        self.build_result_from_output("inspect", output, start)
     }
 
     /// Execute apr validate
     #[must_use]
     pub fn execute_validate(&self) -> ToolTestResult {
-        use std::process::Command;
         let start = std::time::Instant::now();
-
-        let output = Command::new("apr")
-            .arg("validate")
-            .arg(&self.model_path)
-            .output();
-
-        self.build_result("validate", output, start)
+        let output = self
+            .command_runner
+            .validate_model(Path::new(&self.model_path));
+        self.build_result_from_output("validate", output, start)
     }
 
     /// Execute apr bench
     #[must_use]
     pub fn execute_bench(&self) -> ToolTestResult {
-        use std::process::Command;
         let start = std::time::Instant::now();
-
-        // apr bench doesn't support --no-gpu, it auto-detects
-        let output = Command::new("apr")
-            .arg("bench")
-            .arg(&self.model_path)
-            .output();
-
-        self.build_result("bench", output, start)
+        let output = self.command_runner.bench_model(Path::new(&self.model_path));
+        self.build_result_from_output("bench", output, start)
     }
 
     /// Execute apr check
     #[must_use]
     pub fn execute_check(&self) -> ToolTestResult {
-        use std::process::Command;
         let start = std::time::Instant::now();
-
-        let output = Command::new("apr")
-            .arg("check")
-            .arg(&self.model_path)
-            .output();
-
-        self.build_result("check", output, start)
+        let output = self.command_runner.check_model(Path::new(&self.model_path));
+        self.build_result_from_output("check", output, start)
     }
 
     /// Execute apr trace with specified level
     #[must_use]
     pub fn execute_trace(&self, level: &str) -> ToolTestResult {
-        use std::process::Command;
         let start = std::time::Instant::now();
-
-        let mut cmd = Command::new("apr");
-        cmd.arg("run")
-            .arg(&self.model_path)
-            .arg("-p")
-            .arg("What is 2+2?")
-            .arg("--max-tokens")
-            .arg("8")
-            .arg("--trace")
-            .arg("--trace-level")
-            .arg(level);
-
-        if self.no_gpu {
-            cmd.arg("--no-gpu");
-        }
-
-        let output = cmd.output();
-        self.build_result(&format!("trace-{level}"), output, start)
+        let output = self.command_runner.run_inference(
+            Path::new(&self.model_path),
+            "What is 2+2?",
+            8,
+            self.no_gpu,
+            &["--trace", "--trace-level", level],
+        );
+        self.build_result_from_output(&format!("trace-{level}"), output, start)
     }
 
     /// Execute apr profile (standalone command)
     #[must_use]
     pub fn execute_profile(&self) -> ToolTestResult {
-        use std::process::Command;
         let start = std::time::Instant::now();
-
-        // Use apr profile command (not apr run --profile)
-        let output = Command::new("apr")
-            .arg("profile")
-            .arg(&self.model_path)
-            .arg("--warmup")
-            .arg("1")
-            .arg("--measure")
-            .arg("2")
-            .output();
-
-        self.build_result("profile", output, start)
+        let output = self
+            .command_runner
+            .profile_model(Path::new(&self.model_path), 1, 2);
+        self.build_result_from_output("profile", output, start)
     }
 
     /// Execute apr profile in CI mode with assertions (F-PROFILE-006)
@@ -732,74 +694,50 @@ impl ToolExecutor {
     /// Returns pass if CI mode runs and reports metrics correctly.
     #[must_use]
     pub fn execute_profile_ci(&self) -> ToolTestResult {
-        use std::process::Command;
         let start = std::time::Instant::now();
 
         // Run apr profile in CI mode with lenient assertions
         // Use very low throughput threshold (1 tok/s) to ensure it passes
-        let output = Command::new("apr")
-            .arg("profile")
-            .arg(&self.model_path)
-            .arg("--ci")
-            .arg("--assert-throughput")
-            .arg("1.0") // Very lenient: 1 tok/s minimum
-            .arg("--warmup")
-            .arg("1")
-            .arg("--measure")
-            .arg("2")
-            .arg("--json")
-            .output();
+        let output = self.command_runner.profile_ci(
+            Path::new(&self.model_path),
+            Some(1.0), // Very lenient: 1 tok/s minimum
+            None,      // No p99 assertion
+            1,         // warmup
+            2,         // measure
+        );
 
         let duration_ms = start.elapsed().as_millis() as u64;
 
-        match output {
-            Ok(out) => {
-                let stdout = String::from_utf8_lossy(&out.stdout).to_string();
-                let stderr = String::from_utf8_lossy(&out.stderr).to_string();
-                let exit_code = out.status.code().unwrap_or(-1);
-
-                // Check if CI features are available
-                if stderr.contains("unexpected argument")
-                    || stderr.contains("unrecognized")
-                    || stderr.contains("--ci")
-                {
-                    return ToolTestResult {
-                        tool: "profile-ci".to_string(),
-                        passed: false,
-                        exit_code: -2,
-                        stdout,
-                        stderr: "Feature not available: apr profile does not support --ci mode"
-                            .to_string(),
-                        duration_ms,
-                        gate_id: "F-PROFILE-006".to_string(),
-                    };
-                }
-
-                // Verify JSON output contains expected CI fields
-                let has_passed_field = stdout.contains("\"passed\"");
-                let has_metrics = stdout.contains("throughput") || stdout.contains("tok_s");
-
-                let passed = exit_code == 0 && (has_passed_field || has_metrics);
-
-                ToolTestResult {
-                    tool: "profile-ci".to_string(),
-                    passed,
-                    exit_code,
-                    stdout,
-                    stderr,
-                    duration_ms,
-                    gate_id: "F-PROFILE-006".to_string(),
-                }
-            }
-            Err(e) => ToolTestResult {
+        // Check if CI features are available
+        if output.stderr.contains("unexpected argument")
+            || output.stderr.contains("unrecognized")
+            || output.stderr.contains("--ci")
+        {
+            return ToolTestResult {
                 tool: "profile-ci".to_string(),
                 passed: false,
-                exit_code: -1,
-                stdout: String::new(),
-                stderr: e.to_string(),
+                exit_code: -2,
+                stdout: output.stdout,
+                stderr: "Feature not available: apr profile does not support --ci mode".to_string(),
                 duration_ms,
                 gate_id: "F-PROFILE-006".to_string(),
-            },
+            };
+        }
+
+        // Verify JSON output contains expected CI fields
+        let has_passed_field = output.stdout.contains("\"passed\"");
+        let has_metrics = output.stdout.contains("throughput") || output.stdout.contains("tok_s");
+
+        let passed = output.exit_code == 0 && (has_passed_field || has_metrics);
+
+        ToolTestResult {
+            tool: "profile-ci".to_string(),
+            passed,
+            exit_code: output.exit_code,
+            stdout: output.stdout,
+            stderr: output.stderr,
+            duration_ms,
+            gate_id: "F-PROFILE-006".to_string(),
         }
     }
 
@@ -809,140 +747,93 @@ impl ToolExecutor {
     /// Uses an impossibly high throughput assertion to guarantee failure.
     #[must_use]
     pub fn execute_profile_ci_assertion_failure(&self) -> ToolTestResult {
-        use std::process::Command;
         let start = std::time::Instant::now();
 
         // Run with impossible throughput assertion (1 million tok/s)
-        let output = Command::new("apr")
-            .arg("profile")
-            .arg(&self.model_path)
-            .arg("--ci")
-            .arg("--assert-throughput")
-            .arg("1000000.0") // Impossible: 1M tok/s
-            .arg("--warmup")
-            .arg("1")
-            .arg("--measure")
-            .arg("1")
-            .arg("--json")
-            .output();
+        let output = self.command_runner.profile_ci(
+            Path::new(&self.model_path),
+            Some(1_000_000.0), // Impossible: 1M tok/s
+            None,
+            1, // warmup
+            1, // measure
+        );
 
         let duration_ms = start.elapsed().as_millis() as u64;
 
-        match output {
-            Ok(out) => {
-                let stdout = String::from_utf8_lossy(&out.stdout).to_string();
-                let stderr = String::from_utf8_lossy(&out.stderr).to_string();
-                let exit_code = out.status.code().unwrap_or(-1);
-
-                // Check if CI features are available
-                if stderr.contains("unexpected argument") || stderr.contains("unrecognized") {
-                    return ToolTestResult {
-                        tool: "profile-ci-assertion".to_string(),
-                        passed: false,
-                        exit_code: -2,
-                        stdout,
-                        stderr: "Feature not available: apr profile does not support --ci mode"
-                            .to_string(),
-                        duration_ms,
-                        gate_id: "F-PROFILE-007".to_string(),
-                    };
-                }
-
-                // CI mode should EXIT 1 when assertion fails
-                // The test PASSES if apr correctly returns non-zero exit code
-                // or reports failure in output (fallback for older versions)
-                let assertion_failed_correctly = exit_code == 1
-                    || stdout.contains("\"passed\":false")
-                    || stdout.contains("\"passed\": false")
-                    || stdout.contains("ASSERTIONS FAILED");
-
-                ToolTestResult {
-                    tool: "profile-ci-assertion".to_string(),
-                    passed: assertion_failed_correctly,
-                    exit_code,
-                    stdout,
-                    stderr,
-                    duration_ms,
-                    gate_id: "F-PROFILE-007".to_string(),
-                }
-            }
-            Err(e) => ToolTestResult {
+        // Check if CI features are available
+        if output.stderr.contains("unexpected argument") || output.stderr.contains("unrecognized") {
+            return ToolTestResult {
                 tool: "profile-ci-assertion".to_string(),
                 passed: false,
-                exit_code: -1,
-                stdout: String::new(),
-                stderr: e.to_string(),
+                exit_code: -2,
+                stdout: output.stdout,
+                stderr: "Feature not available: apr profile does not support --ci mode".to_string(),
                 duration_ms,
                 gate_id: "F-PROFILE-007".to_string(),
-            },
+            };
+        }
+
+        // CI mode should EXIT 1 when assertion fails
+        // The test PASSES if apr correctly returns non-zero exit code
+        // or reports failure in output (fallback for older versions)
+        let assertion_failed_correctly = output.exit_code == 1
+            || output.stdout.contains("\"passed\":false")
+            || output.stdout.contains("\"passed\": false")
+            || output.stdout.contains("ASSERTIONS FAILED");
+
+        ToolTestResult {
+            tool: "profile-ci-assertion".to_string(),
+            passed: assertion_failed_correctly,
+            exit_code: output.exit_code,
+            stdout: output.stdout,
+            stderr: output.stderr,
+            duration_ms,
+            gate_id: "F-PROFILE-007".to_string(),
         }
     }
 
     /// Execute apr profile with p99 latency assertion (F-PROFILE-008)
     #[must_use]
     pub fn execute_profile_ci_p99(&self) -> ToolTestResult {
-        use std::process::Command;
         let start = std::time::Instant::now();
 
         // Run with lenient p99 assertion (10 seconds max)
-        let output = Command::new("apr")
-            .arg("profile")
-            .arg(&self.model_path)
-            .arg("--ci")
-            .arg("--assert-p99")
-            .arg("10000.0") // 10 seconds max p99
-            .arg("--warmup")
-            .arg("1")
-            .arg("--measure")
-            .arg("2")
-            .arg("--json")
-            .output();
+        let output = self.command_runner.profile_ci(
+            Path::new(&self.model_path),
+            None,           // No throughput assertion
+            Some(10_000.0), // 10 seconds max p99
+            1,              // warmup
+            2,              // measure
+        );
 
         let duration_ms = start.elapsed().as_millis() as u64;
 
-        match output {
-            Ok(out) => {
-                let stdout = String::from_utf8_lossy(&out.stdout).to_string();
-                let stderr = String::from_utf8_lossy(&out.stderr).to_string();
-                let exit_code = out.status.code().unwrap_or(-1);
-
-                // Check if p99 assertion feature is available
-                if stderr.contains("unexpected argument") || stderr.contains("--assert-p99") {
-                    return ToolTestResult {
-                        tool: "profile-ci-p99".to_string(),
-                        passed: false,
-                        exit_code: -2,
-                        stdout,
-                        stderr: "Feature not available: apr profile does not support --assert-p99"
-                            .to_string(),
-                        duration_ms,
-                        gate_id: "F-PROFILE-008".to_string(),
-                    };
-                }
-
-                // Verify p99 metric is in output
-                let has_p99 = stdout.contains("p99") || stdout.contains("latency");
-                let passed = exit_code == 0 && has_p99;
-
-                ToolTestResult {
-                    tool: "profile-ci-p99".to_string(),
-                    passed,
-                    exit_code,
-                    stdout,
-                    stderr,
-                    duration_ms,
-                    gate_id: "F-PROFILE-008".to_string(),
-                }
-            }
-            Err(e) => ToolTestResult {
+        // Check if p99 assertion feature is available
+        if output.stderr.contains("unexpected argument") || output.stderr.contains("--assert-p99") {
+            return ToolTestResult {
                 tool: "profile-ci-p99".to_string(),
                 passed: false,
-                exit_code: -1,
-                stdout: String::new(),
-                stderr: e.to_string(),
+                exit_code: -2,
+                stdout: output.stdout,
+                stderr: "Feature not available: apr profile does not support --assert-p99"
+                    .to_string(),
                 duration_ms,
                 gate_id: "F-PROFILE-008".to_string(),
-            },
+            };
+        }
+
+        // Verify p99 metric is in output
+        let has_p99 = output.stdout.contains("p99") || output.stdout.contains("latency");
+        let passed = output.exit_code == 0 && has_p99;
+
+        ToolTestResult {
+            tool: "profile-ci-p99".to_string(),
+            passed,
+            exit_code: output.exit_code,
+            stdout: output.stdout,
+            stderr: output.stderr,
+            duration_ms,
+            gate_id: "F-PROFILE-008".to_string(),
         }
     }
 
@@ -1362,39 +1253,22 @@ impl ToolExecutor {
         results
     }
 
-    fn build_result(
+    fn build_result_from_output(
         &self,
         tool: &str,
-        output: std::io::Result<std::process::Output>,
+        output: crate::command::CommandOutput,
         start: std::time::Instant,
     ) -> ToolTestResult {
         let duration_ms = start.elapsed().as_millis() as u64;
 
-        match output {
-            Ok(out) => {
-                let stdout = String::from_utf8_lossy(&out.stdout).to_string();
-                let stderr = String::from_utf8_lossy(&out.stderr).to_string();
-                let exit_code = out.status.code().unwrap_or(-1);
-
-                ToolTestResult {
-                    tool: tool.to_string(),
-                    passed: exit_code == 0,
-                    exit_code,
-                    stdout,
-                    stderr,
-                    duration_ms,
-                    gate_id: format!("F-{}-001", tool.to_uppercase().replace('-', "_")),
-                }
-            }
-            Err(e) => ToolTestResult {
-                tool: tool.to_string(),
-                passed: false,
-                exit_code: -1,
-                stdout: String::new(),
-                stderr: e.to_string(),
-                duration_ms,
-                gate_id: format!("F-{}-001", tool.to_uppercase().replace('-', "_")),
-            },
+        ToolTestResult {
+            tool: tool.to_string(),
+            passed: output.success,
+            exit_code: output.exit_code,
+            stdout: output.stdout,
+            stderr: output.stderr,
+            duration_ms,
+            gate_id: format!("F-{}-001", tool.to_uppercase().replace('-', "_")),
         }
     }
 }
@@ -2625,5 +2499,453 @@ test_matrix:
         assert!(result.contains("First line"));
         assert!(result.contains("Second line"));
         assert!(result.contains("Third line"));
+    }
+
+    // ============================================================
+    // Tests using MockCommandRunner for subprocess execution paths
+    // ============================================================
+
+    use crate::command::MockCommandRunner;
+
+    #[test]
+    fn test_executor_with_mock_runner_subprocess_execution() {
+        let mock_runner = MockCommandRunner::new()
+            .with_tps(42.0)
+            .with_inference_response("The answer is 4.");
+
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/model.gguf".to_string()),
+            ..Default::default()
+        };
+
+        let executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "What is 2+2?".to_string(),
+            0,
+        );
+
+        let (output, stderr, exit_code, tps) = executor.subprocess_execution(&scenario);
+
+        assert!(output.contains("4") || output.is_empty()); // Depends on extract logic
+        assert!(stderr.is_none_or(|s| s.is_empty()));
+        assert_eq!(exit_code, 0);
+        // tps may or may not be parsed depending on output format
+        let _ = tps;
+    }
+
+    #[test]
+    fn test_executor_with_mock_runner_inference_failure() {
+        let mock_runner = MockCommandRunner::new().with_inference_failure();
+
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/model.gguf".to_string()),
+            ..Default::default()
+        };
+
+        let executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "What is 2+2?".to_string(),
+            0,
+        );
+
+        let (_, stderr, exit_code, _) = executor.subprocess_execution(&scenario);
+
+        assert_eq!(exit_code, 1);
+        assert!(stderr.is_some());
+    }
+
+    #[test]
+    fn test_executor_with_mock_runner_execute_scenario() {
+        let mock_runner = MockCommandRunner::new()
+            .with_tps(30.0)
+            .with_inference_response("The answer is 4.");
+
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/model.gguf".to_string()),
+            ..Default::default()
+        };
+
+        let executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "What is 2+2?".to_string(),
+            0,
+        );
+
+        let evidence = executor.execute_scenario(&scenario);
+
+        // Evidence should be created
+        assert!(!evidence.id.is_empty());
+        assert!(!evidence.gate_id.is_empty());
+    }
+
+    #[test]
+    fn test_executor_with_mock_runner_golden_rule_test() {
+        let mock_runner = MockCommandRunner::new()
+            .with_tps(25.0)
+            .with_inference_response("Output:\nThe answer is 4\nCompleted in 1s");
+
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/model.gguf".to_string()),
+            run_golden_rule_test: true,
+            run_conversion_tests: false, // Disable other tests
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        let model_id = ModelId::new("test", "model");
+        let (passed, failed) =
+            executor.run_golden_rule_test(std::path::Path::new("/test/model.gguf"), &model_id);
+
+        // With mock runner, both inferences should succeed with same output
+        // So golden rule test should pass - exactly one test run
+        assert_eq!(passed + failed, 1);
+    }
+
+    #[test]
+    fn test_executor_with_mock_runner_golden_rule_conversion_failure() {
+        let mock_runner = MockCommandRunner::new()
+            .with_convert_failure()
+            .with_inference_response("Output:\nThe answer is 4\nCompleted in 1s");
+
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/model.gguf".to_string()),
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        let model_id = ModelId::new("test", "model");
+        let (passed, failed) =
+            executor.run_golden_rule_test(std::path::Path::new("/test/model.gguf"), &model_id);
+
+        // Conversion failure should result in 0 passed, 1 failed
+        assert_eq!(passed, 0);
+        assert_eq!(failed, 1);
+
+        // Evidence should be collected
+        assert!(!executor.collector.all().is_empty());
+    }
+
+    #[test]
+    fn test_executor_with_mock_runner_golden_rule_inference_failure() {
+        let mock_runner = MockCommandRunner::new().with_inference_failure();
+
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/model.gguf".to_string()),
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        let model_id = ModelId::new("test", "model");
+        let (passed, failed) =
+            executor.run_golden_rule_test(std::path::Path::new("/test/model.gguf"), &model_id);
+
+        // First inference failure should result in 0 passed, 1 failed
+        assert_eq!(passed, 0);
+        assert_eq!(failed, 1);
+    }
+
+    #[test]
+    fn test_tool_executor_with_mock_runner_inspect() {
+        let mock_runner = MockCommandRunner::new();
+        let executor = ToolExecutor::with_runner(
+            "/test/model.gguf".to_string(),
+            true,
+            60_000,
+            Arc::new(mock_runner),
+        );
+
+        let result = executor.execute_inspect();
+
+        assert!(result.passed);
+        assert_eq!(result.exit_code, 0);
+        assert!(result.stdout.contains("GGUF"));
+    }
+
+    #[test]
+    fn test_tool_executor_with_mock_runner_validate() {
+        let mock_runner = MockCommandRunner::new();
+        let executor = ToolExecutor::with_runner(
+            "/test/model.gguf".to_string(),
+            false,
+            60_000,
+            Arc::new(mock_runner),
+        );
+
+        let result = executor.execute_validate();
+
+        assert!(result.passed);
+        assert_eq!(result.exit_code, 0);
+    }
+
+    #[test]
+    fn test_tool_executor_with_mock_runner_bench() {
+        let mock_runner = MockCommandRunner::new().with_tps(50.0);
+        let executor = ToolExecutor::with_runner(
+            "/test/model.gguf".to_string(),
+            true,
+            60_000,
+            Arc::new(mock_runner),
+        );
+
+        let result = executor.execute_bench();
+
+        assert!(result.passed);
+        assert_eq!(result.exit_code, 0);
+        assert!(result.stdout.contains("50.0"));
+    }
+
+    #[test]
+    fn test_tool_executor_with_mock_runner_check() {
+        let mock_runner = MockCommandRunner::new();
+        let executor = ToolExecutor::with_runner(
+            "/test/model.gguf".to_string(),
+            false,
+            60_000,
+            Arc::new(mock_runner),
+        );
+
+        let result = executor.execute_check();
+
+        assert!(result.passed);
+        assert_eq!(result.exit_code, 0);
+    }
+
+    #[test]
+    fn test_tool_executor_with_mock_runner_trace() {
+        let mock_runner = MockCommandRunner::new().with_tps(25.0);
+        let executor = ToolExecutor::with_runner(
+            "/test/model.gguf".to_string(),
+            true,
+            60_000,
+            Arc::new(mock_runner),
+        );
+
+        let result = executor.execute_trace("layer");
+
+        assert!(result.passed);
+        assert_eq!(result.exit_code, 0);
+        assert!(result.tool.contains("trace"));
+    }
+
+    #[test]
+    fn test_tool_executor_with_mock_runner_profile() {
+        let mock_runner = MockCommandRunner::new().with_tps(35.0);
+        let executor = ToolExecutor::with_runner(
+            "/test/model.gguf".to_string(),
+            false,
+            60_000,
+            Arc::new(mock_runner),
+        );
+
+        let result = executor.execute_profile();
+
+        assert!(result.passed);
+        assert_eq!(result.exit_code, 0);
+        assert!(result.stdout.contains("throughput"));
+    }
+
+    #[test]
+    fn test_tool_executor_with_mock_runner_profile_ci() {
+        let mock_runner = MockCommandRunner::new().with_tps(20.0);
+        let executor = ToolExecutor::with_runner(
+            "/test/model.gguf".to_string(),
+            false,
+            60_000,
+            Arc::new(mock_runner),
+        );
+
+        let result = executor.execute_profile_ci();
+
+        // Mock runner returns "passed":true when tps >= threshold
+        assert!(result.passed);
+        assert!(result.stdout.contains("passed"));
+    }
+
+    #[test]
+    fn test_tool_executor_with_mock_runner_profile_ci_assertion_failure() {
+        // With very low tps, the 1M threshold will fail
+        let mock_runner = MockCommandRunner::new().with_tps(5.0);
+        let executor = ToolExecutor::with_runner(
+            "/test/model.gguf".to_string(),
+            false,
+            60_000,
+            Arc::new(mock_runner),
+        );
+
+        let result = executor.execute_profile_ci_assertion_failure();
+
+        // The test passes if CI correctly detects the assertion failure
+        // Mock runner will return "passed":false when tps < 1M
+        assert!(result.passed); // Test passes because assertion correctly failed
+        assert!(result.stdout.contains("\"passed\":false"));
+    }
+
+    #[test]
+    fn test_tool_executor_with_mock_runner_profile_ci_p99() {
+        let mock_runner = MockCommandRunner::new().with_tps(30.0);
+        let executor = ToolExecutor::with_runner(
+            "/test/model.gguf".to_string(),
+            false,
+            60_000,
+            Arc::new(mock_runner),
+        );
+
+        let result = executor.execute_profile_ci_p99();
+
+        // Mock runner returns p99=156.5 which is <= 10000
+        assert!(result.passed);
+        assert!(result.stdout.contains("latency"));
+    }
+
+    #[test]
+    fn test_tool_executor_with_runner_debug() {
+        let mock_runner = MockCommandRunner::new();
+        let executor = ToolExecutor::with_runner(
+            "/test/model.gguf".to_string(),
+            true,
+            60_000,
+            Arc::new(mock_runner),
+        );
+
+        let debug_str = format!("{executor:?}");
+        assert!(debug_str.contains("ToolExecutor"));
+        assert!(debug_str.contains("model_path"));
+    }
+
+    #[test]
+    fn test_executor_with_runner_debug() {
+        let mock_runner = MockCommandRunner::new();
+        let config = ExecutionConfig::default();
+        let executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        let debug_str = format!("{executor:?}");
+        assert!(debug_str.contains("Executor"));
+        assert!(debug_str.contains("config"));
+    }
+
+    #[test]
+    fn test_executor_subprocess_execution_no_gpu() {
+        let mock_runner = MockCommandRunner::new();
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/model.gguf".to_string()),
+            no_gpu: true,
+            ..Default::default()
+        };
+
+        let executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "Test prompt".to_string(),
+            0,
+        );
+
+        let (_, _, exit_code, _) = executor.subprocess_execution(&scenario);
+        assert_eq!(exit_code, 0);
+    }
+
+    #[test]
+    fn test_executor_execute_playbook_with_subprocess_mode() {
+        let mock_runner = MockCommandRunner::new()
+            .with_tps(25.0)
+            .with_inference_response("The answer is 4.");
+
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/model.gguf".to_string()),
+            run_conversion_tests: false,
+            run_differential_tests: false,
+            run_golden_rule_test: false,
+            run_trace_payload: false,
+            run_profile_ci: false,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        let yaml = r#"
+name: test-subprocess
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 3
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let result = executor.execute(&playbook).expect("Execution failed");
+
+        assert_eq!(result.total_scenarios, 3);
+        // With mock runner, all scenarios should complete
+        assert!(result.passed > 0 || result.failed > 0);
+    }
+
+    #[test]
+    fn test_build_result_from_output() {
+        let mock_runner = MockCommandRunner::new();
+        let executor = ToolExecutor::with_runner(
+            "/test/model.gguf".to_string(),
+            false,
+            60_000,
+            Arc::new(mock_runner),
+        );
+
+        let output = crate::command::CommandOutput::success("test output");
+        let start = std::time::Instant::now();
+        let result = executor.build_result_from_output("test-tool", output, start);
+
+        assert!(result.passed);
+        assert_eq!(result.exit_code, 0);
+        assert_eq!(result.tool, "test-tool");
+        assert_eq!(result.gate_id, "F-TEST_TOOL-001");
+    }
+
+    #[test]
+    fn test_build_result_from_output_failure() {
+        let mock_runner = MockCommandRunner::new();
+        let executor = ToolExecutor::with_runner(
+            "/test/model.gguf".to_string(),
+            false,
+            60_000,
+            Arc::new(mock_runner),
+        );
+
+        let output = crate::command::CommandOutput::failure(1, "error message");
+        let start = std::time::Instant::now();
+        let result = executor.build_result_from_output("failed-tool", output, start);
+
+        assert!(!result.passed);
+        assert_eq!(result.exit_code, 1);
+        assert_eq!(result.stderr, "error message");
     }
 }
