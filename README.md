@@ -61,16 +61,17 @@ We don't test to pass—we **test to fail**. No amount of passing tests proves c
 - **1.8M+ test assertions** across all model/format/backend combinations
 - **217 falsification gates** across conversion, inference, patterns, and security domains
 
-### New in v1.3.0
+### New in v2.0.0
 
 | Feature | Description |
 |---------|-------------|
+| **Two-Tier Certification** | MVP (≤10min, Grade B) and Full (≤1hr, Grade A+) tiers |
+| **Tier-Aware Scoring** | `score_from_tier()`, `status_from_tier()`, `grade_from_tier()` |
+| **Certify CLI Command** | `apr-qa certify --family qwen-coder --tier mvp` |
 | **Rosetta Differential Testing** | Tensor layout mismatch, token comparison, fingerprint, stats validation |
 | **Profile CI Mode** | Performance assertions for CI/CD (`--assert-throughput`, `--assert-p99`) |
 | **Trace Payload Mode** | Real forward pass with NaN/Inf and garbage output detection |
 | **Bug Pattern Detection** | 12 cross-project patterns from aprender/realizar analysis |
-| **Bug Classification** | 6 conversion bug types (tokenizer missing, embedding transposition, etc.) |
-| **GH-186 Detection** | PAD token flood and LayerNorm zero detection gates |
 
 ## Model Certifications
 
@@ -114,11 +115,26 @@ make test
 # Generate coverage report
 make coverage
 
-# Run a specific playbook
-cargo run --bin apr-qa -- run playbooks/models/qwen2.5-coder-1.5b.playbook.yaml
+# Certify models (recommended)
+cargo run --bin apr-qa -- certify --family qwen-coder --tier mvp
 
-# Run with parallel workers
-cargo run --bin apr-qa -- run playbooks/models/*.yaml --workers 8
+# Run a specific playbook
+cargo run --bin apr-qa -- run playbooks/models/qwen2.5-coder-1.5b-mvp.playbook.yaml
+```
+
+### Two-Tier Certification
+
+| Tier | Time Limit | Grade on Pass | Status |
+|------|------------|---------------|--------|
+| **MVP** | ≤10 min | **B** | PROVISIONAL |
+| **Full** | ≤1 hour | **A+** | CERTIFIED |
+
+```bash
+# MVP certification (quick surface coverage)
+cargo run --bin apr-qa -- certify --family qwen-coder --tier mvp
+
+# Full certification (production qualification)
+cargo run --bin apr-qa -- certify --family qwen-coder --tier full
 ```
 
 ## Architecture
@@ -146,6 +162,7 @@ cargo run --bin apr-qa -- run playbooks/models/*.yaml --workers 8
 | `apr-qa-gen` | Scenario generation with proptest, oracle definitions |
 | `apr-qa-runner` | Playbook execution, differential testing, bug patterns |
 | `apr-qa-report` | MQS scoring, JUnit/HTML report generation |
+| `apr-qa-certify` | Two-tier certification, README sync, tier-aware scoring |
 | `apr-qa-cli` | Command-line interface |
 
 ### Key Modules (apr-qa-runner)
@@ -186,16 +203,25 @@ Any gateway failure **zeros the entire score**:
 | **G3** | No crashes or panics | MQS = 0 |
 | **G4** | Output is not garbage | MQS = 0 |
 
+### Tier-Aware Scoring
+
+The scoring system uses tier-aware functions:
+
+| Tier | Pass Threshold | Score on Pass | Grade | Status |
+|------|----------------|---------------|-------|--------|
+| **MVP** | ≥90% | 800 | B | PROVISIONAL |
+| **Full** | ≥95% | 950+ | A+ | CERTIFIED |
+
 ### Grade Mapping
 
 | Score | Grade | Status |
 |-------|-------|--------|
-| 950-1000 | A+ | Production Ready |
-| 900-949 | A | Production Ready |
-| 850-899 | B+ | Conditional |
-| 800-849 | B | Conditional |
-| 700-799 | C | Development Only |
-| 0-699 | F | Blocked |
+| 950-1000 | A+ | CERTIFIED |
+| 900-949 | A | CERTIFIED |
+| 850-899 | B+ | CERTIFIED |
+| 800-849 | B | PROVISIONAL |
+| 700-799 | C | PROVISIONAL |
+| 0-699 | F | BLOCKED |
 
 ## Playbook Format
 
@@ -253,14 +279,18 @@ apr-model-qa-playbook/
 │   ├── apr-qa-gen/        # Scenario generation + oracles
 │   ├── apr-qa-runner/     # Playbook execution
 │   ├── apr-qa-report/     # MQS scoring + reports
+│   ├── apr-qa-certify/    # Certification + README sync
 │   └── apr-qa-cli/        # CLI binary
+├── certifications/        # Model certification evidence
+│   └── <model>/evidence.json
 ├── playbooks/
-│   ├── models/            # Per-model playbooks
+│   ├── models/            # Per-model playbooks (*-mvp.playbook.yaml)
 │   ├── templates/         # Reusable templates
 │   ├── verify/            # Ticket verification
 │   └── spec/              # Executable specifications
 ├── book/                  # mdBook documentation
 └── docs/
+    ├── certifications/    # models.csv certification database
     └── specifications/    # Full specification
 ```
 
