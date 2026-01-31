@@ -1457,4 +1457,282 @@ mod tests {
         assert_ne!(tc.token_a, tc.token_b);
         assert!(!tc.matches);
     }
+
+    // Tests for run_profile_ci function with nonexistent binary
+    #[test]
+    fn test_run_profile_ci_nonexistent_binary() {
+        let path = std::path::PathBuf::from("model.gguf");
+        let result = run_profile_ci("/nonexistent/apr/binary", &path, None, None, None, 1, 1);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_run_profile_ci_with_throughput_assert() {
+        let path = std::path::PathBuf::from("model.gguf");
+        let result = run_profile_ci(
+            "/nonexistent/apr/binary",
+            &path,
+            Some(10.0),
+            None,
+            None,
+            2,
+            5,
+        );
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_run_profile_ci_with_p99_assert() {
+        let path = std::path::PathBuf::from("model.gguf");
+        let result = run_profile_ci(
+            "/nonexistent/apr/binary",
+            &path,
+            None,
+            Some(100.0),
+            None,
+            1,
+            1,
+        );
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_run_profile_ci_with_p50_assert() {
+        let path = std::path::PathBuf::from("model.gguf");
+        let result = run_profile_ci(
+            "/nonexistent/apr/binary",
+            &path,
+            None,
+            None,
+            Some(50.0),
+            1,
+            1,
+        );
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_run_profile_ci_with_all_asserts() {
+        let path = std::path::PathBuf::from("model.gguf");
+        let result = run_profile_ci(
+            "/nonexistent/apr/binary",
+            &path,
+            Some(10.0),
+            Some(100.0),
+            Some(50.0),
+            5,
+            10,
+        );
+        assert!(result.is_err());
+    }
+
+    // Tests for run_diff_benchmark function
+    #[test]
+    fn test_run_diff_benchmark_nonexistent_binary() {
+        let model_a = std::path::PathBuf::from("model_a.gguf");
+        let model_b = std::path::PathBuf::from("model_b.apr");
+        let result = run_diff_benchmark("/nonexistent/apr/binary", &model_a, &model_b, 5.0);
+        assert!(result.is_err());
+    }
+
+    // Tests for DifferentialExecutor methods with nonexistent binary
+    #[test]
+    fn test_differential_executor_diff_tensors_error() {
+        let config = DiffConfig {
+            apr_binary: "/nonexistent/apr/binary".to_string(),
+            ..DiffConfig::default()
+        };
+        let executor = DifferentialExecutor::new(config);
+        let model_a = std::path::PathBuf::from("model_a.gguf");
+        let model_b = std::path::PathBuf::from("model_b.apr");
+        let result = executor.diff_tensors(&model_a, &model_b);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_differential_executor_diff_tensors_with_filter() {
+        let config = DiffConfig {
+            apr_binary: "/nonexistent/apr/binary".to_string(),
+            filter: Some("token_embd".to_string()),
+            mismatches_only: false,
+            tolerance: 1e-5,
+        };
+        let executor = DifferentialExecutor::new(config);
+        let model_a = std::path::PathBuf::from("model_a.gguf");
+        let model_b = std::path::PathBuf::from("model_b.apr");
+        let result = executor.diff_tensors(&model_a, &model_b);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_differential_executor_compare_inference_error() {
+        let config = DiffConfig {
+            apr_binary: "/nonexistent/apr/binary".to_string(),
+            ..DiffConfig::default()
+        };
+        let executor = DifferentialExecutor::new(config);
+        let model_a = std::path::PathBuf::from("model_a.gguf");
+        let model_b = std::path::PathBuf::from("model_b.apr");
+        let result = executor.compare_inference(&model_a, &model_b, "test prompt", 10);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_diff_config_embedding_filter() {
+        let config = DiffConfig {
+            apr_binary: "apr".to_string(),
+            filter: Some("embedding".to_string()),
+            mismatches_only: true,
+            tolerance: 1e-6,
+        };
+        assert_eq!(config.filter.as_deref(), Some("embedding"));
+        assert!((config.tolerance - 1e-6).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_ci_assertion_failed() {
+        let assertion = CiAssertion {
+            name: "throughput".to_string(),
+            expected: ">= 20.0 tok/s".to_string(),
+            actual: "15.5 tok/s".to_string(),
+            passed: false,
+            gate_id: "F-PROFILE-CI-001".to_string(),
+        };
+        assert!(!assertion.passed);
+        assert!(assertion.expected.contains("20.0"));
+        assert!(assertion.actual.contains("15.5"));
+    }
+
+    #[test]
+    fn test_ci_profile_result_with_failed_assertions() {
+        let result = CiProfileResult {
+            throughput_tps: 15.5,
+            latency_p50_ms: 50.0,
+            latency_p99_ms: 250.0,
+            assertions: vec![
+                CiAssertion {
+                    name: "throughput".to_string(),
+                    expected: ">= 20.0".to_string(),
+                    actual: "15.5".to_string(),
+                    passed: false,
+                    gate_id: "F-CI-001".to_string(),
+                },
+                CiAssertion {
+                    name: "p99".to_string(),
+                    expected: "<= 200".to_string(),
+                    actual: "250".to_string(),
+                    passed: false,
+                    gate_id: "F-CI-002".to_string(),
+                },
+            ],
+            passed: false,
+        };
+        assert!(!result.passed);
+        assert_eq!(result.assertions.iter().filter(|a| a.passed).count(), 0);
+    }
+
+    #[test]
+    fn test_tensor_mismatch_type_shape_mismatch() {
+        let mismatch = TensorMismatch {
+            name: "lm_head.weight".to_string(),
+            shape_a: vec![4096, 128_256],
+            shape_b: vec![4096, 32_000],
+            mismatch_type: TensorMismatchType::ShapeMismatch,
+        };
+        assert_eq!(mismatch.mismatch_type.gate_id(), "F-ROSETTA-DIFF-002");
+        assert_ne!(mismatch.shape_a, mismatch.shape_b);
+    }
+
+    #[test]
+    fn test_tensor_mismatch_missing_tensor() {
+        let mismatch = TensorMismatch {
+            name: "rotary_embd.inv_freq".to_string(),
+            shape_a: vec![64],
+            shape_b: vec![],
+            mismatch_type: TensorMismatchType::Missing,
+        };
+        assert_eq!(mismatch.mismatch_type.gate_id(), "F-ROSETTA-DIFF-002");
+    }
+
+    #[test]
+    fn test_inference_comparison_result_partial_match() {
+        let result = InferenceComparisonResult {
+            total_tokens: 100,
+            matching_tokens: 85,
+            max_logit_diff: 0.05,
+            passed: false,
+            token_comparisons: vec![TokenComparison {
+                index: 42,
+                token_a: 1000,
+                token_b: 1001,
+                logit_diff: 0.05,
+                matches: false,
+            }],
+        };
+        assert!(!result.passed);
+        assert!(result.matching_tokens < result.total_tokens);
+        assert!(!result.token_comparisons.is_empty());
+    }
+
+    #[test]
+    fn test_token_comparison_exact_match() {
+        let tc = TokenComparison {
+            index: 0,
+            token_a: 500,
+            token_b: 500,
+            logit_diff: 0.0001,
+            matches: true,
+        };
+        assert!(tc.matches);
+        assert_eq!(tc.token_a, tc.token_b);
+    }
+
+    #[test]
+    fn test_parse_diff_output_with_transposed_marker() {
+        let config = DiffConfig::default();
+        let executor = DifferentialExecutor::new(config);
+        // Text output with transposed marker
+        let output = "Comparing tensors...\n\
+                      TRANSPOSED: token_embd.weight (4096, 32000) vs (32000, 4096)\n\
+                      All 100 tensors compared.";
+        let result = executor.parse_diff_output(output).unwrap();
+        assert!(!result.passed);
+        assert_eq!(result.transposed_tensors, 1);
+    }
+
+    #[test]
+    fn test_parse_diff_output_with_no_mismatch_marker() {
+        let config = DiffConfig::default();
+        let executor = DifferentialExecutor::new(config);
+        // Text output without transposed marker - should pass
+        let output = "Comparing tensors...\n\
+                      lm_head.weight: OK\n\
+                      Done.";
+        let result = executor.parse_diff_output(output).unwrap();
+        // No TRANSPOSED markers found, so should pass
+        assert!(result.passed);
+        assert_eq!(result.mismatched_tensors, 0);
+    }
+
+    #[test]
+    fn test_parse_inference_output_with_valid_json() {
+        let config = DiffConfig::default();
+        let executor = DifferentialExecutor::new(config);
+        let output = r#"{"total_tokens":10,"matching_tokens":10,"max_logit_diff":0.0001,"passed":true,"token_comparisons":[]}"#;
+        let result = executor.parse_inference_output(output, true).unwrap();
+        assert!(result.passed);
+        assert_eq!(result.total_tokens, 10);
+    }
+
+    #[test]
+    fn test_diff_config_relaxed_tolerance() {
+        let config = DiffConfig {
+            apr_binary: "apr".to_string(),
+            filter: None,
+            mismatches_only: false,
+            tolerance: 1e-3,
+        };
+        assert!((config.tolerance - 1e-3).abs() < 1e-10);
+        assert!(!config.mismatches_only);
+    }
 }
