@@ -3606,4 +3606,642 @@ test_matrix:
         let result_tensor = executor.execute_trace("tensor");
         assert!(result_tensor.tool.contains("trace-tensor"));
     }
+
+    #[test]
+    fn test_get_format_model_path_gguf() {
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/cache".to_string()),
+            ..Default::default()
+        };
+        let executor = Executor::with_config(config);
+
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "test".to_string(),
+            0,
+        );
+
+        let path = executor.get_format_model_path(&scenario);
+        assert!(path.contains("gguf"));
+    }
+
+    #[test]
+    fn test_get_format_model_path_apr() {
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/cache".to_string()),
+            ..Default::default()
+        };
+        let executor = Executor::with_config(config);
+
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Apr,
+            "test".to_string(),
+            0,
+        );
+
+        let path = executor.get_format_model_path(&scenario);
+        assert!(path.contains("apr"));
+    }
+
+    #[test]
+    fn test_get_format_model_path_safetensors() {
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/cache".to_string()),
+            ..Default::default()
+        };
+        let executor = Executor::with_config(config);
+
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::SafeTensors,
+            "test".to_string(),
+            0,
+        );
+
+        let path = executor.get_format_model_path(&scenario);
+        assert!(path.contains("safetensors"));
+    }
+
+    #[test]
+    fn test_get_format_model_path_no_cache() {
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: None, // No cache directory
+            ..Default::default()
+        };
+        let executor = Executor::with_config(config);
+
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "test".to_string(),
+            0,
+        );
+
+        let path = executor.get_format_model_path(&scenario);
+        // Should use "." as default
+        assert!(path.contains("gguf"));
+    }
+
+    #[test]
+    fn test_executor_execute_dry_run() {
+        let config = ExecutionConfig {
+            dry_run: true,
+            subprocess_mode: false,
+            ..Default::default()
+        };
+        let mut executor = Executor::with_config(config);
+
+        let yaml = r#"
+name: dry-run-test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 3
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let result = executor.execute(&playbook).expect("Execution failed");
+
+        // In dry run mode, all scenarios should be skipped
+        assert_eq!(result.skipped, 3);
+        assert_eq!(result.passed, 0);
+        assert_eq!(result.failed, 0);
+    }
+
+    #[test]
+    fn test_executor_execute_with_stop_on_first_policy() {
+        let mock_runner = MockCommandRunner::new().with_inference_failure();
+
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/model.gguf".to_string()),
+            failure_policy: FailurePolicy::StopOnFirst,
+            run_conversion_tests: false,
+            run_golden_rule_test: false,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        let yaml = r#"
+name: stop-on-first-test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 5
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let result = executor.execute(&playbook).expect("Execution failed");
+
+        // With StopOnFirst policy, should stop after first failure
+        assert_eq!(result.failed, 1);
+    }
+
+    #[test]
+    fn test_executor_execute_with_collect_all_policy() {
+        let mock_runner = MockCommandRunner::new().with_inference_failure();
+
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/model.gguf".to_string()),
+            failure_policy: FailurePolicy::CollectAll,
+            run_conversion_tests: false,
+            run_golden_rule_test: false,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        let yaml = r#"
+name: collect-all-test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 3
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let result = executor.execute(&playbook).expect("Execution failed");
+
+        // With CollectAll policy, should collect all failures
+        assert_eq!(result.failed, 3);
+    }
+
+    #[test]
+    fn test_executor_default_impl() {
+        let executor = Executor::default();
+        assert_eq!(executor.config().max_workers, 4);
+        assert!(!executor.config().dry_run);
+    }
+
+    #[test]
+    fn test_parse_tps_from_output_with_tps() {
+        let output = "Info: Loading model\ntok/s: 42.5\nDone";
+        let tps = Executor::parse_tps_from_output(output);
+        assert!(tps.is_some());
+        assert!((tps.unwrap() - 42.5).abs() < 0.01);
+    }
+
+    #[test]
+    fn test_parse_tps_from_output_no_tps() {
+        let output = "Some random output without tok/s";
+        let tps = Executor::parse_tps_from_output(output);
+        assert!(tps.is_none());
+    }
+
+    #[test]
+    fn test_extract_generated_text() {
+        let output = "=== Model Info ===\nThis is generated text\ntok/s: 30.0";
+        let text = Executor::extract_generated_text(output);
+        assert!(text.contains("This is generated text"));
+        assert!(!text.contains("tok/s"));
+        assert!(!text.contains("==="));
+    }
+
+    #[test]
+    fn test_extract_output_text_multiline_detailed() {
+        let output = "Some prefix\nOutput:\nLine 1\nLine 2\nLine 3\nCompleted in 1s";
+        let text = Executor::extract_output_text(output);
+        assert!(text.contains("Line 1"));
+        assert!(text.contains("Line 2"));
+        assert!(text.contains("Line 3"));
+    }
+
+    #[test]
+    fn test_extract_output_text_with_empty_lines() {
+        let output = "Output:\nActual output here\n\nCompleted";
+        let text = Executor::extract_output_text(output);
+        assert!(text.contains("Actual output here"));
+    }
+
+    #[test]
+    fn test_failure_policy_default_is_stop_on_p0() {
+        let policy = FailurePolicy::default();
+        assert_eq!(policy, FailurePolicy::StopOnP0);
+    }
+
+    #[test]
+    fn test_execution_config_debug_display() {
+        let config = ExecutionConfig::default();
+        let debug_str = format!("{config:?}");
+        assert!(debug_str.contains("ExecutionConfig"));
+        assert!(debug_str.contains("failure_policy"));
+    }
+
+    #[test]
+    fn test_tool_test_result_all_fields() {
+        let result = ToolTestResult {
+            tool: "test-tool".to_string(),
+            passed: true,
+            exit_code: 0,
+            stdout: "stdout".to_string(),
+            stderr: String::new(),
+            duration_ms: 100,
+            gate_id: "F-TEST-001".to_string(),
+        };
+        assert_eq!(result.tool, "test-tool");
+        assert!(result.passed);
+        assert_eq!(result.gate_id, "F-TEST-001");
+    }
+
+    #[test]
+    fn test_executor_evidence_accessor() {
+        let executor = Executor::new();
+        let evidence = executor.evidence();
+        assert_eq!(evidence.total(), 0);
+    }
+
+    #[test]
+    fn test_execution_result_is_success_false_due_to_failed() {
+        let result = ExecutionResult {
+            playbook_name: "test".to_string(),
+            total_scenarios: 10,
+            passed: 9,
+            failed: 1,
+            skipped: 0,
+            duration_ms: 100,
+            gateway_failed: None,
+            evidence: EvidenceCollector::new(),
+        };
+        assert!(!result.is_success());
+    }
+
+    #[test]
+    fn test_execution_result_is_success_when_all_pass() {
+        let result = ExecutionResult {
+            playbook_name: "test".to_string(),
+            total_scenarios: 10,
+            passed: 10,
+            failed: 0,
+            skipped: 0,
+            duration_ms: 100,
+            gateway_failed: None,
+            evidence: EvidenceCollector::new(),
+        };
+        assert!(result.is_success());
+    }
+
+    #[test]
+    fn test_tool_test_result_to_evidence_when_failed() {
+        let result = ToolTestResult {
+            tool: "validate".to_string(),
+            passed: false,
+            exit_code: 1,
+            stdout: String::new(),
+            stderr: "Validation failed".to_string(),
+            duration_ms: 200,
+            gate_id: "F-VALIDATE-001".to_string(),
+        };
+        let model_id = ModelId::new("org", "model");
+        let evidence = result.to_evidence(&model_id);
+        assert!(!evidence.outcome.is_pass());
+        assert!(evidence.reason.contains("Validation failed") || evidence.output.is_empty());
+    }
+
+    #[test]
+    fn test_executor_with_mock_runner_trace_failure_case() {
+        let mock_runner = MockCommandRunner::new().with_inference_failure();
+
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/model.gguf".to_string()),
+            ..Default::default()
+        };
+
+        let executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "What is 2+2?".to_string(),
+            0,
+        );
+
+        let (_, stderr, exit_code, _) = executor.subprocess_execution(&scenario);
+
+        // Should include trace output in stderr
+        assert_eq!(exit_code, 1);
+        assert!(stderr.is_some());
+    }
+
+    #[test]
+    fn test_get_format_model_path_apr_format() {
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/cache".to_string()),
+            ..Default::default()
+        };
+        let executor = Executor::with_config(config);
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Apr,
+            "test".to_string(),
+            0,
+        );
+        let path = executor.get_format_model_path(&scenario);
+        assert!(path.contains("apr"));
+    }
+
+    #[test]
+    fn test_get_format_model_path_safetensors_format() {
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/cache".to_string()),
+            ..Default::default()
+        };
+        let executor = Executor::with_config(config);
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::SafeTensors,
+            "test".to_string(),
+            0,
+        );
+        let path = executor.get_format_model_path(&scenario);
+        assert!(path.contains("safetensors"));
+    }
+
+    #[test]
+    fn test_get_format_model_path_gguf_format() {
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/cache".to_string()),
+            ..Default::default()
+        };
+        let executor = Executor::with_config(config);
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "test".to_string(),
+            0,
+        );
+        let path = executor.get_format_model_path(&scenario);
+        assert!(path.contains("gguf"));
+    }
+
+    #[test]
+    fn test_get_format_model_path_no_model_path() {
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: None,
+            ..Default::default()
+        };
+        let executor = Executor::with_config(config);
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "test".to_string(),
+            0,
+        );
+        let path = executor.get_format_model_path(&scenario);
+        // Should default to "." with gguf subdir
+        assert!(path.contains("gguf"));
+    }
+
+    #[test]
+    fn test_executor_subprocess_execution_formats() {
+        let mock_runner = MockCommandRunner::new().with_inference_response("The answer is 4.");
+
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/cache".to_string()),
+            ..Default::default()
+        };
+
+        let executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        // Test APR format
+        let scenario_apr = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Apr,
+            "What is 2+2?".to_string(),
+            0,
+        );
+        let (_, _, exit_code, _) = executor.subprocess_execution(&scenario_apr);
+        assert_eq!(exit_code, 0);
+    }
+
+    #[test]
+    fn test_executor_subprocess_execution_safetensors() {
+        let mock_runner = MockCommandRunner::new().with_inference_response("The answer is 4.");
+
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/cache".to_string()),
+            ..Default::default()
+        };
+
+        let executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::SafeTensors,
+            "What is 2+2?".to_string(),
+            0,
+        );
+        let (_, _, exit_code, _) = executor.subprocess_execution(&scenario);
+        assert_eq!(exit_code, 0);
+    }
+
+    #[test]
+    fn test_execute_scenario_with_exit_code_failure() {
+        let mock_runner = MockCommandRunner::new().with_exit_code(5);
+
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/model.gguf".to_string()),
+            ..Default::default()
+        };
+
+        let executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "What is 2+2?".to_string(),
+            0,
+        );
+
+        let evidence = executor.execute_scenario(&scenario);
+
+        // Non-zero exit code should result in failed evidence
+        assert!(evidence.outcome.is_fail());
+        assert!(evidence.exit_code.is_some());
+        assert_eq!(evidence.exit_code.unwrap(), 5);
+    }
+
+    #[test]
+    fn test_execute_scenario_simulate_for_non_subprocess() {
+        let executor = Executor::new();
+
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Gpu,
+            Format::SafeTensors,
+            "What is 2+2?".to_string(),
+            0,
+        );
+
+        let evidence = executor.execute_scenario(&scenario);
+        assert!(!evidence.id.is_empty());
+    }
+
+    #[test]
+    fn test_execute_scenario_with_stderr_corroborated() {
+        let mock_runner = MockCommandRunner::new()
+            .with_inference_response_and_stderr("The answer is 4.", "Some warning");
+
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/model.gguf".to_string()),
+            ..Default::default()
+        };
+
+        let executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "What is 2+2?".to_string(),
+            0,
+        );
+
+        let evidence = executor.execute_scenario(&scenario);
+        // Should pass but have stderr captured
+        assert!(evidence.outcome.is_pass());
+    }
+
+    #[test]
+    fn test_executor_run_conversion_tests_no_gpu() {
+        let mock_runner = MockCommandRunner::new();
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/model.gguf".to_string()),
+            run_conversion_tests: true,
+            no_gpu: true,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+        let model_id = ModelId::new("test", "model");
+
+        // Run conversion tests with no_gpu flag
+        let (passed, failed) =
+            executor.run_conversion_tests(std::path::Path::new("/test/model.gguf"), &model_id);
+
+        // Just verify function runs
+        let _ = (passed, failed);
+    }
+
+    #[test]
+    fn test_executor_execute_with_stop_on_first_failure() {
+        let mock_runner = MockCommandRunner::new().with_inference_failure();
+
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/model.gguf".to_string()),
+            failure_policy: FailurePolicy::StopOnFirst,
+            run_conversion_tests: false,
+            run_golden_rule_test: false,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        let yaml = r#"
+name: stop-on-first-test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 5
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let result = executor.execute(&playbook).expect("Execution failed");
+
+        // Should stop after first failure
+        assert!(result.failed >= 1);
+        // Total executed should be less than total scenarios due to early stop
+        let executed = result.passed + result.failed;
+        assert!(executed <= result.total_scenarios);
+    }
+
+    #[test]
+    fn test_executor_execute_with_collect_all_failures() {
+        let mock_runner = MockCommandRunner::new().with_inference_failure();
+
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/model.gguf".to_string()),
+            failure_policy: FailurePolicy::CollectAll,
+            run_conversion_tests: false,
+            run_golden_rule_test: false,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        let yaml = r#"
+name: collect-all-test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 3
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let result = executor.execute(&playbook).expect("Execution failed");
+
+        // Should collect all failures (3 scenarios)
+        assert_eq!(result.failed, 3);
+        assert_eq!(result.total_scenarios, 3);
+    }
 }

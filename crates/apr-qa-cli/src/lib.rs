@@ -295,6 +295,230 @@ pub fn execute_playbook(
         .map_err(|e| format!("Execution failed: {e}"))
 }
 
+/// Certification tier levels
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum CertTier {
+    /// Tier 1: Smoke test
+    Smoke,
+    /// Tier 2: MVP - all formats/backends/modalities
+    Mvp,
+    /// Tier 3: Quick check
+    #[default]
+    Quick,
+    /// Tier 4: Standard certification
+    Standard,
+    /// Tier 5: Deep certification
+    Deep,
+}
+
+impl std::str::FromStr for CertTier {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "smoke" => Ok(Self::Smoke),
+            "mvp" => Ok(Self::Mvp),
+            "quick" => Ok(Self::Quick),
+            "standard" => Ok(Self::Standard),
+            "deep" => Ok(Self::Deep),
+            _ => Err(format!(
+                "Unknown tier: {s}. Use: smoke, mvp, quick, standard, deep"
+            )),
+        }
+    }
+}
+
+impl CertTier {
+    /// Get the playbook suffix for this tier
+    #[must_use]
+    pub const fn playbook_suffix(self) -> &'static str {
+        match self {
+            Self::Smoke => "-smoke",
+            Self::Mvp => "-mvp",
+            Self::Quick => "-quick",
+            Self::Standard | Self::Deep => "",
+        }
+    }
+}
+
+/// Configuration for certification runs
+#[derive(Debug, Clone)]
+pub struct CertificationConfig {
+    /// Certification tier
+    pub tier: CertTier,
+    /// Model cache directory (contains gguf/apr/safetensors subdirs)
+    pub model_cache: Option<std::path::PathBuf>,
+    /// Path to apr binary
+    pub apr_binary: String,
+    /// Enable subprocess mode
+    pub subprocess: bool,
+    /// Output directory for artifacts
+    pub output_dir: std::path::PathBuf,
+    /// Dry run mode
+    pub dry_run: bool,
+}
+
+impl Default for CertificationConfig {
+    fn default() -> Self {
+        Self {
+            tier: CertTier::Quick,
+            model_cache: None,
+            apr_binary: "apr".to_string(),
+            subprocess: false,
+            output_dir: std::path::PathBuf::from("certifications"),
+            dry_run: false,
+        }
+    }
+}
+
+/// Result of certifying a single model
+#[derive(Debug, Clone)]
+pub struct ModelCertificationResult {
+    /// Model ID
+    pub model_id: String,
+    /// Whether certification succeeded
+    pub success: bool,
+    /// MQS score (0-1000)
+    pub mqs_score: u32,
+    /// Grade (A, B, C, D, F)
+    pub grade: String,
+    /// Pass rate as percentage
+    pub pass_rate: f64,
+    /// Gateway failures (if any)
+    pub gateway_failed: Option<String>,
+    /// Error message (if failed)
+    pub error: Option<String>,
+}
+
+/// Build an ExecutionConfig for certification
+///
+/// This is the canonical way to build an ExecutionConfig for certification,
+/// ensuring subprocess mode and other settings are propagated correctly.
+pub fn build_certification_config(
+    tier: CertTier,
+    subprocess: bool,
+    model_cache_path: Option<String>,
+) -> ExecutionConfig {
+    ExecutionConfig {
+        failure_policy: FailurePolicy::CollectAll,
+        dry_run: false,
+        max_workers: 4,
+        subprocess_mode: subprocess,
+        model_path: model_cache_path,
+        default_timeout_ms: 60000,
+        no_gpu: false,
+        run_conversion_tests: subprocess,
+        run_differential_tests: false,
+        run_profile_ci: matches!(tier, CertTier::Standard | CertTier::Deep),
+        run_trace_payload: false,
+        run_golden_rule_test: subprocess,
+        golden_reference_path: None,
+    }
+}
+
+/// Generate playbook path from model ID and tier
+pub fn playbook_path_for_model(model_id: &str, tier: CertTier) -> String {
+    let short = model_id.split('/').next_back().unwrap_or(model_id);
+    let base = short
+        .to_lowercase()
+        .replace("-instruct", "")
+        .replace("-it", "");
+    format!(
+        "playbooks/models/{}{}.playbook.yaml",
+        base,
+        tier.playbook_suffix()
+    )
+}
+
+/// Certify a single model with the given configuration
+///
+/// Returns a `ModelCertificationResult` with the outcome.
+pub fn certify_model(model_id: &str, config: &CertificationConfig) -> ModelCertificationResult {
+    let playbook_path = playbook_path_for_model(model_id, config.tier);
+    let playbook_file = std::path::Path::new(&playbook_path);
+
+    if !playbook_file.exists() {
+        return ModelCertificationResult {
+            model_id: model_id.to_string(),
+            success: false,
+            mqs_score: 0,
+            grade: "-".to_string(),
+            pass_rate: 0.0,
+            gateway_failed: None,
+            error: Some(format!("Playbook not found: {playbook_path}")),
+        };
+    }
+
+    let playbook = match load_playbook(playbook_file) {
+        Ok(p) => p,
+        Err(e) => {
+            return ModelCertificationResult {
+                model_id: model_id.to_string(),
+                success: false,
+                mqs_score: 0,
+                grade: "-".to_string(),
+                pass_rate: 0.0,
+                gateway_failed: None,
+                error: Some(e),
+            };
+        }
+    };
+
+    // Build model cache path
+    let short = model_id.split('/').next_back().unwrap_or(model_id);
+    let model_cache_path = if config.subprocess {
+        config.model_cache.as_ref().map(|cache| {
+            cache
+                .join(short.to_lowercase().replace('.', "-"))
+                .to_string_lossy()
+                .to_string()
+        })
+    } else {
+        None
+    };
+
+    let exec_config = build_certification_config(config.tier, config.subprocess, model_cache_path);
+
+    match execute_playbook(&playbook, exec_config) {
+        Ok(result) => {
+            let evidence_vec: Vec<_> = result.evidence.all().to_vec();
+            let collector = collect_evidence(evidence_vec);
+
+            let pass_rate = result.pass_rate();
+            let gateway_failed = result.gateway_failed;
+            match calculate_mqs_score(model_id, &collector) {
+                Ok(mqs) => ModelCertificationResult {
+                    model_id: model_id.to_string(),
+                    success: true,
+                    mqs_score: mqs.raw_score,
+                    grade: mqs.grade,
+                    pass_rate,
+                    gateway_failed,
+                    error: None,
+                },
+                Err(e) => ModelCertificationResult {
+                    model_id: model_id.to_string(),
+                    success: false,
+                    mqs_score: 0,
+                    grade: "-".to_string(),
+                    pass_rate,
+                    gateway_failed: None, // MQS calculation failed, gateway status unknown
+                    error: Some(e),
+                },
+            }
+        }
+        Err(e) => ModelCertificationResult {
+            model_id: model_id.to_string(),
+            success: false,
+            mqs_score: 0,
+            grade: "-".to_string(),
+            pass_rate: 0.0,
+            gateway_failed: None,
+            error: Some(e),
+        },
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -579,5 +803,342 @@ mod tests {
         // Should be valid JSON that can be parsed back
         let parsed: Vec<apr_qa_gen::QaScenario> = serde_json::from_str(&json).unwrap();
         assert_eq!(parsed.len(), scenarios.len());
+    }
+
+    // =========================================================================
+    // Certification Tests
+    // =========================================================================
+
+    #[test]
+    fn test_cert_tier_from_str() {
+        assert_eq!("smoke".parse::<CertTier>().unwrap(), CertTier::Smoke);
+        assert_eq!("mvp".parse::<CertTier>().unwrap(), CertTier::Mvp);
+        assert_eq!("quick".parse::<CertTier>().unwrap(), CertTier::Quick);
+        assert_eq!("standard".parse::<CertTier>().unwrap(), CertTier::Standard);
+        assert_eq!("deep".parse::<CertTier>().unwrap(), CertTier::Deep);
+        // Case insensitive
+        assert_eq!("SMOKE".parse::<CertTier>().unwrap(), CertTier::Smoke);
+        assert_eq!("Quick".parse::<CertTier>().unwrap(), CertTier::Quick);
+    }
+
+    #[test]
+    fn test_cert_tier_from_str_invalid() {
+        let result = "invalid".parse::<CertTier>();
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("Unknown tier"));
+    }
+
+    #[test]
+    fn test_cert_tier_playbook_suffix() {
+        assert_eq!(CertTier::Smoke.playbook_suffix(), "-smoke");
+        assert_eq!(CertTier::Mvp.playbook_suffix(), "-mvp");
+        assert_eq!(CertTier::Quick.playbook_suffix(), "-quick");
+        assert_eq!(CertTier::Standard.playbook_suffix(), "");
+        assert_eq!(CertTier::Deep.playbook_suffix(), "");
+    }
+
+    #[test]
+    fn test_certification_config_default() {
+        let config = CertificationConfig::default();
+        assert_eq!(config.tier, CertTier::Quick);
+        assert!(config.model_cache.is_none());
+        assert_eq!(config.apr_binary, "apr");
+        assert!(!config.subprocess);
+        assert!(!config.dry_run);
+    }
+
+    #[test]
+    fn test_build_certification_config_mock_mode() {
+        // In mock mode, subprocess tests should be disabled
+        let config = build_certification_config(CertTier::Mvp, false, None);
+        assert!(!config.subprocess_mode);
+        assert!(!config.run_conversion_tests);
+        assert!(!config.run_golden_rule_test);
+    }
+
+    #[test]
+    fn test_build_certification_config_subprocess_mode() {
+        // In subprocess mode, all critical tests should be enabled
+        let config =
+            build_certification_config(CertTier::Mvp, true, Some("/path/to/model".to_string()));
+        assert!(config.subprocess_mode);
+        assert!(config.run_conversion_tests);
+        assert!(config.run_golden_rule_test);
+        assert_eq!(config.model_path, Some("/path/to/model".to_string()));
+    }
+
+    #[test]
+    fn test_build_certification_config_profile_ci() {
+        // Standard/Deep tiers should enable profile CI
+        let standard = build_certification_config(CertTier::Standard, false, None);
+        assert!(standard.run_profile_ci);
+
+        let deep = build_certification_config(CertTier::Deep, false, None);
+        assert!(deep.run_profile_ci);
+
+        // Other tiers should not
+        let mvp = build_certification_config(CertTier::Mvp, false, None);
+        assert!(!mvp.run_profile_ci);
+    }
+
+    #[test]
+    fn test_playbook_path_for_model() {
+        let path = playbook_path_for_model("Qwen/Qwen2.5-Coder-0.5B-Instruct", CertTier::Mvp);
+        assert_eq!(
+            path,
+            "playbooks/models/qwen2.5-coder-0.5b-mvp.playbook.yaml"
+        );
+
+        let path = playbook_path_for_model("meta-llama/Llama-3-8B-Instruct", CertTier::Quick);
+        assert_eq!(path, "playbooks/models/llama-3-8b-quick.playbook.yaml");
+
+        let path = playbook_path_for_model("test/model-it", CertTier::Standard);
+        assert_eq!(path, "playbooks/models/model.playbook.yaml");
+    }
+
+    #[test]
+    fn test_certify_model_nonexistent_playbook() {
+        let config = CertificationConfig {
+            tier: CertTier::Mvp,
+            subprocess: false,
+            ..Default::default()
+        };
+        let result = certify_model("nonexistent/model", &config);
+        assert!(!result.success);
+        assert!(result.error.is_some());
+        assert!(result.error.unwrap().contains("Playbook not found"));
+    }
+
+    #[test]
+    fn test_model_certification_result_fields() {
+        let result = ModelCertificationResult {
+            model_id: "test/model".to_string(),
+            success: true,
+            mqs_score: 850,
+            grade: "A".to_string(),
+            pass_rate: 95.0,
+            gateway_failed: None,
+            error: None,
+        };
+        assert!(result.success);
+        assert_eq!(result.mqs_score, 850);
+        assert_eq!(result.grade, "A");
+    }
+
+    #[test]
+    fn test_model_certification_result_with_gateway_failure() {
+        let result = ModelCertificationResult {
+            model_id: "test/model".to_string(),
+            success: false,
+            mqs_score: 0,
+            grade: "-".to_string(),
+            pass_rate: 0.0,
+            gateway_failed: Some("G1: Model failed to load".to_string()),
+            error: None,
+        };
+        assert!(!result.success);
+        assert!(result.gateway_failed.is_some());
+    }
+
+    #[test]
+    fn test_certification_config_with_model_cache() {
+        let config = CertificationConfig {
+            tier: CertTier::Deep,
+            model_cache: Some(std::path::PathBuf::from("/test/cache")),
+            apr_binary: "custom-apr".to_string(),
+            subprocess: true,
+            output_dir: std::path::PathBuf::from("/output"),
+            dry_run: true,
+        };
+        assert_eq!(config.tier, CertTier::Deep);
+        assert!(config.model_cache.is_some());
+        assert!(config.subprocess);
+        assert!(config.dry_run);
+    }
+
+    #[test]
+    fn test_parse_evidence_empty_array() {
+        let json = "[]";
+        let result = parse_evidence(json);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().len(), 0);
+    }
+
+    #[test]
+    fn test_generate_tickets_black_swans_only() {
+        let evidence = vec![make_falsified_evidence()];
+        let tickets = generate_tickets_from_evidence(&evidence, "test/repo", true, 1);
+        // May or may not have tickets depending on whether evidence qualifies as black swan
+        let _ = tickets;
+    }
+
+    #[test]
+    fn test_generate_tickets_min_occurrences() {
+        let evidence = vec![make_falsified_evidence()];
+        let tickets = generate_tickets_from_evidence(&evidence, "test/repo", false, 5);
+        // With only 1 evidence and min_occurrences=5, should have no tickets
+        assert!(tickets.is_empty());
+    }
+
+    #[test]
+    fn test_playbook_run_config_with_all_options() {
+        let config = PlaybookRunConfig {
+            failure_policy: "collect-all".to_string(),
+            dry_run: true,
+            workers: 16,
+            subprocess: true,
+            model_path: Some("/path/to/model".to_string()),
+            timeout: 120_000,
+            no_gpu: true,
+            skip_conversion_tests: true,
+            run_tool_tests: true,
+            run_differential_tests: true,
+            run_profile_ci: true,
+            run_trace_payload: false,
+        };
+        assert!(config.dry_run);
+        assert_eq!(config.workers, 16);
+        assert!(config.run_tool_tests);
+        assert!(config.run_profile_ci);
+    }
+
+    #[test]
+    fn test_build_execution_config_with_differential() {
+        let config = PlaybookRunConfig {
+            run_differential_tests: true,
+            run_profile_ci: true,
+            run_trace_payload: false,
+            ..Default::default()
+        };
+        let exec = build_execution_config(&config).unwrap();
+        assert!(exec.run_differential_tests);
+        assert!(exec.run_profile_ci);
+        assert!(!exec.run_trace_payload);
+    }
+
+    #[test]
+    fn test_build_certification_config_all_tiers() {
+        // Test all tiers
+        let tiers = [
+            CertTier::Smoke,
+            CertTier::Mvp,
+            CertTier::Quick,
+            CertTier::Standard,
+            CertTier::Deep,
+        ];
+
+        for tier in tiers {
+            let config = build_certification_config(tier, false, None);
+            // All tiers should return valid config
+            assert_eq!(config.failure_policy, FailurePolicy::CollectAll);
+        }
+    }
+
+    #[test]
+    fn test_playbook_path_for_model_with_slash() {
+        let path = playbook_path_for_model("org/model-name-Instruct", CertTier::Smoke);
+        assert!(path.contains("smoke"));
+        assert!(path.contains("model-name"));
+        // Should strip -Instruct
+        assert!(!path.contains("-Instruct") && !path.contains("-instruct"));
+    }
+
+    #[test]
+    fn test_playbook_path_for_model_deep_tier() {
+        let path = playbook_path_for_model("test/model", CertTier::Deep);
+        // Deep tier has no suffix
+        assert!(path.ends_with(".playbook.yaml"));
+        assert!(!path.contains("-deep"));
+    }
+
+    #[test]
+    fn test_certification_config_output_dir() {
+        let config = CertificationConfig::default();
+        assert_eq!(
+            config.output_dir,
+            std::path::PathBuf::from("certifications")
+        );
+    }
+
+    #[test]
+    fn test_cli_result_debug() {
+        let result = CliResult::Success("test".to_string());
+        let debug_str = format!("{result:?}");
+        assert!(debug_str.contains("Success"));
+    }
+
+    #[test]
+    fn test_model_certification_result_debug() {
+        let result = ModelCertificationResult {
+            model_id: "test".to_string(),
+            success: true,
+            mqs_score: 900,
+            grade: "A".to_string(),
+            pass_rate: 100.0,
+            gateway_failed: None,
+            error: None,
+        };
+        let debug_str = format!("{result:?}");
+        assert!(debug_str.contains("ModelCertificationResult"));
+    }
+
+    #[test]
+    fn test_playbook_run_config_debug() {
+        let config = PlaybookRunConfig::default();
+        let debug_str = format!("{config:?}");
+        assert!(debug_str.contains("PlaybookRunConfig"));
+    }
+
+    #[test]
+    fn test_certification_config_debug() {
+        let config = CertificationConfig::default();
+        let debug_str = format!("{config:?}");
+        assert!(debug_str.contains("CertificationConfig"));
+    }
+
+    #[test]
+    fn test_playbook_run_config_clone() {
+        let config = PlaybookRunConfig::default();
+        let cloned = config.clone();
+        assert_eq!(config.failure_policy, cloned.failure_policy);
+        assert_eq!(config.workers, cloned.workers);
+    }
+
+    #[test]
+    fn test_certification_config_clone() {
+        let config = CertificationConfig::default();
+        let cloned = config.clone();
+        assert_eq!(config.tier, cloned.tier);
+        assert_eq!(config.subprocess, cloned.subprocess);
+    }
+
+    #[test]
+    fn test_model_certification_result_clone() {
+        let result = ModelCertificationResult {
+            model_id: "test".to_string(),
+            success: true,
+            mqs_score: 800,
+            grade: "B".to_string(),
+            pass_rate: 80.0,
+            gateway_failed: None,
+            error: None,
+        };
+        let cloned = result.clone();
+        assert_eq!(result.model_id, cloned.model_id);
+        assert_eq!(result.mqs_score, cloned.mqs_score);
+    }
+
+    #[test]
+    fn test_cert_tier_default() {
+        let tier = CertTier::default();
+        assert_eq!(tier, CertTier::Quick);
+    }
+
+    #[test]
+    fn test_execute_tool_tests() {
+        // Just verify function exists and returns results
+        let results = execute_tool_tests("/nonexistent/model.gguf", true, 1000, false);
+        // Should return empty or with failures since model doesn't exist
+        let _ = results;
     }
 }

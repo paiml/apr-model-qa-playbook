@@ -344,6 +344,8 @@ pub struct MockCommandRunner {
     pub diff_tensors_success: bool,
     /// Whether compare_inference should fail
     pub compare_inference_success: bool,
+    /// Custom exit code (if Some, overrides normal exit code logic)
+    pub custom_exit_code: Option<i32>,
 }
 
 impl Default for MockCommandRunner {
@@ -364,6 +366,7 @@ impl Default for MockCommandRunner {
             profile_success: true,
             diff_tensors_success: true,
             compare_inference_success: true,
+            custom_exit_code: None,
         }
     }
 }
@@ -484,6 +487,13 @@ impl MockCommandRunner {
         self.compare_inference_success = false;
         self
     }
+
+    /// Set a custom exit code for inference
+    #[must_use]
+    pub fn with_exit_code(mut self, code: i32) -> Self {
+        self.custom_exit_code = Some(code);
+        self
+    }
 }
 
 impl CommandRunner for MockCommandRunner {
@@ -495,6 +505,16 @@ impl CommandRunner for MockCommandRunner {
         _no_gpu: bool,
         _extra_args: &[&str],
     ) -> CommandOutput {
+        // Custom exit code takes precedence
+        if let Some(exit_code) = self.custom_exit_code {
+            return CommandOutput {
+                stdout: String::new(),
+                stderr: "Custom exit code error".to_string(),
+                exit_code,
+                success: exit_code == 0,
+            };
+        }
+
         // Simulate crash
         if self.crash {
             return CommandOutput {
