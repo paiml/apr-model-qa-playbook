@@ -1282,4 +1282,179 @@ mod tests {
         assert_eq!(result.total_tokens, 5);
         assert_eq!(result.token_comparisons.len(), 2);
     }
+
+    #[test]
+    fn test_tensor_diff_result_with_empty_mismatches() {
+        let result = TensorDiffResult {
+            total_tensors: 100,
+            mismatched_tensors: 0,
+            transposed_tensors: 0,
+            mismatches: vec![],
+            passed: true,
+        };
+        assert!(result.passed);
+        assert!(result.mismatches.is_empty());
+    }
+
+    #[test]
+    fn test_inference_comparison_all_matching() {
+        let result = InferenceComparisonResult {
+            total_tokens: 10,
+            matching_tokens: 10,
+            max_logit_diff: 0.0,
+            passed: true,
+            token_comparisons: vec![],
+        };
+        assert!(result.passed);
+        assert_eq!(result.total_tokens, result.matching_tokens);
+    }
+
+    #[test]
+    fn test_diff_benchmark_improved_performance() {
+        let result = DiffBenchmarkResult {
+            model_a: BenchmarkMetrics {
+                path: "original.gguf".to_string(),
+                throughput_tps: 10.0,
+                latency_p50_ms: 100.0,
+                latency_p99_ms: 200.0,
+            },
+            model_b: BenchmarkMetrics {
+                path: "converted.apr".to_string(),
+                throughput_tps: 10.5,
+                latency_p50_ms: 95.0,
+                latency_p99_ms: 190.0,
+            },
+            throughput_delta_pct: 5.0,
+            latency_p50_delta_pct: -5.0,
+            latency_p99_delta_pct: -5.0,
+            regression_detected: false,
+            regression_threshold: 10.0,
+        };
+        assert!(!result.regression_detected);
+        assert!(result.throughput_delta_pct > 0.0);
+    }
+
+    #[test]
+    fn test_ci_profile_all_assertions_pass() {
+        let result = CiProfileResult {
+            throughput_tps: 50.0,
+            latency_p50_ms: 20.0,
+            latency_p99_ms: 40.0,
+            assertions: vec![
+                CiAssertion {
+                    name: "throughput".to_string(),
+                    expected: ">= 10".to_string(),
+                    actual: "50".to_string(),
+                    passed: true,
+                    gate_id: "F-CI-001".to_string(),
+                },
+                CiAssertion {
+                    name: "p99".to_string(),
+                    expected: "<= 100".to_string(),
+                    actual: "40".to_string(),
+                    passed: true,
+                    gate_id: "F-CI-002".to_string(),
+                },
+            ],
+            passed: true,
+        };
+        assert!(result.passed);
+        assert!(result.assertions.iter().all(|a| a.passed));
+    }
+
+    #[test]
+    fn test_tensor_mismatch_type_clone() {
+        let t = TensorMismatchType::Missing;
+        let cloned = t;
+        assert_eq!(cloned, TensorMismatchType::Missing);
+    }
+
+    #[test]
+    fn test_parse_diff_output_with_text_only() {
+        let config = DiffConfig::default();
+        let executor = DifferentialExecutor::new(config);
+        // Text output without any mismatch markers
+        let output = "Comparing tensors...\n\
+                      tensor1: OK\n\
+                      tensor2: OK\n\
+                      All 100 tensors match.";
+        let result = executor.parse_diff_output(output).unwrap();
+        assert!(result.passed);
+        assert!(result.mismatches.is_empty());
+    }
+
+    #[test]
+    fn test_parse_inference_output_failure_fallback() {
+        let config = DiffConfig::default();
+        let executor = DifferentialExecutor::new(config);
+        // Invalid JSON should fallback to basic result
+        let output = "not valid json";
+        let result = executor.parse_inference_output(output, false).unwrap();
+        assert!(!result.passed);
+        assert_eq!(result.total_tokens, 0);
+    }
+
+    #[test]
+    fn test_diff_config_filter_none() {
+        let config = DiffConfig {
+            apr_binary: "apr".to_string(),
+            filter: None,
+            mismatches_only: true,
+            tolerance: 1e-5,
+        };
+        assert!(config.filter.is_none());
+    }
+
+    #[test]
+    fn test_diff_benchmark_result_delta_calculations() {
+        let result = DiffBenchmarkResult {
+            model_a: BenchmarkMetrics {
+                path: "a.gguf".to_string(),
+                throughput_tps: 20.0,
+                latency_p50_ms: 50.0,
+                latency_p99_ms: 100.0,
+            },
+            model_b: BenchmarkMetrics {
+                path: "b.gguf".to_string(),
+                throughput_tps: 10.0,
+                latency_p50_ms: 100.0,
+                latency_p99_ms: 200.0,
+            },
+            throughput_delta_pct: -50.0,
+            latency_p50_delta_pct: 100.0,
+            latency_p99_delta_pct: 100.0,
+            regression_detected: true,
+            regression_threshold: 20.0,
+        };
+        assert!(result.regression_detected);
+        assert!(result.throughput_delta_pct < 0.0);
+        assert!(result.latency_p50_delta_pct > 0.0);
+    }
+
+    #[test]
+    fn test_benchmark_metrics_all_fields() {
+        let metrics = BenchmarkMetrics {
+            path: "/models/qwen.gguf".to_string(),
+            throughput_tps: 25.5,
+            latency_p50_ms: 39.2,
+            latency_p99_ms: 78.4,
+        };
+        assert!(metrics.path.contains("qwen"));
+        assert!(metrics.throughput_tps > 0.0);
+        assert!(metrics.latency_p99_ms > metrics.latency_p50_ms);
+    }
+
+    #[test]
+    fn test_token_comparison_fields() {
+        let tc = TokenComparison {
+            index: 100,
+            token_a: 12345,
+            token_b: 12346,
+            logit_diff: 0.123,
+            matches: false,
+        };
+        assert_eq!(tc.index, 100);
+        assert_ne!(tc.token_a, tc.token_b);
+        assert!(!tc.matches);
+    }
 }

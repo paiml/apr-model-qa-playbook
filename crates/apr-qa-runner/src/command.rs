@@ -308,7 +308,11 @@ impl CommandRunner for RealCommandRunner {
 }
 
 /// Mock command runner for testing
+///
+/// This struct uses many boolean flags intentionally - each flag controls
+/// an independent success/failure behavior for testing different scenarios.
 #[derive(Debug, Clone)]
+#[allow(clippy::struct_excessive_bools)]
 pub struct MockCommandRunner {
     /// Default response for inference
     pub inference_response: String,
@@ -322,6 +326,24 @@ pub struct MockCommandRunner {
     pub crash: bool,
     /// Custom stderr message for inference
     pub inference_stderr: Option<String>,
+    /// Simulate profile_ci feature not available
+    pub profile_ci_unavailable: bool,
+    /// Custom stderr for profile_ci
+    pub profile_ci_stderr: Option<String>,
+    /// Whether inspect should fail
+    pub inspect_success: bool,
+    /// Whether validate should fail
+    pub validate_success: bool,
+    /// Whether bench should fail
+    pub bench_success: bool,
+    /// Whether check should fail
+    pub check_success: bool,
+    /// Whether profile should fail
+    pub profile_success: bool,
+    /// Whether diff_tensors should fail
+    pub diff_tensors_success: bool,
+    /// Whether compare_inference should fail
+    pub compare_inference_success: bool,
 }
 
 impl Default for MockCommandRunner {
@@ -333,6 +355,15 @@ impl Default for MockCommandRunner {
             tps: 25.0,
             crash: false,
             inference_stderr: None,
+            profile_ci_unavailable: false,
+            profile_ci_stderr: None,
+            inspect_success: true,
+            validate_success: true,
+            bench_success: true,
+            check_success: true,
+            profile_success: true,
+            diff_tensors_success: true,
+            compare_inference_success: true,
         }
     }
 }
@@ -388,6 +419,69 @@ impl MockCommandRunner {
     ) -> Self {
         self.inference_response = response.into();
         self.inference_stderr = Some(stderr.into());
+        self
+    }
+
+    /// Simulate profile_ci feature not available
+    #[must_use]
+    pub fn with_profile_ci_unavailable(mut self) -> Self {
+        self.profile_ci_unavailable = true;
+        self
+    }
+
+    /// Set custom stderr for profile_ci
+    #[must_use]
+    pub fn with_profile_ci_stderr(mut self, stderr: impl Into<String>) -> Self {
+        self.profile_ci_stderr = Some(stderr.into());
+        self
+    }
+
+    /// Set whether inspect should fail
+    #[must_use]
+    pub fn with_inspect_failure(mut self) -> Self {
+        self.inspect_success = false;
+        self
+    }
+
+    /// Set whether validate should fail
+    #[must_use]
+    pub fn with_validate_failure(mut self) -> Self {
+        self.validate_success = false;
+        self
+    }
+
+    /// Set whether bench should fail
+    #[must_use]
+    pub fn with_bench_failure(mut self) -> Self {
+        self.bench_success = false;
+        self
+    }
+
+    /// Set whether check should fail
+    #[must_use]
+    pub fn with_check_failure(mut self) -> Self {
+        self.check_success = false;
+        self
+    }
+
+    /// Set whether profile should fail
+    #[must_use]
+    pub fn with_profile_failure(mut self) -> Self {
+        self.profile_success = false;
+        self
+    }
+
+    /// Set whether diff_tensors should fail
+    #[must_use]
+    pub fn with_diff_tensors_failure(mut self) -> Self {
+        self.diff_tensors_success = false;
+        self
+    }
+
+    /// Set whether compare_inference should fail
+    #[must_use]
+    pub fn with_compare_inference_failure(mut self) -> Self {
+        self.compare_inference_success = false;
         self
     }
 }
@@ -448,31 +542,51 @@ impl CommandRunner for MockCommandRunner {
     }
 
     fn inspect_model(&self, _model_path: &Path) -> CommandOutput {
-        CommandOutput::success(r#"{"format":"GGUF","tensors":100,"parameters":"1.5B"}"#)
+        if self.inspect_success {
+            CommandOutput::success(r#"{"format":"GGUF","tensors":100,"parameters":"1.5B"}"#)
+        } else {
+            CommandOutput::failure(1, "Inspect failed: invalid model format")
+        }
     }
 
     fn validate_model(&self, _model_path: &Path) -> CommandOutput {
-        CommandOutput::success("Model validation passed")
+        if self.validate_success {
+            CommandOutput::success("Model validation passed")
+        } else {
+            CommandOutput::failure(1, "Validation failed: corrupted tensors")
+        }
     }
 
     fn bench_model(&self, _model_path: &Path) -> CommandOutput {
-        let output = format!(
-            r#"{{"throughput_tps":{:.1},"latency_p50_ms":78.2,"latency_p99_ms":156.5}}"#,
-            self.tps
-        );
-        CommandOutput::success(output)
+        if self.bench_success {
+            let output = format!(
+                r#"{{"throughput_tps":{:.1},"latency_p50_ms":78.2,"latency_p99_ms":156.5}}"#,
+                self.tps
+            );
+            CommandOutput::success(output)
+        } else {
+            CommandOutput::failure(1, "Benchmark failed: model load error")
+        }
     }
 
     fn check_model(&self, _model_path: &Path) -> CommandOutput {
-        CommandOutput::success("All checks passed")
+        if self.check_success {
+            CommandOutput::success("All checks passed")
+        } else {
+            CommandOutput::failure(1, "Check failed: safety issues detected")
+        }
     }
 
     fn profile_model(&self, _model_path: &Path, _warmup: u32, _measure: u32) -> CommandOutput {
-        let output = format!(
-            r#"{{"throughput_tps":{:.1},"latency_p50_ms":78.2,"latency_p99_ms":156.5}}"#,
-            self.tps
-        );
-        CommandOutput::success(output)
+        if self.profile_success {
+            let output = format!(
+                r#"{{"throughput_tps":{:.1},"latency_p50_ms":78.2,"latency_p99_ms":156.5}}"#,
+                self.tps
+            );
+            CommandOutput::success(output)
+        } else {
+            CommandOutput::failure(1, "Profile failed: insufficient memory")
+        }
     }
 
     fn profile_ci(
@@ -483,6 +597,14 @@ impl CommandRunner for MockCommandRunner {
         _warmup: u32,
         _measure: u32,
     ) -> CommandOutput {
+        // Simulate feature not available
+        if self.profile_ci_unavailable {
+            let stderr = self.profile_ci_stderr.clone().unwrap_or_else(|| {
+                "unexpected argument '--ci': apr profile does not support --ci mode".to_string()
+            });
+            return CommandOutput::with_output("", stderr, 1);
+        }
+
         let throughput_pass = min_throughput.is_none_or(|t| self.tps >= t);
         let p99_pass = max_p99.is_none_or(|p| 156.5 <= p);
         let passed = throughput_pass && p99_pass;
@@ -500,6 +622,9 @@ impl CommandRunner for MockCommandRunner {
     }
 
     fn diff_tensors(&self, _model_a: &Path, _model_b: &Path, json: bool) -> CommandOutput {
+        if !self.diff_tensors_success {
+            return CommandOutput::failure(1, "Diff tensors failed: incompatible models");
+        }
         if json {
             CommandOutput::success(
                 r#"{"total_tensors":100,"mismatched_tensors":0,"transposed_tensors":0,"mismatches":[],"passed":true}"#,
@@ -517,9 +642,13 @@ impl CommandRunner for MockCommandRunner {
         _max_tokens: u32,
         _tolerance: f64,
     ) -> CommandOutput {
-        CommandOutput::success(
-            r#"{"total_tokens":10,"matching_tokens":10,"max_logit_diff":0.0001,"passed":true,"token_comparisons":[]}"#,
-        )
+        if self.compare_inference_success {
+            CommandOutput::success(
+                r#"{"total_tokens":10,"matching_tokens":10,"max_logit_diff":0.0001,"passed":true,"token_comparisons":[]}"#,
+            )
+        } else {
+            CommandOutput::failure(1, "Compare inference failed: output mismatch")
+        }
     }
 }
 
@@ -931,5 +1060,259 @@ mod tests {
         let output = runner.profile_ci(&path, Some(100.0), Some(100.0), 1, 2);
         assert!(!output.success);
         assert!(output.stdout.contains("\"passed\":false"));
+    }
+
+    #[test]
+    fn test_mock_runner_profile_ci_unavailable() {
+        let runner = MockCommandRunner::new().with_profile_ci_unavailable();
+        let path = PathBuf::from("model.gguf");
+        let output = runner.profile_ci(&path, Some(10.0), None, 1, 2);
+        assert!(!output.success);
+        assert!(output.stderr.contains("unexpected argument"));
+    }
+
+    #[test]
+    fn test_mock_runner_profile_ci_custom_stderr() {
+        let runner = MockCommandRunner::new()
+            .with_profile_ci_unavailable()
+            .with_profile_ci_stderr("Custom error: --ci not supported");
+        let path = PathBuf::from("model.gguf");
+        let output = runner.profile_ci(&path, None, None, 1, 2);
+        assert!(!output.success);
+        assert!(output.stderr.contains("Custom error"));
+    }
+
+    #[test]
+    fn test_mock_runner_inspect_failure() {
+        let runner = MockCommandRunner::new().with_inspect_failure();
+        let path = PathBuf::from("model.gguf");
+        let output = runner.inspect_model(&path);
+        assert!(!output.success);
+        assert!(output.stderr.contains("invalid model format"));
+    }
+
+    #[test]
+    fn test_mock_runner_validate_failure() {
+        let runner = MockCommandRunner::new().with_validate_failure();
+        let path = PathBuf::from("model.gguf");
+        let output = runner.validate_model(&path);
+        assert!(!output.success);
+        assert!(output.stderr.contains("corrupted tensors"));
+    }
+
+    #[test]
+    fn test_mock_runner_bench_failure() {
+        let runner = MockCommandRunner::new().with_bench_failure();
+        let path = PathBuf::from("model.gguf");
+        let output = runner.bench_model(&path);
+        assert!(!output.success);
+        assert!(output.stderr.contains("model load error"));
+    }
+
+    #[test]
+    fn test_mock_runner_check_failure() {
+        let runner = MockCommandRunner::new().with_check_failure();
+        let path = PathBuf::from("model.gguf");
+        let output = runner.check_model(&path);
+        assert!(!output.success);
+        assert!(output.stderr.contains("safety issues"));
+    }
+
+    #[test]
+    fn test_mock_runner_profile_failure() {
+        let runner = MockCommandRunner::new().with_profile_failure();
+        let path = PathBuf::from("model.gguf");
+        let output = runner.profile_model(&path, 1, 2);
+        assert!(!output.success);
+        assert!(output.stderr.contains("insufficient memory"));
+    }
+
+    #[test]
+    fn test_mock_runner_diff_tensors_failure() {
+        let runner = MockCommandRunner::new().with_diff_tensors_failure();
+        let a = PathBuf::from("a.gguf");
+        let b = PathBuf::from("b.apr");
+        let output = runner.diff_tensors(&a, &b, true);
+        assert!(!output.success);
+        assert!(output.stderr.contains("incompatible models"));
+    }
+
+    #[test]
+    fn test_mock_runner_compare_inference_failure() {
+        let runner = MockCommandRunner::new().with_compare_inference_failure();
+        let a = PathBuf::from("a.gguf");
+        let b = PathBuf::from("b.apr");
+        let output = runner.compare_inference(&a, &b, "test", 10, 1e-5);
+        assert!(!output.success);
+        assert!(output.stderr.contains("output mismatch"));
+    }
+
+    #[test]
+    fn test_mock_runner_default_new_fields() {
+        let runner = MockCommandRunner::default();
+        assert!(!runner.profile_ci_unavailable);
+        assert!(runner.profile_ci_stderr.is_none());
+        assert!(runner.inspect_success);
+        assert!(runner.validate_success);
+        assert!(runner.bench_success);
+        assert!(runner.check_success);
+        assert!(runner.profile_success);
+        assert!(runner.diff_tensors_success);
+        assert!(runner.compare_inference_success);
+    }
+
+    #[test]
+    fn test_mock_runner_chained_failures() {
+        let runner = MockCommandRunner::new()
+            .with_inspect_failure()
+            .with_validate_failure()
+            .with_bench_failure()
+            .with_check_failure()
+            .with_profile_failure()
+            .with_diff_tensors_failure()
+            .with_compare_inference_failure();
+
+        assert!(!runner.inspect_success);
+        assert!(!runner.validate_success);
+        assert!(!runner.bench_success);
+        assert!(!runner.check_success);
+        assert!(!runner.profile_success);
+        assert!(!runner.diff_tensors_success);
+        assert!(!runner.compare_inference_success);
+    }
+
+    // Tests for RealCommandRunner using nonexistent binary to exercise error paths
+    #[test]
+    fn test_real_runner_execute_nonexistent_binary() {
+        let runner = RealCommandRunner::with_binary("/nonexistent/binary/path");
+        let path = PathBuf::from("model.gguf");
+        let output = runner.run_inference(&path, "test", 32, false, &[]);
+        assert!(!output.success);
+        assert_eq!(output.exit_code, -1);
+        assert!(output.stderr.contains("Failed to execute"));
+    }
+
+    #[test]
+    fn test_real_runner_run_inference_with_no_gpu() {
+        let runner = RealCommandRunner::with_binary("/nonexistent/binary");
+        let path = PathBuf::from("model.gguf");
+        let output = runner.run_inference(&path, "test", 32, true, &[]);
+        assert!(!output.success);
+    }
+
+    #[test]
+    fn test_real_runner_run_inference_with_extra_args() {
+        let runner = RealCommandRunner::with_binary("/nonexistent/binary");
+        let path = PathBuf::from("model.gguf");
+        let output = runner.run_inference(&path, "test", 32, false, &["--temp", "0.8"]);
+        assert!(!output.success);
+    }
+
+    #[test]
+    fn test_real_runner_convert_model() {
+        let runner = RealCommandRunner::with_binary("/nonexistent/binary");
+        let source = PathBuf::from("source.gguf");
+        let target = PathBuf::from("target.apr");
+        let output = runner.convert_model(&source, &target);
+        assert!(!output.success);
+    }
+
+    #[test]
+    fn test_real_runner_inspect_model() {
+        let runner = RealCommandRunner::with_binary("/nonexistent/binary");
+        let path = PathBuf::from("model.gguf");
+        let output = runner.inspect_model(&path);
+        assert!(!output.success);
+    }
+
+    #[test]
+    fn test_real_runner_validate_model() {
+        let runner = RealCommandRunner::with_binary("/nonexistent/binary");
+        let path = PathBuf::from("model.gguf");
+        let output = runner.validate_model(&path);
+        assert!(!output.success);
+    }
+
+    #[test]
+    fn test_real_runner_bench_model() {
+        let runner = RealCommandRunner::with_binary("/nonexistent/binary");
+        let path = PathBuf::from("model.gguf");
+        let output = runner.bench_model(&path);
+        assert!(!output.success);
+    }
+
+    #[test]
+    fn test_real_runner_check_model() {
+        let runner = RealCommandRunner::with_binary("/nonexistent/binary");
+        let path = PathBuf::from("model.gguf");
+        let output = runner.check_model(&path);
+        assert!(!output.success);
+    }
+
+    #[test]
+    fn test_real_runner_profile_model() {
+        let runner = RealCommandRunner::with_binary("/nonexistent/binary");
+        let path = PathBuf::from("model.gguf");
+        let output = runner.profile_model(&path, 5, 10);
+        assert!(!output.success);
+    }
+
+    #[test]
+    fn test_real_runner_profile_ci_all_options() {
+        let runner = RealCommandRunner::with_binary("/nonexistent/binary");
+        let path = PathBuf::from("model.gguf");
+        let output = runner.profile_ci(&path, Some(10.0), Some(100.0), 5, 10);
+        assert!(!output.success);
+    }
+
+    #[test]
+    fn test_real_runner_profile_ci_throughput_only() {
+        let runner = RealCommandRunner::with_binary("/nonexistent/binary");
+        let path = PathBuf::from("model.gguf");
+        let output = runner.profile_ci(&path, Some(50.0), None, 1, 1);
+        assert!(!output.success);
+    }
+
+    #[test]
+    fn test_real_runner_profile_ci_p99_only() {
+        let runner = RealCommandRunner::with_binary("/nonexistent/binary");
+        let path = PathBuf::from("model.gguf");
+        let output = runner.profile_ci(&path, None, Some(200.0), 1, 1);
+        assert!(!output.success);
+    }
+
+    #[test]
+    fn test_real_runner_profile_ci_no_options() {
+        let runner = RealCommandRunner::with_binary("/nonexistent/binary");
+        let path = PathBuf::from("model.gguf");
+        let output = runner.profile_ci(&path, None, None, 1, 1);
+        assert!(!output.success);
+    }
+
+    #[test]
+    fn test_real_runner_diff_tensors_json() {
+        let runner = RealCommandRunner::with_binary("/nonexistent/binary");
+        let a = PathBuf::from("a.gguf");
+        let b = PathBuf::from("b.apr");
+        let output = runner.diff_tensors(&a, &b, true);
+        assert!(!output.success);
+    }
+
+    #[test]
+    fn test_real_runner_diff_tensors_text() {
+        let runner = RealCommandRunner::with_binary("/nonexistent/binary");
+        let a = PathBuf::from("a.gguf");
+        let b = PathBuf::from("b.apr");
+        let output = runner.diff_tensors(&a, &b, false);
+        assert!(!output.success);
+    }
+
+    #[test]
+    fn test_real_runner_compare_inference() {
+        let runner = RealCommandRunner::with_binary("/nonexistent/binary");
+        let a = PathBuf::from("a.gguf");
+        let b = PathBuf::from("b.apr");
+        let output = runner.compare_inference(&a, &b, "prompt", 10, 1e-5);
+        assert!(!output.success);
     }
 }

@@ -3330,4 +3330,207 @@ test_matrix:
         let result = executor.execute_profile();
         assert_eq!(result.gate_id, "F-PROFILE-001");
     }
+
+    #[test]
+    fn test_tool_executor_profile_ci_feature_unavailable() {
+        let mock_runner = MockCommandRunner::new().with_profile_ci_unavailable();
+        let executor = ToolExecutor::with_runner(
+            "/test/model.gguf".to_string(),
+            false,
+            60_000,
+            Arc::new(mock_runner),
+        );
+
+        let result = executor.execute_profile_ci();
+
+        // When feature is unavailable, should return exit code -2
+        assert!(!result.passed);
+        assert_eq!(result.exit_code, -2);
+        assert!(result.stderr.contains("Feature not available"));
+        assert_eq!(result.gate_id, "F-PROFILE-006");
+    }
+
+    #[test]
+    fn test_tool_executor_profile_ci_assertion_unavailable() {
+        let mock_runner = MockCommandRunner::new().with_profile_ci_unavailable();
+        let executor = ToolExecutor::with_runner(
+            "/test/model.gguf".to_string(),
+            false,
+            60_000,
+            Arc::new(mock_runner),
+        );
+
+        let result = executor.execute_profile_ci_assertion_failure();
+
+        // When feature is unavailable, should indicate feature not available
+        assert!(!result.passed);
+        assert_eq!(result.exit_code, -2);
+        assert_eq!(result.gate_id, "F-PROFILE-007");
+    }
+
+    #[test]
+    fn test_tool_executor_profile_ci_p99_unavailable() {
+        let mock_runner = MockCommandRunner::new().with_profile_ci_unavailable();
+        let executor = ToolExecutor::with_runner(
+            "/test/model.gguf".to_string(),
+            false,
+            60_000,
+            Arc::new(mock_runner),
+        );
+
+        let result = executor.execute_profile_ci_p99();
+
+        // When feature is unavailable, should indicate feature not available
+        assert!(!result.passed);
+        assert_eq!(result.exit_code, -2);
+        assert_eq!(result.gate_id, "F-PROFILE-008");
+    }
+
+    #[test]
+    fn test_tool_executor_inspect_failure() {
+        let mock_runner = MockCommandRunner::new().with_inspect_failure();
+        let executor = ToolExecutor::with_runner(
+            "/test/model.gguf".to_string(),
+            false,
+            60_000,
+            Arc::new(mock_runner),
+        );
+
+        let result = executor.execute_inspect();
+
+        assert!(!result.passed);
+        assert_eq!(result.exit_code, 1);
+    }
+
+    #[test]
+    fn test_tool_executor_validate_failure() {
+        let mock_runner = MockCommandRunner::new().with_validate_failure();
+        let executor = ToolExecutor::with_runner(
+            "/test/model.gguf".to_string(),
+            false,
+            60_000,
+            Arc::new(mock_runner),
+        );
+
+        let result = executor.execute_validate();
+
+        assert!(!result.passed);
+        assert_eq!(result.exit_code, 1);
+    }
+
+    #[test]
+    fn test_tool_executor_bench_failure() {
+        let mock_runner = MockCommandRunner::new().with_bench_failure();
+        let executor = ToolExecutor::with_runner(
+            "/test/model.gguf".to_string(),
+            false,
+            60_000,
+            Arc::new(mock_runner),
+        );
+
+        let result = executor.execute_bench();
+
+        assert!(!result.passed);
+        assert_eq!(result.exit_code, 1);
+    }
+
+    #[test]
+    fn test_tool_executor_check_failure() {
+        let mock_runner = MockCommandRunner::new().with_check_failure();
+        let executor = ToolExecutor::with_runner(
+            "/test/model.gguf".to_string(),
+            false,
+            60_000,
+            Arc::new(mock_runner),
+        );
+
+        let result = executor.execute_check();
+
+        assert!(!result.passed);
+        assert_eq!(result.exit_code, 1);
+    }
+
+    #[test]
+    fn test_tool_executor_profile_failure() {
+        let mock_runner = MockCommandRunner::new().with_profile_failure();
+        let executor = ToolExecutor::with_runner(
+            "/test/model.gguf".to_string(),
+            false,
+            60_000,
+            Arc::new(mock_runner),
+        );
+
+        let result = executor.execute_profile();
+
+        assert!(!result.passed);
+        assert_eq!(result.exit_code, 1);
+    }
+
+    #[test]
+    fn test_tool_executor_trace_failure() {
+        let mock_runner = MockCommandRunner::new().with_inference_failure();
+        let executor = ToolExecutor::with_runner(
+            "/test/model.gguf".to_string(),
+            false,
+            60_000,
+            Arc::new(mock_runner),
+        );
+
+        let result = executor.execute_trace("layer");
+
+        assert!(!result.passed);
+        assert_eq!(result.exit_code, 1);
+    }
+
+    #[test]
+    fn test_tool_executor_profile_ci_passes_with_metrics() {
+        // Test that profile CI passes when output contains metrics
+        let mock_runner = MockCommandRunner::new().with_tps(100.0);
+        let executor = ToolExecutor::with_runner(
+            "/test/model.gguf".to_string(),
+            false,
+            60_000,
+            Arc::new(mock_runner),
+        );
+
+        let result = executor.execute_profile_ci();
+
+        assert!(result.passed);
+        assert!(result.stdout.contains("throughput"));
+    }
+
+    #[test]
+    fn test_tool_executor_with_no_gpu_true() {
+        let mock_runner = MockCommandRunner::new();
+        let executor = ToolExecutor::with_runner(
+            "/test/model.gguf".to_string(),
+            true, // no_gpu = true
+            30_000,
+            Arc::new(mock_runner),
+        );
+
+        // Just verify executor is created correctly
+        let debug_str = format!("{executor:?}");
+        assert!(debug_str.contains("no_gpu: true"));
+    }
+
+    #[test]
+    fn test_tool_executor_execute_trace_levels() {
+        let mock_runner = MockCommandRunner::new();
+        let executor = ToolExecutor::with_runner(
+            "/test/model.gguf".to_string(),
+            false,
+            60_000,
+            Arc::new(mock_runner),
+        );
+
+        let result_layer = executor.execute_trace("layer");
+        assert!(result_layer.tool.contains("trace-layer"));
+
+        let result_op = executor.execute_trace("op");
+        assert!(result_op.tool.contains("trace-op"));
+
+        let result_tensor = executor.execute_trace("tensor");
+        assert!(result_tensor.tool.contains("trace-tensor"));
+    }
 }
