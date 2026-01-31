@@ -2,7 +2,7 @@ model_id,family,parameters,size_category,status,mqs_score,grade,certified_tier,l
 Qwen/Qwen2.5-Coder-0.5B-Instruct,qwen-coder,0.5B,tiny,PROVISIONAL,800,B,mvp,2026-01-31T18:11:25.267738208+00:00,true,true,true,true,1.6,270.5,,,,
 Qwen/Qwen2.5-Coder-1.5B-Instruct,qwen-coder,1.5B,small,PROVISIONAL,800,B,mvp,2026-01-31T18:13:07.750694520+00:00,true,true,true,true,16.5,115.4,,,,
 Qwen/Qwen2.5-Coder-3B-Instruct,qwen-coder,3B,small,PROVISIONAL,800,B,mvp,2026-01-31T18:13:59.940780415+00:00,true,true,true,true,10.5,66.9,,,,
-Qwen/Qwen2.5-Coder-7B-Instruct,qwen-coder,7B,medium,PROVISIONAL,800,B,mvp,2026-01-31T17:23:14.875265018+00:00,true,true,true,true,,,,,,
+Qwen/Qwen2.5-Coder-7B-Instruct,qwen-coder,7B,medium,PROVISIONAL,800,B,mvp,2026-01-31T18:15:34.576935939+00:00,true,true,true,true,7.7,32.3,,,,
 Qwen/Qwen2.5-Coder-14B-Instruct,qwen-coder,14B,large,PROVISIONAL,800,B,mvp,2026-01-31T17:23:14.876194636+00:00,true,true,true,true,,,,,,
 Qwen/Qwen2.5-Coder-32B-Instruct,qwen-coder,32B,xlarge,PROVISIONAL,800,B,mvp,2026-01-31T17:23:14.877176493+00:00,true,true,true,true,,,,,,
 meta-llama/Llama-3.2-1B-Instruct,llama,1B,small,PENDING,0,-,none,2026-01-31T00:00:00+00:00,false,false,false,false,,,,,,

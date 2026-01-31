@@ -76,7 +76,7 @@ We don't test to pass—we **test to fail**. No amount of passing tests proves c
 ## Model Certifications
 
 <!-- CERTIFICATION_TABLE_START -->
-**Certification Summary** (updated: 2026-01-31 18:14 UTC)
+**Certification Summary** (updated: 2026-01-31 18:15 UTC)
 
 | Status | Count |
 |--------|-------|
@@ -98,7 +98,7 @@ We don't test to pass—we **test to fail**. No amount of passing tests proves c
 | [Qwen2.5-Coder-0.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-0.5B-Instruct) | qwen-coder | 0.5B | ![provisional](https://img.shields.io/badge/PROVISIONAL-yellow) | 800 | B | ✓ | 1.6 | 270.5 | - | - | - | - |
 | [Qwen2.5-Coder-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct) | qwen-coder | 1.5B | ![provisional](https://img.shields.io/badge/PROVISIONAL-yellow) | 800 | B | ✓ | 16.5 | 115.4 | - | - | - | - |
 | [Qwen2.5-Coder-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-3B-Instruct) | qwen-coder | 3B | ![provisional](https://img.shields.io/badge/PROVISIONAL-yellow) | 800 | B | ✓ | 10.5 | 66.9 | - | - | - | - |
-| [Qwen2.5-Coder-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct) | qwen-coder | 7B | ![provisional](https://img.shields.io/badge/PROVISIONAL-yellow) | 800 | B | ✓ | - | - | - | - | - | - |
+| [Qwen2.5-Coder-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct) | qwen-coder | 7B | ![provisional](https://img.shields.io/badge/PROVISIONAL-yellow) | 800 | B | ✓ | 7.7 | 32.3 | - | - | - | - |
 | [Qwen2.5-Coder-14B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct) | qwen-coder | 14B | ![provisional](https://img.shields.io/badge/PROVISIONAL-yellow) | 800 | B | ✓ | - | - | - | - | - | - |
 | [Qwen2.5-Coder-32B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-32B-Instruct) | qwen-coder | 32B | ![provisional](https://img.shields.io/badge/PROVISIONAL-yellow) | 800 | B | ✓ | - | - | - | - | - | - |
 <!-- CERTIFICATION_TABLE_END -->
