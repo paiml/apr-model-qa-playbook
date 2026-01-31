@@ -1,6 +1,6 @@
 model_id,family,parameters,size_category,status,mqs_score,grade,certified_tier,last_certified,g1,g2,g3,g4,tps_gguf_cpu,tps_gguf_gpu,tps_apr_cpu,tps_apr_gpu,tps_st_cpu,tps_st_gpu
 Qwen/Qwen2.5-Coder-0.5B-Instruct,qwen-coder,0.5B,tiny,PROVISIONAL,800,B,mvp,2026-01-31T18:11:25.267738208+00:00,true,true,true,true,1.6,270.5,,,,
-Qwen/Qwen2.5-Coder-1.5B-Instruct,qwen-coder,1.5B,small,PROVISIONAL,800,B,mvp,2026-01-31T17:41:14.892140860+00:00,true,true,true,true,21.0,,,,,
+Qwen/Qwen2.5-Coder-1.5B-Instruct,qwen-coder,1.5B,small,PROVISIONAL,800,B,mvp,2026-01-31T18:13:07.750694520+00:00,true,true,true,true,16.5,115.4,,,,
 Qwen/Qwen2.5-Coder-3B-Instruct,qwen-coder,3B,small,PROVISIONAL,800,B,mvp,2026-01-31T17:41:34.910363186+00:00,true,true,true,true,13.2,,,,,
 Qwen/Qwen2.5-Coder-7B-Instruct,qwen-coder,7B,medium,PROVISIONAL,800,B,mvp,2026-01-31T17:23:14.875265018+00:00,true,true,true,true,,,,,,
 Qwen/Qwen2.5-Coder-14B-Instruct,qwen-coder,14B,large,PROVISIONAL,800,B,mvp,2026-01-31T17:23:14.876194636+00:00,true,true,true,true,,,,,,

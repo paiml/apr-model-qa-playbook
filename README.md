@@ -76,7 +76,7 @@ We don't test to pass—we **test to fail**. No amount of passing tests proves c
 ## Model Certifications
 
 <!-- CERTIFICATION_TABLE_START -->
-**Certification Summary** (updated: 2026-01-31 18:11 UTC)
+**Certification Summary** (updated: 2026-01-31 18:13 UTC)
 
 | Status | Count |
 |--------|-------|
@@ -96,7 +96,7 @@ We don't test to pass—we **test to fail**. No amount of passing tests proves c
 | [Mistral-7B-Instruct-v0.3](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.3) | mistral | 7B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - |
 | [Phi-3-mini-4k-instruct](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct) | phi | 3.8B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - |
 | [Qwen2.5-Coder-0.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-0.5B-Instruct) | qwen-coder | 0.5B | ![provisional](https://img.shields.io/badge/PROVISIONAL-yellow) | 800 | B | ✓ | 1.6 | 270.5 | - | - | - | - |
-| [Qwen2.5-Coder-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct) | qwen-coder | 1.5B | ![provisional](https://img.shields.io/badge/PROVISIONAL-yellow) | 800 | B | ✓ | 21.0 | - | - | - | - | - |
+| [Qwen2.5-Coder-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct) | qwen-coder | 1.5B | ![provisional](https://img.shields.io/badge/PROVISIONAL-yellow) | 800 | B | ✓ | 16.5 | 115.4 | - | - | - | - |
 | [Qwen2.5-Coder-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-3B-Instruct) | qwen-coder | 3B | ![provisional](https://img.shields.io/badge/PROVISIONAL-yellow) | 800 | B | ✓ | 13.2 | - | - | - | - | - |
 | [Qwen2.5-Coder-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct) | qwen-coder | 7B | ![provisional](https://img.shields.io/badge/PROVISIONAL-yellow) | 800 | B | ✓ | - | - | - | - | - | - |
 | [Qwen2.5-Coder-14B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct) | qwen-coder | 14B | ![provisional](https://img.shields.io/badge/PROVISIONAL-yellow) | 800 | B | ✓ | - | - | - | - | - | - |
