@@ -60,7 +60,7 @@ coverage-full:
 coverage-check:
 	@echo "Checking PMAT coverage compliance (>= 95%)..."
 	@cargo llvm-cov --workspace --ignore-filename-regex 'apr-qa-cli' 2>&1 | \
-		grep "^TOTAL" | awk '{print $$NF}' | tr -d '%' | \
+		grep "^TOTAL" | awk '{print $$10}' | tr -d '%' | \
 		xargs -I{} sh -c 'if [ $$(echo "{} >= 95" | bc) -eq 1 ]; then \
 			echo "✓ Coverage: {}% (PMAT compliant)"; \
 		else \
