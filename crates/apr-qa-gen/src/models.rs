@@ -473,4 +473,89 @@ mod tests {
         set.insert(ModelId::new("org1", "model1")); // duplicate
         assert_eq!(set.len(), 2);
     }
+
+    // --- Mutation-killing tests for hf_repo ---
+    #[test]
+    fn test_hf_repo_format_with_slash() {
+        let id = ModelId::new("MyOrg", "MyModel");
+        let repo = id.hf_repo();
+        assert!(!repo.is_empty());
+        assert!(repo.contains('/'));
+        assert_eq!(repo, "MyOrg/MyModel");
+        assert!(repo.starts_with("MyOrg"));
+        assert!(repo.ends_with("MyModel"));
+    }
+
+    #[test]
+    fn test_hf_repo_with_variant_format() {
+        let id = ModelId::with_variant("Org", "Model", "Variant");
+        let repo = id.hf_repo();
+        assert!(!repo.is_empty());
+        assert!(repo.contains('/'));
+        assert!(repo.contains('-'));
+        assert_eq!(repo, "Org/Model-Variant");
+    }
+
+    #[test]
+    fn test_hf_repo_variant_none_uses_name_only() {
+        let id = ModelId::new("X", "Y");
+        assert!(id.variant.is_none());
+        assert_eq!(id.hf_repo(), "X/Y");
+        assert!(!id.hf_repo().contains('-'));
+    }
+
+    #[test]
+    fn test_hf_repo_variant_some_appends_dash() {
+        let id = ModelId::with_variant("X", "Y", "Z");
+        assert!(id.variant.is_some());
+        assert_eq!(id.hf_repo(), "X/Y-Z");
+        assert!(id.hf_repo().contains('-'));
+    }
+
+    // --- Mutation-killing tests for SizeCategory memory calculations ---
+    #[test]
+    fn test_size_memory_f32_nonzero() {
+        // Verify calculations don't return zero for all
+        assert!(SizeCategory::Tiny.memory_f32_gb() >= 1);
+        assert!(SizeCategory::Small.memory_f32_gb() > SizeCategory::Tiny.memory_f32_gb());
+        assert!(SizeCategory::Large.memory_f32_gb() > SizeCategory::Medium.memory_f32_gb());
+    }
+
+    #[test]
+    fn test_size_memory_q4k_ordering() {
+        // Larger models should have more memory
+        assert!(SizeCategory::Huge.memory_q4k_gb() > SizeCategory::XLarge.memory_q4k_gb());
+        assert!(SizeCategory::XLarge.memory_q4k_gb() > SizeCategory::Large.memory_q4k_gb());
+    }
+
+    #[test]
+    fn test_approx_params_ordering() {
+        // Strict ordering from tiny to huge
+        let tiny = SizeCategory::Tiny.approx_params();
+        let small = SizeCategory::Small.approx_params();
+        let medium = SizeCategory::Medium.approx_params();
+        let large = SizeCategory::Large.approx_params();
+        let xlarge = SizeCategory::XLarge.approx_params();
+        let huge = SizeCategory::Huge.approx_params();
+
+        assert!(tiny < small);
+        assert!(small < medium);
+        assert!(medium < large);
+        assert!(large < xlarge);
+        assert!(xlarge < huge);
+    }
+
+    // --- Mutation-killing tests for ModelCapabilities ---
+    #[test]
+    fn test_capabilities_default_values_explicit() {
+        let caps = ModelCapabilities::default();
+        // Explicitly test all boolean values
+        assert!(caps.arithmetic, "arithmetic should be true");
+        assert!(
+            caps.instruction_following,
+            "instruction_following should be true"
+        );
+        assert!(!caps.code_completion, "code_completion should be false");
+        assert!(caps.multi_turn, "multi_turn should be true");
+    }
 }

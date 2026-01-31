@@ -1096,4 +1096,199 @@ mod tests {
         let cmd = scenario.to_command("model.gguf");
         assert!(cmd.contains("--trace-level layer"));
     }
+
+    // --- Mutation-killing tests for mqs_category return values ---
+    #[test]
+    fn test_mqs_category_run_cpu_is_a1() {
+        let model = ModelId::new("t", "m");
+        let s = QaScenario::new(
+            model,
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "x".into(),
+            0,
+        );
+        assert_eq!(s.mqs_category(), "A1");
+        assert_ne!(s.mqs_category(), "A2");
+        assert_ne!(s.mqs_category(), "A3");
+    }
+
+    #[test]
+    fn test_mqs_category_run_gpu_is_a2() {
+        let model = ModelId::new("t", "m");
+        let s = QaScenario::new(
+            model,
+            Modality::Run,
+            Backend::Gpu,
+            Format::Gguf,
+            "x".into(),
+            0,
+        );
+        assert_eq!(s.mqs_category(), "A2");
+        assert_ne!(s.mqs_category(), "A1");
+    }
+
+    #[test]
+    fn test_mqs_category_chat_cpu_is_a3() {
+        let model = ModelId::new("t", "m");
+        let s = QaScenario::new(
+            model,
+            Modality::Chat,
+            Backend::Cpu,
+            Format::Gguf,
+            "x".into(),
+            0,
+        );
+        assert_eq!(s.mqs_category(), "A3");
+        assert_ne!(s.mqs_category(), "A4");
+    }
+
+    #[test]
+    fn test_mqs_category_chat_gpu_is_a4() {
+        let model = ModelId::new("t", "m");
+        let s = QaScenario::new(
+            model,
+            Modality::Chat,
+            Backend::Gpu,
+            Format::Gguf,
+            "x".into(),
+            0,
+        );
+        assert_eq!(s.mqs_category(), "A4");
+        assert_ne!(s.mqs_category(), "A3");
+    }
+
+    #[test]
+    fn test_mqs_category_serve_cpu_is_a5() {
+        let model = ModelId::new("t", "m");
+        let s = QaScenario::new(
+            model,
+            Modality::Serve,
+            Backend::Cpu,
+            Format::Gguf,
+            "x".into(),
+            0,
+        );
+        assert_eq!(s.mqs_category(), "A5");
+        assert_ne!(s.mqs_category(), "A6");
+    }
+
+    #[test]
+    fn test_mqs_category_serve_gpu_is_a6() {
+        let model = ModelId::new("t", "m");
+        let s = QaScenario::new(
+            model,
+            Modality::Serve,
+            Backend::Gpu,
+            Format::Gguf,
+            "x".into(),
+            0,
+        );
+        assert_eq!(s.mqs_category(), "A6");
+        assert_ne!(s.mqs_category(), "A5");
+    }
+
+    // --- Mutation-killing tests for Format::class return values ---
+    #[test]
+    fn test_format_class_gguf_is_char_a() {
+        let class = Format::Gguf.class();
+        assert_eq!(class, 'A');
+        assert_ne!(class, 'B');
+        assert_ne!(class, 'X');
+    }
+
+    #[test]
+    fn test_format_class_apr_is_char_a() {
+        let class = Format::Apr.class();
+        assert_eq!(class, 'A');
+        assert_ne!(class, 'B');
+    }
+
+    #[test]
+    fn test_format_class_safetensors_is_char_b() {
+        let class = Format::SafeTensors.class();
+        assert_eq!(class, 'B');
+        assert_ne!(class, 'A');
+    }
+
+    // --- Mutation-killing tests for escape_json ---
+    #[test]
+    fn test_escape_json_backslash_not_empty() {
+        let result = escape_json("a\\b");
+        assert!(!result.is_empty());
+        assert_eq!(result, "a\\\\b");
+        assert!(result.len() > "a\\b".len());
+    }
+
+    #[test]
+    fn test_escape_json_quote_not_empty() {
+        let result = escape_json("say \"hi\"");
+        assert!(!result.is_empty());
+        assert_eq!(result, "say \\\"hi\\\"");
+    }
+
+    #[test]
+    fn test_escape_json_newline_not_empty() {
+        let result = escape_json("line1\nline2");
+        assert!(!result.is_empty());
+        assert_eq!(result, "line1\\nline2");
+        assert!(!result.contains('\n'));
+    }
+
+    #[test]
+    fn test_escape_json_all_escapes_combined() {
+        let result = escape_json("a\\b\"c\nd");
+        assert_eq!(result, "a\\\\b\\\"c\\nd");
+    }
+
+    // --- Mutation-killing tests for escape_prompt ---
+    #[test]
+    fn test_escape_prompt_single_quote() {
+        let result = escape_prompt("it's");
+        assert!(!result.is_empty());
+        assert_eq!(result, "it'\\''s");
+        assert!(result.contains("'\\''"));
+    }
+
+    // --- Test that Backend::flag returns correct strings ---
+    #[test]
+    fn test_backend_cpu_flag_is_empty() {
+        let flag = Backend::Cpu.flag();
+        assert!(flag.is_empty());
+        assert_eq!(flag, "");
+    }
+
+    #[test]
+    fn test_backend_gpu_flag_is_gpu_option() {
+        let flag = Backend::Gpu.flag();
+        assert!(!flag.is_empty());
+        assert_eq!(flag, "--gpu");
+        assert!(flag.starts_with("--"));
+    }
+
+    // --- Test TraceLevel::value returns correct strings ---
+    #[test]
+    fn test_trace_level_none_value() {
+        assert_eq!(TraceLevel::None.value(), "none");
+        assert_ne!(TraceLevel::None.value(), "basic");
+    }
+
+    #[test]
+    fn test_trace_level_basic_value() {
+        assert_eq!(TraceLevel::Basic.value(), "basic");
+        assert_ne!(TraceLevel::Basic.value(), "none");
+    }
+
+    #[test]
+    fn test_trace_level_layer_value() {
+        assert_eq!(TraceLevel::Layer.value(), "layer");
+        assert_ne!(TraceLevel::Layer.value(), "payload");
+    }
+
+    #[test]
+    fn test_trace_level_payload_value() {
+        assert_eq!(TraceLevel::Payload.value(), "payload");
+        assert_ne!(TraceLevel::Payload.value(), "layer");
+    }
 }
