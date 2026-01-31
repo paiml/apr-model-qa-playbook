@@ -117,7 +117,8 @@ impl SizeCategory {
 
 /// Model certification record.
 ///
-/// Contains certification data for a single model including gateway status.
+/// Contains certification data for a single model including gateway status
+/// and throughput measurements per format.
 /// The four gateway bools (g1-g4) are required for the certification protocol.
 #[allow(clippy::struct_excessive_bools)]
 #[derive(Debug, Clone)]
@@ -148,6 +149,12 @@ pub struct ModelCertification {
     pub g3: bool,
     /// Gateway 4 (quality) status.
     pub g4: bool,
+    /// Throughput in tokens/sec for GGUF format.
+    pub tps_gguf: Option<f64>,
+    /// Throughput in tokens/sec for APR format.
+    pub tps_apr: Option<f64>,
+    /// Throughput in tokens/sec for `SafeTensors` format.
+    pub tps_safetensors: Option<f64>,
 }
 
 impl ModelCertification {
@@ -208,31 +215,12 @@ pub fn parse_csv(content: &str) -> Result<Vec<ModelCertification>> {
         return Ok(models);
     };
 
-    // Validate header
-    let expected_fields = [
-        "model_id",
-        "family",
-        "parameters",
-        "size_category",
-        "status",
-        "mqs_score",
-        "grade",
-        "certified_tier",
-        "last_certified",
-        "g1",
-        "g2",
-        "g3",
-        "g4",
-    ];
+    // Validate header (minimum 13 fields for backwards compatibility, 16 with tps)
     let header_fields: Vec<&str> = header.split(',').collect();
-    if header_fields.len() < expected_fields.len() {
+    if header_fields.len() < 13 {
         return Err(CertifyError::CsvParse {
             line: 1,
-            message: format!(
-                "expected {} fields, got {}",
-                expected_fields.len(),
-                header_fields.len()
-            ),
+            message: format!("expected at least 13 fields, got {}", header_fields.len()),
         });
     }
 
@@ -245,13 +233,18 @@ pub fn parse_csv(content: &str) -> Result<Vec<ModelCertification>> {
         if fields.len() < 13 {
             return Err(CertifyError::CsvParse {
                 line: line_num + 1,
-                message: format!("expected 13 fields, got {}", fields.len()),
+                message: format!("expected at least 13 fields, got {}", fields.len()),
             });
         }
 
         let last_certified = DateTime::parse_from_rfc3339(fields[8])
             .ok()
             .map(|dt| dt.with_timezone(&Utc));
+
+        // Parse optional tps fields (backwards compatible)
+        let tps_gguf = fields.get(13).and_then(|s| s.parse().ok());
+        let tps_apr = fields.get(14).and_then(|s| s.parse().ok());
+        let tps_safetensors = fields.get(15).and_then(|s| s.parse().ok());
 
         models.push(ModelCertification {
             model_id: fields[0].to_string(),
@@ -267,6 +260,9 @@ pub fn parse_csv(content: &str) -> Result<Vec<ModelCertification>> {
             g2: fields[10].to_lowercase() == "true",
             g3: fields[11].to_lowercase() == "true",
             g4: fields[12].to_lowercase() == "true",
+            tps_gguf,
+            tps_apr,
+            tps_safetensors,
         });
     }
 
@@ -313,9 +309,15 @@ pub fn generate_summary(models: &[ModelCertification], timestamp: &str) -> Strin
 pub fn generate_table(models: &[ModelCertification]) -> String {
     let mut lines = Vec::new();
 
-    // Header
-    lines.push("| Model | Family | Size | Status | MQS | Grade | G1 | G2 | G3 | G4 |".to_string());
-    lines.push("|-------|--------|------|--------|-----|-------|----|----|----|----|".to_string());
+    // Header with tok/s columns
+    lines.push(
+        "| Model | Family | Size | Status | MQS | Grade | G1 | G2 | G3 | G4 | GGUF | APR | ST |"
+            .to_string(),
+    );
+    lines.push(
+        "|-------|--------|------|--------|-----|-------|----|----|----|----|----|-----|-----|"
+            .to_string(),
+    );
 
     // Sort by family, then by parameter count
     let mut sorted: Vec<_> = models.iter().collect();
@@ -333,8 +335,19 @@ pub fn generate_table(models: &[ModelCertification]) -> String {
         let g3 = ModelCertification::gateway_symbol(m.g3, m.status);
         let g4 = ModelCertification::gateway_symbol(m.g4, m.status);
 
+        // Format tok/s values
+        let tps_gguf = m
+            .tps_gguf
+            .map_or_else(|| "-".to_string(), |v| format!("{v:.1}"));
+        let tps_apr = m
+            .tps_apr
+            .map_or_else(|| "-".to_string(), |v| format!("{v:.1}"));
+        let tps_st = m
+            .tps_safetensors
+            .map_or_else(|| "-".to_string(), |v| format!("{v:.1}"));
+
         lines.push(format!(
-            "| {} | {} | {} | {} | {} | {} | {} | {} | {} | {} |",
+            "| {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} |",
             m.markdown_link(),
             m.family,
             m.parameters,
@@ -344,7 +357,10 @@ pub fn generate_table(models: &[ModelCertification]) -> String {
             g1,
             g2,
             g3,
-            g4
+            g4,
+            tps_gguf,
+            tps_apr,
+            tps_st
         ));
     }
 
@@ -363,9 +379,9 @@ pub const END_MARKER: &str = "<!-- CERTIFICATION_TABLE_END -->";
 pub fn write_csv(models: &[ModelCertification]) -> String {
     let mut lines = Vec::new();
 
-    // Header
+    // Header with tps columns
     lines.push(
-        "model_id,family,parameters,size_category,status,mqs_score,grade,certified_tier,last_certified,g1,g2,g3,g4"
+        "model_id,family,parameters,size_category,status,mqs_score,grade,certified_tier,last_certified,g1,g2,g3,g4,tps_gguf,tps_apr,tps_safetensors"
             .to_string(),
     );
 
@@ -381,8 +397,15 @@ pub fn write_csv(models: &[ModelCertification]) -> String {
             .last_certified
             .map_or_else(|| "2026-01-31T00:00:00Z".to_string(), |dt| dt.to_rfc3339());
 
+        // Format tps values (empty string for None)
+        let tps_gguf = m.tps_gguf.map_or(String::new(), |v| format!("{v:.1}"));
+        let tps_apr = m.tps_apr.map_or(String::new(), |v| format!("{v:.1}"));
+        let tps_st = m
+            .tps_safetensors
+            .map_or(String::new(), |v| format!("{v:.1}"));
+
         lines.push(format!(
-            "{},{},{},{},{},{},{},{},{},{},{},{},{}",
+            "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}",
             m.model_id,
             m.family,
             m.parameters,
@@ -395,7 +418,10 @@ pub fn write_csv(models: &[ModelCertification]) -> String {
             m.g1,
             m.g2,
             m.g3,
-            m.g4
+            m.g4,
+            tps_gguf,
+            tps_apr,
+            tps_st
         ));
     }
 
@@ -585,10 +611,10 @@ pub fn update_readme(readme: &str, table_content: &str) -> Result<String> {
 mod tests {
     use super::*;
 
-    const SAMPLE_CSV: &str = r"model_id,family,parameters,size_category,status,mqs_score,grade,certified_tier,last_certified,g1,g2,g3,g4
-Qwen/Qwen2.5-Coder-0.5B-Instruct,qwen-coder,0.5B,tiny,PENDING,0,-,none,2026-01-31T00:00:00Z,false,false,false,false
-Qwen/Qwen2.5-Coder-1.5B-Instruct,qwen-coder,1.5B,small,CERTIFIED,920,A,deep,2026-01-31T12:00:00Z,true,true,true,true
-meta-llama/Llama-3.2-1B-Instruct,llama,1B,small,BLOCKED,450,F,smoke,2026-01-31T00:00:00Z,true,false,false,false";
+    const SAMPLE_CSV: &str = r"model_id,family,parameters,size_category,status,mqs_score,grade,certified_tier,last_certified,g1,g2,g3,g4,tps_gguf,tps_apr,tps_safetensors
+Qwen/Qwen2.5-Coder-0.5B-Instruct,qwen-coder,0.5B,tiny,PENDING,0,-,none,2026-01-31T00:00:00Z,false,false,false,false,,,
+Qwen/Qwen2.5-Coder-1.5B-Instruct,qwen-coder,1.5B,small,CERTIFIED,920,A,deep,2026-01-31T12:00:00Z,true,true,true,true,25.5,22.3,18.1
+meta-llama/Llama-3.2-1B-Instruct,llama,1B,small,BLOCKED,450,F,smoke,2026-01-31T00:00:00Z,true,false,false,false,12.0,,";
 
     #[test]
     fn test_parse_csv_valid() {
@@ -686,6 +712,9 @@ meta-llama/Llama-3.2-1B-Instruct,llama,1B,small,BLOCKED,450,F,smoke,2026-01-31T0
             g2: false,
             g3: false,
             g4: false,
+            tps_gguf: None,
+            tps_apr: None,
+            tps_safetensors: None,
         };
         assert_eq!(model.short_name(), "Qwen2.5-Coder-1.5B-Instruct");
     }
@@ -706,6 +735,9 @@ meta-llama/Llama-3.2-1B-Instruct,llama,1B,small,BLOCKED,450,F,smoke,2026-01-31T0
             g2: false,
             g3: false,
             g4: false,
+            tps_gguf: None,
+            tps_apr: None,
+            tps_safetensors: None,
         };
         assert_eq!(
             model.hf_url(),
@@ -729,6 +761,9 @@ meta-llama/Llama-3.2-1B-Instruct,llama,1B,small,BLOCKED,450,F,smoke,2026-01-31T0
             g2: false,
             g3: false,
             g4: false,
+            tps_gguf: None,
+            tps_apr: None,
+            tps_safetensors: None,
         };
         assert!((model.param_count() - 1.5).abs() < f64::EPSILON);
 
@@ -886,6 +921,9 @@ More content";
             g2: false,
             g3: false,
             g4: false,
+            tps_gguf: None,
+            tps_apr: None,
+            tps_safetensors: None,
         };
         assert_eq!(model.short_name(), "model-without-org");
     }
@@ -906,6 +944,9 @@ More content";
             g2: false,
             g3: false,
             g4: false,
+            tps_gguf: None,
+            tps_apr: None,
+            tps_safetensors: None,
         };
         assert_eq!(
             model.markdown_link(),
