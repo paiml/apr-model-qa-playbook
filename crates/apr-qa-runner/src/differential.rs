@@ -523,7 +523,6 @@ pub fn run_bench_throughput(
     let mut cmd = Command::new(apr_binary);
     cmd.arg("bench")
         .arg(model_path)
-        .arg("--fast")
         .arg("--warmup")
         .arg(warmup.to_string())
         .arg("--iterations")
@@ -784,9 +783,10 @@ pub fn run_six_column_profile(
         profile.tps_gguf_gpu = Some(result.throughput_tps);
     }
 
-    // APR and SafeTensors benchmarking disabled until paiml/aprender#191 is resolved
-    // apr bench --fast only supports GGUF format currently
-    let _ = (apr_conv, st_conv, apr_path, st_path); // suppress unused warnings
+    // APR/SafeTensors benchmarking disabled for MVP - too slow (~0.5 tok/s)
+    // APR format inference needs optimization before practical use
+    // GGUF remains the fast path for production inference
+    let _ = (apr_conv, st_conv, apr_path, st_path);
 
     profile.total_duration_ms = start.elapsed().as_millis() as u64;
     Ok(profile)
