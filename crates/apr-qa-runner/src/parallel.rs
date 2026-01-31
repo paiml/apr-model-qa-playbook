@@ -765,4 +765,129 @@ mod tests {
         };
         assert_eq!(config.mode, ExecutionMode::Subprocess);
     }
+
+    #[test]
+    fn test_parallel_result_stopped_early() {
+        let result = ParallelResult {
+            evidence: vec![],
+            passed: 3,
+            failed: 1,
+            skipped: 6,
+            duration_ms: 500,
+            stopped_early: true,
+        };
+        assert!(result.stopped_early);
+        assert_eq!(result.skipped, 6);
+    }
+
+    #[test]
+    fn test_parallel_empty_scenarios() {
+        let executor = ParallelExecutor::default();
+        let result = executor.execute(&[]);
+        assert_eq!(result.evidence.len(), 0);
+        assert_eq!(result.passed, 0);
+        assert_eq!(result.failed, 0);
+    }
+
+    #[test]
+    fn test_evidence_ext_with_stderr_none() {
+        let scenario = test_scenario();
+        let evidence = Evidence::corroborated("F-TEST-001", scenario, "output", 100);
+        let with_stderr = evidence.with_stderr(None);
+        assert!(with_stderr.stderr.is_none());
+    }
+
+    #[test]
+    fn test_parallel_config_single_worker() {
+        let config = ParallelConfig {
+            num_workers: 1,
+            ..Default::default()
+        };
+        let executor = ParallelExecutor::new(config);
+        let scenarios = test_scenarios(3);
+        let result = executor.execute(&scenarios);
+        assert_eq!(result.evidence.len(), 3);
+    }
+
+    #[test]
+    fn test_simulate_execution_addition_with_space() {
+        let executor = ParallelExecutor::default();
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "What is 2 + 2?".to_string(),
+            42,
+        );
+
+        let output = executor.simulate_execution(&scenario);
+        assert!(output.contains("4"));
+    }
+
+    #[test]
+    fn test_simulate_execution_division() {
+        let executor = ParallelExecutor::default();
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "Calculate 100/4".to_string(),
+            42,
+        );
+
+        let output = executor.simulate_execution(&scenario);
+        // Generic response for non-matched prompts
+        assert!(output.contains("42") || output.contains("assistant"));
+    }
+
+    #[test]
+    fn test_estimate_tokens_longer_text() {
+        // 24 characters should be ~6 tokens
+        let tokens = estimate_tokens("This is a longer string.");
+        assert!(tokens >= 5);
+    }
+
+    #[test]
+    fn test_parallel_batch_single_scenario() {
+        let executor = ParallelExecutor::default();
+        let scenarios = vec![test_scenario()];
+        let result = executor.execute(&scenarios);
+        assert_eq!(result.evidence.len(), 1);
+    }
+
+    #[test]
+    fn test_parallel_result_all_fields() {
+        let scenario = test_scenario();
+        let evidence = Evidence::corroborated("F-TEST-001", scenario, "output", 50);
+
+        let result = ParallelResult {
+            evidence: vec![evidence],
+            passed: 1,
+            failed: 0,
+            skipped: 0,
+            duration_ms: 100,
+            stopped_early: false,
+        };
+
+        assert_eq!(result.evidence.len(), 1);
+        assert_eq!(result.duration_ms, 100);
+    }
+
+    #[test]
+    fn test_parallel_config_all_fields() {
+        let config = ParallelConfig {
+            num_workers: 8,
+            timeout_ms: 30_000,
+            mode: ExecutionMode::Simulate,
+            model_path: "/custom/path/model.gguf".to_string(),
+            stop_on_failure: true,
+        };
+
+        assert_eq!(config.num_workers, 8);
+        assert_eq!(config.timeout_ms, 30_000);
+        assert!(config.stop_on_failure);
+        assert!(config.model_path.contains("custom"));
+    }
 }
