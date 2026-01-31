@@ -98,6 +98,19 @@ enum Commands {
         /// Dry run (show what would be certified without running)
         #[arg(long)]
         dry_run: bool,
+
+        /// Model cache directory (contains GGUF/APR/SafeTensors files)
+        /// Structure: <cache>/<model-name>/<format>/<file>
+        #[arg(long)]
+        model_cache: Option<PathBuf>,
+
+        /// Path to apr binary for real inference
+        #[arg(long, default_value = "apr")]
+        apr_binary: String,
+
+        /// Enable real subprocess execution (requires --model-cache)
+        #[arg(long)]
+        subprocess: bool,
     },
 
     /// Run a playbook
@@ -270,6 +283,7 @@ fn setup_signal_handler() {
     }
 }
 
+#[allow(clippy::too_many_lines)]
 fn main() {
     setup_signal_handler();
 
@@ -283,8 +297,21 @@ fn main() {
             models,
             output,
             dry_run,
+            model_cache,
+            apr_binary,
+            subprocess,
         } => {
-            run_certification(all, family, &tier, &models, &output, dry_run);
+            run_certification(
+                all,
+                family,
+                &tier,
+                &models,
+                &output,
+                dry_run,
+                model_cache,
+                &apr_binary,
+                subprocess,
+            );
         }
         Commands::Run {
             playbook,
@@ -819,6 +846,7 @@ fn run_tool_tests(
 }
 
 #[allow(clippy::too_many_lines)]
+#[allow(clippy::fn_params_excessive_bools)]
 fn run_certification(
     all: bool,
     family: Option<String>,
@@ -826,10 +854,14 @@ fn run_certification(
     model_ids: &[String],
     output_dir: &PathBuf,
     dry_run: bool,
+    model_cache: Option<PathBuf>,
+    apr_binary: &str,
+    subprocess: bool,
 ) {
     use apr_qa_certify::{
         CertificationTier, grade_from_tier, parse_csv, score_from_tier, status_from_tier, write_csv,
     };
+    use apr_qa_runner::run_profile_ci;
     use chrono::Utc;
 
     // Parse tier
@@ -841,9 +873,20 @@ fn run_certification(
         }
     };
 
+    // Validate subprocess requirements
+    if subprocess && model_cache.is_none() {
+        eprintln!("Error: --model-cache is required when using --subprocess mode");
+        std::process::exit(1);
+    }
+
     println!("=== APR Model Certification ===\n");
     println!("Tier: {tier_str}");
-    println!("Dry run: {dry_run}\n");
+    println!("Dry run: {dry_run}");
+    println!("Subprocess mode: {subprocess}");
+    if let Some(ref cache) = model_cache {
+        println!("Model cache: {}", cache.display());
+    }
+    println!();
 
     // Load current certification data
     let csv_path = std::path::Path::new("docs/certifications/models.csv");
@@ -995,6 +1038,68 @@ fn run_certification(
                 println!("  Grade: {grade}");
                 println!("  Status: {status}");
 
+                // Run profiling for tok/s if subprocess mode enabled
+                let mut tps_results: [(Option<f64>, Option<f64>); 3] =
+                    [(None, None), (None, None), (None, None)]; // [gguf, apr, st] × [cpu, gpu]
+
+                if subprocess {
+                    if let Some(ref cache) = model_cache {
+                        // Model cache structure: <cache>/<model-short-name>/<format>/<file>
+                        let model_dir = cache.join(short.to_lowercase().replace('.', "-"));
+
+                        // Format paths (convention: format subdir with model file)
+                        let formats = [
+                            ("gguf", model_dir.join("gguf")),
+                            ("apr", model_dir.join("apr")),
+                            ("safetensors", model_dir.join("safetensors")),
+                        ];
+
+                        for (idx, (fmt_name, fmt_dir)) in formats.iter().enumerate() {
+                            if !fmt_dir.exists() {
+                                continue;
+                            }
+
+                            // Find model file in format directory
+                            let model_file =
+                                std::fs::read_dir(fmt_dir).ok().and_then(|mut entries| {
+                                    entries.find_map(|e| {
+                                        e.ok().and_then(|entry| {
+                                            let path = entry.path();
+                                            if path.is_file() { Some(path) } else { None }
+                                        })
+                                    })
+                                });
+
+                            if let Some(model_path) = model_file {
+                                println!("  Profiling {fmt_name}: {}", model_path.display());
+
+                                // Profile CPU
+                                match run_profile_ci(
+                                    apr_binary,
+                                    &model_path,
+                                    Some(1.0),
+                                    None,
+                                    None,
+                                    1,
+                                    3,
+                                ) {
+                                    Ok(result) => {
+                                        tps_results[idx].0 = Some(result.throughput_tps);
+                                        println!("    CPU: {:.1} tok/s", result.throughput_tps);
+                                    }
+                                    Err(e) => {
+                                        eprintln!("    CPU profile failed: {e}");
+                                    }
+                                }
+
+                                // Profile GPU (TODO: need GPU-specific invocation)
+                                // For now, GPU profiling would require apr binary GPU support
+                                // tps_results[idx].1 = Some(gpu_result.throughput_tps);
+                            }
+                        }
+                    }
+                }
+
                 // Update certification record
                 if let Some(cert) = certifications.iter_mut().find(|c| c.model_id == *model_id) {
                     cert.mqs_score = raw_score;
@@ -1008,6 +1113,14 @@ fn run_certification(
                     cert.g2 = gw.get(1).is_some_and(|g| g.passed);
                     cert.g3 = gw.get(2).is_some_and(|g| g.passed);
                     cert.g4 = gw.get(3).is_some_and(|g| g.passed);
+
+                    // Set tok/s values from profiling
+                    cert.tps_gguf_cpu = tps_results[0].0;
+                    cert.tps_gguf_gpu = tps_results[0].1;
+                    cert.tps_apr_cpu = tps_results[1].0;
+                    cert.tps_apr_gpu = tps_results[1].1;
+                    cert.tps_st_cpu = tps_results[2].0;
+                    cert.tps_st_gpu = tps_results[2].1;
                 }
 
                 // Save evidence to model-specific directory
