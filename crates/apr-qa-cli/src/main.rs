@@ -859,7 +859,8 @@ fn run_certification(
     subprocess: bool,
 ) {
     use apr_qa_certify::{
-        CertificationTier, grade_from_tier, parse_csv, score_from_tier, status_from_tier, write_csv,
+        CertificationStatus, CertificationTier, grade_from_tier, parse_csv, score_from_tier,
+        status_from_tier, write_csv,
     };
     use chrono::Utc;
 
@@ -1140,10 +1141,23 @@ fn run_certification(
 
                 // Update certification record
                 if let Some(cert) = certifications.iter_mut().find(|c| c.model_id == *model_id) {
+                    // Check if assertions failed - if so, block certification
+                    let (final_status, final_grade, final_tier) =
+                        if profile.failed_assertions.is_empty() {
+                            (status, grade.to_string(), tier_str.to_string())
+                        } else {
+                            println!("  ❌ Certification BLOCKED by throughput assertions");
+                            (
+                                CertificationStatus::Blocked,
+                                "-".to_string(),
+                                "none".to_string(),
+                            )
+                        };
+
                     cert.mqs_score = raw_score;
-                    cert.grade = grade.to_string();
-                    cert.status = status;
-                    cert.certified_tier = tier_str.to_string();
+                    cert.grade = final_grade;
+                    cert.status = final_status;
+                    cert.certified_tier = final_tier;
                     cert.last_certified = Some(Utc::now());
                     // Set gateway status from MQS gateway results
                     let gw = &mqs.gateways;
