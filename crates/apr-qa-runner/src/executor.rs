@@ -491,10 +491,11 @@ impl Executor {
         &self,
         scenario: &QaScenario,
     ) -> (String, Option<String>, i32, Option<f64>) {
-        let model_path = self.config.model_path.as_deref().unwrap_or("model.gguf");
+        // Derive format-specific path from cache directory and scenario format
+        let model_path = self.get_format_model_path(scenario);
 
         let output = self.command_runner.run_inference(
-            Path::new(model_path),
+            Path::new(&model_path),
             &scenario.prompt,
             32,
             self.config.no_gpu,
@@ -519,7 +520,7 @@ impl Executor {
             )
         } else {
             let trace_output = self.command_runner.run_inference(
-                Path::new(model_path),
+                Path::new(&model_path),
                 &scenario.prompt,
                 32,
                 self.config.no_gpu,
@@ -538,6 +539,39 @@ impl Executor {
         };
 
         (generated_text, final_stderr, final_exit_code, tps)
+    }
+
+    /// Get the model path for a specific format from the cache directory
+    fn get_format_model_path(&self, scenario: &QaScenario) -> String {
+        let cache_dir = self.config.model_path.as_deref().unwrap_or(".");
+
+        let (subdir, extension) = match scenario.format {
+            apr_qa_gen::Format::Gguf => ("gguf", "gguf"),
+            apr_qa_gen::Format::Apr => ("apr", "apr"),
+            apr_qa_gen::Format::SafeTensors => ("safetensors", "safetensors"),
+        };
+
+        // Try model.<ext> first, then look for any matching file
+        let model_path = Path::new(cache_dir)
+            .join(subdir)
+            .join(format!("model.{extension}"));
+        if model_path.exists() {
+            return model_path.to_string_lossy().to_string();
+        }
+
+        // Fall back to finding any file with the extension
+        let format_dir = Path::new(cache_dir).join(subdir);
+        if let Ok(entries) = std::fs::read_dir(&format_dir) {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if path.extension().is_some_and(|e| e == extension) {
+                    return path.to_string_lossy().to_string();
+                }
+            }
+        }
+
+        // Final fallback to the default path
+        model_path.to_string_lossy().to_string()
     }
 
     /// Parse tokens per second from apr output

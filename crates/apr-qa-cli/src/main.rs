@@ -983,12 +983,11 @@ fn run_certification(
         };
 
         // Configure execution - use subprocess mode if enabled
-        let gguf_model_path = if subprocess {
+        // Pass model cache directory (containing gguf/apr/safetensors subdirs)
+        let model_cache_path = if subprocess {
             model_cache.as_ref().map(|cache| {
                 cache
                     .join(short.to_lowercase().replace('.', "-"))
-                    .join("gguf")
-                    .join("model.gguf")
                     .to_string_lossy()
                     .to_string()
             })
@@ -1001,7 +1000,7 @@ fn run_certification(
             dry_run: false,
             max_workers: 4,
             subprocess_mode: subprocess,
-            model_path: gguf_model_path,
+            model_path: model_cache_path,
             default_timeout_ms: 60000,
             no_gpu: false,                    // Allow GPU when in subprocess mode
             run_conversion_tests: subprocess, // Run P0 conversion tests in subprocess mode
