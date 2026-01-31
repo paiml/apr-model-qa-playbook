@@ -239,7 +239,107 @@ Results are written to:
 - `certifications/<model>/evidence.json`: Raw test evidence
 - README.md certification table (via `apr-qa-readme-sync`)
 
-## 7. References
+## 7. Performance Profiling Matrix
+
+### 7.1 Six-Column Throughput Requirement
+
+Every certified model **MUST** report throughput (tok/s) across all 6 format×backend combinations:
+
+| Column | Format | Backend | Required |
+|--------|--------|---------|----------|
+| `tps_gguf_cpu` | GGUF | CPU | **YES** |
+| `tps_gguf_gpu` | GGUF | GPU | **YES** |
+| `tps_apr_cpu` | APR | CPU | **YES** |
+| `tps_apr_gpu` | APR | GPU | **YES** |
+| `tps_st_cpu` | SafeTensors | CPU | **YES** |
+| `tps_st_gpu` | SafeTensors | GPU | **YES** |
+
+### 7.2 Profiling Protocol
+
+For each format×backend combination:
+
+1. **Model File Resolution:**
+   - GGUF: `<cache>/<model>/gguf/model.gguf`
+   - APR: `<cache>/<model>/apr/model.apr`
+   - SafeTensors: `<cache>/<model>/safetensors/model.safetensors`
+
+2. **Profiling Command:**
+   ```bash
+   apr profile <model-file> --backend <cpu|gpu> --format json --warmup 1 --measure 3
+   ```
+
+3. **Metric Extraction:**
+   - Parse JSON output for `metrics.throughput_tok_s`
+   - Record value in corresponding column
+   - Record `-` if format/backend unavailable
+
+### 7.3 Backend Selection
+
+The `apr profile` command must support explicit backend selection:
+
+```bash
+# CPU profiling (default)
+apr profile model.gguf --backend cpu --format json
+
+# GPU profiling (requires CUDA/Metal)
+apr profile model.gguf --backend gpu --format json
+```
+
+If `--backend gpu` is unavailable (no GPU hardware), the GPU columns record `-`.
+
+### 7.4 Format Conversion Pipeline
+
+To populate all 6 columns, models must be available in all 3 formats:
+
+```bash
+# Convert GGUF to APR
+apr convert model.gguf --to apr -o model.apr
+
+# Convert GGUF to SafeTensors
+apr convert model.gguf --to safetensors -o model.safetensors
+```
+
+### 7.5 Certification Database Schema
+
+The `docs/certifications/models.csv` schema:
+
+```csv
+model_id,family,parameters,size_category,status,mqs_score,grade,certified_tier,last_certified,g1,g2,g3,g4,tps_gguf_cpu,tps_gguf_gpu,tps_apr_cpu,tps_apr_gpu,tps_st_cpu,tps_st_gpu
+```
+
+All 6 throughput columns are **mandatory fields**. Empty values indicate the combination was not tested.
+
+### 7.6 Conversion Caching
+
+To keep MVP certification under 5 minutes, format conversions are cached:
+
+```
+<cache>/<model>/
+├── gguf/model.gguf          # Source (symlink to pacha cache)
+├── apr/model.apr            # Converted (cached)
+├── safetensors/model.safetensors  # Converted (cached, when #190 fixed)
+└── .conversion_hash         # SHA256 of source GGUF
+```
+
+**Cache invalidation**: Conversion is skipped if:
+1. Target file exists
+2. `.conversion_hash` matches current source file hash
+
+**First run**: ~4 minutes (includes conversion)
+**Subsequent runs**: ~2 minutes (benchmarks only)
+
+### 7.7 Minimum Throughput Gates
+
+From the Verification Matrix (F-PERF-001):
+
+| Backend | Minimum Throughput |
+|---------|-------------------|
+| CPU | 10 tok/s |
+| GPU | 50 tok/s |
+
+Failure to meet minimum throughput results in gate failure (5 points deducted).
+
+## 8. References
 
 *   **Popper, K. R.** (1959). *The Logic of Scientific Discovery*.
 *   **Popper, K. R.** (1963). *Conjectures and Refutations*.

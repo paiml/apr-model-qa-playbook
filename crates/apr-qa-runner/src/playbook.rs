@@ -464,12 +464,30 @@ pub struct ProfileCiConfig {
     /// Measurement iterations
     #[serde(default = "default_measure")]
     pub measure: usize,
+    /// Formats to profile (default: all available)
+    #[serde(default = "default_profile_formats")]
+    pub formats: Vec<String>,
+    /// Backends to profile (default: [cpu, gpu])
+    #[serde(default = "default_profile_backends")]
+    pub backends: Vec<String>,
     /// Assertions to verify
     #[serde(default)]
     pub assertions: ProfileCiAssertions,
     /// Gates to verify
     #[serde(default)]
     pub gates: Vec<String>,
+}
+
+fn default_profile_formats() -> Vec<String> {
+    vec![
+        "gguf".to_string(),
+        "apr".to_string(),
+        "safetensors".to_string(),
+    ]
+}
+
+fn default_profile_backends() -> Vec<String> {
+    vec!["cpu".to_string(), "gpu".to_string()]
 }
 
 fn default_warmup() -> usize {
@@ -483,15 +501,33 @@ fn default_measure() -> usize {
 /// Profile CI assertions
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct ProfileCiAssertions {
-    /// Minimum throughput in tok/s
+    /// Minimum throughput in tok/s (legacy, applies to all)
     #[serde(default)]
     pub min_throughput: Option<f64>,
+    /// Minimum CPU throughput in tok/s
+    #[serde(default)]
+    pub min_throughput_cpu: Option<f64>,
+    /// Minimum GPU throughput in tok/s
+    #[serde(default)]
+    pub min_throughput_gpu: Option<f64>,
     /// Maximum p99 latency in ms
     #[serde(default)]
     pub max_p99_ms: Option<f64>,
     /// Maximum p50 latency in ms
     #[serde(default)]
     pub max_p50_ms: Option<f64>,
+}
+
+impl ProfileCiAssertions {
+    /// Get minimum throughput for a given backend
+    #[must_use]
+    pub fn min_throughput_for(&self, backend: &str) -> Option<f64> {
+        match backend {
+            "cpu" => self.min_throughput_cpu.or(self.min_throughput),
+            "gpu" => self.min_throughput_gpu.or(self.min_throughput),
+            _ => self.min_throughput,
+        }
+    }
 }
 
 /// Trace payload configuration (APR-TRACE-001)

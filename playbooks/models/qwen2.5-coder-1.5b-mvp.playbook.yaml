@@ -43,6 +43,17 @@ oracles:
 
 failure_policy: collect_all
 
+# 6-column profiling: 3 formats × 2 backends
+profile_ci:
+  enabled: true
+  warmup: 1
+  measure: 2
+  formats: [gguf, apr, safetensors]
+  backends: [cpu, gpu]
+  assertions:
+    min_throughput_cpu: 5.0
+    min_throughput_gpu: 50.0
+
 metadata:
   author: "apr-qa-gen"
   tier: "mvp"

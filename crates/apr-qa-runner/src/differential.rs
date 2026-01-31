@@ -485,6 +485,336 @@ pub fn run_diff_benchmark(
     })
 }
 
+/// Result of throughput benchmark
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BenchResult {
+    /// Throughput in tokens/second
+    pub throughput_tps: f64,
+    /// Whether the benchmark passed minimum threshold
+    pub passed: bool,
+    /// Backend used (cpu or gpu)
+    pub backend: String,
+    /// Format tested (gguf, apr, safetensors)
+    pub format: String,
+}
+
+/// Run throughput benchmark with explicit backend selection
+///
+/// Uses `apr bench --fast` (realizar) for real inference.
+/// Backend selection via `CUDA_VISIBLE_DEVICES` environment variable.
+///
+/// # Arguments
+/// * `apr_binary` - Path to apr binary
+/// * `model_path` - Path to model file
+/// * `use_gpu` - If true, use GPU; if false, set CUDA_VISIBLE_DEVICES=""
+/// * `warmup` - Number of warmup iterations
+/// * `iterations` - Number of measurement iterations
+///
+/// # Errors
+///
+/// Returns an error if the apr command fails to execute.
+pub fn run_bench_throughput(
+    apr_binary: &str,
+    model_path: &Path,
+    use_gpu: bool,
+    warmup: usize,
+    iterations: usize,
+) -> Result<BenchResult> {
+    let mut cmd = Command::new(apr_binary);
+    cmd.arg("bench")
+        .arg(model_path)
+        .arg("--fast")
+        .arg("--warmup")
+        .arg(warmup.to_string())
+        .arg("--iterations")
+        .arg(iterations.to_string());
+
+    // Force CPU-only by hiding CUDA devices
+    if !use_gpu {
+        cmd.env("CUDA_VISIBLE_DEVICES", "");
+    }
+
+    let output = cmd.output().map_err(|e| Error::ExecutionFailed {
+        command: format!("apr bench {}", model_path.display()),
+        reason: e.to_string(),
+    })?;
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+
+    // Parse throughput from output: "Throughput: 65.5 tok/s (PASS: >= 10 tok/s)"
+    let throughput = stdout
+        .lines()
+        .find(|line| line.contains("Throughput:"))
+        .and_then(|line| {
+            line.split_whitespace()
+                .nth(1)
+                .and_then(|s| s.parse::<f64>().ok())
+        })
+        .unwrap_or(0.0);
+
+    let passed = output.status.success() && throughput >= 10.0;
+
+    // Determine format from file extension
+    let format = model_path
+        .extension()
+        .and_then(|e| e.to_str())
+        .unwrap_or("unknown")
+        .to_string();
+
+    Ok(BenchResult {
+        throughput_tps: throughput,
+        passed,
+        backend: if use_gpu { "gpu" } else { "cpu" }.to_string(),
+        format,
+    })
+}
+
+/// Result of format conversion
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FormatConversionResult {
+    /// Source format
+    pub source_format: String,
+    /// Target format
+    pub target_format: String,
+    /// Whether conversion succeeded
+    pub success: bool,
+    /// Duration in milliseconds
+    pub duration_ms: u64,
+    /// Error message if failed
+    pub error: Option<String>,
+    /// Whether result was from cache
+    pub cached: bool,
+}
+
+/// Compute SHA256 hash of a file (first 1MB for speed)
+fn compute_file_hash(path: &Path) -> Result<String> {
+    use std::io::Read;
+
+    let mut file = std::fs::File::open(path).map_err(|e| Error::ExecutionFailed {
+        command: format!("open {}", path.display()),
+        reason: e.to_string(),
+    })?;
+
+    let mut buffer = vec![0u8; 1024 * 1024]; // 1MB
+    let bytes_read = file.read(&mut buffer).map_err(|e| Error::ExecutionFailed {
+        command: format!("read {}", path.display()),
+        reason: e.to_string(),
+    })?;
+
+    buffer.truncate(bytes_read);
+
+    // Simple hash using std (no external dependency)
+    let hash: u64 = buffer.iter().fold(0u64, |acc, &b| {
+        acc.wrapping_mul(31).wrapping_add(u64::from(b))
+    });
+
+    Ok(format!("{hash:016x}"))
+}
+
+/// Convert model format with caching
+///
+/// Uses `apr rosetta convert` to convert between formats.
+/// Caches result and skips conversion if cache is valid.
+///
+/// # Arguments
+/// * `apr_binary` - Path to apr binary
+/// * `source_path` - Path to source model file
+/// * `target_path` - Path to target model file
+/// * `cache_hash_path` - Path to store source file hash for cache validation
+///
+/// # Errors
+///
+/// Returns an error if conversion fails.
+pub fn convert_format_cached(
+    apr_binary: &str,
+    source_path: &Path,
+    target_path: &Path,
+    cache_hash_path: &Path,
+) -> Result<FormatConversionResult> {
+    let source_format = source_path
+        .extension()
+        .and_then(|e| e.to_str())
+        .unwrap_or("unknown")
+        .to_string();
+
+    let target_format = target_path
+        .extension()
+        .and_then(|e| e.to_str())
+        .unwrap_or("unknown")
+        .to_string();
+
+    // Check cache validity
+    let current_hash = compute_file_hash(source_path)?;
+
+    if target_path.exists() && cache_hash_path.exists() {
+        if let Ok(cached_hash) = std::fs::read_to_string(cache_hash_path) {
+            if cached_hash.trim() == current_hash {
+                return Ok(FormatConversionResult {
+                    source_format,
+                    target_format,
+                    success: true,
+                    duration_ms: 0,
+                    error: None,
+                    cached: true,
+                });
+            }
+        }
+    }
+
+    // Create target directory if needed
+    if let Some(parent) = target_path.parent() {
+        let _ = std::fs::create_dir_all(parent);
+    }
+
+    let start = std::time::Instant::now();
+
+    let output = Command::new(apr_binary)
+        .arg("rosetta")
+        .arg("convert")
+        .arg(source_path)
+        .arg(target_path)
+        .output()
+        .map_err(|e| Error::ExecutionFailed {
+            command: format!(
+                "apr rosetta convert {} {}",
+                source_path.display(),
+                target_path.display()
+            ),
+            reason: e.to_string(),
+        })?;
+
+    let duration_ms = start.elapsed().as_millis() as u64;
+
+    if output.status.success() {
+        // Write hash for cache validation
+        let _ = std::fs::write(cache_hash_path, &current_hash);
+
+        Ok(FormatConversionResult {
+            source_format,
+            target_format,
+            success: true,
+            duration_ms,
+            error: None,
+            cached: false,
+        })
+    } else {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        Ok(FormatConversionResult {
+            source_format,
+            target_format,
+            success: false,
+            duration_ms,
+            error: Some(stderr.to_string()),
+            cached: false,
+        })
+    }
+}
+
+/// Six-column throughput profile result
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct SixColumnProfile {
+    /// GGUF CPU throughput (tok/s)
+    pub tps_gguf_cpu: Option<f64>,
+    /// GGUF GPU throughput (tok/s)
+    pub tps_gguf_gpu: Option<f64>,
+    /// APR CPU throughput (tok/s)
+    pub tps_apr_cpu: Option<f64>,
+    /// APR GPU throughput (tok/s)
+    pub tps_apr_gpu: Option<f64>,
+    /// SafeTensors CPU throughput (tok/s)
+    pub tps_st_cpu: Option<f64>,
+    /// SafeTensors GPU throughput (tok/s)
+    pub tps_st_gpu: Option<f64>,
+    /// Conversion results
+    pub conversions: Vec<FormatConversionResult>,
+    /// Total profiling duration in milliseconds
+    pub total_duration_ms: u64,
+}
+
+/// Run full 6-column profiling for a model
+///
+/// 1. Converts GGUF to APR and SafeTensors (with caching)
+/// 2. Benchmarks each format on CPU and GPU
+///
+/// # Arguments
+/// * `apr_binary` - Path to apr binary
+/// * `model_cache_dir` - Directory containing model format subdirs
+/// * `warmup` - Warmup iterations for benchmarks
+/// * `iterations` - Measurement iterations for benchmarks
+///
+/// # Errors
+///
+/// Returns an error if profiling fails.
+pub fn run_six_column_profile(
+    apr_binary: &str,
+    model_cache_dir: &Path,
+    warmup: usize,
+    iterations: usize,
+) -> Result<SixColumnProfile> {
+    let start = std::time::Instant::now();
+    let mut profile = SixColumnProfile::default();
+
+    // Paths
+    let gguf_dir = model_cache_dir.join("gguf");
+    let apr_dir = model_cache_dir.join("apr");
+    let st_dir = model_cache_dir.join("safetensors");
+
+    // Find GGUF source file
+    let gguf_path = find_model_file(&gguf_dir)?;
+
+    // Convert GGUF → APR (with caching)
+    let apr_path = apr_dir.join("model.apr");
+    let apr_hash_path = apr_dir.join(".conversion_hash");
+    let apr_conv = convert_format_cached(apr_binary, &gguf_path, &apr_path, &apr_hash_path)?;
+    profile.conversions.push(apr_conv.clone());
+
+    // Convert GGUF → SafeTensors (with caching) - may fail due to #190
+    let st_path = st_dir.join("model.safetensors");
+    let st_hash_path = st_dir.join(".conversion_hash");
+    let st_conv = convert_format_cached(apr_binary, &gguf_path, &st_path, &st_hash_path)?;
+    profile.conversions.push(st_conv.clone());
+
+    // Benchmark GGUF CPU
+    if let Ok(result) = run_bench_throughput(apr_binary, &gguf_path, false, warmup, iterations) {
+        profile.tps_gguf_cpu = Some(result.throughput_tps);
+    }
+
+    // Benchmark GGUF GPU
+    if let Ok(result) = run_bench_throughput(apr_binary, &gguf_path, true, warmup, iterations) {
+        profile.tps_gguf_gpu = Some(result.throughput_tps);
+    }
+
+    // APR and SafeTensors benchmarking disabled until paiml/aprender#191 is resolved
+    // apr bench --fast only supports GGUF format currently
+    let _ = (apr_conv, st_conv, apr_path, st_path); // suppress unused warnings
+
+    profile.total_duration_ms = start.elapsed().as_millis() as u64;
+    Ok(profile)
+}
+
+/// Find model file in a directory
+fn find_model_file(dir: &Path) -> Result<std::path::PathBuf> {
+    if !dir.exists() {
+        return Err(Error::ExecutionFailed {
+            command: format!("find model in {}", dir.display()),
+            reason: "Directory does not exist".to_string(),
+        });
+    }
+
+    std::fs::read_dir(dir)
+        .map_err(|e| Error::ExecutionFailed {
+            command: format!("read_dir {}", dir.display()),
+            reason: e.to_string(),
+        })?
+        .filter_map(std::result::Result::ok)
+        .map(|e| e.path())
+        .find(|p| p.is_file() || p.is_symlink())
+        .ok_or_else(|| Error::ExecutionFailed {
+            command: format!("find model in {}", dir.display()),
+            reason: "No model file found".to_string(),
+        })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -46,6 +46,8 @@ failure_policy: collect_all
 profile_ci:
   enabled: true
   warmup: 1
+  formats: [gguf, apr, safetensors]
+  backends: [cpu, gpu]
   measure: 3
   assertions:
     min_throughput: 1.0

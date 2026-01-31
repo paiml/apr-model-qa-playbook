@@ -41,9 +41,10 @@ pub use conversion::{
     generate_conversion_tests,
 };
 pub use differential::{
-    BenchmarkMetrics, CiAssertion, CiProfileResult, DiffBenchmarkResult, DiffConfig,
-    DifferentialExecutor, InferenceComparisonResult, TensorDiffResult, TensorMismatch,
-    TensorMismatchType, TokenComparison, run_diff_benchmark, run_profile_ci,
+    BenchResult, BenchmarkMetrics, CiAssertion, CiProfileResult, DiffBenchmarkResult, DiffConfig,
+    DifferentialExecutor, FormatConversionResult, InferenceComparisonResult, SixColumnProfile,
+    TensorDiffResult, TensorMismatch, TensorMismatchType, TokenComparison, convert_format_cached,
+    run_bench_throughput, run_diff_benchmark, run_profile_ci, run_six_column_profile,
 };
 pub use error::{Error, Result};
 pub use evidence::{Evidence, EvidenceCollector, Outcome, PerformanceMetrics};

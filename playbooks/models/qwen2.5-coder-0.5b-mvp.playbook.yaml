@@ -43,13 +43,16 @@ oracles:
 
 failure_policy: collect_all
 
-# Profile CI - measure tok/s per format
+# 6-column profiling: 3 formats × 2 backends
 profile_ci:
   enabled: true
   warmup: 1
-  measure: 3
+  measure: 2
+  formats: [gguf, apr, safetensors]
+  backends: [cpu, gpu]
   assertions:
-    min_throughput: 1.0     # tok/s (very low bar for MVP)
+    min_throughput_cpu: 5.0    # tok/s (CPU baseline)
+    min_throughput_gpu: 50.0   # tok/s (GPU should be faster)
 
 metadata:
   author: "apr-qa-gen"

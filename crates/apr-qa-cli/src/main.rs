@@ -861,7 +861,6 @@ fn run_certification(
     use apr_qa_certify::{
         CertificationTier, grade_from_tier, parse_csv, score_from_tier, status_from_tier, write_csv,
     };
-    use apr_qa_runner::run_profile_ci;
     use chrono::Utc;
 
     // Parse tier
@@ -1038,64 +1037,73 @@ fn run_certification(
                 println!("  Grade: {grade}");
                 println!("  Status: {status}");
 
-                // Run profiling for tok/s if subprocess mode enabled
-                let mut tps_results: [(Option<f64>, Option<f64>); 3] =
-                    [(None, None), (None, None), (None, None)]; // [gguf, apr, st] × [cpu, gpu]
+                // Run 6-column profiling if subprocess mode enabled
+                let mut profile = apr_qa_runner::SixColumnProfile::default();
 
                 if subprocess {
                     if let Some(ref cache) = model_cache {
                         // Model cache structure: <cache>/<model-short-name>/<format>/<file>
                         let model_dir = cache.join(short.to_lowercase().replace('.', "-"));
 
-                        // Format paths (convention: format subdir with model file)
-                        let formats = [
-                            ("gguf", model_dir.join("gguf")),
-                            ("apr", model_dir.join("apr")),
-                            ("safetensors", model_dir.join("safetensors")),
-                        ];
-
-                        for (idx, (fmt_name, fmt_dir)) in formats.iter().enumerate() {
-                            if !fmt_dir.exists() {
-                                continue;
-                            }
-
-                            // Find model file in format directory
-                            let model_file =
-                                std::fs::read_dir(fmt_dir).ok().and_then(|mut entries| {
-                                    entries.find_map(|e| {
-                                        e.ok().and_then(|entry| {
-                                            let path = entry.path();
-                                            if path.is_file() { Some(path) } else { None }
-                                        })
-                                    })
-                                });
-
-                            if let Some(model_path) = model_file {
-                                println!("  Profiling {fmt_name}: {}", model_path.display());
-
-                                // Profile CPU
-                                match run_profile_ci(
-                                    apr_binary,
-                                    &model_path,
-                                    Some(1.0),
-                                    None,
-                                    None,
-                                    1,
-                                    3,
-                                ) {
-                                    Ok(result) => {
-                                        let tps = result.throughput();
-                                        tps_results[idx].0 = Some(tps);
-                                        println!("    CPU: {tps:.1} tok/s");
+                        if model_dir.exists() {
+                            println!("  Running 6-column profiling...");
+                            match apr_qa_runner::run_six_column_profile(
+                                apr_binary, &model_dir, 1, // warmup
+                                2, // iterations
+                            ) {
+                                Ok(p) => {
+                                    profile = p;
+                                    // Print conversion results
+                                    for conv in &profile.conversions {
+                                        let status = if conv.cached {
+                                            "cached"
+                                        } else if conv.success {
+                                            "ok"
+                                        } else {
+                                            "FAILED"
+                                        };
+                                        println!(
+                                            "    {} → {}: {} ({}ms)",
+                                            conv.source_format,
+                                            conv.target_format,
+                                            status,
+                                            conv.duration_ms
+                                        );
+                                        if let Some(ref err) = conv.error {
+                                            // Print first line of error
+                                            if let Some(line) = err.lines().last() {
+                                                println!("      {line}");
+                                            }
+                                        }
                                     }
-                                    Err(e) => {
-                                        eprintln!("    CPU profile failed: {e}");
+                                    // Print throughput results
+                                    println!("    Throughput (tok/s):");
+                                    if let Some(tps) = profile.tps_gguf_cpu {
+                                        println!("      GGUF CPU: {tps:.1}");
                                     }
+                                    if let Some(tps) = profile.tps_gguf_gpu {
+                                        println!("      GGUF GPU: {tps:.1}");
+                                    }
+                                    if let Some(tps) = profile.tps_apr_cpu {
+                                        println!("      APR CPU:  {tps:.1}");
+                                    }
+                                    if let Some(tps) = profile.tps_apr_gpu {
+                                        println!("      APR GPU:  {tps:.1}");
+                                    }
+                                    if let Some(tps) = profile.tps_st_cpu {
+                                        println!("      ST CPU:   {tps:.1}");
+                                    }
+                                    if let Some(tps) = profile.tps_st_gpu {
+                                        println!("      ST GPU:   {tps:.1}");
+                                    }
+                                    println!(
+                                        "    Total profiling time: {}ms",
+                                        profile.total_duration_ms
+                                    );
                                 }
-
-                                // Profile GPU (TODO: need GPU-specific invocation)
-                                // For now, GPU profiling would require apr binary GPU support
-                                // tps_results[idx].1 = Some(gpu_result.throughput_tps);
+                                Err(e) => {
+                                    eprintln!("  Profiling failed: {e}");
+                                }
                             }
                         }
                     }
@@ -1115,13 +1123,13 @@ fn run_certification(
                     cert.g3 = gw.get(2).is_some_and(|g| g.passed);
                     cert.g4 = gw.get(3).is_some_and(|g| g.passed);
 
-                    // Set tok/s values from profiling
-                    cert.tps_gguf_cpu = tps_results[0].0;
-                    cert.tps_gguf_gpu = tps_results[0].1;
-                    cert.tps_apr_cpu = tps_results[1].0;
-                    cert.tps_apr_gpu = tps_results[1].1;
-                    cert.tps_st_cpu = tps_results[2].0;
-                    cert.tps_st_gpu = tps_results[2].1;
+                    // Set tok/s values from 6-column profiling
+                    cert.tps_gguf_cpu = profile.tps_gguf_cpu;
+                    cert.tps_gguf_gpu = profile.tps_gguf_gpu;
+                    cert.tps_apr_cpu = profile.tps_apr_cpu;
+                    cert.tps_apr_gpu = profile.tps_apr_gpu;
+                    cert.tps_st_cpu = profile.tps_st_cpu;
+                    cert.tps_st_gpu = profile.tps_st_gpu;
                 }
 
                 // Save evidence to model-specific directory
