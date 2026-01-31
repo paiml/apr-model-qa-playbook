@@ -868,10 +868,33 @@ pub fn run_six_column_profile(
         profile.tps_gguf_gpu = Some(result.throughput_tps);
     }
 
-    // APR/SafeTensors benchmarking disabled for MVP - too slow (~0.5 tok/s)
-    // APR format inference needs optimization before practical use
-    // GGUF remains the fast path for production inference
-    let _ = (apr_conv, st_conv, apr_path, st_path);
+    // Benchmark APR CPU (only if conversion succeeded)
+    if apr_conv.success {
+        if let Ok(result) = run_bench_throughput(apr_binary, &apr_path, false, warmup, iterations) {
+            profile.tps_apr_cpu = Some(result.throughput_tps);
+        }
+    }
+
+    // Benchmark APR GPU (only if conversion succeeded)
+    if apr_conv.success {
+        if let Ok(result) = run_bench_throughput(apr_binary, &apr_path, true, warmup, iterations) {
+            profile.tps_apr_gpu = Some(result.throughput_tps);
+        }
+    }
+
+    // Benchmark SafeTensors CPU (only if conversion succeeded)
+    if st_conv.success {
+        if let Ok(result) = run_bench_throughput(apr_binary, &st_path, false, warmup, iterations) {
+            profile.tps_st_cpu = Some(result.throughput_tps);
+        }
+    }
+
+    // Benchmark SafeTensors GPU (only if conversion succeeded)
+    if st_conv.success {
+        if let Ok(result) = run_bench_throughput(apr_binary, &st_path, true, warmup, iterations) {
+            profile.tps_st_gpu = Some(result.throughput_tps);
+        }
+    }
 
     profile.total_duration_ms = start.elapsed().as_millis() as u64;
     Ok(profile)
