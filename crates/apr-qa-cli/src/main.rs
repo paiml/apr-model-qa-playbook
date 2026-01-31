@@ -30,14 +30,16 @@ struct Cli {
 /// Certification tier levels
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 enum CertTier {
-    /// Tier 1: Smoke test (1 second per model)
+    /// Tier 1: Smoke test (~1-2 min per model)
     Smoke,
-    /// Tier 2: Quick check (30 seconds per model)
+    /// Tier 2: MVP - all formats/backends/modalities (~5-10 min per model)
+    Mvp,
+    /// Tier 3: Quick check (~10-30 min per model)
     #[default]
     Quick,
-    /// Tier 3: Standard certification (1 minute per model)
+    /// Tier 4: Standard certification (~1-2 hr per model)
     Standard,
-    /// Tier 4: Deep certification (10 minutes per model)
+    /// Tier 5: Deep certification (~8-24 hr per model)
     Deep,
 }
 
@@ -47,11 +49,12 @@ impl std::str::FromStr for CertTier {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_lowercase().as_str() {
             "smoke" => Ok(Self::Smoke),
+            "mvp" => Ok(Self::Mvp),
             "quick" => Ok(Self::Quick),
             "standard" => Ok(Self::Standard),
             "deep" => Ok(Self::Deep),
             _ => Err(format!(
-                "Unknown tier: {s}. Use: smoke, quick, standard, deep"
+                "Unknown tier: {s}. Use: smoke, mvp, quick, standard, deep"
             )),
         }
     }
@@ -60,7 +63,9 @@ impl std::str::FromStr for CertTier {
 impl CertTier {
     const fn playbook_suffix(self) -> &'static str {
         match self {
-            Self::Smoke | Self::Quick => "-quick",
+            Self::Smoke => "-smoke",
+            Self::Mvp => "-mvp",
+            Self::Quick => "-quick",
             Self::Standard | Self::Deep => "",
         }
     }

@@ -1,6 +1,6 @@
 # Certified Testing & Popperian Falsification
 
-**Version:** 1.1.0
+**Version:** 1.2.0
 **Status:** APPROVED
 **Author:** PAIML Engineering
 **Date:** 2026-01-31
@@ -131,12 +131,54 @@ apr-qa certify --all --tier smoke
 
 ### 5.1 Certification Tiers
 
-| Tier | Duration | Use Case |
-|------|----------|----------|
-| **smoke** | ~1s/model | Quick sanity check |
-| **quick** | ~30s/model | Development iteration |
-| **standard** | ~1m/model | CI/CD pipeline |
-| **deep** | ~10m/model | Production qualification |
+| Tier | Duration | Tests | Use Case |
+|------|----------|-------|----------|
+| **smoke** | ~1-2 min | 3 scenarios, 1 format, CPU only | Quick sanity check |
+| **mvp** | ~5-10 min | 18 combinations (3 formats × 2 backends × 3 modalities) | **Full surface coverage** |
+| **quick** | ~10-30 min | 10 scenarios per combination | Development iteration |
+| **standard** | ~1-2 hr | 50 scenarios + conversion tests | CI/CD pipeline |
+| **deep** | ~8-24 hr | 100 scenarios + full verification matrix | Production qualification |
+
+#### 5.1.1 MVP Tier (Minimum Viable Product)
+
+The **MVP tier** answers: *"Does this model work in all supported configurations?"*
+
+```
+Formats:    GGUF, APR, SafeTensors     (3)
+Backends:   CPU, GPU                    (2)
+Modalities: run, chat, serve            (3)
+                                        ───
+Total:      18 test combinations
+```
+
+Each combination runs 1 scenario to verify:
+- **G1**: Model loads successfully
+- **G2**: Inference produces output
+- **G3**: No crashes or hangs
+- **G4**: Output is not garbage
+
+```bash
+# Run MVP certification
+apr-qa certify --family qwen-coder --tier mvp
+
+# MVP is ideal for:
+# - Pre-release sanity check
+# - New format/backend support verification
+# - Quick regression after infrastructure changes
+```
+
+#### 5.1.2 Tier Comparison
+
+| Aspect | smoke | mvp | quick | standard | deep |
+|--------|-------|-----|-------|----------|------|
+| Formats | 1 | **3** | 1 | 3 | 3 |
+| Backends | 1 | **2** | 1 | 2 | 2 |
+| Modalities | 1 | **3** | 1 | 3 | 3 |
+| Scenarios/combo | 3 | 1 | 10 | 50 | 100 |
+| Conversion tests | No | No | No | Yes | Yes |
+| Differential tests | No | No | No | Yes | Yes |
+| Profile CI | No | No | No | Yes | Yes |
+| **Total tests** | 3 | 18 | 10 | ~900 | ~1800 |
 
 ### 5.2 Certification Results
 

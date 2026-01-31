@@ -2,7 +2,7 @@
 # Toyota Way + Popperian Falsification Testing Framework
 
 .PHONY: all build test lint coverage clean check fmt doc \
-       update-certifications certify-smoke certify-quick certify-standard certify-deep certify-qwen
+       update-certifications certify-smoke certify-mvp certify-quick certify-standard certify-deep certify-qwen
 
 # Default target
 all: check
@@ -118,11 +118,15 @@ update-certifications:
 
 # Tiered certification targets
 certify-smoke:
-	@echo "Running Tier 1 (Smoke) certification - 1 second per model..."
+	@echo "Running Tier 1 (Smoke) certification - ~1-2 min per model..."
 	cargo run --bin apr-qa -- certify --all --tier smoke
 
+certify-mvp:
+	@echo "Running Tier 2 (MVP) certification - all formats/backends/modalities (~5-10 min per model)..."
+	cargo run --bin apr-qa -- certify --all --tier mvp
+
 certify-quick:
-	@echo "Running Tier 2 (Quick) certification - 30 seconds per model..."
+	@echo "Running Tier 3 (Quick) certification - ~10-30 min per model..."
 	cargo run --bin apr-qa -- certify --all --tier quick
 
 certify-standard:
@@ -159,10 +163,11 @@ help:
 	@echo ""
 	@echo "Certification targets:"
 	@echo "  update-certifications  Update README table from CSV"
-	@echo "  certify-smoke          Tier 1: 1 second per model"
-	@echo "  certify-quick          Tier 2: 30 seconds per model"
-	@echo "  certify-standard       Tier 3: 1 minute per model"
-	@echo "  certify-deep           Tier 4: 10 minutes per model"
+	@echo "  certify-smoke          Tier 1: ~1-2 min per model (sanity check)"
+	@echo "  certify-mvp            Tier 2: ~5-10 min per model (all formats/backends/modalities)"
+	@echo "  certify-quick          Tier 3: ~10-30 min per model (dev iteration)"
+	@echo "  certify-standard       Tier 4: ~1-2 hr per model (CI/CD)"
+	@echo "  certify-deep           Tier 5: ~8-24 hr per model (production)"
 	@echo "  certify-qwen           Full certification for Qwen Coder (priority)"
 	@echo ""
 	@echo "  help                   Show this help"
