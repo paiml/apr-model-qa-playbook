@@ -10,6 +10,7 @@ These examples can be run with `cargo run --example <name> -p <crate>`.
 | `generate_scenarios` | apr-qa-gen | `cargo run --example generate_scenarios -p apr-qa-gen` |
 | `collect_evidence` | apr-qa-runner | `cargo run --example collect_evidence -p apr-qa-runner` |
 | `calculate_mqs` | apr-qa-report | `cargo run --example calculate_mqs -p apr-qa-report` |
+| `generate_certificate` | apr-qa-report | `cargo run --example generate_certificate -p apr-qa-report` |
 
 ## Generating QA Scenarios
 
@@ -187,6 +188,56 @@ Popperian Analysis:
   Black Swans:       0
 
 Summary: 1 of 16 hypotheses falsified (6.2%)
+```
+
+## Generating Certificates
+
+The `generate_certificate` example shows how to create CERTIFICATE.md files:
+
+```rust
+use apr_qa_report::{CertificateGenerator, MqsCalculator};
+use apr_qa_report::popperian::PopperianCalculator;
+
+fn main() {
+    let model_id = "Qwen/Qwen2.5-Coder-0.5B-Instruct";
+    let version = "1.0.0";
+
+    // Calculate scores from evidence
+    let mqs = mqs_calc.calculate(model_id, &collector).unwrap();
+    let popperian = popperian_calc.calculate(model_id, &collector);
+
+    // Generate certificate
+    let generator = CertificateGenerator::new("APR QA Framework");
+    let certificate = generator.generate(
+        model_id,
+        version,
+        &mqs,
+        &popperian,
+        evidence_hash,
+    );
+
+    // Output status
+    println!("Status: {}", certificate.status);  // CERTIFIED/PROVISIONAL/REJECTED
+    println!("Grade:  {}", certificate.grade);   // A+, A, B+, B, C, F
+
+    // Generate CERTIFICATE.md
+    let markdown = generator.to_markdown(&certificate);
+}
+```
+
+### Output
+
+```
+Certificate Generated
+=====================
+
+Model:    Qwen/Qwen2.5-Coder-0.5B-Instruct
+Version:  1.0.0
+Status:   CERTIFIED
+Grade:    A
+MQS:      920/1000
+Score:    156/170 (91.8%)
+Black Swans: 0
 ```
 
 ## YAML Playbook Examples

@@ -1,0 +1,179 @@
+# Certified Testing
+
+The APR Model QA Framework implements a rigorous **Popperian Falsification** methodology
+for model certification. This chapter explains the 170-point Verification Matrix and
+certification process.
+
+## Philosophy
+
+Following Karl Popper's critical rationalism, we don't "verify" that models work.
+Instead, we attempt to **falsify** specific hypotheses about model behavior. A model
+earns certification by **surviving** these refutation attempts.
+
+> "Certified" means we tried very hard to break it in specific ways, and failed.
+
+## Certification Levels
+
+| Status | Requirements |
+|--------|-------------|
+| **CERTIFIED** | Score >= 95% AND zero P0 failures |
+| **PROVISIONAL** | Score >= 80% AND zero P0 failures |
+| **REJECTED** | Score < 80% OR any P0 failure |
+
+## The Verification Matrix (170 Points)
+
+### Class I: Fundamental Integrity (P0 - 50 pts)
+
+Any failure here results in immediate **REJECTED** status.
+
+| Gate | Points | Hypothesis |
+|------|--------|------------|
+| F-INT-001 | 10 | Memory Safety: No segfaults, buffer overflows |
+| F-INT-002 | 10 | Process Termination: Clean exit, no hangs |
+| F-INT-003 | 10 | Tensor Validity: No NaN/Inf values |
+| F-INT-004 | 10 | Format Fidelity: Round-trip conversion is bitwise identical |
+| F-INT-005 | 10 | Determinism: Same seed = same output |
+
+### Class II: Interface Compliance (P1 - 25 pts)
+
+| Gate | Points | Hypothesis |
+|------|--------|------------|
+| F-API-001 | 5 | JSON Compliance: Valid JSON responses |
+| F-API-002 | 5 | Chat Template: No control token leakage |
+| F-API-003 | 5 | Health Check: /health returns 200 in <1s |
+| F-API-004 | 5 | Error Handling: Invalid input returns 400, not crash |
+| F-API-005 | 5 | Streaming: Valid SSE format |
+
+### Class III: Numerical Stability (P1 - 20 pts)
+
+| Gate | Points | Hypothesis |
+|------|--------|------------|
+| F-NUM-001 | 5 | Attention Entropy: Not collapsed or exploded |
+| F-NUM-002 | 5 | LayerNorm Drift: Mean < 1e-3, std dev ~1.0 |
+| F-NUM-003 | 5 | Softmax Sum: Outputs sum to 1.0 +/- 1e-6 |
+| F-NUM-004 | 5 | Token Probability: Valid range [0, 1] |
+
+### Class IV: Cross-Platform Parity (P2 - 15 pts)
+
+| Gate | Points | Hypothesis |
+|------|--------|------------|
+| F-PAR-001 | 5 | CPU/GPU Equivalence: Diff < epsilon (1e-5) |
+| F-PAR-002 | 5 | Format Parity: GGUF = SafeTensors output |
+| F-PAR-003 | 5 | Quantization Impact: Perplexity < 10% degradation |
+
+### Class V: Performance Boundaries (P2 - 20 pts)
+
+| Gate | Points | Hypothesis |
+|------|--------|------------|
+| F-PERF-001 | 5 | Minimum TPS: >= 10 tokens/second |
+| F-PERF-002 | 5 | TTFT: Time to first token < 2000ms |
+| F-PERF-003 | 5 | Memory Leak: RSS growth < 5% over 100 requests |
+| F-PERF-004 | 5 | GPU Utilization: >= 50% occupancy |
+
+### Class VI: Security & Safety (P0 - 30 pts)
+
+| Gate | Points | Hypothesis |
+|------|--------|------------|
+| F-SEC-001 | 10 | Path Traversal: No ../ access |
+| F-SEC-002 | 10 | Prompt Injection: System prompt protected |
+| F-SEC-003 | 10 | DoS Protection: Zip bomb/token flood rejected |
+
+## Certification Artifacts
+
+A certified build produces three immutable artifacts:
+
+1. **evidence.json** - Complete raw log of every probe
+2. **popperian_report.html** - Human-readable dashboard
+3. **CERTIFICATE.md** - Official certification document
+
+## Example: Generate Certificate
+
+```rust
+use apr_qa_report::{CertificateGenerator, MqsCalculator};
+use apr_qa_report::popperian::PopperianCalculator;
+
+let mqs = mqs_calc.calculate(model_id, &collector)?;
+let popperian = popperian_calc.calculate(model_id, &collector);
+
+let generator = CertificateGenerator::new("APR QA Framework");
+let certificate = generator.generate(
+    model_id,
+    version,
+    &mqs,
+    &popperian,
+    evidence_hash,
+);
+
+// Generate CERTIFICATE.md
+let markdown = generator.to_markdown(&certificate);
+std::fs::write("CERTIFICATE.md", markdown)?;
+```
+
+Run the example:
+
+```bash
+cargo run --example generate_certificate -p apr-qa-report
+```
+
+## Using SpecGate IDs
+
+The framework provides a `SpecGate` enum with all 25 gate IDs:
+
+```rust
+use apr_qa_runner::SpecGate;
+
+// Get gate ID
+assert_eq!(SpecGate::IntMemorySafety.id(), "F-INT-001");
+
+// Get point value
+assert_eq!(SpecGate::IntMemorySafety.points(), 10);
+
+// Get priority
+assert_eq!(SpecGate::IntMemorySafety.priority(), "P0");
+
+// Total verification matrix points
+assert_eq!(SpecGate::total_points(), 160);
+```
+
+## Gate Checkers
+
+Use the built-in checkers for each gate class:
+
+```rust
+use apr_qa_runner::{
+    IntegrityChecker,      // F-INT-*
+    ApiComplianceChecker,  // F-API-*
+    PerformanceValidator,  // F-PERF-*
+    ParityChecker,         // F-PAR-*
+    PatternDetector,       // F-NUM-*, F-SEC-*
+};
+
+// Check memory safety
+let result = IntegrityChecker::check_memory_safety(exit_signal, stderr);
+if !result.passed {
+    println!("FALSIFIED: {}", result.description);
+}
+
+// Check API compliance
+let result = ApiComplianceChecker::check_json_compliance(response);
+assert!(result.passed, "JSON validation failed");
+
+// Check performance
+let result = PerformanceValidator::check_tps(measured_tps, 10.0);
+assert!(result.passed, "TPS below threshold");
+```
+
+## Validity Period
+
+Certificates expire after **90 days**. Re-certification is required:
+
+- After any model update
+- After configuration changes
+- Before production deployment
+- Quarterly for maintained models
+
+## References
+
+- [Popper, K. R. (1959). *The Logic of Scientific Discovery*](https://en.wikipedia.org/wiki/The_Logic_of_Scientific_Discovery)
+- [Taleb, N. N. (2007). *The Black Swan*](https://en.wikipedia.org/wiki/The_Black_Swan:_The_Impact_of_the_Highly_Improbable)
+- [Ohno, T. (1988). *Toyota Production System*](https://en.wikipedia.org/wiki/Toyota_Production_System)

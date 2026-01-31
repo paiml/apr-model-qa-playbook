@@ -28,6 +28,7 @@
 - [Gateway Definitions](./reference/gateways.md)
 - [Oracle Types](./reference/oracles.md)
 - [CLI Reference](./reference/cli.md)
+- [Certified Testing](./reference/certified-testing.md)
 
 # Specification
 
