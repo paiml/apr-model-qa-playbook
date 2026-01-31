@@ -43,6 +43,14 @@ oracles:
 
 failure_policy: collect_all
 
+# Profile CI - measure tok/s per format
+profile_ci:
+  enabled: true
+  warmup: 1
+  measure: 3
+  assertions:
+    min_throughput: 1.0     # tok/s (very low bar for MVP)
+
 metadata:
   author: "apr-qa-gen"
   tier: "mvp"
