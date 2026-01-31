@@ -132,6 +132,44 @@ MVP certification includes throughput measurements for all format × backend com
 
 These metrics are tracked in `models.csv` and displayed in the README certification table.
 
+### Running Real Profiling
+
+To get actual tok/s measurements, use subprocess mode with a model cache:
+
+```bash
+# Set up model cache directory structure
+mkdir -p ~/.cache/apr-models/qwen2-5-coder-0-5b-instruct/{gguf,apr,safetensors}
+# Copy model files to appropriate format directories
+
+# Run certification with real profiling
+apr-qa certify --family qwen-coder --tier mvp \
+  --subprocess \
+  --model-cache ~/.cache/apr-models \
+  --apr-binary /path/to/apr
+```
+
+**Model cache structure:**
+```
+~/.cache/apr-models/
+├── qwen2-5-coder-0-5b-instruct/
+│   ├── gguf/
+│   │   └── model-q4_k_m.gguf
+│   ├── apr/
+│   │   └── model.apr
+│   └── safetensors/
+│       └── model.safetensors
+└── qwen2-5-coder-1-5b-instruct/
+    └── ...
+```
+
+The `--subprocess` flag tells the certifier to:
+1. Find model files in the cache directory
+2. Run `apr profile --ci --json` for each format
+3. Parse throughput from JSON output
+4. Store tok/s values in the certification record
+
+### Playbook Configuration
+
 Enable throughput measurement in playbooks:
 
 ```yaml
