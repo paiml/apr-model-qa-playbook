@@ -304,19 +304,69 @@ pub struct BenchmarkMetrics {
     pub latency_p99_ms: f64,
 }
 
-/// CI profile assertions
+/// CI profile metrics (nested in JSON output)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CiProfileMetrics {
+    /// Throughput achieved (tok/s)
+    #[serde(alias = "throughput_tok_s")]
+    pub throughput_tok_s: f64,
+    /// p50 latency (ms)
+    pub latency_p50_ms: f64,
+    /// p99 latency (ms)
+    pub latency_p99_ms: f64,
+}
+
+/// CI profile assertions result from apr profile --ci --json
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CiProfileResult {
-    /// Throughput achieved
-    pub throughput_tps: f64,
-    /// p50 latency
-    pub latency_p50_ms: f64,
-    /// p99 latency
-    pub latency_p99_ms: f64,
+    /// Model path
+    #[serde(default)]
+    pub model: String,
+    /// Nested metrics
+    #[serde(default)]
+    pub metrics: Option<CiProfileMetrics>,
     /// Assertion results
+    #[serde(default)]
     pub assertions: Vec<CiAssertion>,
     /// Overall pass/fail
+    #[serde(default)]
     pub passed: bool,
+    // Legacy flat fields for backwards compatibility
+    /// Throughput achieved (legacy)
+    #[serde(default)]
+    pub throughput_tps: f64,
+    /// p50 latency (legacy)
+    #[serde(default)]
+    pub latency_p50_ms: f64,
+    /// p99 latency (legacy)
+    #[serde(default)]
+    pub latency_p99_ms: f64,
+}
+
+impl CiProfileResult {
+    /// Get throughput in tok/s (from nested metrics or legacy field)
+    #[must_use]
+    pub fn throughput(&self) -> f64 {
+        self.metrics
+            .as_ref()
+            .map_or(self.throughput_tps, |m| m.throughput_tok_s)
+    }
+
+    /// Get p50 latency in ms
+    #[must_use]
+    pub fn p50_latency(&self) -> f64 {
+        self.metrics
+            .as_ref()
+            .map_or(self.latency_p50_ms, |m| m.latency_p50_ms)
+    }
+
+    /// Get p99 latency in ms
+    #[must_use]
+    pub fn p99_latency(&self) -> f64 {
+        self.metrics
+            .as_ref()
+            .map_or(self.latency_p99_ms, |m| m.latency_p99_ms)
+    }
 }
 
 /// A single CI assertion
@@ -330,7 +380,8 @@ pub struct CiAssertion {
     pub actual: String,
     /// Whether assertion passed
     pub passed: bool,
-    /// Gate ID
+    /// Gate ID (optional - not all apr versions include it)
+    #[serde(default)]
     pub gate_id: String,
 }
 
@@ -365,7 +416,7 @@ pub fn run_profile_ci(
 
     cmd.arg("--warmup").arg(warmup.to_string());
     cmd.arg("--measure").arg(measure.to_string());
-    cmd.arg("--json");
+    cmd.arg("--format").arg("json");
 
     let output = cmd.output().map_err(|e| Error::ExecutionFailed {
         command: "apr profile --ci".to_string(),
@@ -374,13 +425,19 @@ pub fn run_profile_ci(
 
     let stdout = String::from_utf8_lossy(&output.stdout);
 
+    // Extract JSON object from output (may have prefix lines like "Loading model...")
+    let json_start = stdout.find('{');
+    let json_str = json_start.map_or_else(|| stdout.as_ref(), |i| &stdout[i..]);
+
     // Try JSON parsing
-    if let Ok(result) = serde_json::from_str::<CiProfileResult>(&stdout) {
+    if let Ok(result) = serde_json::from_str::<CiProfileResult>(json_str) {
         return Ok(result);
     }
 
     // Fall back to basic result based on exit code
     Ok(CiProfileResult {
+        model: String::new(),
+        metrics: None,
         throughput_tps: 0.0,
         latency_p50_ms: 0.0,
         latency_p99_ms: 0.0,
@@ -499,6 +556,8 @@ mod tests {
     #[test]
     fn test_ci_profile_assertions() {
         let result = CiProfileResult {
+            model: String::new(),
+            metrics: None,
             throughput_tps: 12.8,
             latency_p50_ms: 78.2,
             latency_p99_ms: 156.5,
@@ -828,6 +887,8 @@ mod tests {
     #[test]
     fn test_ci_profile_result_clone() {
         let result = CiProfileResult {
+            model: String::new(),
+            metrics: None,
             throughput_tps: 15.0,
             latency_p50_ms: 70.0,
             latency_p99_ms: 140.0,
@@ -841,6 +902,8 @@ mod tests {
     #[test]
     fn test_ci_profile_result_debug() {
         let result = CiProfileResult {
+            model: String::new(),
+            metrics: None,
             throughput_tps: 10.0,
             latency_p50_ms: 80.0,
             latency_p99_ms: 160.0,
@@ -1024,6 +1087,8 @@ mod tests {
     #[test]
     fn test_ci_profile_with_multiple_assertions() {
         let result = CiProfileResult {
+            model: String::new(),
+            metrics: None,
             throughput_tps: 12.0,
             latency_p50_ms: 80.0,
             latency_p99_ms: 180.0,
@@ -1167,6 +1232,8 @@ mod tests {
     #[test]
     fn test_ci_profile_result_serialization() {
         let result = CiProfileResult {
+            model: String::new(),
+            metrics: None,
             throughput_tps: 20.0,
             latency_p50_ms: 50.0,
             latency_p99_ms: 100.0,
@@ -1337,6 +1404,8 @@ mod tests {
     #[test]
     fn test_ci_profile_all_assertions_pass() {
         let result = CiProfileResult {
+            model: String::new(),
+            metrics: None,
             throughput_tps: 50.0,
             latency_p50_ms: 20.0,
             latency_p99_ms: 40.0,
@@ -1606,6 +1675,8 @@ mod tests {
     #[test]
     fn test_ci_profile_result_with_failed_assertions() {
         let result = CiProfileResult {
+            model: String::new(),
+            metrics: None,
             throughput_tps: 15.5,
             latency_p50_ms: 50.0,
             latency_p99_ms: 250.0,

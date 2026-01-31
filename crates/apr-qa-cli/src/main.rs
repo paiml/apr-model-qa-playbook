@@ -1084,8 +1084,9 @@ fn run_certification(
                                     3,
                                 ) {
                                     Ok(result) => {
-                                        tps_results[idx].0 = Some(result.throughput_tps);
-                                        println!("    CPU: {:.1} tok/s", result.throughput_tps);
+                                        let tps = result.throughput();
+                                        tps_results[idx].0 = Some(tps);
+                                        println!("    CPU: {tps:.1} tok/s");
                                     }
                                     Err(e) => {
                                         eprintln!("    CPU profile failed: {e}");
