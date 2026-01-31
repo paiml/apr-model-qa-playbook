@@ -18,6 +18,12 @@ test_matrix:
     - cpu
   scenario_count: 10
 
+oracles:
+  - type: garbage
+    config:
+      max_repetition_ratio: 0.3
+      min_unique_chars: 10
+
 property_tests:
   - name: arithmetic
     generator: "arithmetic()"

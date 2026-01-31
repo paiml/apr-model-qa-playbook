@@ -347,8 +347,54 @@ fn is_code_prompt(prompt: &str) -> bool {
         || prompt.contains("```")
 }
 
+/// Check if a string contains a repeating substring pattern
+///
+/// For each candidate period `p` in `[2, min(20, len/3)]`, extracts the first
+/// `p` bytes as a pattern and counts consecutive repetitions from the start.
+/// Returns true if reps >= 3 AND coverage >= 70% of the string length.
+fn check_substring_repetition(s: &str) -> bool {
+    let bytes = s.as_bytes();
+    let len = bytes.len();
+    if len < 6 {
+        return false;
+    }
+    let max_period = 20.min(len / 3);
+    for p in 2..=max_period {
+        let pattern = &bytes[..p];
+        let mut reps = 1;
+        let mut pos = p;
+        while pos + p <= len && &bytes[pos..pos + p] == pattern {
+            reps += 1;
+            pos += p;
+        }
+        if reps >= 3 && (reps * p) * 100 / len >= 70 {
+            return true;
+        }
+    }
+    false
+}
+
+/// Check if output has character-level n-gram repetition
+///
+/// Checks the full output string and each individual word (for words
+/// with length >= 6) to catch patterns like "foo VILLEVILLEVILLE bar".
+fn has_char_ngram_repetition(output: &str) -> bool {
+    if check_substring_repetition(output) {
+        return true;
+    }
+    output
+        .split_whitespace()
+        .any(|word| word.len() >= 6 && check_substring_repetition(word))
+}
+
 /// Check if output is highly repetitive
 fn is_repetitive(output: &str) -> bool {
+    // Character-level n-gram check catches patterns like "VILLEVILLEVILLE"
+    // that word-level checks miss (single continuous token, no whitespace).
+    if has_char_ngram_repetition(output) {
+        return true;
+    }
+
     let words: Vec<&str> = output.split_whitespace().collect();
     if words.len() < 5 {
         return false;
@@ -707,8 +753,10 @@ mod tests {
     // Mutation-killing tests for is_repetitive
     #[test]
     fn test_is_repetitive_needs_minimum_words() {
-        // < 5 words should return false
-        assert!(!is_repetitive("a a a a")); // only 4 words
+        // < 5 distinct words without char-level repetition → false
+        assert!(!is_repetitive("one two three four"));
+        // "a a a a" now correctly detected by char-level ngram check
+        assert!(is_repetitive("a a a a"));
         assert!(is_repetitive("a a a a a")); // 5 words, all same
     }
 
@@ -774,5 +822,141 @@ mod tests {
     fn test_oracle_wrapper_name() {
         let wrapper = OracleWrapper(ArithmeticOracle::new());
         assert_eq!(wrapper.name(), "arithmetic");
+    }
+
+    // --- Character-level n-gram repetition tests ---
+
+    #[test]
+    fn test_char_ngram_ville_pattern() {
+        // The motivating case from aprender#189
+        assert!(check_substring_repetition("VILLEVILLEVILLEVILLE"));
+        assert!(is_repetitive("VILLEVILLEVILLEVILLE"));
+    }
+
+    #[test]
+    fn test_char_ngram_short_patterns() {
+        assert!(check_substring_repetition("abcabcabc"));
+        assert!(check_substring_repetition("xyxyxyxy"));
+    }
+
+    #[test]
+    fn test_char_ngram_longer_patterns() {
+        assert!(check_substring_repetition("helloWorldhelloWorldhelloWorld"));
+    }
+
+    #[test]
+    fn test_char_ngram_not_triggered_on_normal_text() {
+        assert!(!check_substring_repetition("The quick brown fox"));
+        assert!(!check_substring_repetition("Hello, world!"));
+        assert!(!check_substring_repetition(
+            "Rust is a systems programming language"
+        ));
+        assert!(!has_char_ngram_repetition(
+            "The quick brown fox jumps over the lazy dog"
+        ));
+    }
+
+    #[test]
+    fn test_char_ngram_per_word_detection() {
+        // Garbage word embedded in normal sentence
+        assert!(has_char_ngram_repetition("output VILLEVILLEVILLEVILLE end"));
+    }
+
+    #[test]
+    fn test_char_ngram_single_char_repeat() {
+        // "aaaaaaaaaaaa" — period 2 "aa" repeats 6 times, coverage 100%
+        assert!(check_substring_repetition("aaaaaaaaaaaa"));
+    }
+
+    #[test]
+    fn test_char_ngram_partial_coverage_not_flagged() {
+        // "abcabcXYZ" — 2 reps of "abc" = 6/9 = 66%, below 70% threshold
+        assert!(!check_substring_repetition("abcabcXYZ"));
+    }
+
+    #[test]
+    fn test_char_ngram_boundary_exactly_three_reps() {
+        // Exactly 3 repetitions, coverage 100% — should trigger
+        assert!(check_substring_repetition("abcabcabc"));
+    }
+
+    #[test]
+    fn test_char_ngram_boundary_exactly_two_reps() {
+        // Exactly 2 repetitions — below threshold of 3
+        assert!(!check_substring_repetition("abcabc"));
+    }
+
+    // Mutation-killing tests for thresholds
+
+    #[test]
+    fn test_char_ngram_min_reps_threshold() {
+        // 3 reps at 100% coverage → true
+        assert!(check_substring_repetition("xyzxyzxyz"));
+        // 2 reps at 100% coverage → false (must be >= 3)
+        assert!(!check_substring_repetition("xyzxyz"));
+    }
+
+    #[test]
+    fn test_char_ngram_coverage_threshold() {
+        // 3 reps of "ab" in "abababXXXX" = 6/10 = 60% < 70% → false
+        assert!(!check_substring_repetition("abababXXXX"));
+        // 3 reps of "ab" in "ababab" = 6/6 = 100% → true
+        assert!(check_substring_repetition("ababab"));
+    }
+
+    #[test]
+    fn test_char_ngram_min_period_is_two() {
+        // Period 1 is not checked — single char "aaa" with len < 6 is skipped
+        assert!(!check_substring_repetition("aaa"));
+        // But period 2 "aa" in a long string works
+        assert!(check_substring_repetition("aaaaaaaaaaaa"));
+    }
+
+    #[test]
+    fn test_char_ngram_word_len_threshold() {
+        // Words shorter than 6 chars are not individually checked
+        assert!(!has_char_ngram_repetition("aaaa bbbb"));
+        // Word with 6+ chars that is repetitive gets caught
+        assert!(has_char_ngram_repetition("normal ababababab text"));
+    }
+
+    #[test]
+    fn test_char_ngram_too_short_string() {
+        // Strings shorter than 6 bytes always return false
+        assert!(!check_substring_repetition("abab"));
+        assert!(!check_substring_repetition("aa"));
+        assert!(!check_substring_repetition(""));
+    }
+
+    // Integration: GarbageOracle.evaluate() catches VILLE pattern
+    #[test]
+    fn test_garbage_oracle_catches_ville() {
+        let oracle = GarbageOracle::new();
+        let result = oracle.evaluate("test", "VILLEVILLEVILLEVILLE");
+        assert!(result.is_falsified());
+    }
+
+    #[test]
+    fn test_garbage_oracle_catches_embedded_repetition() {
+        let oracle = GarbageOracle::new();
+        let result = oracle.evaluate("test", "Result: VILLEVILLEVILLEVILLE done");
+        assert!(result.is_falsified());
+    }
+
+    // Regression: existing word-level tests still pass
+    #[test]
+    fn test_word_level_repetition_still_works() {
+        assert!(is_repetitive("foo foo foo foo foo foo"));
+        assert!(is_repetitive("bar baz bar baz bar baz bar baz"));
+        assert!(!is_repetitive(
+            "The quick brown fox jumps over the lazy dog"
+        ));
+    }
+
+    #[test]
+    fn test_word_level_short_still_skipped() {
+        // Short word sequences without char-ngram patterns pass through
+        assert!(!is_repetitive("hello world"));
+        assert!(!is_repetitive("one two three"));
     }
 }
