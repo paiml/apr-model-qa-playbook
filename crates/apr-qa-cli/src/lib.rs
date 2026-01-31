@@ -1141,4 +1141,224 @@ mod tests {
         // Should return empty or with failures since model doesn't exist
         let _ = results;
     }
+
+    // =========================================================================
+    // Additional coverage tests for certify_model path
+    // =========================================================================
+
+    /// Helper to get the workspace root path for test playbooks
+    fn get_workspace_root() -> std::path::PathBuf {
+        // Start from the manifest dir and go up to find the workspace root
+        let manifest_dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+        manifest_dir
+            .parent()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .to_path_buf()
+    }
+
+    #[test]
+    fn test_certify_model_with_subprocess_mode_no_cache() {
+        let config = CertificationConfig {
+            tier: CertTier::Mvp,
+            subprocess: true, // Subprocess mode but no cache
+            model_cache: None,
+            apr_binary: "apr".to_string(),
+            output_dir: std::path::PathBuf::from("/tmp"),
+            dry_run: false,
+        };
+        // Non-existent model, so will fail at playbook not found
+        let result = certify_model("nonexistent/model", &config);
+        // Will fail because playbook doesn't exist
+        assert!(!result.success);
+        assert!(result.error.is_some());
+    }
+
+    #[test]
+    fn test_certify_model_with_subprocess_mode_and_cache() {
+        let config = CertificationConfig {
+            tier: CertTier::Mvp,
+            subprocess: true,
+            model_cache: Some(std::path::PathBuf::from("/nonexistent/cache")),
+            apr_binary: "apr".to_string(),
+            output_dir: std::path::PathBuf::from("/tmp"),
+            dry_run: false,
+        };
+        // Non-existent model
+        let result = certify_model("test/model", &config);
+        // Will fail because playbook doesn't exist
+        assert_eq!(result.model_id, "test/model");
+    }
+
+    #[test]
+    fn test_execute_playbook_with_config() {
+        // Create a minimal playbook from YAML
+        let yaml = r#"
+name: test-playbook
+version: "1.0.0"
+description: "Test playbook"
+model:
+  hf_repo: "test/model"
+  formats:
+    - gguf
+  quantizations:
+    - q4_k_m
+  size_category: tiny
+test_matrix:
+  modalities:
+    - run
+  backends:
+    - cpu
+  scenario_count: 1
+  seed: 42
+  timeout_ms: 30000
+gates:
+  g1_model_loads: true
+  g2_basic_inference: true
+  g3_no_crashes: true
+  g4_not_garbage: true
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("valid yaml");
+        let config = build_certification_config(CertTier::Mvp, false, None);
+        let result = execute_playbook(&playbook, config);
+        assert!(result.is_ok());
+        let exec_result = result.unwrap();
+        assert_eq!(exec_result.playbook_name, "test-playbook");
+    }
+
+    #[test]
+    fn test_execute_playbook_with_dry_run() {
+        let yaml = r#"
+name: test-playbook-dry
+version: "1.0.0"
+description: "Test playbook dry run"
+model:
+  hf_repo: "test/model-dry"
+  formats:
+    - gguf
+  quantizations:
+    - q4_k_m
+  size_category: tiny
+test_matrix:
+  modalities:
+    - run
+  backends:
+    - cpu
+  scenario_count: 1
+  seed: 42
+  timeout_ms: 30000
+gates:
+  g1_model_loads: true
+  g2_basic_inference: true
+  g3_no_crashes: true
+  g4_not_garbage: true
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("valid yaml");
+        let mut config = build_certification_config(CertTier::Mvp, false, None);
+        config.dry_run = true;
+        let result = execute_playbook(&playbook, config);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_load_playbook_with_workspace_path() {
+        let workspace_root = get_workspace_root();
+        let playbook_path =
+            workspace_root.join("playbooks/models/qwen2.5-coder-0.5b-mvp.playbook.yaml");
+        if playbook_path.exists() {
+            let result = load_playbook(&playbook_path);
+            assert!(result.is_ok());
+            let playbook = result.unwrap();
+            assert!(!playbook.name.is_empty());
+        }
+    }
+
+    #[test]
+    fn test_certify_model_result_fields() {
+        // Test that all ModelCertificationResult fields are properly set
+        let config = CertificationConfig {
+            tier: CertTier::Quick,
+            subprocess: false,
+            ..Default::default()
+        };
+        let result = certify_model("nonexistent/test-model", &config);
+        // Playbook won't exist, so we get error
+        assert_eq!(result.model_id, "nonexistent/test-model");
+        assert_eq!(result.mqs_score, 0);
+        assert_eq!(result.grade, "-");
+        assert!(result.error.is_some());
+    }
+
+    #[test]
+    fn test_certify_model_smoke_tier() {
+        let config = CertificationConfig {
+            tier: CertTier::Smoke,
+            subprocess: false,
+            ..Default::default()
+        };
+        // Non-existent model
+        let result = certify_model("test/model-smoke", &config);
+        // Either succeeds or fails with "not found"
+        assert!(result.error.is_some() || result.success);
+    }
+
+    #[test]
+    fn test_certify_model_standard_tier() {
+        let config = CertificationConfig {
+            tier: CertTier::Standard,
+            subprocess: false,
+            ..Default::default()
+        };
+        let result = certify_model("test/model-standard", &config);
+        // Standard tier uses base playbook without suffix
+        assert!(!result.success); // Playbook won't exist
+    }
+
+    #[test]
+    fn test_playbook_path_for_model_various_tiers() {
+        // Test all tier combinations
+        let model = "Qwen/Qwen2.5-Coder-1.5B-Instruct";
+
+        let smoke = playbook_path_for_model(model, CertTier::Smoke);
+        assert!(smoke.contains("-smoke"));
+
+        let mvp = playbook_path_for_model(model, CertTier::Mvp);
+        assert!(mvp.contains("-mvp"));
+
+        let quick = playbook_path_for_model(model, CertTier::Quick);
+        assert!(quick.contains("-quick"));
+
+        let standard = playbook_path_for_model(model, CertTier::Standard);
+        assert!(!standard.contains("-standard")); // No suffix
+
+        let deep = playbook_path_for_model(model, CertTier::Deep);
+        assert!(!deep.contains("-deep")); // No suffix
+    }
+
+    #[test]
+    fn test_build_certification_config_with_model_path() {
+        let config =
+            build_certification_config(CertTier::Deep, true, Some("/path/to/models".to_string()));
+        assert!(config.subprocess_mode);
+        assert_eq!(config.model_path, Some("/path/to/models".to_string()));
+        assert!(config.run_profile_ci); // Deep tier enables profile CI
+    }
+
+    #[test]
+    fn test_certification_config_all_fields_set() {
+        let config = CertificationConfig {
+            tier: CertTier::Deep,
+            model_cache: Some(std::path::PathBuf::from("/cache")),
+            apr_binary: "/usr/bin/apr".to_string(),
+            subprocess: true,
+            output_dir: std::path::PathBuf::from("/output"),
+            dry_run: true,
+        };
+        assert_eq!(config.tier, CertTier::Deep);
+        assert!(config.model_cache.is_some());
+        assert_eq!(config.apr_binary, "/usr/bin/apr");
+        assert!(config.subprocess);
+        assert!(config.dry_run);
+    }
 }
