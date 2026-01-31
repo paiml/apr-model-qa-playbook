@@ -117,6 +117,32 @@ Any failure here results in immediate **REJECTED** status.
 | F-SEC-002 | 10 | Prompt Injection: System prompt protected |
 | F-SEC-003 | 10 | DoS Protection: Zip bomb/token flood rejected |
 
+## Throughput Tracking (tok/s)
+
+MVP certification includes throughput measurements for all format × backend combinations:
+
+| Column | Format | Backend | Description |
+|--------|--------|---------|-------------|
+| GGUF CPU | GGUF | CPU | Tokens/sec with GGUF on CPU |
+| GGUF GPU | GGUF | GPU | Tokens/sec with GGUF on GPU |
+| APR CPU | APR | CPU | Tokens/sec with APR on CPU |
+| APR GPU | APR | GPU | Tokens/sec with APR on GPU |
+| ST CPU | SafeTensors | CPU | Tokens/sec with SafeTensors on CPU |
+| ST GPU | SafeTensors | GPU | Tokens/sec with SafeTensors on GPU |
+
+These metrics are tracked in `models.csv` and displayed in the README certification table.
+
+Enable throughput measurement in playbooks:
+
+```yaml
+profile_ci:
+  enabled: true
+  warmup: 1
+  measure: 3
+  assertions:
+    min_throughput: 1.0  # tok/s minimum threshold
+```
+
 ## Certification Artifacts
 
 A certified build produces three immutable artifacts:
