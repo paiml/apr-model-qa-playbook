@@ -318,16 +318,50 @@ batuta oracle --rag "Popperian falsification scoring"
 batuta oracle --rag "MQS gateway checks"
 ```
 
-## YAML Playbook Examples
+## Model Certification Workflow
 
-The `examples/` directory in the repository root contains YAML playbook examples:
+The recommended workflow for certifying models:
 
-- `llama-3.2.yaml` - Llama 3.2 1B Instruct qualification
-- `phi-3.yaml` - Phi-3 Mini qualification
-- `qwen-coder.yaml` - Qwen Coder qualification
-
-These can be run with the CLI:
+### 1. MVP Certification (Quick Surface Coverage)
 
 ```bash
-cargo run --bin apr-qa -- run examples/llama-3.2.yaml
+# Certify all models in a family with MVP tier
+apr-qa certify --family qwen-coder --tier mvp
+
+# Results:
+# - Tests 18 combinations (3 formats × 2 backends × 3 modalities)
+# - On pass: Grade B, Status PROVISIONAL
+# - Time limit: ≤10 minutes per model
+```
+
+### 2. Full Certification (Production Release)
+
+```bash
+# Certify for production release
+apr-qa certify --family qwen-coder --tier full
+
+# Results:
+# - Runs complete 170-point Verification Matrix
+# - On pass: Grade A+, Status CERTIFIED
+# - Time limit: ≤1 hour per model
+```
+
+### 3. Certification Results
+
+Results are stored in:
+- `docs/certifications/models.csv` - Central certification database
+- `certifications/<model>/evidence.json` - Raw test evidence
+- `README.md` - Certification table (via `apr-qa-readme-sync`)
+
+## YAML Playbook Examples
+
+The `playbooks/` directory contains YAML playbooks:
+
+- `playbooks/models/qwen2.5-coder-*-mvp.playbook.yaml` - MVP tier playbooks
+- `playbooks/templates/` - Reusable templates
+
+Run a specific playbook:
+
+```bash
+cargo run --bin apr-qa -- run playbooks/models/qwen2.5-coder-1.5b-mvp.playbook.yaml
 ```

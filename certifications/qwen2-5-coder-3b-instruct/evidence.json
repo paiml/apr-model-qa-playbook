@@ -1,6 +1,6 @@
 [
   {
-    "id": "0000000000000000188fd3f520c31a8f",
+    "id": "0000000000000000188fdf10c436d4f0",
     "gate_id": "F-A1-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_gguf_0000000000000000",
@@ -31,7 +31,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-01-31T13:30:28.350000650Z",
+    "timestamp": "2026-01-31T16:54:01.684293238Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -42,10 +42,10 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fd3f520c336d8",
+    "id": "0000000000000000188fdf10c436de8f",
     "gate_id": "F-A1-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_gguf_0000000000000001",
+      "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_apr_0000000000000001",
       "model": {
         "org": "Qwen",
         "name": "Qwen2.5-Coder-3B-Instruct",
@@ -53,7 +53,7 @@
       },
       "modality": "run",
       "backend": "cpu",
-      "format": "gguf",
+      "format": "apr",
       "prompt": "What is 2+2?",
       "temperature": 0.0,
       "max_tokens": 32,
@@ -73,7 +73,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-01-31T13:30:28.350007340Z",
+    "timestamp": "2026-01-31T16:54:01.684295612Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -84,10 +84,10 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fd3f520c34104",
+    "id": "0000000000000000188fdf10c436e3b9",
     "gate_id": "F-A1-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_gguf_0000000000000002",
+      "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_safetensors_0000000000000002",
       "model": {
         "org": "Qwen",
         "name": "Qwen2.5-Coder-3B-Instruct",
@@ -95,7 +95,7 @@
       },
       "modality": "run",
       "backend": "cpu",
-      "format": "gguf",
+      "format": "safetensors",
       "prompt": "What is 2+2?",
       "temperature": 0.0,
       "max_tokens": 32,
@@ -115,7 +115,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-01-31T13:30:28.350009874Z",
+    "timestamp": "2026-01-31T16:54:01.684296934Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -126,17 +126,17 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fd3f520c34a85",
-    "gate_id": "F-A1-001",
+    "id": "0000000000000000188fdf10c436e861",
+    "gate_id": "F-A2-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_gguf_0000000000000003",
+      "id": "Qwen2.5-Coder-3B-Instruct_run_gpu_gguf_0000000000000003",
       "model": {
         "org": "Qwen",
         "name": "Qwen2.5-Coder-3B-Instruct",
         "variant": null
       },
       "modality": "run",
-      "backend": "cpu",
+      "backend": "gpu",
       "format": "gguf",
       "prompt": "What is 2+2?",
       "temperature": 0.0,
@@ -157,7 +157,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-01-31T13:30:28.350012328Z",
+    "timestamp": "2026-01-31T16:54:01.684298106Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -168,18 +168,18 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fd3f520c353c1",
-    "gate_id": "F-A1-001",
+    "id": "0000000000000000188fdf10c436ed59",
+    "gate_id": "F-A2-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_gguf_0000000000000004",
+      "id": "Qwen2.5-Coder-3B-Instruct_run_gpu_apr_0000000000000004",
       "model": {
         "org": "Qwen",
         "name": "Qwen2.5-Coder-3B-Instruct",
         "variant": null
       },
       "modality": "run",
-      "backend": "cpu",
-      "format": "gguf",
+      "backend": "gpu",
+      "format": "apr",
       "prompt": "What is 2+2?",
       "temperature": 0.0,
       "max_tokens": 32,
@@ -199,7 +199,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-01-31T13:30:28.350014681Z",
+    "timestamp": "2026-01-31T16:54:01.684299358Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -210,18 +210,18 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fd3f520c35d25",
-    "gate_id": "F-A1-001",
+    "id": "0000000000000000188fdf10c436f23d",
+    "gate_id": "F-A2-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_gguf_0000000000000005",
+      "id": "Qwen2.5-Coder-3B-Instruct_run_gpu_safetensors_0000000000000005",
       "model": {
         "org": "Qwen",
         "name": "Qwen2.5-Coder-3B-Instruct",
         "variant": null
       },
       "modality": "run",
-      "backend": "cpu",
-      "format": "gguf",
+      "backend": "gpu",
+      "format": "safetensors",
       "prompt": "What is 2+2?",
       "temperature": 0.0,
       "max_tokens": 32,
@@ -241,7 +241,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-01-31T13:30:28.350017065Z",
+    "timestamp": "2026-01-31T16:54:01.684300639Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -252,16 +252,16 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fd3f520c36642",
-    "gate_id": "F-A1-001",
+    "id": "0000000000000000188fdf10c436f6a9",
+    "gate_id": "F-A3-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_gguf_0000000000000006",
+      "id": "Qwen2.5-Coder-3B-Instruct_chat_cpu_gguf_0000000000000006",
       "model": {
         "org": "Qwen",
         "name": "Qwen2.5-Coder-3B-Instruct",
         "variant": null
       },
-      "modality": "run",
+      "modality": "chat",
       "backend": "cpu",
       "format": "gguf",
       "prompt": "What is 2+2?",
@@ -283,7 +283,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-01-31T13:30:28.350019479Z",
+    "timestamp": "2026-01-31T16:54:01.684301691Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -294,18 +294,18 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fd3f520c36fa6",
-    "gate_id": "F-A1-001",
+    "id": "0000000000000000188fdf10c436fab0",
+    "gate_id": "F-A3-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_gguf_0000000000000007",
+      "id": "Qwen2.5-Coder-3B-Instruct_chat_cpu_apr_0000000000000007",
       "model": {
         "org": "Qwen",
         "name": "Qwen2.5-Coder-3B-Instruct",
         "variant": null
       },
-      "modality": "run",
+      "modality": "chat",
       "backend": "cpu",
-      "format": "gguf",
+      "format": "apr",
       "prompt": "What is 2+2?",
       "temperature": 0.0,
       "max_tokens": 32,
@@ -325,7 +325,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-01-31T13:30:28.350021842Z",
+    "timestamp": "2026-01-31T16:54:01.684302763Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -336,18 +336,18 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fd3f520c3789b",
-    "gate_id": "F-A1-001",
+    "id": "0000000000000000188fdf10c436fecc",
+    "gate_id": "F-A3-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_gguf_0000000000000008",
+      "id": "Qwen2.5-Coder-3B-Instruct_chat_cpu_safetensors_0000000000000008",
       "model": {
         "org": "Qwen",
         "name": "Qwen2.5-Coder-3B-Instruct",
         "variant": null
       },
-      "modality": "run",
+      "modality": "chat",
       "backend": "cpu",
-      "format": "gguf",
+      "format": "safetensors",
       "prompt": "What is 2+2?",
       "temperature": 0.0,
       "max_tokens": 32,
@@ -367,7 +367,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-01-31T13:30:28.350024096Z",
+    "timestamp": "2026-01-31T16:54:01.684303794Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -378,17 +378,17 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fd3f520c38371",
-    "gate_id": "F-A1-001",
+    "id": "0000000000000000188fdf10c437045a",
+    "gate_id": "F-A4-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_gguf_0000000000000009",
+      "id": "Qwen2.5-Coder-3B-Instruct_chat_gpu_gguf_0000000000000009",
       "model": {
         "org": "Qwen",
         "name": "Qwen2.5-Coder-3B-Instruct",
         "variant": null
       },
-      "modality": "run",
-      "backend": "cpu",
+      "modality": "chat",
+      "backend": "gpu",
       "format": "gguf",
       "prompt": "What is 2+2?",
       "temperature": 0.0,
@@ -409,7 +409,343 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-01-31T13:30:28.350026880Z",
+    "timestamp": "2026-01-31T16:54:01.684305307Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000188fdf10c4370902",
+    "gate_id": "F-A4-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-3B-Instruct_chat_gpu_apr_000000000000000a",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-3B-Instruct",
+        "variant": null
+      },
+      "modality": "chat",
+      "backend": "gpu",
+      "format": "apr",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 10,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "The answer is 4.",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-01-31T16:54:01.684306408Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000188fdf10c4370d50",
+    "gate_id": "F-A4-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-3B-Instruct_chat_gpu_safetensors_000000000000000b",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-3B-Instruct",
+        "variant": null
+      },
+      "modality": "chat",
+      "backend": "gpu",
+      "format": "safetensors",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 11,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "The answer is 4.",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-01-31T16:54:01.684307520Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000188fdf10c43711a7",
+    "gate_id": "F-A5-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-3B-Instruct_serve_cpu_gguf_000000000000000c",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-3B-Instruct",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "cpu",
+      "format": "gguf",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 12,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "The answer is 4.",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-01-31T16:54:01.684308662Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000188fdf10c4371613",
+    "gate_id": "F-A5-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-3B-Instruct_serve_cpu_apr_000000000000000d",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-3B-Instruct",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 13,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "The answer is 4.",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-01-31T16:54:01.684309803Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000188fdf10c4371aa7",
+    "gate_id": "F-A5-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-3B-Instruct_serve_cpu_safetensors_000000000000000e",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-3B-Instruct",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 14,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "The answer is 4.",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-01-31T16:54:01.684310915Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000188fdf10c4371f3a",
+    "gate_id": "F-A6-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-3B-Instruct_serve_gpu_gguf_000000000000000f",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-3B-Instruct",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "gpu",
+      "format": "gguf",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 15,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "The answer is 4.",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-01-31T16:54:01.684312117Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000188fdf10c437237e",
+    "gate_id": "F-A6-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-3B-Instruct_serve_gpu_apr_0000000000000010",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-3B-Instruct",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "gpu",
+      "format": "apr",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 16,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "The answer is 4.",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-01-31T16:54:01.684313188Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000188fdf10c4372a57",
+    "gate_id": "F-A6-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-3B-Instruct_serve_gpu_safetensors_0000000000000011",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-3B-Instruct",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "gpu",
+      "format": "safetensors",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 17,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "The answer is 4.",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-01-31T16:54:01.684315001Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",

@@ -33,17 +33,36 @@ After gateways pass, points are awarded by category:
 
 ## Grade Mapping
 
-| Grade | Normalized Score |
-|-------|------------------|
-| A+ | ≥95 |
-| A | ≥90 |
-| A- | ≥85 |
-| B+ | ≥80 |
-| B | ≥75 |
-| B- | ≥70 |
-| C | ≥60 |
-| D | ≥50 |
-| F | <50 |
+| Grade | Raw Score | Status |
+|-------|-----------|--------|
+| A+ | 950-1000 | CERTIFIED |
+| A | 900-949 | CERTIFIED |
+| B+ | 850-899 | CERTIFIED |
+| B | 800-849 | PROVISIONAL |
+| C | 700-799 | PROVISIONAL |
+| F | <700 | BLOCKED |
+
+## Tier-Aware Scoring
+
+The certification system uses tier-aware scoring:
+
+| Tier | Pass Threshold | Score on Pass | Grade | Status |
+|------|----------------|---------------|-------|--------|
+| MVP | ≥90% | 800 | B | PROVISIONAL |
+| Full | ≥95% | 950+ | A+ | CERTIFIED |
+
+```rust
+// Tier-aware scoring functions (apr-qa-certify)
+use apr_qa_certify::{CertificationTier, score_from_tier, status_from_tier};
+
+// MVP tier with 95% pass rate
+let score = score_from_tier(CertificationTier::Mvp, 0.95, false);
+assert_eq!(score, 800); // B grade
+
+// Full tier with 98% pass rate
+let score = score_from_tier(CertificationTier::Full, 0.98, false);
+assert!(score >= 950); // A+ grade
+```
 
 ## Penalty System
 

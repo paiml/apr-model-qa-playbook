@@ -8,6 +8,36 @@ apr-qa [COMMAND] [OPTIONS]
 
 ### Commands
 
+#### certify
+
+Certify models against the verification matrix:
+
+```bash
+apr-qa certify [OPTIONS] [MODEL...]
+```
+
+Options:
+- `--all` - Certify all models in registry
+- `--family <NAME>` - Certify by model family (e.g., "qwen-coder", "llama")
+- `--tier <TIER>` - Certification tier: `mvp` (default) or `full`
+- `--output <DIR>` - Output directory for certification artifacts
+- `--dry-run` - Preview what would be certified
+
+Examples:
+```bash
+# MVP certification for a model family (recommended)
+apr-qa certify --family qwen-coder --tier mvp
+
+# Full certification for production release
+apr-qa certify --family qwen-coder --tier full
+
+# Certify specific model
+apr-qa certify Qwen/Qwen2.5-Coder-1.5B-Instruct --tier mvp
+
+# Dry run to preview plan
+apr-qa certify --family qwen-coder --dry-run
+```
+
 #### run
 
 Execute a playbook:

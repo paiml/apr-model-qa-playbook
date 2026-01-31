@@ -12,13 +12,52 @@ earns certification by **surviving** these refutation attempts.
 
 > "Certified" means we tried very hard to break it in specific ways, and failed.
 
-## Certification Levels
+## Two-Tier Certification Model
+
+The framework uses a **two-tier** certification model aligned with real-world QA workflows:
+
+| Tier | Time Limit | Grade on Pass | Status | Use Case |
+|------|------------|---------------|--------|----------|
+| **MVP** | ≤10 min | **B** | PROVISIONAL | 80% of models - surface coverage |
+| **Full** | ≤1 hour | **A+** | CERTIFIED | Production qualification |
+
+### MVP Tier (Minimum Viable Product)
+
+Tests 18 combinations: 3 formats (GGUF, APR, SafeTensors) × 2 backends (CPU, GPU) × 3 modalities (run, chat, serve).
+
+**Pass Criteria:**
+- ≥90% pass rate across all 18 combinations
+- All P0 gateways (G1-G4) must pass
+
+**On Pass:** MQS Score = 800, Grade = **B**, Status = **PROVISIONAL**
+
+```bash
+# Run MVP certification (recommended for most models)
+apr-qa certify --family qwen-coder --tier mvp
+```
+
+### Full Tier (Production Qualification)
+
+Runs the complete 170-point Verification Matrix.
+
+**Pass Criteria:**
+- ≥95% pass rate on verification matrix
+- All P0 gates must pass
+
+**On Pass:** MQS Score = 950+, Grade = **A+**, Status = **CERTIFIED**
+
+```bash
+# Run Full certification (for production release)
+apr-qa certify --family qwen-coder --tier full
+```
+
+### Status Summary
 
 | Status | Requirements |
 |--------|-------------|
-| **CERTIFIED** | Score >= 95% AND zero P0 failures |
-| **PROVISIONAL** | Score >= 80% AND zero P0 failures |
-| **REJECTED** | Score < 80% OR any P0 failure |
+| **CERTIFIED** | Full tier pass (≥95% AND zero P0 failures) |
+| **PROVISIONAL** | MVP tier pass (≥90% AND zero P0 failures) |
+| **BLOCKED** | Pass rate < 90% OR any P0 failure |
 
 ## The Verification Matrix (170 Points)
 

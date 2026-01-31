@@ -77,6 +77,23 @@ gates:
 cargo run --bin apr-qa -- run playbooks/models/my-model.playbook.yaml
 ```
 
+## Model Certification (Recommended)
+
+The easiest way to qualify models is using the `certify` command:
+
+```bash
+# MVP certification (≤10 min, Grade B on pass)
+cargo run --bin apr-qa -- certify --family qwen-coder --tier mvp
+
+# Full certification (≤1 hr, Grade A+ on pass)
+cargo run --bin apr-qa -- certify --family qwen-coder --tier full
+
+# Certify a specific model
+cargo run --bin apr-qa -- certify Qwen/Qwen2.5-Coder-1.5B-Instruct --tier mvp
+```
+
+See [Certified Testing](./reference/certified-testing.md) for details.
+
 ## Running Examples
 
 Run the included examples to see the libraries in action:
