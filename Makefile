@@ -1,7 +1,8 @@
 # APR Model QA Playbook
 # Toyota Way + Popperian Falsification Testing Framework
 
-.PHONY: all build test lint coverage clean check fmt doc
+.PHONY: all build test lint coverage clean check fmt doc \
+       update-certifications certify-smoke certify-quick certify-standard certify-deep certify-qwen
 
 # Default target
 all: check
@@ -42,14 +43,14 @@ doc-open:
 check: fmt-check lint test
 
 # Coverage with llvm-cov (NEVER use tarpaulin)
-# Excludes CLI binary (hard to unit test) - library coverage must be >= 95%
+# Excludes CLI binaries (hard to unit test) - library coverage must be >= 95%
 coverage:
-	cargo llvm-cov --workspace --html --ignore-filename-regex 'apr-qa-cli'
+	cargo llvm-cov --workspace --html --ignore-filename-regex 'apr-qa-cli|apr-qa-certify/src/main.rs'
 	@echo "Coverage report: target/llvm-cov/html/index.html"
 
 # Coverage summary only (library code)
 coverage-summary:
-	cargo llvm-cov --workspace --ignore-filename-regex 'apr-qa-cli'
+	cargo llvm-cov --workspace --ignore-filename-regex 'apr-qa-cli|apr-qa-certify/src/main.rs'
 
 # Full coverage including CLI (for reference)
 coverage-full:
@@ -57,9 +58,10 @@ coverage-full:
 	@echo "Full coverage report: target/llvm-cov/html/index.html"
 
 # Coverage with threshold check for PMAT compliance (95%)
+# Excludes CLI binaries (apr-qa-cli and apr-qa-certify main.rs) which are hard to unit test
 coverage-check:
 	@echo "Checking PMAT coverage compliance (>= 95%)..."
-	@cargo llvm-cov --workspace --ignore-filename-regex 'apr-qa-cli' 2>&1 | \
+	@cargo llvm-cov --workspace --ignore-filename-regex 'apr-qa-cli|apr-qa-certify/src/main.rs' 2>&1 | \
 		grep "^TOTAL" | awk '{print $$10}' | tr -d '%' | \
 		xargs -I{} sh -c 'if [ $$(echo "{} >= 95" | bc) -eq 1 ]; then \
 			echo "✓ Coverage: {}% (PMAT compliant)"; \
@@ -105,21 +107,62 @@ update:
 release:
 	cargo build --workspace --release
 
+# ============================================================================
+# Certification Targets (see docs/specifications/certified-testing.md)
+# ============================================================================
+
+# Update README certification table from CSV (REQUIRED after certification runs)
+update-certifications:
+	@echo "Updating README certification table from CSV..."
+	cargo run --bin apr-qa-readme-sync --quiet
+
+# Tiered certification targets
+certify-smoke:
+	@echo "Running Tier 1 (Smoke) certification - 1 second per model..."
+	cargo run --bin apr-qa -- certify --all --tier smoke
+
+certify-quick:
+	@echo "Running Tier 2 (Quick) certification - 30 seconds per model..."
+	cargo run --bin apr-qa -- certify --all --tier quick
+
+certify-standard:
+	@echo "Running Tier 3 (Standard) certification - 1 minute per model..."
+	cargo run --bin apr-qa -- certify --all --tier standard
+
+certify-deep:
+	@echo "Running Tier 4 (Deep) certification - 10 minutes per model..."
+	cargo run --bin apr-qa -- certify --all --tier deep
+
+# Priority: Qwen Coder family (first qualification target)
+certify-qwen:
+	@echo "Running full certification for Qwen Coder family..."
+	cargo run --bin apr-qa -- certify --family qwen-coder --tier deep
+	@$(MAKE) update-certifications
+
 # Help
 help:
 	@echo "APR Model QA Playbook - Make targets:"
 	@echo ""
-	@echo "  build            Build all crates"
-	@echo "  test             Run all tests"
-	@echo "  lint             Run clippy lints"
-	@echo "  fmt              Format code"
-	@echo "  check            Run all checks (fmt, lint, test)"
-	@echo "  coverage         Generate coverage report (library code)"
-	@echo "  coverage-summary Coverage summary (library code)"
-	@echo "  coverage-full    Full coverage including CLI"
-	@echo "  coverage-check   Verify PMAT compliance (>= 95%)"
-	@echo "  doc              Generate documentation"
-	@echo "  clean            Clean build artifacts"
-	@echo "  watch            Watch mode for development"
-	@echo "  dev-deps         Install development dependencies"
-	@echo "  help             Show this help"
+	@echo "  build                  Build all crates"
+	@echo "  test                   Run all tests"
+	@echo "  lint                   Run clippy lints"
+	@echo "  fmt                    Format code"
+	@echo "  check                  Run all checks (fmt, lint, test)"
+	@echo "  coverage               Generate coverage report (library code)"
+	@echo "  coverage-summary       Coverage summary (library code)"
+	@echo "  coverage-full          Full coverage including CLI"
+	@echo "  coverage-check         Verify PMAT compliance (>= 95%)"
+	@echo "  doc                    Generate documentation"
+	@echo "  clean                  Clean build artifacts"
+	@echo "  watch                  Watch mode for development"
+	@echo "  dev-deps               Install development dependencies"
+	@echo ""
+	@echo "Certification targets:"
+	@echo "  update-certifications  Update README table from CSV"
+	@echo "  certify-smoke          Tier 1: 1 second per model"
+	@echo "  certify-quick          Tier 2: 30 seconds per model"
+	@echo "  certify-standard       Tier 3: 1 minute per model"
+	@echo "  certify-deep           Tier 4: 10 minutes per model"
+	@echo "  certify-qwen           Full certification for Qwen Coder (priority)"
+	@echo ""
+	@echo "  help                   Show this help"

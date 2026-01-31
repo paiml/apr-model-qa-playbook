@@ -52,8 +52,11 @@ pub use executor::{
 };
 pub use parallel::{ExecutionMode, ParallelConfig, ParallelExecutor, ParallelResult};
 pub use patterns::{
-    BugPattern, CompanionCheckResult, PathSafetyResult, PathViolation, PatternDetector,
-    PromptPattern, PromptSafetyResult, TensorValidityResult,
+    ApiComplianceChecker, ApiComplianceResult, BugPattern, CompanionCheckResult, DosCheckResult,
+    DosProtectionConfig, DosViolation, IntegrityCheckResult, IntegrityChecker,
+    NumericalStabilityResult, ParityCheckResult, ParityChecker, PathSafetyResult, PathViolation,
+    PatternDetector, PerformanceCheckResult, PerformanceThresholds, PerformanceValidator,
+    PromptPattern, PromptSafetyResult, SpecGate, TensorValidityResult,
 };
 pub use playbook::{
     DifferentialTestConfig, FingerprintConfig, FormatValidationConfig, InferenceCompareConfig,

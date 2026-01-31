@@ -72,6 +72,36 @@ We don't test to pass—we **test to fail**. No amount of passing tests proves c
 | **Bug Classification** | 6 conversion bug types (tokenizer missing, embedding transposition, etc.) |
 | **GH-186 Detection** | PAD token flood and LayerNorm zero detection gates |
 
+## Model Certifications
+
+<!-- CERTIFICATION_TABLE_START -->
+**Certification Summary** (updated: 2026-01-31 12:39 UTC)
+
+| Status | Count |
+|--------|-------|
+| Certified | 0/12 |
+| Provisional | 0/12 |
+| Blocked | 0/12 |
+| Pending | 12/12 |
+
+**Priority Family:** Qwen Coder (see [Certified Testing Spec](docs/specifications/certified-testing.md))
+
+| Model | Family | Size | Status | MQS | Grade | G1 | G2 | G3 | G4 |
+|-------|--------|------|--------|-----|-------|----|----|----|----|
+| [deepseek-coder-1.3b-instruct](https://huggingface.co/deepseek-ai/deepseek-coder-1.3b-instruct) | deepseek-coder | 1.3B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - |
+| [gemma-2-2b-it](https://huggingface.co/google/gemma-2-2b-it) | gemma | 2B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - |
+| [Llama-3.2-1B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct) | llama | 1B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - |
+| [Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) | llama | 3B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - |
+| [Mistral-7B-Instruct-v0.3](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.3) | mistral | 7B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - |
+| [Phi-3-mini-4k-instruct](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct) | phi | 3.8B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - |
+| [Qwen2.5-Coder-0.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-0.5B-Instruct) | qwen-coder | 0.5B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - |
+| [Qwen2.5-Coder-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct) | qwen-coder | 1.5B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - |
+| [Qwen2.5-Coder-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-3B-Instruct) | qwen-coder | 3B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - |
+| [Qwen2.5-Coder-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct) | qwen-coder | 7B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - |
+| [Qwen2.5-Coder-14B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct) | qwen-coder | 14B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - |
+| [Qwen2.5-Coder-32B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-32B-Instruct) | qwen-coder | 32B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - |
+<!-- CERTIFICATION_TABLE_END -->
+
 ## Quick Start
 
 ```bash

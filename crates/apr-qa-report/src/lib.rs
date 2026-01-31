@@ -33,6 +33,7 @@
 #![cfg_attr(test, allow(clippy::redundant_clone))]
 #![cfg_attr(test, allow(clippy::float_cmp))]
 
+pub mod certificate;
 pub mod error;
 pub mod html;
 pub mod junit;
@@ -40,6 +41,7 @@ pub mod mqs;
 pub mod popperian;
 pub mod ticket;
 
+pub use certificate::{Certificate, CertificateGenerator, CertificationStatus};
 pub use error::{Error, Result};
 pub use mqs::{GatewayResult, MqsCalculator, MqsScore};
 pub use popperian::PopperianScore;

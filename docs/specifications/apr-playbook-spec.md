@@ -4807,6 +4807,7 @@ mod tests {
 
 ## Appendix C: Related Specifications
 
+- `docs/specifications/certified-testing.md` - Certified Testing & Popperian Falsification
 - `aprender/docs/specifications/qwen2.5-coder-showcase-demo.md` - Reference QA implementation
 - `realizar/docs/95-coverage-fast-pmat-comply.md` - Coverage methodology
 - `bashrs/docs/playbook-spec.md` - bashrs playbook format

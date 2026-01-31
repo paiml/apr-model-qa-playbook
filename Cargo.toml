@@ -5,6 +5,7 @@ members = [
     "crates/apr-qa-runner",
     "crates/apr-qa-report",
     "crates/apr-qa-cli",
+    "crates/apr-qa-certify",
 ]
 
 [workspace.package]
@@ -45,6 +46,7 @@ apr-qa-gen = { path = "crates/apr-qa-gen" }
 apr-qa-runner = { path = "crates/apr-qa-runner" }
 apr-qa-report = { path = "crates/apr-qa-report" }
 apr-qa-cli = { path = "crates/apr-qa-cli" }
+apr-qa-certify = { path = "crates/apr-qa-certify" }
 
 [workspace.lints.rust]
 unsafe_code = "deny"
