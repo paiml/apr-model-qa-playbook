@@ -42,9 +42,10 @@ pub use conversion::{
 };
 pub use differential::{
     BenchResult, BenchmarkMetrics, CiAssertion, CiProfileResult, DiffBenchmarkResult, DiffConfig,
-    DifferentialExecutor, FormatConversionResult, InferenceComparisonResult, SixColumnProfile,
-    TensorDiffResult, TensorMismatch, TensorMismatchType, TokenComparison, convert_format_cached,
-    run_bench_throughput, run_diff_benchmark, run_profile_ci, run_six_column_profile,
+    DifferentialExecutor, FormatConversionResult, InferenceComparisonResult, ProfileAssertion,
+    SixColumnProfile, TensorDiffResult, TensorMismatch, TensorMismatchType, TokenComparison,
+    convert_format_cached, run_bench_throughput, run_diff_benchmark, run_profile_ci,
+    run_six_column_profile,
 };
 pub use error::{Error, Result};
 pub use evidence::{Evidence, EvidenceCollector, Outcome, PerformanceMetrics};

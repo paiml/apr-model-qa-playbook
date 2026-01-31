@@ -1100,6 +1100,35 @@ fn run_certification(
                                         "    Total profiling time: {}ms",
                                         profile.total_duration_ms
                                     );
+
+                                    // Check assertions from playbook
+                                    if let Some(ref profile_ci) = playbook.profile_ci {
+                                        let cpu_threshold = profile_ci
+                                            .assertions
+                                            .min_throughput_cpu
+                                            .or(profile_ci.assertions.min_throughput)
+                                            .unwrap_or(5.0);
+                                        let gpu_threshold = profile_ci
+                                            .assertions
+                                            .min_throughput_gpu
+                                            .or(profile_ci.assertions.min_throughput)
+                                            .unwrap_or(50.0);
+
+                                        profile.check_assertions(cpu_threshold, gpu_threshold);
+
+                                        if !profile.failed_assertions.is_empty() {
+                                            println!("    ⚠️  Assertion failures:");
+                                            for fail in &profile.failed_assertions {
+                                                println!(
+                                                    "      {} {}: {:.1} tok/s < {:.1} min",
+                                                    fail.format.to_uppercase(),
+                                                    fail.backend.to_uppercase(),
+                                                    fail.actual_tps,
+                                                    fail.min_threshold
+                                                );
+                                            }
+                                        }
+                                    }
                                 }
                                 Err(e) => {
                                     eprintln!("  Profiling failed: {e}");

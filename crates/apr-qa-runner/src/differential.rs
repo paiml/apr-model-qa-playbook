@@ -728,6 +728,91 @@ pub struct SixColumnProfile {
     pub conversions: Vec<FormatConversionResult>,
     /// Total profiling duration in milliseconds
     pub total_duration_ms: u64,
+    /// Failed assertions (format, backend, actual, threshold)
+    pub failed_assertions: Vec<ProfileAssertion>,
+}
+
+/// A profile assertion result
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProfileAssertion {
+    /// Format (gguf, apr, safetensors)
+    pub format: String,
+    /// Backend (cpu, gpu)
+    pub backend: String,
+    /// Actual throughput
+    pub actual_tps: f64,
+    /// Minimum threshold
+    pub min_threshold: f64,
+    /// Whether assertion passed
+    pub passed: bool,
+}
+
+impl SixColumnProfile {
+    /// Check if all assertions passed
+    #[must_use]
+    pub fn all_assertions_passed(&self) -> bool {
+        self.failed_assertions.is_empty()
+    }
+
+    /// Check throughput against thresholds and record failures
+    #[allow(clippy::similar_names)]
+    pub fn check_assertions(&mut self, min_cpu: f64, min_gpu: f64) {
+        // Check GGUF CPU
+        if let Some(tps) = self.tps_gguf_cpu {
+            let passed = tps >= min_cpu;
+            if !passed {
+                self.failed_assertions.push(ProfileAssertion {
+                    format: "gguf".to_string(),
+                    backend: "cpu".to_string(),
+                    actual_tps: tps,
+                    min_threshold: min_cpu,
+                    passed,
+                });
+            }
+        }
+
+        // Check GGUF GPU
+        if let Some(tps) = self.tps_gguf_gpu {
+            let passed = tps >= min_gpu;
+            if !passed {
+                self.failed_assertions.push(ProfileAssertion {
+                    format: "gguf".to_string(),
+                    backend: "gpu".to_string(),
+                    actual_tps: tps,
+                    min_threshold: min_gpu,
+                    passed,
+                });
+            }
+        }
+
+        // Check APR CPU (if measured)
+        if let Some(tps) = self.tps_apr_cpu {
+            let passed = tps >= min_cpu;
+            if !passed {
+                self.failed_assertions.push(ProfileAssertion {
+                    format: "apr".to_string(),
+                    backend: "cpu".to_string(),
+                    actual_tps: tps,
+                    min_threshold: min_cpu,
+                    passed,
+                });
+            }
+        }
+
+        // Check APR GPU (if measured)
+        if let Some(tps) = self.tps_apr_gpu {
+            let passed = tps >= min_gpu;
+            if !passed {
+                self.failed_assertions.push(ProfileAssertion {
+                    format: "apr".to_string(),
+                    backend: "gpu".to_string(),
+                    actual_tps: tps,
+                    min_threshold: min_gpu,
+                    passed,
+                });
+            }
+        }
+    }
 }
 
 /// Run full 6-column profiling for a model
