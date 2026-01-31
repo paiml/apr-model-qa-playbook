@@ -22,6 +22,7 @@
 #![cfg_attr(test, allow(clippy::uninlined_format_args))]
 #![cfg_attr(test, allow(clippy::cast_sign_loss))]
 
+pub mod command;
 pub mod conversion;
 pub mod differential;
 pub mod error;
@@ -32,6 +33,7 @@ pub mod patterns;
 pub mod playbook;
 pub mod process;
 
+pub use command::{CommandOutput, CommandRunner, MockCommandRunner, RealCommandRunner};
 pub use conversion::{
     ConversionBugType, ConversionConfig, ConversionEvidence, ConversionExecutionResult,
     ConversionExecutor, ConversionResult, ConversionTest, EPSILON, RoundTripTest,

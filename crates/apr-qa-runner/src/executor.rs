@@ -2045,4 +2045,585 @@ test_matrix:
         assert!(config.run_profile_ci);
         assert!(!config.run_trace_payload);
     }
+
+    #[test]
+    fn test_parse_tps_from_output_valid() {
+        let output = "Some text tok/s: 12.34 more text";
+        let tps = Executor::parse_tps_from_output(output);
+        assert!(tps.is_some());
+        assert!((tps.unwrap() - 12.34).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn test_parse_tps_from_output_with_whitespace() {
+        let output = "tok/s:   45.67";
+        let tps = Executor::parse_tps_from_output(output);
+        assert!(tps.is_some());
+        assert!((tps.unwrap() - 45.67).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn test_parse_tps_from_output_integer() {
+        let output = "tok/s: 100";
+        let tps = Executor::parse_tps_from_output(output);
+        assert!(tps.is_some());
+        assert!((tps.unwrap() - 100.0).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn test_parse_tps_from_output_not_found() {
+        let output = "no tokens per second here";
+        let tps = Executor::parse_tps_from_output(output);
+        assert!(tps.is_none());
+    }
+
+    #[test]
+    fn test_parse_tps_from_output_empty() {
+        let output = "";
+        let tps = Executor::parse_tps_from_output(output);
+        assert!(tps.is_none());
+    }
+
+    #[test]
+    fn test_parse_tps_from_output_invalid_number() {
+        let output = "tok/s: abc";
+        let tps = Executor::parse_tps_from_output(output);
+        assert!(tps.is_none());
+    }
+
+    #[test]
+    fn test_extract_generated_text_simple() {
+        let output = "Hello world\nThis is text";
+        let result = Executor::extract_generated_text(output);
+        assert_eq!(result, "Hello world\nThis is text");
+    }
+
+    #[test]
+    fn test_extract_generated_text_filters_separator() {
+        let output = "Generated text\n=== BENCHMARK ===\nMore stuff";
+        let result = Executor::extract_generated_text(output);
+        assert!(!result.contains("==="));
+        assert!(result.contains("Generated text"));
+    }
+
+    #[test]
+    fn test_extract_generated_text_filters_tps() {
+        let output = "Hello world\ntok/s: 12.34\nAfter tps";
+        let result = Executor::extract_generated_text(output);
+        assert!(!result.contains("tok/s"));
+        assert!(result.contains("Hello world"));
+        assert!(result.contains("After tps"));
+    }
+
+    #[test]
+    fn test_extract_generated_text_empty() {
+        let output = "";
+        let result = Executor::extract_generated_text(output);
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn test_extract_generated_text_only_filtered() {
+        let output = "=== START ===\ntok/s: 10\n=== END ===";
+        let result = Executor::extract_generated_text(output);
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn test_extract_output_text_simple() {
+        let output = "Some header\nOutput:\nThe answer is 4\nCompleted in 1.2s";
+        let result = Executor::extract_output_text(output);
+        assert_eq!(result, "The answer is 4");
+    }
+
+    #[test]
+    fn test_extract_output_text_multiline() {
+        let output = "Header\nOutput:\nLine 1\nLine 2\nLine 3\nCompleted in 1s";
+        let result = Executor::extract_output_text(output);
+        assert_eq!(result, "Line 1 Line 2 Line 3");
+    }
+
+    #[test]
+    fn test_extract_output_text_no_output_marker() {
+        let output = "Just some text without Output marker";
+        let result = Executor::extract_output_text(output);
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn test_extract_output_text_empty() {
+        let output = "";
+        let result = Executor::extract_output_text(output);
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn test_extract_output_text_empty_output() {
+        let output = "Header\nOutput:\nCompleted in 1s";
+        let result = Executor::extract_output_text(output);
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn test_extract_output_text_stops_at_empty_line() {
+        let output = "Header\nOutput:\nThe answer\n\nMore text after blank";
+        let result = Executor::extract_output_text(output);
+        assert_eq!(result, "The answer");
+    }
+
+    #[test]
+    fn test_golden_scenario_creation() {
+        let model_id = ModelId::new("test", "model");
+        let scenario = Executor::golden_scenario(&model_id);
+        assert_eq!(scenario.model.org, "test");
+        assert_eq!(scenario.model.name, "model");
+        assert_eq!(scenario.modality, Modality::Run);
+        assert_eq!(scenario.backend, Backend::Cpu);
+        assert_eq!(scenario.format, Format::Apr);
+        assert!(scenario.prompt.contains("Golden Rule"));
+    }
+
+    #[test]
+    fn test_execution_config_golden_rule_default() {
+        let config = ExecutionConfig::default();
+        assert!(config.run_golden_rule_test);
+        assert!(config.golden_reference_path.is_none());
+    }
+
+    #[test]
+    fn test_execution_config_golden_rule_custom() {
+        let config = ExecutionConfig {
+            run_golden_rule_test: false,
+            golden_reference_path: Some("/path/to/reference.json".to_string()),
+            ..Default::default()
+        };
+        assert!(!config.run_golden_rule_test);
+        assert_eq!(
+            config.golden_reference_path.as_deref(),
+            Some("/path/to/reference.json")
+        );
+    }
+
+    #[test]
+    fn test_execute_with_p0_stop() {
+        let config = ExecutionConfig {
+            failure_policy: FailurePolicy::StopOnP0,
+            ..Default::default()
+        };
+        let mut executor = Executor::with_config(config);
+
+        let yaml = r#"
+name: test-playbook
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 3
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let result = executor.execute(&playbook).expect("Execution failed");
+
+        // With default prompts (2+2), all should pass
+        assert!(result.total_scenarios > 0);
+    }
+
+    #[test]
+    fn test_tool_executor_fields() {
+        let executor = ToolExecutor::new("/path/model.gguf".to_string(), true, 30_000);
+        assert_eq!(executor.model_path, "/path/model.gguf");
+        assert!(executor.no_gpu);
+        assert_eq!(executor.timeout_ms, 30_000);
+    }
+
+    #[test]
+    fn test_tool_executor_no_gpu_false() {
+        let executor = ToolExecutor::new("model.gguf".to_string(), false, 60_000);
+        assert!(!executor.no_gpu);
+    }
+
+    #[test]
+    fn test_tool_test_result_gate_id() {
+        let result = ToolTestResult {
+            tool: "custom-tool".to_string(),
+            passed: true,
+            exit_code: 0,
+            stdout: String::new(),
+            stderr: String::new(),
+            duration_ms: 100,
+            gate_id: "F-CUSTOM-001".to_string(),
+        };
+        assert_eq!(result.gate_id, "F-CUSTOM-001");
+    }
+
+    #[test]
+    fn test_execute_scenario_with_falsified_output() {
+        let executor = Executor::new();
+        // Create scenario that will produce output but fail oracle
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "What is 5+5?".to_string(), // Won't match simulated "2+2" response
+            42,
+        );
+
+        let evidence = executor.execute_scenario(&scenario);
+        // Simulated execution returns "Hello! I'm an AI assistant." which doesn't contain "10"
+        // The oracle should return a result (corroborated for generic prompts)
+        // Verify evidence was created with valid fields
+        assert!(!evidence.id.is_empty());
+        assert!(!evidence.gate_id.is_empty());
+    }
+
+    #[test]
+    fn test_simulate_execution_arithmetic_2plus2() {
+        let executor = Executor::new();
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "What is 2+2?".to_string(),
+            0,
+        );
+        let output = executor.simulate_execution(&scenario);
+        assert!(output.contains("4"));
+    }
+
+    #[test]
+    fn test_simulate_execution_def_code() {
+        let executor = Executor::new();
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "def hello():".to_string(),
+            0,
+        );
+        let output = executor.simulate_execution(&scenario);
+        assert!(output.contains("return"));
+    }
+
+    #[test]
+    fn test_execution_result_fields() {
+        let result = ExecutionResult {
+            playbook_name: "my-playbook".to_string(),
+            total_scenarios: 50,
+            passed: 45,
+            failed: 3,
+            skipped: 2,
+            duration_ms: 5000,
+            gateway_failed: None,
+            evidence: EvidenceCollector::new(),
+        };
+        assert_eq!(result.playbook_name, "my-playbook");
+        assert_eq!(result.total_scenarios, 50);
+        assert_eq!(result.passed, 45);
+        assert_eq!(result.failed, 3);
+        assert_eq!(result.skipped, 2);
+        assert_eq!(result.duration_ms, 5000);
+    }
+
+    #[test]
+    fn test_failure_policy_copy() {
+        let policy = FailurePolicy::CollectAll;
+        let copied: FailurePolicy = policy;
+        assert_eq!(copied, FailurePolicy::CollectAll);
+    }
+
+    #[test]
+    fn test_extract_output_text_with_trailing_content() {
+        let output =
+            "Prefix\nOutput:\nAnswer is 4\nMore answer text\nCompleted in 2.5s\nExtra stuff";
+        let result = Executor::extract_output_text(output);
+        assert_eq!(result, "Answer is 4 More answer text");
+    }
+
+    #[test]
+    fn test_extract_generated_text_mixed_content() {
+        let output = "Line 1\n=== SEPARATOR ===\nLine 2\ntok/s: 50.0\nLine 3";
+        let result = Executor::extract_generated_text(output);
+        assert!(result.contains("Line 1"));
+        assert!(result.contains("Line 2"));
+        assert!(result.contains("Line 3"));
+        assert!(!result.contains("==="));
+        assert!(!result.contains("tok/s"));
+    }
+
+    #[test]
+    fn test_parse_tps_from_output_at_end() {
+        let output = "All output finished tok/s: 99.9";
+        let tps = Executor::parse_tps_from_output(output);
+        assert!(tps.is_some());
+        assert!((tps.unwrap() - 99.9).abs() < 0.01);
+    }
+
+    #[test]
+    fn test_parse_tps_from_output_multiline() {
+        let output = "Line 1\nLine 2\ntok/s: 25.5\nLine 4";
+        let tps = Executor::parse_tps_from_output(output);
+        assert!(tps.is_some());
+        assert!((tps.unwrap() - 25.5).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn test_extract_output_text_output_at_end() {
+        let output = "Header info\nOutput:\nFinal answer here";
+        let result = Executor::extract_output_text(output);
+        assert_eq!(result, "Final answer here");
+    }
+
+    #[test]
+    fn test_simulate_execution_multiplication() {
+        let executor = Executor::new();
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "Calculate 3*3".to_string(),
+            0,
+        );
+        // Not matching 2+2, so returns generic response
+        let output = executor.simulate_execution(&scenario);
+        assert!(output.contains("AI assistant"));
+    }
+
+    #[test]
+    fn test_execution_result_with_gateway_failure() {
+        let result = ExecutionResult {
+            playbook_name: "test".to_string(),
+            total_scenarios: 10,
+            passed: 0,
+            failed: 10,
+            skipped: 0,
+            duration_ms: 100,
+            gateway_failed: Some("G1: Model failed to load".to_string()),
+            evidence: EvidenceCollector::new(),
+        };
+        assert!(!result.is_success());
+        assert!(result.gateway_failed.is_some());
+        assert!(result.gateway_failed.as_ref().unwrap().contains("G1"));
+    }
+
+    #[test]
+    fn test_execution_config_all_fields() {
+        let config = ExecutionConfig {
+            failure_policy: FailurePolicy::CollectAll,
+            default_timeout_ms: 30_000,
+            max_workers: 2,
+            dry_run: true,
+            subprocess_mode: true,
+            model_path: Some("/path/to/model.gguf".to_string()),
+            no_gpu: true,
+            run_conversion_tests: false,
+            run_differential_tests: false,
+            run_profile_ci: true,
+            run_trace_payload: false,
+            run_golden_rule_test: false,
+            golden_reference_path: Some("/path/to/ref.json".to_string()),
+        };
+        assert_eq!(config.failure_policy, FailurePolicy::CollectAll);
+        assert!(config.dry_run);
+        assert!(config.subprocess_mode);
+        assert!(config.no_gpu);
+        assert!(!config.run_conversion_tests);
+        assert!(!config.run_differential_tests);
+        assert!(config.run_profile_ci);
+    }
+
+    #[test]
+    fn test_tool_test_result_fields_comprehensive() {
+        let result = ToolTestResult {
+            tool: "custom-test".to_string(),
+            passed: false,
+            exit_code: 127,
+            stdout: "stdout content".to_string(),
+            stderr: "error: command not found".to_string(),
+            duration_ms: 150,
+            gate_id: "F-CUSTOM-001".to_string(),
+        };
+        assert_eq!(result.tool, "custom-test");
+        assert!(!result.passed);
+        assert_eq!(result.exit_code, 127);
+        assert!(!result.stdout.is_empty());
+        assert!(!result.stderr.is_empty());
+    }
+
+    #[test]
+    fn test_execute_scenario_corroborated() {
+        let executor = Executor::new();
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "2+2=".to_string(),
+            1,
+        );
+        let evidence = executor.execute_scenario(&scenario);
+        assert!(evidence.outcome.is_pass());
+    }
+
+    #[test]
+    fn test_execute_scenario_with_chat_modality() {
+        let executor = Executor::new();
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Chat,
+            Backend::Cpu,
+            Format::Gguf,
+            "Hello".to_string(),
+            2,
+        );
+        let evidence = executor.execute_scenario(&scenario);
+        // Chat with "Hello" should get generic response
+        assert!(!evidence.id.is_empty());
+    }
+
+    #[test]
+    fn test_execute_scenario_with_serve_modality() {
+        let executor = Executor::new();
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Serve,
+            Backend::Gpu,
+            Format::Apr,
+            "Test prompt".to_string(),
+            3,
+        );
+        let evidence = executor.execute_scenario(&scenario);
+        assert!(!evidence.gate_id.is_empty());
+    }
+
+    #[test]
+    fn test_golden_scenario_prompt_content() {
+        let model_id = ModelId::new("org", "name");
+        let scenario = Executor::golden_scenario(&model_id);
+        assert!(scenario.prompt.contains("Golden Rule"));
+        assert!(scenario.prompt.contains("convert"));
+        assert!(scenario.prompt.contains("inference"));
+    }
+
+    #[test]
+    fn test_executor_with_custom_timeout_and_workers() {
+        let config = ExecutionConfig {
+            default_timeout_ms: 120_000,
+            max_workers: 16,
+            ..Default::default()
+        };
+        let executor = Executor::with_config(config);
+        assert_eq!(executor.config().default_timeout_ms, 120_000);
+        assert_eq!(executor.config().max_workers, 16);
+    }
+
+    #[test]
+    fn test_execution_result_pass_rate_partial() {
+        let result = ExecutionResult {
+            playbook_name: "test".to_string(),
+            total_scenarios: 3,
+            passed: 1,
+            failed: 2,
+            skipped: 0,
+            duration_ms: 100,
+            gateway_failed: None,
+            evidence: EvidenceCollector::new(),
+        };
+        let rate = result.pass_rate();
+        assert!((rate - 100.0 / 3.0).abs() < 0.01);
+    }
+
+    #[test]
+    fn test_tool_test_result_to_evidence_with_content() {
+        let result = ToolTestResult {
+            tool: "validate".to_string(),
+            passed: true,
+            exit_code: 0,
+            stdout: "Model validated successfully".to_string(),
+            stderr: String::new(),
+            duration_ms: 200,
+            gate_id: "F-VALIDATE-001".to_string(),
+        };
+        let model_id = ModelId::new("org", "model");
+        let evidence = result.to_evidence(&model_id);
+        assert!(evidence.outcome.is_pass());
+        assert!(evidence.output.contains("validated"));
+    }
+
+    #[test]
+    fn test_simulate_execution_rust_fn() {
+        let executor = Executor::new();
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "fn fibonacci(n: u32) -> u32 {".to_string(),
+            0,
+        );
+        let output = executor.simulate_execution(&scenario);
+        assert!(output.contains("return"));
+    }
+
+    #[test]
+    fn test_simulate_execution_python_def() {
+        let executor = Executor::new();
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "def add(a, b):".to_string(),
+            0,
+        );
+        let output = executor.simulate_execution(&scenario);
+        assert!(output.contains("return"));
+    }
+
+    #[test]
+    fn test_executor_execute_multiple_scenarios() {
+        let mut executor = Executor::new();
+        let yaml = r#"
+name: multi-scenario
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 10
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let result = executor.execute(&playbook).expect("Execution failed");
+        assert_eq!(result.total_scenarios, 10);
+    }
+
+    #[test]
+    fn test_tool_test_result_with_zero_duration() {
+        let result = ToolTestResult {
+            tool: "fast-test".to_string(),
+            passed: true,
+            exit_code: 0,
+            stdout: "OK".to_string(),
+            stderr: String::new(),
+            duration_ms: 0,
+            gate_id: "F-FAST-001".to_string(),
+        };
+        assert_eq!(result.duration_ms, 0);
+    }
+
+    #[test]
+    fn test_extract_output_text_preserves_content() {
+        let output = "Info\nOutput:\n  First line\n  Second line  \n  Third line\nCompleted in 1s";
+        let result = Executor::extract_output_text(output);
+        assert!(result.contains("First line"));
+        assert!(result.contains("Second line"));
+        assert!(result.contains("Third line"));
+    }
 }
