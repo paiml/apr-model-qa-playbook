@@ -27,6 +27,7 @@
 #![allow(clippy::items_after_statements)]
 #![allow(clippy::match_same_arms)]
 #![allow(clippy::uninlined_format_args)]
+#![allow(clippy::option_if_let_else)]
 // Allow common patterns in test code
 #![cfg_attr(test, allow(clippy::expect_used, clippy::unwrap_used))]
 #![cfg_attr(test, allow(clippy::redundant_closure_for_method_calls))]
@@ -37,11 +38,13 @@ pub mod certificate;
 pub mod error;
 pub mod html;
 pub mod junit;
+pub mod markdown;
 pub mod mqs;
 pub mod popperian;
 pub mod ticket;
 
 pub use certificate::{Certificate, CertificateGenerator, CertificationStatus};
 pub use error::{Error, Result};
+pub use markdown::{generate_evidence_detail, generate_index_entry, generate_rag_markdown};
 pub use mqs::{GatewayResult, MqsCalculator, MqsScore};
 pub use popperian::PopperianScore;
