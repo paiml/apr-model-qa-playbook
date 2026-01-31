@@ -1,6 +1,6 @@
 [
   {
-    "id": "0000000000000000188fe26fe4e20d38",
+    "id": "0000000000000000188fe365666e7d97",
     "gate_id": "F-A1-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_gguf_0000000000000000",
@@ -31,7 +31,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-01-31T17:55:48.789161793Z",
+    "timestamp": "2026-01-31T18:13:23.229613993Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -42,7 +42,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe26fe4e21fff",
+    "id": "0000000000000000188fe365666e8b0c",
     "gate_id": "F-A1-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_apr_0000000000000001",
@@ -73,7 +73,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-01-31T17:55:48.789166530Z",
+    "timestamp": "2026-01-31T18:13:23.229617148Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -84,7 +84,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe26fe4e2269c",
+    "id": "0000000000000000188fe365666e9036",
     "gate_id": "F-A1-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_safetensors_0000000000000002",
@@ -115,7 +115,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-01-31T17:55:48.789168122Z",
+    "timestamp": "2026-01-31T18:13:23.229618490Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -126,7 +126,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe26fe4e22bf8",
+    "id": "0000000000000000188fe365666e9401",
     "gate_id": "F-A2-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_run_gpu_gguf_0000000000000003",
@@ -157,7 +157,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-01-31T17:55:48.789169454Z",
+    "timestamp": "2026-01-31T18:13:23.229619381Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -168,7 +168,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe26fe4e231a4",
+    "id": "0000000000000000188fe365666e9827",
     "gate_id": "F-A2-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_run_gpu_apr_0000000000000004",
@@ -199,7 +199,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-01-31T17:55:48.789170966Z",
+    "timestamp": "2026-01-31T18:13:23.229620503Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -210,7 +210,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe26fe4e2393b",
+    "id": "0000000000000000188fe365666e9cbb",
     "gate_id": "F-A2-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_run_gpu_safetensors_0000000000000005",
@@ -241,7 +241,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-01-31T17:55:48.789172879Z",
+    "timestamp": "2026-01-31T18:13:23.229621605Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -252,7 +252,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe26fe4e23eb5",
+    "id": "0000000000000000188fe365666ea036",
     "gate_id": "F-A3-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_chat_cpu_gguf_0000000000000006",
@@ -283,7 +283,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-01-31T17:55:48.789174321Z",
+    "timestamp": "2026-01-31T18:13:23.229622516Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -294,7 +294,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe26fe4e24489",
+    "id": "0000000000000000188fe365666ea39d",
     "gate_id": "F-A3-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_chat_cpu_apr_0000000000000007",
@@ -325,7 +325,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-01-31T17:55:48.789175734Z",
+    "timestamp": "2026-01-31T18:13:23.229623368Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -336,7 +336,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe26fe4e249c7",
+    "id": "0000000000000000188fe365666ea6dd",
     "gate_id": "F-A3-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_chat_cpu_safetensors_0000000000000008",
@@ -367,7 +367,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-01-31T17:55:48.789177076Z",
+    "timestamp": "2026-01-31T18:13:23.229624189Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -378,7 +378,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe26fe4e2505a",
+    "id": "0000000000000000188fe365666eaa80",
     "gate_id": "F-A4-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_chat_gpu_gguf_0000000000000009",
@@ -409,7 +409,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-01-31T17:55:48.789178728Z",
+    "timestamp": "2026-01-31T18:13:23.229625200Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -420,7 +420,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe26fe4e255a2",
+    "id": "0000000000000000188fe365666eae19",
     "gate_id": "F-A4-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_chat_gpu_apr_000000000000000a",
@@ -451,7 +451,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-01-31T17:55:48.789180100Z",
+    "timestamp": "2026-01-31T18:13:23.229626062Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -462,7 +462,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe26fe4e25aea",
+    "id": "0000000000000000188fe365666eb16d",
     "gate_id": "F-A4-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_chat_gpu_safetensors_000000000000000b",
@@ -493,7 +493,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-01-31T17:55:48.789181472Z",
+    "timestamp": "2026-01-31T18:13:23.229626903Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -504,7 +504,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe26fe4e260be",
+    "id": "0000000000000000188fe365666eb4c0",
     "gate_id": "F-A5-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_serve_cpu_gguf_000000000000000c",
@@ -535,7 +535,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-01-31T17:55:48.789182945Z",
+    "timestamp": "2026-01-31T18:13:23.229627744Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -546,7 +546,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe26fe4e265ca",
+    "id": "0000000000000000188fe365666eb827",
     "gate_id": "F-A5-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_serve_cpu_apr_000000000000000d",
@@ -577,7 +577,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-01-31T17:55:48.789184226Z",
+    "timestamp": "2026-01-31T18:13:23.229628736Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -588,7 +588,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe26fe4e26af4",
+    "id": "0000000000000000188fe365666ebbfd",
     "gate_id": "F-A5-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_serve_cpu_safetensors_000000000000000e",
@@ -619,7 +619,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-01-31T17:55:48.789185579Z",
+    "timestamp": "2026-01-31T18:13:23.229629667Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -630,7 +630,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe26fe4e2701e",
+    "id": "0000000000000000188fe365666ebf82",
     "gate_id": "F-A6-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_serve_gpu_gguf_000000000000000f",
@@ -661,7 +661,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-01-31T17:55:48.789186901Z",
+    "timestamp": "2026-01-31T18:13:23.229630538Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -672,7 +672,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe26fe4e27566",
+    "id": "0000000000000000188fe365666ec2f3",
     "gate_id": "F-A6-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_serve_gpu_apr_0000000000000010",
@@ -703,7 +703,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-01-31T17:55:48.789188233Z",
+    "timestamp": "2026-01-31T18:13:23.229631390Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -714,7 +714,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe26fe4e27aea",
+    "id": "0000000000000000188fe365666edcd9",
     "gate_id": "F-A6-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_serve_gpu_safetensors_0000000000000011",
@@ -745,7 +745,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-01-31T17:55:48.789189715Z",
+    "timestamp": "2026-01-31T18:13:23.229638140Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
