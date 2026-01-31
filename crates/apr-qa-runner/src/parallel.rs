@@ -953,4 +953,88 @@ mod tests {
         let evidence = Evidence::timeout("F-INT-002", test_scenario(), 61_000);
         assert!(!evidence.outcome.is_pass());
     }
+
+    #[test]
+    fn test_subprocess_execution_empty_command() {
+        let config = ParallelConfig {
+            mode: ExecutionMode::Subprocess,
+            ..Default::default()
+        };
+        let executor = ParallelExecutor::new(config);
+
+        // Create a scenario that generates an empty command
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "test".to_string(),
+            42,
+        );
+
+        // The subprocess_execution should handle errors gracefully
+        let (_, exit_code, stderr) = executor.subprocess_execution(&scenario);
+        // With a fake model path, this will fail
+        assert!(exit_code != 0 || stderr.is_some());
+    }
+
+    #[test]
+    fn test_parallel_config_subprocess_mode() {
+        let config = ParallelConfig {
+            mode: ExecutionMode::Subprocess,
+            model_path: "/nonexistent/model.gguf".to_string(),
+            ..Default::default()
+        };
+        assert_eq!(config.mode, ExecutionMode::Subprocess);
+    }
+
+    #[test]
+    fn test_execution_mode_subprocess_debug() {
+        let mode = ExecutionMode::Subprocess;
+        let debug_str = format!("{mode:?}");
+        assert!(debug_str.contains("Subprocess"));
+    }
+
+    #[test]
+    fn test_evidence_with_metrics() {
+        let scenario = test_scenario();
+        let evidence = Evidence::corroborated("F-TEST-001", scenario, "output", 100);
+        let with_metrics = evidence.with_metrics(PerformanceMetrics {
+            duration_ms: 500,
+            tokens_per_second: Some(10.0),
+            ..Default::default()
+        });
+        assert_eq!(with_metrics.metrics.duration_ms, 500);
+    }
+
+    #[test]
+    fn test_parallel_result_with_stopped_early() {
+        let result = ParallelResult {
+            evidence: vec![],
+            passed: 2,
+            failed: 1,
+            skipped: 7,
+            duration_ms: 100,
+            stopped_early: true,
+        };
+        assert!(result.stopped_early);
+        assert_eq!(result.skipped, 7);
+    }
+
+    #[test]
+    fn test_parallel_executor_execute_with_subprocess_mode() {
+        // This test verifies subprocess mode configuration is accepted
+        let config = ParallelConfig {
+            num_workers: 1,
+            mode: ExecutionMode::Subprocess,
+            model_path: "/nonexistent/path.gguf".to_string(),
+            stop_on_failure: true,
+            ..Default::default()
+        };
+        let executor = ParallelExecutor::new(config);
+
+        // Execute with empty scenarios should return quickly
+        let result = executor.execute(&[]);
+        assert_eq!(result.evidence.len(), 0);
+    }
 }

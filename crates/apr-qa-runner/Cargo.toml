@@ -8,6 +8,10 @@ license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
 
+[features]
+default = []
+test-fixtures = ["dep:tempfile", "dep:half"]
+
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
@@ -20,11 +24,15 @@ apr-qa-gen = { workspace = true }
 hostname = "0.4"
 rayon = "1.10"
 num_cpus = "1.16"
+# Test fixtures dependencies (optional)
+tempfile = { version = "3", optional = true }
+half = { version = "2.4", optional = true }
 
 [dev-dependencies]
 proptest = { workspace = true }
 tokio = { workspace = true, features = ["test-util"] }
 tempfile = "3"
+half = "2.4"
 
 [lints]
 workspace = true

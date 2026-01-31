@@ -33,6 +33,9 @@ pub mod patterns;
 pub mod playbook;
 pub mod process;
 
+#[cfg(test)]
+pub mod test_fixtures;
+
 pub use command::{CommandOutput, CommandRunner, MockCommandRunner, RealCommandRunner};
 pub use conversion::{
     ConversionBugType, ConversionConfig, ConversionEvidence, ConversionExecutionResult,

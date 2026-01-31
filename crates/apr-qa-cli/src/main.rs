@@ -8,11 +8,11 @@
 #![allow(clippy::ptr_arg)]
 
 use apr_qa_cli::{
-    PlaybookRunConfig, build_execution_config, calculate_mqs_score, calculate_popperian_score,
-    collect_evidence, execute_playbook, filter_models_by_size, generate_html_report,
-    generate_junit_report, generate_model_scenarios, generate_tickets_from_evidence,
-    list_all_models, load_playbook, parse_evidence, parse_failure_policy, scenarios_to_json,
-    scenarios_to_yaml,
+    CertTier, PlaybookRunConfig, build_certification_config, build_execution_config,
+    calculate_mqs_score, calculate_popperian_score, collect_evidence, execute_playbook,
+    filter_models_by_size, generate_html_report, generate_junit_report, generate_model_scenarios,
+    generate_tickets_from_evidence, list_all_models, load_playbook, parse_evidence,
+    parse_failure_policy, playbook_path_for_model, scenarios_to_json, scenarios_to_yaml,
 };
 use apr_qa_runner::ToolExecutor;
 use clap::{Parser, Subcommand};
@@ -27,49 +27,7 @@ struct Cli {
     command: Commands,
 }
 
-/// Certification tier levels
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-enum CertTier {
-    /// Tier 1: Smoke test (~1-2 min per model)
-    Smoke,
-    /// Tier 2: MVP - all formats/backends/modalities (~5-10 min per model)
-    Mvp,
-    /// Tier 3: Quick check (~10-30 min per model)
-    #[default]
-    Quick,
-    /// Tier 4: Standard certification (~1-2 hr per model)
-    Standard,
-    /// Tier 5: Deep certification (~8-24 hr per model)
-    Deep,
-}
-
-impl std::str::FromStr for CertTier {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s.to_lowercase().as_str() {
-            "smoke" => Ok(Self::Smoke),
-            "mvp" => Ok(Self::Mvp),
-            "quick" => Ok(Self::Quick),
-            "standard" => Ok(Self::Standard),
-            "deep" => Ok(Self::Deep),
-            _ => Err(format!(
-                "Unknown tier: {s}. Use: smoke, mvp, quick, standard, deep"
-            )),
-        }
-    }
-}
-
-impl CertTier {
-    const fn playbook_suffix(self) -> &'static str {
-        match self {
-            Self::Smoke => "-smoke",
-            Self::Mvp => "-mvp",
-            Self::Quick => "-quick",
-            Self::Standard | Self::Deep => "",
-        }
-    }
-}
+// CertTier enum now comes from apr_qa_cli library
 
 #[derive(Subcommand)]
 enum Commands {
@@ -925,24 +883,9 @@ fn run_certification(
 
     println!("Models to certify: {}\n", models_to_certify.len());
 
-    // Helper to generate playbook path from model ID
-    let playbook_path_for = |model_id: &str, tier: &CertTier| -> String {
-        let short = model_id.split('/').next_back().unwrap_or(model_id);
-        // Convert Qwen2.5-Coder-0.5B-Instruct -> qwen2.5-coder-0.5b
-        let base = short
-            .to_lowercase()
-            .replace("-instruct", "")
-            .replace("-it", "");
-        format!(
-            "playbooks/models/{}{}.playbook.yaml",
-            base,
-            tier.playbook_suffix()
-        )
-    };
-
     if dry_run {
         for model_id in &models_to_certify {
-            let playbook_name = playbook_path_for(model_id, &tier);
+            let playbook_name = playbook_path_for_model(model_id, tier);
             println!("  Would certify: {model_id}");
             println!("    Playbook: {playbook_name}");
         }
@@ -961,7 +904,7 @@ fn run_certification(
 
     for model_id in &models_to_certify {
         let short: &str = model_id.split('/').next_back().unwrap_or(model_id);
-        let playbook_name = playbook_path_for(model_id, &tier);
+        let playbook_name = playbook_path_for_model(model_id, tier);
 
         println!("--- Certifying: {model_id} ---");
         println!("  Playbook: {playbook_name}");
@@ -982,8 +925,7 @@ fn run_certification(
             }
         };
 
-        // Configure execution - use subprocess mode if enabled
-        // Pass model cache directory (containing gguf/apr/safetensors subdirs)
+        // Configure execution using library function (ensures subprocess_mode is correct)
         let model_cache_path = if subprocess {
             model_cache.as_ref().map(|cache| {
                 cache
@@ -995,21 +937,7 @@ fn run_certification(
             None
         };
 
-        let config = apr_qa_runner::ExecutionConfig {
-            failure_policy: apr_qa_runner::FailurePolicy::CollectAll,
-            dry_run: false,
-            max_workers: 4,
-            subprocess_mode: subprocess,
-            model_path: model_cache_path,
-            default_timeout_ms: 60000,
-            no_gpu: false,                    // Allow GPU when in subprocess mode
-            run_conversion_tests: subprocess, // Run P0 conversion tests in subprocess mode
-            run_differential_tests: false,
-            run_profile_ci: false,
-            run_trace_payload: false,
-            run_golden_rule_test: subprocess, // Run golden rule test in subprocess mode
-            golden_reference_path: None,
-        };
+        let config = build_certification_config(tier, subprocess, model_cache_path);
 
         match execute_playbook(&playbook, config) {
             Ok(result) => {

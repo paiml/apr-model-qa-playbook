@@ -43,14 +43,14 @@ doc-open:
 check: fmt-check lint test
 
 # Coverage with llvm-cov (NEVER use tarpaulin)
-# Excludes CLI binaries (hard to unit test) - library coverage must be >= 95%
+# Uses --lib to test library code only (no binary/main.rs)
 coverage:
-	cargo llvm-cov --workspace --html --ignore-filename-regex 'apr-qa-cli|apr-qa-certify/src/main.rs'
+	cargo llvm-cov --workspace --lib --html
 	@echo "Coverage report: target/llvm-cov/html/index.html"
 
 # Coverage summary only (library code)
 coverage-summary:
-	cargo llvm-cov --workspace --ignore-filename-regex 'apr-qa-cli|apr-qa-certify/src/main.rs'
+	cargo llvm-cov --workspace --lib
 
 # Full coverage including CLI (for reference)
 coverage-full:
@@ -58,10 +58,11 @@ coverage-full:
 	@echo "Full coverage report: target/llvm-cov/html/index.html"
 
 # Coverage with threshold check for PMAT compliance (95%)
-# Excludes CLI binaries (apr-qa-cli and apr-qa-certify main.rs) which are hard to unit test
+# Uses --lib to exclude binary code (main.rs files)
+# NO GAMING: All library code must meet the threshold
 coverage-check:
 	@echo "Checking PMAT coverage compliance (>= 95%)..."
-	@cargo llvm-cov --workspace --ignore-filename-regex 'apr-qa-cli|apr-qa-certify/src/main.rs' 2>&1 | \
+	@cargo llvm-cov --workspace --lib 2>&1 | \
 		grep "^TOTAL" | awk '{print $$10}' | tr -d '%' | \
 		xargs -I{} sh -c 'if [ $$(echo "{} >= 95" | bc) -eq 1 ]; then \
 			echo "✓ Coverage: {}% (PMAT compliant)"; \
