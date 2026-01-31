@@ -75,7 +75,7 @@ We don't test to pass—we **test to fail**. No amount of passing tests proves c
 ## Model Certifications
 
 <!-- CERTIFICATION_TABLE_START -->
-**Certification Summary** (updated: 2026-01-31 13:31 UTC)
+**Certification Summary** (updated: 2026-01-31 14:45 UTC)
 
 | Status | Count |
 |--------|-------|
@@ -94,10 +94,10 @@ We don't test to pass—we **test to fail**. No amount of passing tests proves c
 | [Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) | llama | 3B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - |
 | [Mistral-7B-Instruct-v0.3](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.3) | mistral | 7B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - |
 | [Phi-3-mini-4k-instruct](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct) | phi | 3.8B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - |
-| [Qwen2.5-Coder-0.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-0.5B-Instruct) | qwen-coder | 0.5B | ![blocked](https://img.shields.io/badge/BLOCKED-red) | 200 | F | ✓ | ✓ | ✓ | ✓ |
-| [Qwen2.5-Coder-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct) | qwen-coder | 1.5B | ![blocked](https://img.shields.io/badge/BLOCKED-red) | 200 | F | ✓ | ✓ | ✓ | ✓ |
-| [Qwen2.5-Coder-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-3B-Instruct) | qwen-coder | 3B | ![blocked](https://img.shields.io/badge/BLOCKED-red) | 200 | F | ✓ | ✓ | ✓ | ✓ |
-| [Qwen2.5-Coder-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct) | qwen-coder | 7B | ![blocked](https://img.shields.io/badge/BLOCKED-red) | 200 | F | ✓ | ✓ | ✓ | ✓ |
+| [Qwen2.5-Coder-0.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-0.5B-Instruct) | qwen-coder | 0.5B | ![blocked](https://img.shields.io/badge/BLOCKED-red) | 80 | F | ✓ | ✓ | ✓ | ✓ |
+| [Qwen2.5-Coder-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct) | qwen-coder | 1.5B | ![blocked](https://img.shields.io/badge/BLOCKED-red) | 80 | F | ✓ | ✓ | ✓ | ✓ |
+| [Qwen2.5-Coder-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-3B-Instruct) | qwen-coder | 3B | ![blocked](https://img.shields.io/badge/BLOCKED-red) | 150 | F | ✓ | ✓ | ✓ | ✓ |
+| [Qwen2.5-Coder-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct) | qwen-coder | 7B | ![blocked](https://img.shields.io/badge/BLOCKED-red) | 150 | F | ✓ | ✓ | ✓ | ✓ |
 | [Qwen2.5-Coder-14B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct) | qwen-coder | 14B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - |
 | [Qwen2.5-Coder-32B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-32B-Instruct) | qwen-coder | 32B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - |
 <!-- CERTIFICATION_TABLE_END -->
