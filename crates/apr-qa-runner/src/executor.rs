@@ -486,6 +486,7 @@ impl Executor {
     }
 
     /// Execute via subprocess (real apr commands)
+    /// On failure, re-runs with --trace for full diagnostics
     fn subprocess_execution(
         &self,
         scenario: &QaScenario,
@@ -506,16 +507,37 @@ impl Executor {
         // Extract the actual generated text (not the JSON benchmark data)
         let generated_text = Self::extract_generated_text(&output.stdout);
 
-        (
-            generated_text,
-            if output.stderr.is_empty() {
-                None
-            } else {
-                Some(output.stderr)
-            },
-            output.exit_code,
-            tps,
-        )
+        // On failure, re-run with tracing for full diagnostics
+        let (final_stderr, final_exit_code) = if output.success {
+            (
+                if output.stderr.is_empty() {
+                    None
+                } else {
+                    Some(output.stderr)
+                },
+                output.exit_code,
+            )
+        } else {
+            let trace_output = self.command_runner.run_inference(
+                Path::new(model_path),
+                &scenario.prompt,
+                32,
+                self.config.no_gpu,
+                &["--trace"],
+            );
+            let mut full_trace = output.stderr.clone();
+            if !trace_output.stderr.is_empty() {
+                full_trace.push_str("\n--- TRACE OUTPUT ---\n");
+                full_trace.push_str(&trace_output.stderr);
+            }
+            if !trace_output.stdout.is_empty() {
+                full_trace.push_str("\n--- TRACE STDOUT ---\n");
+                full_trace.push_str(&trace_output.stdout);
+            }
+            (Some(full_trace), output.exit_code)
+        };
+
+        (generated_text, final_stderr, final_exit_code, tps)
     }
 
     /// Parse tokens per second from apr output
