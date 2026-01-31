@@ -422,7 +422,7 @@ impl Executor {
 
         let duration = start.elapsed().as_millis() as u64;
 
-        // Check for crash
+        // Check for crash (negative exit code = signal)
         if exit_code < 0 {
             return Evidence::crashed(
                 "G3-STABLE",
@@ -431,6 +431,23 @@ impl Executor {
                 exit_code,
                 duration,
             );
+        }
+
+        // Check for command failure (non-zero exit code)
+        if exit_code > 0 {
+            let error_msg = stderr
+                .as_deref()
+                .unwrap_or("Command failed with non-zero exit code");
+            let mut evidence = Evidence::falsified(
+                "G2-BASIC",
+                scenario.clone(),
+                format!("Command failed (exit {exit_code}): {error_msg}"),
+                &output,
+                duration,
+            );
+            evidence.exit_code = Some(exit_code);
+            evidence.stderr = stderr;
+            return evidence;
         }
 
         // Evaluate the output
