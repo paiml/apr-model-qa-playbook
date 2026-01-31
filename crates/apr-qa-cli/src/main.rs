@@ -827,7 +827,9 @@ fn run_certification(
     output_dir: &PathBuf,
     dry_run: bool,
 ) {
-    use apr_qa_certify::{grade_from_score, parse_csv, status_from_score, write_csv};
+    use apr_qa_certify::{
+        CertificationTier, grade_from_tier, parse_csv, score_from_tier, status_from_tier, write_csv,
+    };
     use chrono::Utc;
 
     // Parse tier
@@ -961,7 +963,7 @@ fn run_certification(
                 println!("  Failed: {}", result.failed);
                 println!("  Pass rate: {:.1}%", result.pass_rate());
 
-                // Calculate MQS score
+                // Calculate MQS score using tier-aware scoring
                 let evidence_vec: Vec<_> = result.evidence.all().to_vec();
                 let collector = collect_evidence(evidence_vec);
                 let mqs = match calculate_mqs_score(model_id, &collector) {
@@ -973,11 +975,22 @@ fn run_certification(
                     }
                 };
 
-                let raw_score = mqs.raw_score;
-                let has_p0 = result.gateway_failed.is_some();
-                let status = status_from_score(raw_score, has_p0);
-                let grade = grade_from_score(raw_score);
+                // Determine certification tier from CLI tier
+                let cert_tier = match tier {
+                    CertTier::Mvp => CertificationTier::Mvp,
+                    CertTier::Smoke | CertTier::Quick | CertTier::Standard | CertTier::Deep => {
+                        CertificationTier::Full
+                    }
+                };
 
+                // Use tier-aware scoring
+                let pass_rate = result.pass_rate() / 100.0; // Convert percentage to 0-1
+                let has_p0 = result.gateway_failed.is_some();
+                let raw_score = score_from_tier(cert_tier, pass_rate, has_p0);
+                let status = status_from_tier(cert_tier, pass_rate, has_p0);
+                let grade = grade_from_tier(cert_tier, pass_rate, has_p0);
+
+                println!("  Tier: {tier_str}");
                 println!("  MQS Score: {raw_score}/1000");
                 println!("  Grade: {grade}");
                 println!("  Status: {status}");

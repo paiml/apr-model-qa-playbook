@@ -1,6 +1,6 @@
 # Certified Testing & Popperian Falsification
 
-**Version:** 1.2.0
+**Version:** 2.0.0
 **Status:** APPROVED
 **Author:** PAIML Engineering
 **Date:** 2026-01-31
@@ -35,14 +35,47 @@ Standard testing optimizes for the "White Swan" (expected behavior). Certified T
 *   **Robust:** Resists stress (Certified QA).
 *   **Antifragile:** Improves with stress (Future Goal).
 
-## 3. The Verification Matrix (170 Points)
+## 3. Certification Grades & Tiers
 
-To achieve **Certified** status, a model/system must achieve a score of **95% or higher** on the Verification Matrix.
-*   **Certified:** Score ≥ 95% (e.g., ≥ 162/170) AND Zero P0 Failures.
-*   **Provisional:** Score ≥ 80% AND Zero P0 Failures.
-*   **Rejected:** Score < 80% OR Any P0 Failure.
+### 3.1 Two-Tier Certification Model
 
-### 3.1 Class I: Fundamental Integrity (P0 - CRITICAL)
+| Tier | Time Limit | Grade on Pass | Status |
+|------|------------|---------------|--------|
+| **MVP** | ≤10 min | **B** | PROVISIONAL |
+| **Full** | ≤1 hour | **A+** | CERTIFIED |
+
+### 3.2 MVP Tier (80% of Models)
+
+The MVP tier answers: *"Does this model work in all supported configurations?"*
+
+**Requirements:**
+- Tests all 18 combinations: 3 formats × 2 backends × 3 modalities
+- Must pass all 4 gateways (G1-G4)
+- Must achieve ≥90% pass rate
+- Must complete in ≤10 minutes
+
+**Outcome:**
+- **PASS** → Grade **B**, Status **PROVISIONAL** (score 800)
+- **FAIL** → Grade **F**, Status **BLOCKED** (score based on actual results)
+
+### 3.3 Full Tier (Production Certification)
+
+The Full tier answers: *"Has this model survived rigorous falsification attempts?"*
+
+**Requirements:**
+- Complete 170-point Verification Matrix
+- All P0 gates must pass
+- Must achieve ≥95% on matrix
+- Must complete in ≤1 hour
+
+**Outcome:**
+- **PASS** → Grade **A+**, Status **CERTIFIED** (score 950+)
+- **PARTIAL** → Grade based on score (A/B+/B/C)
+- **FAIL** → Grade **F**, Status **BLOCKED**
+
+## 4. The Verification Matrix (170 Points)
+
+### 4.1 Class I: Fundamental Integrity (P0 - CRITICAL)
 *Any failure here results in immediate disqualification.*
 
 | Gate ID | Hypothesis | Falsification Criteria | Points |
@@ -53,7 +86,7 @@ To achieve **Certified** status, a model/system must achieve a score of **95% or
 | **F-INT-004** | **Format Fidelity** | Round-trip conversion (GGUF→APR→GGUF) alters quantized weights (bitwise mismatch). | 10 |
 | **F-INT-005** | **Determinisim** | Fixed seed ($S=42$) produces different output tokens on identical hardware. | 10 |
 
-### 3.2 Class II: Interface Compliance (P1 - HIGH)
+### 4.2 Class II: Interface Compliance (P1 - HIGH)
 
 | Gate ID | Hypothesis | Falsification Criteria | Points |
 | :--- | :--- | :--- | :--- |
@@ -63,7 +96,7 @@ To achieve **Certified** status, a model/system must achieve a score of **95% or
 | **F-API-004** | **Error Handling** | Invalid input crashes server instead of returning 400 Bad Request. | 5 |
 | **F-API-005** | **Streaming** | SSE stream breaks format (missing `data:` prefix) or hangs. | 5 |
 
-### 3.3 Class III: Numerical Stability (P1 - HIGH)
+### 4.3 Class III: Numerical Stability (P1 - HIGH)
 
 | Gate ID | Hypothesis | Falsification Criteria | Points |
 | :--- | :--- | :--- | :--- |
@@ -72,7 +105,7 @@ To achieve **Certified** status, a model/system must achieve a score of **95% or
 | **F-NUM-003** | **Softmax Sum** | Softmax outputs do not sum to $1.0 \pm 10^{-6}$. | 5 |
 | **F-NUM-004** | **Token Probability** | Logits result in invalid probabilities (<0 or >1). | 5 |
 
-### 3.4 Class IV: Cross-Platform Parity (P2 - MEDIUM)
+### 4.4 Class IV: Cross-Platform Parity (P2 - MEDIUM)
 
 | Gate ID | Hypothesis | Falsification Criteria | Points |
 | :--- | :--- | :--- | :--- |
@@ -80,7 +113,7 @@ To achieve **Certified** status, a model/system must achieve a score of **95% or
 | **F-PAR-002** | **Format Parity** | GGUF vs SafeTensors inference output differs logically (different tokens). | 5 |
 | **F-PAR-003** | **Quantization Impact** | Q4_K_M Perplexity degrades > 10% vs F16 reference on calibration set. | 5 |
 
-### 3.5 Class V: Performance Boundaries (P2 - MEDIUM)
+### 4.5 Class V: Performance Boundaries (P2 - MEDIUM)
 
 | Gate ID | Hypothesis | Falsification Criteria | Points |
 | :--- | :--- | :--- | :--- |
@@ -89,7 +122,7 @@ To achieve **Certified** status, a model/system must achieve a score of **95% or
 | **F-PERF-003** | **Memory Leak** | RSS memory grows monotonically > 5% over 100 requests. | 5 |
 | **F-PERF-004** | **GPU Utilization** | Compute-bound kernels achieve < 50% theoretical occupancy. | 5 |
 
-### 3.6 Class VI: Security & Safety (P0 - CRITICAL)
+### 4.6 Class VI: Security & Safety (P0 - CRITICAL)
 
 | Gate ID | Hypothesis | Falsification Criteria | Points |
 | :--- | :--- | :--- | :--- |
@@ -97,7 +130,7 @@ To achieve **Certified** status, a model/system must achieve a score of **95% or
 | **F-SEC-002** | **Prompt Injection** | System prompt is overridden by user input containing control sequences. | 10 |
 | **F-SEC-003** | **Denial of Service** | "Zip bomb" or "Token flood" input causes OOM or infinite loop. | 10 |
 
-## 4. Certification Artifacts
+## 5. Certification Artifacts
 
 A **Certified** build must produce the following immutable artifacts:
 
@@ -111,35 +144,34 @@ A **Certified** build must produce the following immutable artifacts:
 
 > **Note:** Validation of this specification's implementation is governed by the [100-Point QA Checklist](./certified-testing-qa-checklist.md).
 
-## 5. Certification CLI
+## 6. Certification CLI
 
 The `apr-qa certify` command executes the Popperian certification protocol:
 
 ```bash
-# Certify all models in a family (0.5B to 32B)
-apr-qa certify --family qwen-coder --tier quick
+# Certify all models in a family with MVP tier (recommended)
+apr-qa certify --family qwen-coder --tier mvp
 
-# Certify specific models
-apr-qa certify Qwen/Qwen2.5-Coder-1.5B-Instruct --tier deep
+# Certify specific models for production release
+apr-qa certify Qwen/Qwen2.5-Coder-1.5B-Instruct --tier full
 
 # Dry run to preview certification plan
 apr-qa certify --family qwen-coder --dry-run
 
 # Certify all registered models
-apr-qa certify --all --tier smoke
+apr-qa certify --all --tier mvp
 ```
 
-### 5.1 Certification Tiers
+### 6.1 Certification Tiers (Two-Tier Model)
 
-| Tier | Duration | Tests | Use Case |
-|------|----------|-------|----------|
-| **smoke** | ~1-2 min | 3 scenarios, 1 format, CPU only | Quick sanity check |
-| **mvp** | ~5-10 min | 18 combinations (3 formats × 2 backends × 3 modalities) | **Full surface coverage** |
-| **quick** | ~10-30 min | 10 scenarios per combination | Development iteration |
-| **standard** | ~1-2 hr | 50 scenarios + conversion tests | CI/CD pipeline |
-| **deep** | ~8-24 hr | 100 scenarios + full verification matrix | Production qualification |
+The certification system uses a **two-tier model** aligned with section 3:
 
-#### 5.1.1 MVP Tier (Minimum Viable Product)
+| Tier | Time Limit | Grade on Pass | Status | Use Case |
+|------|------------|---------------|--------|----------|
+| **MVP** | ≤10 min | **B** | PROVISIONAL | 80% of models - surface coverage |
+| **Full** | ≤1 hour | **A+** | CERTIFIED | Production qualification |
+
+#### 6.1.1 MVP Tier (Minimum Viable Product)
 
 The **MVP tier** answers: *"Does this model work in all supported configurations?"*
 
@@ -151,14 +183,14 @@ Modalities: run, chat, serve            (3)
 Total:      18 test combinations
 ```
 
-Each combination runs 1 scenario to verify:
-- **G1**: Model loads successfully
-- **G2**: Inference produces output
-- **G3**: No crashes or hangs
-- **G4**: Output is not garbage
+**Pass Criteria:**
+- ≥90% pass rate across all 18 combinations
+- All P0 gateways (G1-G4) must pass
+
+**On Pass:** MQS Score = 800, Grade = **B**, Status = **PROVISIONAL**
 
 ```bash
-# Run MVP certification
+# Run MVP certification (recommended for most models)
 apr-qa certify --family qwen-coder --tier mvp
 
 # MVP is ideal for:
@@ -167,27 +199,47 @@ apr-qa certify --family qwen-coder --tier mvp
 # - Quick regression after infrastructure changes
 ```
 
-#### 5.1.2 Tier Comparison
+#### 6.1.2 Full Tier (Production Qualification)
 
-| Aspect | smoke | mvp | quick | standard | deep |
-|--------|-------|-----|-------|----------|------|
-| Formats | 1 | **3** | 1 | 3 | 3 |
-| Backends | 1 | **2** | 1 | 2 | 2 |
-| Modalities | 1 | **3** | 1 | 3 | 3 |
-| Scenarios/combo | 3 | 1 | 10 | 50 | 100 |
-| Conversion tests | No | No | No | Yes | Yes |
-| Differential tests | No | No | No | Yes | Yes |
-| Profile CI | No | No | No | Yes | Yes |
-| **Total tests** | 3 | 18 | 10 | ~900 | ~1800 |
+The **Full tier** answers: *"Has this model survived rigorous falsification attempts?"*
 
-### 5.2 Certification Results
+**Requirements:**
+- Complete 170-point Verification Matrix
+- All P0 gates must pass
+- ≥95% pass rate on matrix
+
+**On Pass:** MQS Score = 950+, Grade = **A+**, Status = **CERTIFIED**
+
+```bash
+# Run Full certification (for production release)
+apr-qa certify --family qwen-coder --tier full
+```
+
+#### 6.1.3 Tier Comparison
+
+| Aspect | MVP | Full |
+|--------|-----|------|
+| **Time Limit** | ≤10 min | ≤1 hour |
+| **Pass Threshold** | 90% | 95% |
+| **Grade on Pass** | B | A+ |
+| **Status on Pass** | PROVISIONAL | CERTIFIED |
+| Formats | 3 | 3 |
+| Backends | 2 | 2 |
+| Modalities | 3 | 3 |
+| Scenarios/combo | 1 | 50+ |
+| Verification Matrix | No | Yes (170 pts) |
+| Conversion tests | No | Yes |
+| Differential tests | No | Yes |
+| **Total tests** | 18 | ~900+ |
+
+### 6.2 Certification Results
 
 Results are written to:
 - `docs/certifications/models.csv`: Central certification database
 - `certifications/<model>/evidence.json`: Raw test evidence
 - README.md certification table (via `apr-qa-readme-sync`)
 
-## 6. References
+## 7. References
 
 *   **Popper, K. R.** (1959). *The Logic of Scientific Discovery*.
 *   **Popper, K. R.** (1963). *Conjectures and Refutations*.
