@@ -76,7 +76,7 @@ We don't test to pass—we **test to fail**. No amount of passing tests proves c
 ## Model Certifications
 
 <!-- CERTIFICATION_TABLE_START -->
-**Certification Summary** (updated: 2026-01-31 17:09 UTC)
+**Certification Summary** (updated: 2026-01-31 17:12 UTC)
 
 | Status | Count |
 |--------|-------|
