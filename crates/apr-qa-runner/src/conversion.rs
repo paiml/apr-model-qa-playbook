@@ -2129,4 +2129,340 @@ mod tests {
         assert!(ARITHMETIC_EXPECTED.contains(&"4"));
         assert!(ARITHMETIC_EXPECTED.contains(&"four"));
     }
+
+    // Additional tests for coverage
+
+    #[test]
+    fn test_conversion_bug_type_serialization() {
+        let bug_types = [
+            ConversionBugType::EmbeddingTransposition,
+            ConversionBugType::TokenizerMissing,
+            ConversionBugType::WeightCorruption,
+            ConversionBugType::ShapeMismatch,
+            ConversionBugType::SemanticDrift,
+            ConversionBugType::Unknown,
+        ];
+        for bug_type in bug_types {
+            let json = serde_json::to_string(&bug_type).unwrap();
+            let parsed: ConversionBugType = serde_json::from_str(&json).unwrap();
+            assert_eq!(parsed, bug_type);
+        }
+    }
+
+    #[test]
+    fn test_conversion_test_serialization() {
+        let test = ConversionTest {
+            source_format: Format::Gguf,
+            target_format: Format::Apr,
+            backend: Backend::Cpu,
+            model_id: ModelId::new("org", "name"),
+            epsilon: 1e-7,
+        };
+        let json = serde_json::to_string(&test).unwrap();
+        let parsed: ConversionTest = serde_json::from_str(&json).unwrap();
+        assert_eq!(parsed.source_format, Format::Gguf);
+        assert_eq!(parsed.target_format, Format::Apr);
+    }
+
+    #[test]
+    fn test_conversion_result_serialization_corroborated() {
+        let result = ConversionResult::Corroborated {
+            source_format: Format::Gguf,
+            target_format: Format::Apr,
+            backend: Backend::Gpu,
+            max_diff: 1e-9,
+        };
+        let json = serde_json::to_string(&result).unwrap();
+        let parsed: ConversionResult = serde_json::from_str(&json).unwrap();
+        match parsed {
+            ConversionResult::Corroborated { max_diff, .. } => {
+                assert!(max_diff < EPSILON);
+            }
+            _ => panic!("Expected Corroborated"),
+        }
+    }
+
+    #[test]
+    fn test_conversion_result_serialization_falsified() {
+        let result = ConversionResult::Falsified {
+            gate_id: "F-CONV-G-A".to_string(),
+            reason: "Test failure".to_string(),
+            evidence: ConversionEvidence {
+                source_hash: "abc".to_string(),
+                converted_hash: "def".to_string(),
+                max_diff: 0.5,
+                diff_indices: vec![0, 1, 2],
+                source_format: Format::Gguf,
+                target_format: Format::Apr,
+                backend: Backend::Cpu,
+            },
+        };
+        let json = serde_json::to_string(&result).unwrap();
+        let parsed: ConversionResult = serde_json::from_str(&json).unwrap();
+        match parsed {
+            ConversionResult::Falsified { gate_id, .. } => {
+                assert_eq!(gate_id, "F-CONV-G-A");
+            }
+            _ => panic!("Expected Falsified"),
+        }
+    }
+
+    #[test]
+    fn test_conversion_evidence_serialization() {
+        let evidence = ConversionEvidence {
+            source_hash: "hash1".to_string(),
+            converted_hash: "hash2".to_string(),
+            max_diff: 0.05,
+            diff_indices: vec![1, 3, 5],
+            source_format: Format::SafeTensors,
+            target_format: Format::Gguf,
+            backend: Backend::Gpu,
+        };
+        let json = serde_json::to_string(&evidence).unwrap();
+        let parsed: ConversionEvidence = serde_json::from_str(&json).unwrap();
+        assert_eq!(parsed.source_hash, "hash1");
+        assert_eq!(parsed.diff_indices.len(), 3);
+    }
+
+    #[test]
+    fn test_semantic_test_result_clone() {
+        let result = SemanticTestResult::Falsified {
+            bug_type: ConversionBugType::TokenizerMissing,
+            source_output: "source".to_string(),
+            target_output: "target".to_string(),
+            stderr: "error".to_string(),
+        };
+        let cloned = result.clone();
+        match cloned {
+            SemanticTestResult::Falsified {
+                bug_type, stderr, ..
+            } => {
+                assert_eq!(bug_type, ConversionBugType::TokenizerMissing);
+                assert_eq!(stderr, "error");
+            }
+            _ => panic!("Expected Falsified"),
+        }
+    }
+
+    #[test]
+    fn test_classify_bug_source_empty_target_has_content() {
+        let test = SemanticConversionTest::new(
+            Format::Gguf,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        // Source empty, target has content - unusual case, returns Unknown
+        let bug = test.classify_bug("", "Some output", false);
+        assert_eq!(bug, Some(ConversionBugType::Unknown));
+    }
+
+    #[test]
+    fn test_classify_bug_both_empty() {
+        let test = SemanticConversionTest::new(
+            Format::Gguf,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        // Both empty - no bug
+        let bug = test.classify_bug("", "", false);
+        assert!(bug.is_none());
+    }
+
+    #[test]
+    fn test_classify_bug_source_no_expected_target_has_expected() {
+        let test = SemanticConversionTest::new(
+            Format::Gguf,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        // Source doesn't have expected, target does - weird but not a bug in our heuristic
+        let bug = test.classify_bug("random text", "The answer is 4", false);
+        // Outputs differ but no clear pattern
+        assert_eq!(bug, Some(ConversionBugType::Unknown));
+    }
+
+    #[test]
+    fn test_compute_diff_unicode() {
+        let test = ConversionTest::new(
+            Format::Gguf,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        let diff = test.compute_diff("hello 你好", "hello 世界");
+        assert!(diff > 0.0);
+        assert!(diff < 1.0);
+    }
+
+    #[test]
+    fn test_find_diff_indices_unicode() {
+        let test = ConversionTest::new(
+            Format::Gguf,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        let indices = test.find_diff_indices("ab你好", "abXX");
+        // Comparing "你" vs "X" and "好" vs "X"
+        assert!(indices.len() >= 2);
+    }
+
+    #[test]
+    fn test_hash_output_unicode() {
+        let hash1 = ConversionTest::hash_output("hello 你好 世界");
+        let hash2 = ConversionTest::hash_output("hello 你好 世界");
+        assert_eq!(hash1, hash2);
+        assert_eq!(hash1.len(), 16); // 16 hex chars
+    }
+
+    #[test]
+    fn test_conversion_execution_result_pass_rate_partial() {
+        let result = ConversionExecutionResult {
+            passed: 7,
+            failed: 3,
+            total: 10,
+            evidence: vec![],
+            results: vec![],
+            duration_ms: 1000,
+        };
+        let rate = result.pass_rate();
+        assert!((rate - 70.0).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn test_conversion_config_with_specific_backends() {
+        let config = ConversionConfig {
+            test_all_pairs: true,
+            test_round_trips: false,
+            backends: vec![Backend::Gpu],
+            no_gpu: false,
+        };
+        assert_eq!(config.backends.len(), 1);
+        assert_eq!(config.backends[0], Backend::Gpu);
+        assert!(!config.test_round_trips);
+    }
+
+    #[test]
+    fn test_semantic_conversion_test_fields() {
+        let test = SemanticConversionTest::new(
+            Format::SafeTensors,
+            Format::Apr,
+            Backend::Gpu,
+            ModelId::new("org", "model"),
+        );
+        assert_eq!(test.source_format, Format::SafeTensors);
+        assert_eq!(test.target_format, Format::Apr);
+        assert_eq!(test.backend, Backend::Gpu);
+        assert_eq!(test.model_id.org, "org");
+    }
+
+    #[test]
+    fn test_round_trip_test_with_two_formats() {
+        let rt = RoundTripTest::new(
+            vec![Format::Apr, Format::Gguf],
+            Backend::Gpu,
+            ModelId::new("test", "model"),
+        );
+        assert_eq!(rt.formats.len(), 2);
+        assert_eq!(rt.backend, Backend::Gpu);
+    }
+
+    #[test]
+    fn test_conversion_evidence_with_empty_diff_indices() {
+        let evidence = ConversionEvidence {
+            source_hash: "same".to_string(),
+            converted_hash: "same".to_string(),
+            max_diff: 0.0,
+            diff_indices: vec![],
+            source_format: Format::Gguf,
+            target_format: Format::Apr,
+            backend: Backend::Cpu,
+        };
+        assert!(evidence.diff_indices.is_empty());
+        assert!((evidence.max_diff - 0.0).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn test_all_conversion_pairs_complete() {
+        let pairs = all_conversion_pairs();
+        // Should have bidirectional pairs for all format combinations
+        // 3 formats = 6 pairs (A->B, B->A for each pair)
+        assert_eq!(pairs.len(), 6);
+
+        // Check specific pairs exist
+        assert!(pairs.contains(&(Format::Gguf, Format::Apr)));
+        assert!(pairs.contains(&(Format::Apr, Format::Gguf)));
+        assert!(pairs.contains(&(Format::Gguf, Format::SafeTensors)));
+        assert!(pairs.contains(&(Format::SafeTensors, Format::Gguf)));
+        assert!(pairs.contains(&(Format::Apr, Format::SafeTensors)));
+        assert!(pairs.contains(&(Format::SafeTensors, Format::Apr)));
+    }
+
+    #[test]
+    fn test_generate_conversion_tests_model_id_preserved() {
+        let model_id = ModelId::new("my-org", "my-model-v1");
+        let tests = generate_conversion_tests(&model_id);
+
+        for test in &tests {
+            assert_eq!(test.model_id.org, "my-org");
+            assert_eq!(test.model_id.name, "my-model-v1");
+        }
+    }
+
+    #[test]
+    fn test_conversion_test_debug_format() {
+        let test = ConversionTest::new(
+            Format::Gguf,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        let debug = format!("{test:?}");
+        assert!(debug.contains("ConversionTest"));
+        assert!(debug.contains("Gguf"));
+        assert!(debug.contains("Apr"));
+    }
+
+    #[test]
+    fn test_classify_bug_with_multiple_garbage_patterns() {
+        let test = SemanticConversionTest::new(
+            Format::Gguf,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        // Target has multiple garbage patterns
+        let bug = test.classify_bug("The answer is 4", "PAD <pad> <|endoftext|> 151935", false);
+        assert_eq!(bug, Some(ConversionBugType::EmbeddingTransposition));
+    }
+
+    #[test]
+    fn test_classify_bug_target_only_whitespace() {
+        let test = SemanticConversionTest::new(
+            Format::Gguf,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        // Source has content but no expected arithmetic, target is whitespace
+        let bug = test.classify_bug("Some random output", "   \t\n  ", false);
+        assert_eq!(bug, Some(ConversionBugType::WeightCorruption));
+    }
+
+    #[test]
+    fn test_conversion_executor_custom_config() {
+        let config = ConversionConfig {
+            test_all_pairs: false,
+            test_round_trips: true,
+            backends: vec![Backend::Cpu],
+            no_gpu: true,
+        };
+        let executor = ConversionExecutor::new(config);
+        assert!(!executor.config.test_all_pairs);
+        assert!(executor.config.test_round_trips);
+        assert!(executor.config.no_gpu);
+    }
 }

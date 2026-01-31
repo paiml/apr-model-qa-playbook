@@ -318,6 +318,10 @@ pub struct MockCommandRunner {
     pub convert_success: bool,
     /// Tokens per second to report
     pub tps: f64,
+    /// Simulate a crash (negative exit code)
+    pub crash: bool,
+    /// Custom stderr message for inference
+    pub inference_stderr: Option<String>,
 }
 
 impl Default for MockCommandRunner {
@@ -327,6 +331,8 @@ impl Default for MockCommandRunner {
             inference_success: true,
             convert_success: true,
             tps: 25.0,
+            crash: false,
+            inference_stderr: None,
         }
     }
 }
@@ -365,6 +371,25 @@ impl MockCommandRunner {
         self.tps = tps;
         self
     }
+
+    /// Simulate a crash (negative exit code)
+    #[must_use]
+    pub fn with_crash(mut self) -> Self {
+        self.crash = true;
+        self
+    }
+
+    /// Set the inference response with custom stderr
+    #[must_use]
+    pub fn with_inference_response_and_stderr(
+        mut self,
+        response: impl Into<String>,
+        stderr: impl Into<String>,
+    ) -> Self {
+        self.inference_response = response.into();
+        self.inference_stderr = Some(stderr.into());
+        self
+    }
 }
 
 impl CommandRunner for MockCommandRunner {
@@ -376,6 +401,16 @@ impl CommandRunner for MockCommandRunner {
         _no_gpu: bool,
         _extra_args: &[&str],
     ) -> CommandOutput {
+        // Simulate crash
+        if self.crash {
+            return CommandOutput {
+                stdout: String::new(),
+                stderr: "SIGSEGV: Segmentation fault".to_string(),
+                exit_code: -11, // SIGSEGV
+                success: false,
+            };
+        }
+
         if !self.inference_success {
             return CommandOutput::failure(1, "Inference failed");
         }
@@ -395,7 +430,13 @@ impl CommandRunner for MockCommandRunner {
             "Output:\n{}\nCompleted in 1.5s\ntok/s: {:.1}",
             response, self.tps
         );
-        CommandOutput::success(stdout)
+
+        // Return with stderr if set
+        if let Some(ref stderr) = self.inference_stderr {
+            CommandOutput::with_output(stdout, stderr.clone(), 0)
+        } else {
+            CommandOutput::success(stdout)
+        }
     }
 
     fn convert_model(&self, _source: &Path, _target: &Path) -> CommandOutput {
@@ -764,5 +805,131 @@ mod tests {
     fn test_real_runner_default() {
         let runner = RealCommandRunner::default();
         assert_eq!(runner.apr_binary, "apr");
+    }
+
+    #[test]
+    fn test_mock_runner_with_crash() {
+        let runner = MockCommandRunner::new().with_crash();
+        assert!(runner.crash);
+        let path = PathBuf::from("model.gguf");
+        let output = runner.run_inference(&path, "test", 32, false, &[]);
+        assert!(!output.success);
+        assert_eq!(output.exit_code, -11); // SIGSEGV
+        assert!(output.stderr.contains("SIGSEGV"));
+    }
+
+    #[test]
+    fn test_mock_runner_with_inference_response_and_stderr() {
+        let runner =
+            MockCommandRunner::new().with_inference_response_and_stderr("Response", "Warning");
+        assert_eq!(runner.inference_response, "Response");
+        assert_eq!(runner.inference_stderr.as_deref(), Some("Warning"));
+
+        let path = PathBuf::from("model.gguf");
+        let output = runner.run_inference(&path, "Hello", 32, false, &[]);
+        assert!(output.success);
+        assert!(output.stdout.contains("Response"));
+        assert_eq!(output.stderr, "Warning");
+    }
+
+    #[test]
+    fn test_mock_runner_inference_fn_code() {
+        let runner = MockCommandRunner::new();
+        let path = PathBuf::from("model.gguf");
+        let output = runner.run_inference(&path, "fn main() {}", 32, false, &[]);
+        assert!(output.success);
+        assert!(output.stdout.contains("return"));
+    }
+
+    #[test]
+    fn test_mock_runner_inference_2_plus_2_spaced() {
+        let runner = MockCommandRunner::new();
+        let path = PathBuf::from("model.gguf");
+        let output = runner.run_inference(&path, "What is 2 + 2?", 32, false, &[]);
+        assert!(output.success);
+        assert!(output.stdout.contains("4"));
+    }
+
+    #[test]
+    fn test_mock_runner_crash_takes_priority() {
+        // Crash should take priority over inference failure
+        let runner = MockCommandRunner::new()
+            .with_crash()
+            .with_inference_failure();
+        let path = PathBuf::from("model.gguf");
+        let output = runner.run_inference(&path, "test", 32, false, &[]);
+        // Crash should be returned, not inference failure
+        assert_eq!(output.exit_code, -11);
+    }
+
+    #[test]
+    fn test_command_output_with_output_success_on_zero() {
+        let output = CommandOutput::with_output("stdout", "stderr", 0);
+        assert!(output.success);
+        assert_eq!(output.exit_code, 0);
+    }
+
+    #[test]
+    fn test_command_output_with_output_failure_on_nonzero() {
+        let output = CommandOutput::with_output("", "error", 42);
+        assert!(!output.success);
+        assert_eq!(output.exit_code, 42);
+    }
+
+    #[test]
+    fn test_mock_runner_profile_ci_no_assertions() {
+        let runner = MockCommandRunner::new().with_tps(15.0);
+        let path = PathBuf::from("model.gguf");
+        // No throughput or p99 assertions
+        let output = runner.profile_ci(&path, None, None, 1, 2);
+        assert!(output.success);
+        assert!(output.stdout.contains("\"passed\":true"));
+    }
+
+    #[test]
+    fn test_mock_runner_fields_after_default() {
+        let runner = MockCommandRunner::default();
+        assert!(!runner.crash);
+        assert!(runner.inference_stderr.is_none());
+    }
+
+    #[test]
+    fn test_command_output_failure_negative_exit_code() {
+        let output = CommandOutput::failure(-9, "killed");
+        assert!(!output.success);
+        assert_eq!(output.exit_code, -9);
+        assert_eq!(output.stderr, "killed");
+    }
+
+    #[test]
+    fn test_mock_runner_with_all_options() {
+        let runner = MockCommandRunner::new()
+            .with_tps(100.0)
+            .with_inference_response("Custom response")
+            .with_crash();
+
+        assert!((runner.tps - 100.0).abs() < f64::EPSILON);
+        assert_eq!(runner.inference_response, "Custom response");
+        assert!(runner.crash);
+    }
+
+    #[test]
+    fn test_mock_runner_profile_ci_both_assertions_pass() {
+        let runner = MockCommandRunner::new().with_tps(200.0);
+        let path = PathBuf::from("model.gguf");
+        // Both assertions should pass
+        let output = runner.profile_ci(&path, Some(100.0), Some(500.0), 1, 2);
+        assert!(output.success);
+        assert!(output.stdout.contains("\"passed\":true"));
+    }
+
+    #[test]
+    fn test_mock_runner_profile_ci_both_assertions_fail() {
+        let runner = MockCommandRunner::new().with_tps(5.0);
+        let path = PathBuf::from("model.gguf");
+        // Throughput too low, p99 too high (156.5 > 100)
+        let output = runner.profile_ci(&path, Some(100.0), Some(100.0), 1, 2);
+        assert!(!output.success);
+        assert!(output.stdout.contains("\"passed\":false"));
     }
 }
