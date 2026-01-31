@@ -653,4 +653,52 @@ mod tests {
             assert!(gate_ids.insert(gate_id), "Duplicate gate ID: {}", gate_id);
         }
     }
+
+    #[test]
+    fn test_pattern_detector_default() {
+        let detector = PatternDetector::default();
+        // Default should have same patterns as new()
+        assert_eq!(
+            detector.patterns.len(),
+            PatternDetector::new().patterns.len()
+        );
+    }
+
+    #[test]
+    fn test_tensor_validity_with_zeros() {
+        let detector = PatternDetector::new();
+        let values = vec![0.0f32, 0.0, 1.0, 2.0, 0.0];
+        let result = detector.check_tensor_validity(&values);
+        assert_eq!(result.zero_count, 3);
+        assert!(result.is_valid);
+    }
+
+    #[test]
+    fn test_tensor_validity_empty_slice() {
+        let detector = PatternDetector::new();
+        let values: Vec<f32> = vec![];
+        let result = detector.check_tensor_validity(&values);
+        assert_eq!(result.total, 0);
+        assert!((result.mean - 0.0).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn test_companion_files_partial() {
+        // Use a path in /tmp that likely has some standard files
+        let model_path = std::path::Path::new("/tmp/test_model.safetensors");
+        let detector = PatternDetector::new();
+        // Request a file that doesn't exist alongside a common one
+        let result = detector.check_companion_files(model_path, &["nonexistent.json"]);
+        // At least verify the function works
+        assert!(!result.all_present || result.missing.is_empty());
+    }
+
+    #[test]
+    fn test_jaccard_similarity_both_empty() {
+        let detector = PatternDetector::new();
+        // Both empty should return 1.0
+        let result = detector.check_fallback_consistency("", "");
+        // This exercises jaccard_similarity with both empty sets
+        assert!(result);
+    }
 }

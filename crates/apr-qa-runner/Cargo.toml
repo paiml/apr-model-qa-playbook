@@ -24,6 +24,7 @@ num_cpus = "1.16"
 [dev-dependencies]
 proptest = { workspace = true }
 tokio = { workspace = true, features = ["test-util"] }
+tempfile = "3"
 
 [lints]
 workspace = true
