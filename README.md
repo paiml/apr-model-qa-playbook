@@ -76,14 +76,14 @@ We don't test to pass—we **test to fail**. No amount of passing tests proves c
 ## Model Certifications
 
 <!-- CERTIFICATION_TABLE_START -->
-**Certification Summary** (updated: 2026-01-31 17:12 UTC)
+**Certification Summary** (updated: 2026-01-31 17:23 UTC)
 
 | Status | Count |
 |--------|-------|
 | Certified | 0/12 |
-| Provisional | 4/12 |
+| Provisional | 6/12 |
 | Blocked | 0/12 |
-| Pending | 8/12 |
+| Pending | 6/12 |
 
 **Priority Family:** Qwen Coder (see [Certified Testing Spec](docs/specifications/certified-testing.md))
 
@@ -99,8 +99,8 @@ We don't test to pass—we **test to fail**. No amount of passing tests proves c
 | [Qwen2.5-Coder-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct) | qwen-coder | 1.5B | ![provisional](https://img.shields.io/badge/PROVISIONAL-yellow) | 800 | B | ✓ | - | - | - | - | - | - |
 | [Qwen2.5-Coder-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-3B-Instruct) | qwen-coder | 3B | ![provisional](https://img.shields.io/badge/PROVISIONAL-yellow) | 800 | B | ✓ | - | - | - | - | - | - |
 | [Qwen2.5-Coder-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct) | qwen-coder | 7B | ![provisional](https://img.shields.io/badge/PROVISIONAL-yellow) | 800 | B | ✓ | - | - | - | - | - | - |
-| [Qwen2.5-Coder-14B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct) | qwen-coder | 14B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - |
-| [Qwen2.5-Coder-32B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-32B-Instruct) | qwen-coder | 32B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - |
+| [Qwen2.5-Coder-14B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct) | qwen-coder | 14B | ![provisional](https://img.shields.io/badge/PROVISIONAL-yellow) | 800 | B | ✓ | - | - | - | - | - | - |
+| [Qwen2.5-Coder-32B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-32B-Instruct) | qwen-coder | 32B | ![provisional](https://img.shields.io/badge/PROVISIONAL-yellow) | 800 | B | ✓ | - | - | - | - | - | - |
 <!-- CERTIFICATION_TABLE_END -->
 
 ## Quick Start
