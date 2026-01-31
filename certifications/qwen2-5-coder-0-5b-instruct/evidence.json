@@ -1,6 +1,6 @@
 [
   {
-    "id": "0000000000000000188fe6579df567c7",
+    "id": "0000000000000000188ff10ce201e20b",
     "gate_id": "F-A1-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_gguf_0000000000000000",
@@ -21,17 +21,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "The answer is 4.",
-    "stderr": null,
+    "output": "Source: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 14044.85ms\nmodel: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 13193.5ms (2.4 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": null,
+      "tokens_per_second": 1.6,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 14051
     },
-    "timestamp": "2026-01-31T19:07:22.566544174Z",
+    "timestamp": "2026-01-31T22:23:36.213571721Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -42,7 +42,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe6579df57bc4",
+    "id": "0000000000000000188ff1102d22a72b",
     "gate_id": "F-A1-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_apr_0000000000000001",
@@ -63,17 +63,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "The answer is 4.",
-    "stderr": null,
+    "output": "Source: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 14138.43ms\nmodel: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 13273.1ms (2.4 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": null,
+      "tokens_per_second": 1.6,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 14145
     },
-    "timestamp": "2026-01-31T19:07:22.566548791Z",
+    "timestamp": "2026-01-31T22:23:50.358912505Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -84,7 +84,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe6579df582c5",
+    "id": "0000000000000000188ff11378f6beac",
     "gate_id": "F-A1-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000002",
@@ -105,17 +105,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "The answer is 4.",
-    "stderr": null,
+    "output": "Source: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 14149.44ms\nmodel: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 13283.3ms (2.4 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": null,
+      "tokens_per_second": 1.6,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 14157
     },
-    "timestamp": "2026-01-31T19:07:22.566550564Z",
+    "timestamp": "2026-01-31T22:24:04.516005253Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -126,7 +126,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe6579df58763",
+    "id": "0000000000000000188ff1178b827cd3",
     "gate_id": "F-A2-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_gguf_0000000000000003",
@@ -147,17 +147,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "The answer is 4.",
-    "stderr": null,
+    "output": "Source: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 17483.76ms\nmodel: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 16600.3ms (1.9 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": null,
+      "tokens_per_second": 1.3,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 17491
     },
-    "timestamp": "2026-01-31T19:07:22.566551625Z",
+    "timestamp": "2026-01-31T22:24:22.007023199Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -168,7 +168,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe6579df58b56",
+    "id": "0000000000000000188ff11adf350efe",
     "gate_id": "F-A2-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_apr_0000000000000004",
@@ -189,17 +189,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "The answer is 4.",
-    "stderr": null,
+    "output": "Source: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 14224.68ms\nmodel: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 13337.9ms (2.4 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": null,
+      "tokens_per_second": 1.5,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 14289
     },
-    "timestamp": "2026-01-31T19:07:22.566553368Z",
+    "timestamp": "2026-01-31T22:24:36.296136621Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -210,7 +210,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe6579df59623",
+    "id": "0000000000000000188ff11e241dfe36",
     "gate_id": "F-A2-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_safetensors_0000000000000005",
@@ -231,17 +231,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "The answer is 4.",
-    "stderr": null,
+    "output": "Source: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 14033.84ms\nmodel: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 13142.5ms (2.4 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": null,
+      "tokens_per_second": 1.6,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 14041
     },
-    "timestamp": "2026-01-31T19:07:22.566555471Z",
+    "timestamp": "2026-01-31T22:24:50.337154419Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -252,7 +252,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe6579df59ad4",
+    "id": "0000000000000000188ff1216ec4cb08",
     "gate_id": "F-A3-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_chat_cpu_gguf_0000000000000006",
@@ -273,17 +273,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "The answer is 4.",
-    "stderr": null,
+    "output": "Source: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 14130.11ms\nmodel: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 13241.1ms (2.4 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": null,
+      "tokens_per_second": 1.6,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 14137
     },
-    "timestamp": "2026-01-31T19:07:22.566556603Z",
+    "timestamp": "2026-01-31T22:25:04.474501430Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -294,7 +294,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe6579df5a225",
+    "id": "0000000000000000188ff124b549a745",
     "gate_id": "F-A3-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_chat_cpu_apr_0000000000000007",
@@ -315,17 +315,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "The answer is 4.",
-    "stderr": null,
+    "output": "Source: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 14060.68ms\nmodel: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 13177.9ms (2.4 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": null,
+      "tokens_per_second": 1.6,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 14068
     },
-    "timestamp": "2026-01-31T19:07:22.566558486Z",
+    "timestamp": "2026-01-31T22:25:18.542515662Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -336,7 +336,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe6579df5a5f1",
+    "id": "0000000000000000188ff128030df141",
     "gate_id": "F-A3-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_chat_cpu_safetensors_0000000000000008",
@@ -357,17 +357,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "The answer is 4.",
-    "stderr": null,
+    "output": "Source: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 14181.59ms\nmodel: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 13309.4ms (2.4 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": null,
+      "tokens_per_second": 1.6,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 14189
     },
-    "timestamp": "2026-01-31T19:07:22.566559477Z",
+    "timestamp": "2026-01-31T22:25:32.732127337Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -378,7 +378,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe6579df5aa34",
+    "id": "0000000000000000188ff12b42e273f8",
     "gate_id": "F-A4-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_chat_gpu_gguf_0000000000000009",
@@ -399,17 +399,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "The answer is 4.",
-    "stderr": null,
+    "output": "Source: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 13947.93ms\nmodel: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 13086.6ms (2.4 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": null,
+      "tokens_per_second": 1.6,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 13955
     },
-    "timestamp": "2026-01-31T19:07:22.566560619Z",
+    "timestamp": "2026-01-31T22:25:46.687921249Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -420,7 +420,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe6579df5ae8c",
+    "id": "0000000000000000188ff12e80f94aca",
     "gate_id": "F-A4-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_chat_gpu_apr_000000000000000a",
@@ -441,17 +441,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "The answer is 4.",
-    "stderr": null,
+    "output": "Source: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 13919.46ms\nmodel: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 13041.5ms (2.5 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": null,
+      "tokens_per_second": 1.6,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 13926
     },
-    "timestamp": "2026-01-31T19:07:22.566561640Z",
+    "timestamp": "2026-01-31T22:26:00.614507105Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -462,7 +462,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe6579df5b2da",
+    "id": "0000000000000000188ff131c2e1c8d3",
     "gate_id": "F-A4-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_chat_gpu_safetensors_000000000000000b",
@@ -483,17 +483,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "The answer is 4.",
-    "stderr": null,
+    "output": "Source: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 13982.62ms\nmodel: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 13096.5ms (2.4 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": null,
+      "tokens_per_second": 1.6,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 13990
     },
-    "timestamp": "2026-01-31T19:07:22.566562792Z",
+    "timestamp": "2026-01-31T22:26:14.605164460Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -504,7 +504,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe6579df5b9a8",
+    "id": "0000000000000000188ff13506116553",
     "gate_id": "F-A5-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_serve_cpu_gguf_000000000000000c",
@@ -525,17 +525,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "The answer is 4.",
-    "stderr": null,
+    "output": "Source: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 14004.44ms\nmodel: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 13135.8ms (2.4 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": null,
+      "tokens_per_second": 1.6,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 14012
     },
-    "timestamp": "2026-01-31T19:07:22.566564505Z",
+    "timestamp": "2026-01-31T22:26:28.617260656Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -546,7 +546,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe6579df5bebe",
+    "id": "0000000000000000188ff1385347fadd",
     "gate_id": "F-A5-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_serve_cpu_apr_000000000000000d",
@@ -567,17 +567,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "The answer is 4.",
-    "stderr": null,
+    "output": "Source: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 14173.28ms\nmodel: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 13264.9ms (2.4 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": null,
+      "tokens_per_second": 1.6,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 14180
     },
-    "timestamp": "2026-01-31T19:07:22.566565877Z",
+    "timestamp": "2026-01-31T22:26:42.797584862Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -588,7 +588,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe6579df5c316",
+    "id": "0000000000000000188ff13b91dc5a86",
     "gate_id": "F-A5-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_serve_cpu_safetensors_000000000000000e",
@@ -609,17 +609,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "The answer is 4.",
-    "stderr": null,
+    "output": "Source: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 13927.31ms\nmodel: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 13047.8ms (2.5 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": null,
+      "tokens_per_second": 1.6,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 13934
     },
-    "timestamp": "2026-01-31T19:07:22.566566918Z",
+    "timestamp": "2026-01-31T22:26:56.732397799Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -630,7 +630,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe6579df5c746",
+    "id": "0000000000000000188ff13eda2d8fb2",
     "gate_id": "F-A6-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_serve_gpu_gguf_000000000000000f",
@@ -651,17 +651,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "The answer is 4.",
-    "stderr": null,
+    "output": "Source: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 14090.83ms\nmodel: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 13242.5ms (2.4 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": null,
+      "tokens_per_second": 1.6,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 14098
     },
-    "timestamp": "2026-01-31T19:07:22.566567980Z",
+    "timestamp": "2026-01-31T22:27:10.830581237Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -672,7 +672,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe6579df5cb39",
+    "id": "0000000000000000188ff1422264b0aa",
     "gate_id": "F-A6-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_serve_gpu_apr_0000000000000010",
@@ -693,17 +693,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "The answer is 4.",
-    "stderr": null,
+    "output": "Source: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 14088.95ms\nmodel: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 13212.5ms (2.4 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": null,
+      "tokens_per_second": 1.6,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 14096
     },
-    "timestamp": "2026-01-31T19:07:22.566569012Z",
+    "timestamp": "2026-01-31T22:27:24.927055786Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -714,7 +714,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000188fe6579df5f32b",
+    "id": "0000000000000000188ff14567bb3b17",
     "gate_id": "F-A6-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_serve_gpu_safetensors_0000000000000011",
@@ -735,17 +735,647 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "The answer is 4.",
-    "stderr": null,
+    "output": "Source: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 14040.75ms\nmodel: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 13172.8ms (2.4 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": null,
+      "tokens_per_second": 1.6,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
+      "duration_ms": 14048
+    },
+    "timestamp": "2026-01-31T22:27:38.975257232Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000188ff154e59f5ebb",
+    "gate_id": "F-CONV-G-A",
+    "scenario": {
+      "id": "test_run_cpu_apr_0000000000000000",
+      "model": {
+        "org": "conversion",
+        "name": "test",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "Convert Gguf to Apr",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Conversion Gguf → Apr produced different output (diff: 7.57e-1, ε: 1.00e-6)",
+    "output": "321435bae595a879",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-01-31T19:07:22.566579267Z",
+    "timestamp": "2026-01-31T22:28:45.511869143Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000188ff154e5d29572",
+    "gate_id": "F-CONV-G-A",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_apr_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "gpu",
+      "format": "apr",
+      "prompt": "Convert Gguf to Apr",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: unexpected argument '--gpu' found\n\n  tip: to pass '--gpu' as a value, use '-- --gpu'\n\nUsage: apr run --prompt <PROMPT> --max-tokens <MAX_TOKENS> <SOURCE>\n\nFor more information, try '--help'.\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-01-31T22:28:45.515224844Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000188ff15c01707044",
+    "gate_id": "F-CONV-A-G",
+    "scenario": {
+      "id": "test_run_cpu_gguf_0000000000000000",
+      "model": {
+        "org": "conversion",
+        "name": "test",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "gguf",
+      "prompt": "Convert Apr to Gguf",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Conversion Apr → Gguf produced different output (diff: 6.46e-1, ε: 1.00e-6)",
+    "output": "e79228d001a37357",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-01-31T22:29:16.043326389Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000188ff15c01a56ab8",
+    "gate_id": "F-CONV-A-G",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_gguf_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "gpu",
+      "format": "gguf",
+      "prompt": "Convert Apr to Gguf",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: unexpected argument '--gpu' found\n\n  tip: to pass '--gpu' as a value, use '-- --gpu'\n\nUsage: apr run --prompt <PROMPT> --max-tokens <MAX_TOKENS> <SOURCE>\n\nFor more information, try '--help'.\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-01-31T22:29:16.046798788Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000188ff161098e3b76",
+    "gate_id": "F-CONV-G-S",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Convert Gguf to SafeTensors",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Conversion infrastructure error: Execution error: Inference failed: \n[PMAT-172] ERROR: No tokenizer found for /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.converted.safetensors.\n           Expected sibling file: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor 'model.embed_tokens.weight' not found\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-01-31T22:29:37.654333029Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000188ff16109bbfa20",
+    "gate_id": "F-CONV-G-S",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_safetensors_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "gpu",
+      "format": "safetensors",
+      "prompt": "Convert Gguf to SafeTensors",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: unexpected argument '--gpu' found\n\n  tip: to pass '--gpu' as a value, use '-- --gpu'\n\nUsage: apr run --prompt <PROMPT> --max-tokens <MAX_TOKENS> <SOURCE>\n\nFor more information, try '--help'.\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-01-31T22:29:37.657330608Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000188ff168bbc1bf85",
+    "gate_id": "F-CONV-S-G",
+    "scenario": {
+      "id": "test_run_cpu_gguf_0000000000000000",
+      "model": {
+        "org": "conversion",
+        "name": "test",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "gguf",
+      "prompt": "Convert SafeTensors to Gguf",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Conversion SafeTensors → Gguf produced different output (diff: 6.46e-1, ε: 1.00e-6)",
+    "output": "8a29e1f07bdca9d9",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-01-31T22:30:10.708824823Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000188ff168bc0190d7",
+    "gate_id": "F-CONV-S-G",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_gguf_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "gpu",
+      "format": "gguf",
+      "prompt": "Convert SafeTensors to Gguf",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: unexpected argument '--gpu' found\n\n  tip: to pass '--gpu' as a value, use '-- --gpu'\n\nUsage: apr run --prompt <PROMPT> --max-tokens <MAX_TOKENS> <SOURCE>\n\nFor more information, try '--help'.\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-01-31T22:30:10.713007087Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000188ff16dc4a498c4",
+    "gate_id": "F-CONV-A-S",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Convert Apr to SafeTensors",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Conversion infrastructure error: Execution error: Inference failed: \n[PMAT-172] ERROR: No tokenizer found for /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/model.converted.safetensors.\n           Expected sibling file: /tmp/model-cache/qwen2-5-coder-0-5b-instruct/gguf/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor 'model.embed_tokens.weight' not found\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-01-31T22:30:32.332745661Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000188ff16dc4daa0ed",
+    "gate_id": "F-CONV-A-S",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_safetensors_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "gpu",
+      "format": "safetensors",
+      "prompt": "Convert Apr to SafeTensors",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: unexpected argument '--gpu' found\n\n  tip: to pass '--gpu' as a value, use '-- --gpu'\n\nUsage: apr run --prompt <PROMPT> --max-tokens <MAX_TOKENS> <SOURCE>\n\nFor more information, try '--help'.\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-01-31T22:30:32.336286894Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000188ff17da0fc9c45",
+    "gate_id": "F-CONV-S-A",
+    "scenario": {
+      "id": "test_run_cpu_apr_0000000000000000",
+      "model": {
+        "org": "conversion",
+        "name": "test",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "Convert SafeTensors to Apr",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Conversion SafeTensors → Apr produced different output (diff: 7.57e-1, ε: 1.00e-6)",
+    "output": "9d7c27ea4c3197aa",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-01-31T22:31:40.454010766Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000188ff17da12cf470",
+    "gate_id": "F-CONV-S-A",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_apr_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "gpu",
+      "format": "apr",
+      "prompt": "Convert SafeTensors to Apr",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: unexpected argument '--gpu' found\n\n  tip: to pass '--gpu' as a value, use '-- --gpu'\n\nUsage: apr run --prompt <PROMPT> --max-tokens <MAX_TOKENS> <SOURCE>\n\nFor more information, try '--help'.\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-01-31T22:31:40.457179075Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000188ff18305a37882",
+    "gate_id": "F-CONV-RT-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_gguf_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "gguf",
+      "prompt": "Round-trip conversion",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Round-trip failed: Execution error: Conversion failed: error: Validation failed: Conversion failed: Invalid model format: Validation failed (2 errors):\n  - blk.11.attn_norm.weight: Invalid model format: RMSNorm weight (gamma): mean=3.4756 outside expected range [-0.5, 3.0]\n  - blk.13.attn_norm.weight: Invalid model format: RMSNorm weight (gamma): mean=3.3441 outside expected range [-0.5, 3.0]\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-01-31T22:32:03.617504533Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000188ff185261b1d20",
+    "gate_id": "F-CONV-RT-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_gguf_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "gpu",
+      "format": "gguf",
+      "prompt": "Round-trip conversion",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Round-trip failed: Execution error: Conversion failed: error: Validation failed: Conversion failed: Invalid model format: Validation failed (2 errors):\n  - blk.11.attn_norm.weight: Invalid model format: RMSNorm weight (gamma): mean=3.4756 outside expected range [-0.5, 3.0]\n  - blk.13.attn_norm.weight: Invalid model format: RMSNorm weight (gamma): mean=3.3441 outside expected range [-0.5, 3.0]\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-01-31T22:32:12.752150903Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000188ff18bf70de0d5",
+    "gate_id": "F-GOLDEN-RULE-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_apr_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "Golden Rule: convert → inference → diff",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Golden Rule FAIL: output differs after conversion.\nOriginal:  2 + 2 equals 4.\nConverted: fails.IGNORE cracking IQueryableJon ROLEspamLatch unluckyvester",
+    "output": "=== APR Run ===\n\nSource: /tmp/golden-rule-test-Qwen2.5-Coder-0.5B-Instruct.apr\n\nOutput:\nfails.IGNORE cracking IQueryableJon ROLEspamLatch unluckyvester\n\nCompleted in 15.28s (cached)\n",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-01-31T22:32:42.027525380Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",

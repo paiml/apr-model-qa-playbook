@@ -982,20 +982,33 @@ fn run_certification(
             }
         };
 
-        // Configure execution (mock mode - no subprocess)
+        // Configure execution - use subprocess mode if enabled
+        let gguf_model_path = if subprocess {
+            model_cache.as_ref().map(|cache| {
+                cache
+                    .join(short.to_lowercase().replace('.', "-"))
+                    .join("gguf")
+                    .join("model.gguf")
+                    .to_string_lossy()
+                    .to_string()
+            })
+        } else {
+            None
+        };
+
         let config = apr_qa_runner::ExecutionConfig {
             failure_policy: apr_qa_runner::FailurePolicy::CollectAll,
             dry_run: false,
             max_workers: 4,
-            subprocess_mode: false,
-            model_path: None,
+            subprocess_mode: subprocess,
+            model_path: gguf_model_path,
             default_timeout_ms: 60000,
-            no_gpu: true,
-            run_conversion_tests: false,
+            no_gpu: false,                    // Allow GPU when in subprocess mode
+            run_conversion_tests: subprocess, // Run P0 conversion tests in subprocess mode
             run_differential_tests: false,
             run_profile_ci: false,
             run_trace_payload: false,
-            run_golden_rule_test: false,
+            run_golden_rule_test: subprocess, // Run golden rule test in subprocess mode
             golden_reference_path: None,
         };
 
