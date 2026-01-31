@@ -11,6 +11,7 @@ These examples can be run with `cargo run --example <name> -p <crate>`.
 | `collect_evidence` | apr-qa-runner | `cargo run --example collect_evidence -p apr-qa-runner` |
 | `calculate_mqs` | apr-qa-report | `cargo run --example calculate_mqs -p apr-qa-report` |
 | `generate_certificate` | apr-qa-report | `cargo run --example generate_certificate -p apr-qa-report` |
+| `generate_rag_markdown` | apr-qa-report | `cargo run --example generate_rag_markdown -p apr-qa-report` |
 
 ## Generating QA Scenarios
 
@@ -238,6 +239,83 @@ Grade:    A
 MQS:      920/1000
 Score:    156/170 (91.8%)
 Black Swans: 0
+```
+
+## Generating RAG-Optimized Markdown
+
+The `generate_rag_markdown` example shows how to generate markdown reports
+optimized for batuta's RAG oracle indexing:
+
+```rust
+use apr_qa_report::{generate_rag_markdown, generate_index_entry, generate_evidence_detail};
+use apr_qa_report::mqs::MqsScore;
+use apr_qa_report::popperian::PopperianScore;
+use apr_qa_runner::EvidenceCollector;
+
+fn main() {
+    // Create or calculate MQS and Popperian scores
+    let mqs: MqsScore = /* ... */;
+    let popperian: PopperianScore = /* ... */;
+    let collector: EvidenceCollector = /* ... */;
+
+    // Generate full RAG-optimized markdown report
+    let full_report = generate_rag_markdown(&mqs, &popperian, &collector);
+    println!("{}", full_report);
+
+    // Generate compact index entry for summary tables
+    let entry = generate_index_entry(&mqs);
+    println!("| Model | Score | Grade | Status | Prod Ready |");
+    println!("{}", entry);
+
+    // Generate individual evidence detail
+    for evidence in collector.all().iter().take(3) {
+        println!("{}", generate_evidence_detail(evidence));
+    }
+}
+```
+
+### Output
+
+```
+# Model Qualification: qwen/Qwen2.5-Coder-7B-Instruct
+
+## Summary
+
+- **MQS Score**: 892/1000 (89.2 normalized, A-)
+- **Status**: PROVISIONAL
+- **Tests**: 142 passed / 8 failed / 150 total
+- **Black Swans**: 0
+- **Corroboration Rate**: 94.7%
+
+## Gateway Checks
+
+| Gateway | Status | Description |
+|---------|--------|-------------|
+| G1 | ✓ PASS | Model loads successfully |
+| G2 | ✓ PASS | Basic inference works |
+| G3 | ✓ PASS | No crashes during testing |
+| G4 | ✓ PASS | Output is coherent text |
+
+## Falsifications
+
+### 1: F-PERF-023
+
+- **Hypothesis**: Inference completes under 500ms for short prompts
+- **Evidence**: Measured: 623ms (exceeded by 24.6%)
+- **Severity**: 2/5
+- **Occurrences**: 1
+```
+
+The generated markdown uses semantic headers (`##`, `###`) that align with
+batuta's SemanticChunker, enabling effective RAG retrieval:
+
+```bash
+# Index the QA playbook documentation
+batuta oracle --rag-index
+
+# Query for qualification information
+batuta oracle --rag "Popperian falsification scoring"
+batuta oracle --rag "MQS gateway checks"
 ```
 
 ## YAML Playbook Examples

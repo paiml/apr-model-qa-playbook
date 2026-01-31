@@ -67,6 +67,41 @@ Features:
 - Gateway status indicators
 - Searchable test results
 
+### RAG-Optimized Markdown
+
+For integration with batuta's RAG oracle, use the markdown export:
+
+```rust
+use apr_qa_report::{generate_rag_markdown, generate_index_entry, generate_evidence_detail};
+
+// Generate full RAG-optimized report
+let markdown = generate_rag_markdown(&mqs_score, &popperian_score, &evidence_collector);
+
+// Generate compact index entry for summary tables
+let entry = generate_index_entry(&mqs_score);
+
+// Generate detail for individual evidence
+let detail = generate_evidence_detail(&evidence);
+```
+
+The RAG markdown uses semantic headers (`##`, `###`) aligned with batuta's SemanticChunker:
+
+| Section | Header Level | Content |
+|---------|--------------|---------|
+| Summary | `##` | MQS score, status, test counts |
+| Gateway Checks | `##` | Pass/fail table for G1-G4 |
+| Category Scores | `##` | QUAL/PERF/STAB/COMP/EDGE/REGR breakdown |
+| Falsifications | `##` + `###` | Each falsification with hypothesis/evidence |
+| Test Results | `##` + `###` | Results grouped by category |
+| Penalties | `##` | Penalty codes and point deductions |
+| Popperian Analysis | `##` | Corroboration ratio, black swans |
+| Metadata | `##` | Model ID, qualification status |
+
+Example query after indexing:
+```bash
+batuta oracle --rag "Popperian falsification scoring"
+```
+
 ## Popperian Scoring
 
 ```rust
