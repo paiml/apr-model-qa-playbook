@@ -2465,4 +2465,237 @@ mod tests {
         assert!(executor.config.test_round_trips);
         assert!(executor.config.no_gpu);
     }
+
+    #[test]
+    fn test_semantic_test_result_is_pass_corroborated() {
+        let result = SemanticTestResult::Corroborated {
+            source_output: "test".to_string(),
+            target_output: "test".to_string(),
+        };
+        assert!(result.is_pass());
+    }
+
+    #[test]
+    fn test_semantic_test_result_is_pass_falsified() {
+        let result = SemanticTestResult::Falsified {
+            bug_type: ConversionBugType::Unknown,
+            source_output: "a".to_string(),
+            target_output: "b".to_string(),
+            stderr: String::new(),
+        };
+        assert!(!result.is_pass());
+    }
+
+    #[test]
+    fn test_semantic_test_result_bug_type_corroborated() {
+        let result = SemanticTestResult::Corroborated {
+            source_output: "test".to_string(),
+            target_output: "test".to_string(),
+        };
+        assert!(result.bug_type().is_none());
+    }
+
+    #[test]
+    fn test_semantic_test_result_bug_type_falsified() {
+        let result = SemanticTestResult::Falsified {
+            bug_type: ConversionBugType::SemanticDrift,
+            source_output: "a".to_string(),
+            target_output: "b".to_string(),
+            stderr: "warning".to_string(),
+        };
+        assert_eq!(result.bug_type(), Some(ConversionBugType::SemanticDrift));
+    }
+
+    #[test]
+    fn test_conversion_result_corroborated_serialization() {
+        let result = ConversionResult::Corroborated {
+            source_format: Format::Gguf,
+            target_format: Format::Apr,
+            backend: Backend::Cpu,
+            max_diff: 0.001,
+        };
+        let json = serde_json::to_string(&result).unwrap();
+        assert!(json.contains("Corroborated"));
+        let deserialized: ConversionResult = serde_json::from_str(&json).unwrap();
+        if let ConversionResult::Corroborated { max_diff, .. } = deserialized {
+            assert!((max_diff - 0.001).abs() < f64::EPSILON);
+        } else {
+            panic!("Expected Corroborated");
+        }
+    }
+
+    #[test]
+    fn test_conversion_result_falsified_serialization() {
+        let result = ConversionResult::Falsified {
+            gate_id: "F-TEST-001".to_string(),
+            reason: "Test failure".to_string(),
+            evidence: ConversionEvidence {
+                source_hash: "abc".to_string(),
+                converted_hash: "def".to_string(),
+                max_diff: 0.5,
+                diff_indices: vec![1, 2, 3],
+                source_format: Format::Gguf,
+                target_format: Format::Apr,
+                backend: Backend::Cpu,
+            },
+        };
+        let json = serde_json::to_string(&result).unwrap();
+        assert!(json.contains("Falsified"));
+        assert!(json.contains("F-TEST-001"));
+    }
+
+    #[test]
+    fn test_conversion_test_new_with_epsilon() {
+        let test = ConversionTest {
+            source_format: Format::Apr,
+            target_format: Format::Gguf,
+            backend: Backend::Gpu,
+            model_id: ModelId::new("org", "model"),
+            epsilon: 1e-10,
+        };
+        assert!((test.epsilon - 1e-10).abs() < 1e-15);
+    }
+
+    #[test]
+    fn test_conversion_execution_result_fields() {
+        let result = ConversionExecutionResult {
+            total: 10,
+            passed: 5,
+            failed: 2,
+            duration_ms: 100,
+            results: vec![],
+            evidence: vec![],
+        };
+        assert_eq!(result.total, 10);
+        assert_eq!(result.passed, 5);
+        assert_eq!(result.failed, 2);
+        assert_eq!(result.duration_ms, 100);
+        assert!(result.results.is_empty());
+        assert!(result.evidence.is_empty());
+    }
+
+    #[test]
+    fn test_conversion_test_compute_diff_same() {
+        let test = ConversionTest::new(
+            Format::Gguf,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        // Same strings should have 0 diff
+        assert!((test.compute_diff("hello", "hello") - 0.0).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn test_conversion_test_compute_diff_different() {
+        let test = ConversionTest::new(
+            Format::Gguf,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        // Completely different strings should have high diff
+        let diff = test.compute_diff("abc", "xyz");
+        assert!(diff > 0.5);
+    }
+
+    #[test]
+    fn test_conversion_test_compute_diff_empty_strings() {
+        let test = ConversionTest::new(
+            Format::Gguf,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        // Empty strings should have 0 diff
+        assert!((test.compute_diff("", "") - 0.0).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn test_conversion_test_compute_diff_partial_match() {
+        let test = ConversionTest::new(
+            Format::Gguf,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        // Partially matching strings
+        let diff = test.compute_diff("abcd", "abXd");
+        assert!(diff > 0.0 && diff < 1.0);
+    }
+
+    #[test]
+    fn test_conversion_test_find_diff_indices_with_diffs() {
+        let test = ConversionTest::new(
+            Format::Gguf,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        let indices = test.find_diff_indices("abcd", "aXcY");
+        assert_eq!(indices.len(), 2);
+        assert!(indices.contains(&1));
+        assert!(indices.contains(&3));
+    }
+
+    #[test]
+    fn test_conversion_test_find_diff_indices_no_diffs() {
+        let test = ConversionTest::new(
+            Format::Gguf,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        let indices = test.find_diff_indices("same", "same");
+        assert!(indices.is_empty());
+    }
+
+    #[test]
+    fn test_conversion_test_hash_output_consistency() {
+        let hash1 = ConversionTest::hash_output("test string");
+        let hash2 = ConversionTest::hash_output("test string");
+        let hash3 = ConversionTest::hash_output("different string");
+
+        // Same input should produce same hash
+        assert_eq!(hash1, hash2);
+        // Different input should produce different hash
+        assert_ne!(hash1, hash3);
+        // Hash should be 16 hex characters
+        assert_eq!(hash1.len(), 16);
+    }
+
+    #[test]
+    fn test_classify_bug_empty_source_nonempty_target() {
+        let test = SemanticConversionTest::new(
+            Format::Gguf,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        // If source is empty/whitespace and target is not, classify as unknown
+        let bug = test.classify_bug("  ", "some output", false);
+        assert_eq!(bug, Some(ConversionBugType::Unknown));
+    }
+
+    #[test]
+    fn test_classify_bug_both_empty_strings() {
+        let test = SemanticConversionTest::new(
+            Format::Gguf,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        // Both empty should match
+        let bug = test.classify_bug("", "", false);
+        assert!(bug.is_none());
+    }
+
+    #[test]
+    fn test_generate_conversion_tests_full_count() {
+        let model_id = ModelId::new("test", "model");
+        let tests = generate_conversion_tests(&model_id);
+
+        // 6 pairs x 2 backends = 12 tests
+        assert_eq!(tests.len(), 12);
+    }
 }
