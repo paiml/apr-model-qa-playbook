@@ -1,7 +1,7 @@
 # Certified Testing & Popperian Falsification
 
-**Version:** 1.0.0
-**Status:** DRAFT
+**Version:** 1.1.0
+**Status:** APPROVED
 **Author:** PAIML Engineering
 **Date:** 2026-01-31
 **Philosophy:** Karl Popper (Critical Rationalism) + Nassim Taleb (Black Swan Theory)
@@ -111,7 +111,41 @@ A **Certified** build must produce the following immutable artifacts:
 
 > **Note:** Validation of this specification's implementation is governed by the [100-Point QA Checklist](./certified-testing-qa-checklist.md).
 
-## 5. References
+## 5. Certification CLI
+
+The `apr-qa certify` command executes the Popperian certification protocol:
+
+```bash
+# Certify all models in a family (0.5B to 32B)
+apr-qa certify --family qwen-coder --tier quick
+
+# Certify specific models
+apr-qa certify Qwen/Qwen2.5-Coder-1.5B-Instruct --tier deep
+
+# Dry run to preview certification plan
+apr-qa certify --family qwen-coder --dry-run
+
+# Certify all registered models
+apr-qa certify --all --tier smoke
+```
+
+### 5.1 Certification Tiers
+
+| Tier | Duration | Use Case |
+|------|----------|----------|
+| **smoke** | ~1s/model | Quick sanity check |
+| **quick** | ~30s/model | Development iteration |
+| **standard** | ~1m/model | CI/CD pipeline |
+| **deep** | ~10m/model | Production qualification |
+
+### 5.2 Certification Results
+
+Results are written to:
+- `docs/certifications/models.csv`: Central certification database
+- `certifications/<model>/evidence.json`: Raw test evidence
+- README.md certification table (via `apr-qa-readme-sync`)
+
+## 6. References
 
 *   **Popper, K. R.** (1959). *The Logic of Scientific Discovery*.
 *   **Popper, K. R.** (1963). *Conjectures and Refutations*.

@@ -27,8 +27,74 @@ struct Cli {
     command: Commands,
 }
 
+/// Certification tier levels
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+enum CertTier {
+    /// Tier 1: Smoke test (1 second per model)
+    Smoke,
+    /// Tier 2: Quick check (30 seconds per model)
+    #[default]
+    Quick,
+    /// Tier 3: Standard certification (1 minute per model)
+    Standard,
+    /// Tier 4: Deep certification (10 minutes per model)
+    Deep,
+}
+
+impl std::str::FromStr for CertTier {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "smoke" => Ok(Self::Smoke),
+            "quick" => Ok(Self::Quick),
+            "standard" => Ok(Self::Standard),
+            "deep" => Ok(Self::Deep),
+            _ => Err(format!(
+                "Unknown tier: {s}. Use: smoke, quick, standard, deep"
+            )),
+        }
+    }
+}
+
+impl CertTier {
+    const fn playbook_suffix(self) -> &'static str {
+        match self {
+            Self::Smoke | Self::Quick => "-quick",
+            Self::Standard | Self::Deep => "",
+        }
+    }
+}
+
 #[derive(Subcommand)]
 enum Commands {
+    /// Certify models against the verification matrix
+    Certify {
+        /// Certify all models in registry
+        #[arg(long)]
+        all: bool,
+
+        /// Certify by model family (e.g., "qwen-coder", "llama")
+        #[arg(long)]
+        family: Option<String>,
+
+        /// Certification tier (smoke, quick, standard, deep)
+        #[arg(long, default_value = "quick")]
+        tier: String,
+
+        /// Specific model IDs to certify
+        #[arg(value_name = "MODEL")]
+        models: Vec<String>,
+
+        /// Output directory for certification artifacts
+        #[arg(short, long, default_value = "certifications")]
+        output: PathBuf,
+
+        /// Dry run (show what would be certified without running)
+        #[arg(long)]
+        dry_run: bool,
+    },
+
     /// Run a playbook
     Run {
         /// Path to playbook YAML file
@@ -205,6 +271,16 @@ fn main() {
     let cli = Cli::parse();
 
     match cli.command {
+        Commands::Certify {
+            all,
+            family,
+            tier,
+            models,
+            output,
+            dry_run,
+        } => {
+            run_certification(all, family, &tier, &models, &output, dry_run);
+        }
         Commands::Run {
             playbook,
             output,
@@ -735,4 +811,219 @@ fn run_tool_tests(
     } else {
         println!("Results saved to: {}", results_path.display());
     }
+}
+
+#[allow(clippy::too_many_lines)]
+fn run_certification(
+    all: bool,
+    family: Option<String>,
+    tier_str: &str,
+    model_ids: &[String],
+    output_dir: &PathBuf,
+    dry_run: bool,
+) {
+    use apr_qa_certify::{grade_from_score, parse_csv, status_from_score, write_csv};
+    use chrono::Utc;
+
+    // Parse tier
+    let tier: CertTier = match tier_str.parse() {
+        Ok(t) => t,
+        Err(e) => {
+            eprintln!("{e}");
+            std::process::exit(1);
+        }
+    };
+
+    println!("=== APR Model Certification ===\n");
+    println!("Tier: {tier_str}");
+    println!("Dry run: {dry_run}\n");
+
+    // Load current certification data
+    let csv_path = std::path::Path::new("docs/certifications/models.csv");
+    let csv_content = match std::fs::read_to_string(csv_path) {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("Error reading models.csv: {e}");
+            std::process::exit(1);
+        }
+    };
+
+    let mut certifications: Vec<apr_qa_certify::ModelCertification> = match parse_csv(&csv_content)
+    {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("Error parsing models.csv: {e}");
+            std::process::exit(1);
+        }
+    };
+
+    // Determine which models to certify
+    let models_to_certify: Vec<String> = if all {
+        certifications.iter().map(|c| c.model_id.clone()).collect()
+    } else if let Some(ref fam) = family {
+        certifications
+            .iter()
+            .filter(|c| c.family == *fam)
+            .map(|c| c.model_id.clone())
+            .collect()
+    } else if !model_ids.is_empty() {
+        model_ids.to_vec()
+    } else {
+        eprintln!("Error: Specify --all, --family, or model IDs");
+        std::process::exit(1);
+    };
+
+    println!("Models to certify: {}\n", models_to_certify.len());
+
+    // Helper to generate playbook path from model ID
+    let playbook_path_for = |model_id: &str, tier: &CertTier| -> String {
+        let short = model_id.split('/').next_back().unwrap_or(model_id);
+        // Convert Qwen2.5-Coder-0.5B-Instruct -> qwen2.5-coder-0.5b
+        let base = short
+            .to_lowercase()
+            .replace("-instruct", "")
+            .replace("-it", "");
+        format!(
+            "playbooks/models/{}{}.playbook.yaml",
+            base,
+            tier.playbook_suffix()
+        )
+    };
+
+    if dry_run {
+        for model_id in &models_to_certify {
+            let playbook_name = playbook_path_for(model_id, &tier);
+            println!("  Would certify: {model_id}");
+            println!("    Playbook: {playbook_name}");
+        }
+        return;
+    }
+
+    // Create output directory
+    if let Err(e) = std::fs::create_dir_all(output_dir) {
+        eprintln!("Error creating output directory: {e}");
+        std::process::exit(1);
+    }
+
+    // Certify each model
+    let mut certified_count = 0;
+    let mut failed_count = 0;
+
+    for model_id in &models_to_certify {
+        let short: &str = model_id.split('/').next_back().unwrap_or(model_id);
+        let playbook_name = playbook_path_for(model_id, &tier);
+
+        println!("--- Certifying: {model_id} ---");
+        println!("  Playbook: {playbook_name}");
+
+        let playbook_path = std::path::Path::new(&playbook_name);
+        if !playbook_path.exists() {
+            eprintln!("  Playbook not found, skipping");
+            failed_count += 1;
+            continue;
+        }
+
+        let playbook = match load_playbook(playbook_path) {
+            Ok(p) => p,
+            Err(e) => {
+                eprintln!("  Error loading playbook: {e}");
+                failed_count += 1;
+                continue;
+            }
+        };
+
+        // Configure execution (mock mode - no subprocess)
+        let config = apr_qa_runner::ExecutionConfig {
+            failure_policy: apr_qa_runner::FailurePolicy::CollectAll,
+            dry_run: false,
+            max_workers: 4,
+            subprocess_mode: false,
+            model_path: None,
+            default_timeout_ms: 60000,
+            no_gpu: true,
+            run_conversion_tests: false,
+            run_differential_tests: false,
+            run_profile_ci: false,
+            run_trace_payload: false,
+            run_golden_rule_test: false,
+            golden_reference_path: None,
+        };
+
+        match execute_playbook(&playbook, config) {
+            Ok(result) => {
+                println!("  Scenarios: {}", result.total_scenarios);
+                println!("  Passed: {}", result.passed);
+                println!("  Failed: {}", result.failed);
+                println!("  Pass rate: {:.1}%", result.pass_rate());
+
+                // Calculate MQS score
+                let evidence_vec: Vec<_> = result.evidence.all().to_vec();
+                let collector = collect_evidence(evidence_vec);
+                let mqs = match calculate_mqs_score(model_id, &collector) {
+                    Ok(s) => s,
+                    Err(e) => {
+                        eprintln!("  Error calculating MQS: {e}");
+                        failed_count += 1;
+                        continue;
+                    }
+                };
+
+                let raw_score = mqs.raw_score;
+                let has_p0 = result.gateway_failed.is_some();
+                let status = status_from_score(raw_score, has_p0);
+                let grade = grade_from_score(raw_score);
+
+                println!("  MQS Score: {raw_score}/1000");
+                println!("  Grade: {grade}");
+                println!("  Status: {status}");
+
+                // Update certification record
+                if let Some(cert) = certifications.iter_mut().find(|c| c.model_id == *model_id) {
+                    cert.mqs_score = raw_score;
+                    cert.grade = grade.to_string();
+                    cert.status = status;
+                    cert.certified_tier = tier_str.to_string();
+                    cert.last_certified = Some(Utc::now());
+                    // Set gateway status from MQS gateway results
+                    let gw = &mqs.gateways;
+                    cert.g1 = gw.first().is_some_and(|g| g.passed);
+                    cert.g2 = gw.get(1).is_some_and(|g| g.passed);
+                    cert.g3 = gw.get(2).is_some_and(|g| g.passed);
+                    cert.g4 = gw.get(3).is_some_and(|g| g.passed);
+                }
+
+                // Save evidence to model-specific directory
+                let model_output = output_dir.join(short.to_lowercase().replace('.', "-"));
+                if let Err(e) = std::fs::create_dir_all(&model_output) {
+                    eprintln!("  Error creating model output dir: {e}");
+                }
+
+                let evidence_path = model_output.join("evidence.json");
+                if let Ok(json) = result.evidence.to_json() {
+                    let _ = std::fs::write(&evidence_path, json);
+                    println!("  Evidence: {}", evidence_path.display());
+                }
+
+                certified_count += 1;
+                println!();
+            }
+            Err(e) => {
+                eprintln!("  Execution failed: {e}");
+                failed_count += 1;
+            }
+        }
+    }
+
+    // Write updated CSV
+    let csv_output = write_csv(&certifications);
+    if let Err(e) = std::fs::write(csv_path, &csv_output) {
+        eprintln!("Error writing models.csv: {e}");
+    } else {
+        println!("Updated: {}", csv_path.display());
+    }
+
+    println!("\n=== Certification Summary ===");
+    println!("Certified: {certified_count}");
+    println!("Failed: {failed_count}");
+    println!("Total: {}", models_to_certify.len());
 }

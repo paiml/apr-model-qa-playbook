@@ -133,7 +133,7 @@ pub struct ModelCertification {
     /// Certification status.
     pub status: CertificationStatus,
     /// Model Qualification Score (0-1000).
-    pub mqs_score: u16,
+    pub mqs_score: u32,
     /// Letter grade.
     pub grade: String,
     /// Highest passing tier.
@@ -355,6 +355,79 @@ pub fn generate_table(models: &[ModelCertification]) -> String {
 pub const START_MARKER: &str = "<!-- CERTIFICATION_TABLE_START -->";
 /// End marker for README table.
 pub const END_MARKER: &str = "<!-- CERTIFICATION_TABLE_END -->";
+
+/// Write certification records to CSV format.
+///
+/// Generates a CSV string with headers that can be written to models.csv.
+#[must_use]
+pub fn write_csv(models: &[ModelCertification]) -> String {
+    let mut lines = Vec::new();
+
+    // Header
+    lines.push(
+        "model_id,family,parameters,size_category,status,mqs_score,grade,certified_tier,last_certified,g1,g2,g3,g4"
+            .to_string(),
+    );
+
+    for m in models {
+        let size_cat = match m.size_category {
+            SizeCategory::Tiny => "tiny",
+            SizeCategory::Small => "small",
+            SizeCategory::Medium => "medium",
+            SizeCategory::Large => "large",
+            SizeCategory::XLarge => "xlarge",
+        };
+        let last_cert = m
+            .last_certified
+            .map_or_else(|| "2026-01-31T00:00:00Z".to_string(), |dt| dt.to_rfc3339());
+
+        lines.push(format!(
+            "{},{},{},{},{},{},{},{},{},{},{},{},{}",
+            m.model_id,
+            m.family,
+            m.parameters,
+            size_cat,
+            m.status,
+            m.mqs_score,
+            m.grade,
+            m.certified_tier,
+            last_cert,
+            m.g1,
+            m.g2,
+            m.g3,
+            m.g4
+        ));
+    }
+
+    lines.join("\n") + "\n"
+}
+
+/// Calculate certification status from MQS score.
+#[must_use]
+pub const fn status_from_score(mqs_score: u32, has_p0_failure: bool) -> CertificationStatus {
+    if has_p0_failure {
+        CertificationStatus::Blocked
+    } else if mqs_score >= 850 {
+        CertificationStatus::Certified
+    } else if mqs_score >= 700 {
+        CertificationStatus::Provisional
+    } else {
+        CertificationStatus::Blocked
+    }
+}
+
+/// Calculate letter grade from MQS score.
+#[must_use]
+pub const fn grade_from_score(mqs_score: u32) -> &'static str {
+    match mqs_score {
+        950..=1000 => "A+",
+        900..=949 => "A",
+        850..=899 => "B+",
+        800..=849 => "B",
+        700..=799 => "C",
+        _ => "F",
+    }
+}
 
 /// Update README content with new certification table.
 ///
@@ -706,5 +779,92 @@ More content";
             model.markdown_link(),
             "[Model](https://huggingface.co/Org/Model)"
         );
+    }
+
+    #[test]
+    fn test_write_csv_roundtrip() {
+        let models = parse_csv(SAMPLE_CSV).expect("should parse");
+        let csv_output = write_csv(&models);
+
+        // Parse it back
+        let reparsed = parse_csv(&csv_output).expect("should reparse");
+        assert_eq!(reparsed.len(), models.len());
+
+        // Check first model
+        assert_eq!(reparsed[0].model_id, models[0].model_id);
+        assert_eq!(reparsed[0].family, models[0].family);
+        assert_eq!(reparsed[0].mqs_score, models[0].mqs_score);
+    }
+
+    #[test]
+    fn test_write_csv_has_header() {
+        let models = parse_csv(SAMPLE_CSV).expect("should parse");
+        let csv_output = write_csv(&models);
+        assert!(csv_output.starts_with("model_id,family,"));
+    }
+
+    #[test]
+    fn test_status_from_score_certified() {
+        assert!(matches!(
+            status_from_score(900_u32, false),
+            CertificationStatus::Certified
+        ));
+        assert!(matches!(
+            status_from_score(850_u32, false),
+            CertificationStatus::Certified
+        ));
+    }
+
+    #[test]
+    fn test_status_from_score_provisional() {
+        assert!(matches!(
+            status_from_score(800_u32, false),
+            CertificationStatus::Provisional
+        ));
+        assert!(matches!(
+            status_from_score(700_u32, false),
+            CertificationStatus::Provisional
+        ));
+    }
+
+    #[test]
+    fn test_status_from_score_blocked() {
+        assert!(matches!(
+            status_from_score(699_u32, false),
+            CertificationStatus::Blocked
+        ));
+        assert!(matches!(
+            status_from_score(0_u32, false),
+            CertificationStatus::Blocked
+        ));
+    }
+
+    #[test]
+    fn test_status_from_score_p0_failure() {
+        // P0 failure always results in BLOCKED regardless of score
+        assert!(matches!(
+            status_from_score(950_u32, true),
+            CertificationStatus::Blocked
+        ));
+        assert!(matches!(
+            status_from_score(900_u32, true),
+            CertificationStatus::Blocked
+        ));
+    }
+
+    #[test]
+    fn test_grade_from_score() {
+        assert_eq!(grade_from_score(1000_u32), "A+");
+        assert_eq!(grade_from_score(950_u32), "A+");
+        assert_eq!(grade_from_score(920_u32), "A");
+        assert_eq!(grade_from_score(900_u32), "A");
+        assert_eq!(grade_from_score(880_u32), "B+");
+        assert_eq!(grade_from_score(850_u32), "B+");
+        assert_eq!(grade_from_score(820_u32), "B");
+        assert_eq!(grade_from_score(800_u32), "B");
+        assert_eq!(grade_from_score(750_u32), "C");
+        assert_eq!(grade_from_score(700_u32), "C");
+        assert_eq!(grade_from_score(699_u32), "F");
+        assert_eq!(grade_from_score(0_u32), "F");
     }
 }

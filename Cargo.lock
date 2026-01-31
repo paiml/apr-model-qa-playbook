@@ -81,9 +81,11 @@ dependencies = [
 name = "apr-qa-cli"
 version = "0.1.0"
 dependencies = [
+ "apr-qa-certify",
  "apr-qa-gen",
  "apr-qa-report",
  "apr-qa-runner",
+ "chrono",
  "clap",
  "ctrlc",
  "serde",
