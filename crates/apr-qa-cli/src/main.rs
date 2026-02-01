@@ -66,7 +66,7 @@ enum Commands {
         #[arg(long, default_value = "apr")]
         apr_binary: String,
 
-        /// Enable real subprocess execution (requires --model-cache)
+        /// Enable real subprocess execution (auto-resolves cache if omitted)
         #[arg(long)]
         subprocess: bool,
     },
@@ -831,11 +831,15 @@ fn run_certification(
         }
     };
 
-    // Validate subprocess requirements
-    if subprocess && model_cache.is_none() {
-        eprintln!("Error: --model-cache is required when using --subprocess mode");
-        std::process::exit(1);
-    }
+    // Default model_cache to ~/.cache/apr-models when --subprocess is set
+    let model_cache: Option<PathBuf> = if subprocess && model_cache.is_none() {
+        let home = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
+        let default_cache = PathBuf::from(home).join(".cache/apr-models");
+        println!("Auto-resolving model cache: {}", default_cache.display());
+        Some(default_cache)
+    } else {
+        model_cache
+    };
 
     println!("=== APR Model Certification ===\n");
     println!("Tier: {tier_str}");
@@ -908,6 +912,14 @@ fn run_certification(
 
         println!("--- Certifying: {model_id} ---");
         println!("  Playbook: {playbook_name}");
+
+        // Auto-populate model cache before execution
+        if subprocess {
+            if let Some(ref cache) = model_cache {
+                let model_dir = cache.join(short.to_lowercase().replace('.', "-"));
+                auto_populate_model_cache(model_id, &model_dir, apr_binary);
+            }
+        }
 
         let playbook_path = std::path::Path::new(&playbook_name);
         if !playbook_path.exists() {
@@ -1149,4 +1161,154 @@ fn run_certification(
     println!("Certified: {certified_count}");
     println!("Failed: {failed_count}");
     println!("Total: {}", models_to_certify.len());
+}
+
+/// Auto-populate model cache directory with symlinks from pacha and HF caches.
+///
+/// Creates `gguf/`, `apr/`, `safetensors/` subdirectories and symlinks model files
+/// from the pacha cache (`~/.cache/pacha/models/`) and HuggingFace cache
+/// (`~/.cache/huggingface/hub/`). The `apr/` subdirectory is populated during
+/// 6-column profiling (GGUF → APR conversion).
+fn auto_populate_model_cache(model_id: &str, model_dir: &std::path::Path, apr_binary: &str) {
+    let gguf_dir = model_dir.join("gguf");
+    let apr_dir = model_dir.join("apr");
+    let st_dir = model_dir.join("safetensors");
+
+    // Skip if already populated (gguf dir has a .gguf file)
+    if gguf_dir.exists() && has_file_with_ext(&gguf_dir, "gguf") {
+        println!("  Cache already populated: {}", model_dir.display());
+        return;
+    }
+
+    println!("  Auto-populating model cache...");
+
+    // Create subdirectories
+    for dir in [&gguf_dir, &apr_dir, &st_dir] {
+        if let Err(e) = std::fs::create_dir_all(dir) {
+            eprintln!("  Error creating {}: {e}", dir.display());
+            return;
+        }
+    }
+
+    let home = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
+    let home = std::path::Path::new(&home);
+
+    // Step 1: Pull model via apr (ensures it's in pacha cache)
+    println!("  Running: {apr_binary} pull {model_id}");
+    let pull_status = std::process::Command::new(apr_binary)
+        .args(["pull", model_id])
+        .stdout(std::process::Stdio::inherit())
+        .stderr(std::process::Stdio::inherit())
+        .status();
+
+    match pull_status {
+        Ok(s) if s.success() => println!("  Pull succeeded"),
+        Ok(s) => eprintln!("  Pull exited with: {s}"),
+        Err(e) => eprintln!("  Pull failed: {e}"),
+    }
+
+    // Step 2: Find GGUF in pacha cache via manifest
+    let manifest_path = home.join(".cache/pacha/models/manifest.json");
+    if let Some(gguf_path) = find_gguf_in_pacha(&manifest_path, model_id) {
+        let link = gguf_dir.join("model.gguf");
+        if !link.exists() {
+            match std::os::unix::fs::symlink(&gguf_path, &link) {
+                Ok(()) => println!("  Linked GGUF: {gguf_path}"),
+                Err(e) => eprintln!("  Error symlinking GGUF: {e}"),
+            }
+        }
+    } else {
+        eprintln!("  No GGUF found in pacha cache for {model_id}");
+    }
+
+    // Step 3: Find SafeTensors in HF cache
+    let (org, repo) = split_model_id(model_id);
+    let hf_model_dir = home
+        .join(".cache/huggingface/hub")
+        .join(format!("models--{org}--{repo}"))
+        .join("snapshots");
+
+    if let Some(st_path) = find_safetensors_in_hf(&hf_model_dir) {
+        let link = st_dir.join("model.safetensors");
+        if !link.exists() {
+            match std::os::unix::fs::symlink(&st_path, &link) {
+                Ok(()) => println!("  Linked SafeTensors: {}", st_path.display()),
+                Err(e) => eprintln!("  Error symlinking SafeTensors: {e}"),
+            }
+        }
+
+        // Copy config.json from the same snapshot directory
+        if let Some(snapshot_dir) = st_path.parent() {
+            let config_src = snapshot_dir.join("config.json");
+            let config_dst = st_dir.join("config.json");
+            if config_src.exists() && !config_dst.exists() {
+                match std::fs::copy(&config_src, &config_dst) {
+                    Ok(_) => println!("  Copied config.json"),
+                    Err(e) => eprintln!("  Error copying config.json: {e}"),
+                }
+            }
+        }
+    } else {
+        eprintln!("  No SafeTensors found in HF cache for {model_id}");
+    }
+}
+
+/// Check if a directory contains a file with the given extension.
+fn has_file_with_ext(dir: &std::path::Path, ext: &str) -> bool {
+    dir.read_dir()
+        .map(|entries| {
+            entries
+                .flatten()
+                .any(|e| e.path().extension().is_some_and(|x| x == ext))
+        })
+        .unwrap_or(false)
+}
+
+/// Find a GGUF file in the pacha cache manifest matching the model ID.
+///
+/// Pacha manifest entries use the naming convention:
+/// `hf_Org_Repo-GGUF_repo-name-q4_k_m.gguf`
+fn find_gguf_in_pacha(manifest_path: &std::path::Path, model_id: &str) -> Option<String> {
+    let content = std::fs::read_to_string(manifest_path).ok()?;
+    let entries: Vec<serde_json::Value> = serde_json::from_str(&content).ok()?;
+
+    // Build search key from model_id: "Qwen/Qwen2.5-Coder-1.5B-Instruct" → "Qwen_Qwen2.5-Coder-1.5B-Instruct"
+    let (org, repo) = split_model_id(model_id);
+    let gguf_key = format!("hf_{org}_{repo}-GGUF_");
+
+    // Find first GGUF entry matching this model
+    for entry in &entries {
+        let name = entry.get("name")?.as_str()?;
+        if name.starts_with(&gguf_key)
+            && std::path::Path::new(name)
+                .extension()
+                .is_some_and(|ext| ext.eq_ignore_ascii_case("gguf"))
+        {
+            return entry.get("path")?.as_str().map(String::from);
+        }
+    }
+
+    None
+}
+
+/// Find a `model.safetensors` file in the HuggingFace cache snapshots directory.
+fn find_safetensors_in_hf(snapshots_dir: &std::path::Path) -> Option<std::path::PathBuf> {
+    let entries = std::fs::read_dir(snapshots_dir).ok()?;
+    for entry in entries.flatten() {
+        let snapshot = entry.path();
+        if snapshot.is_dir() {
+            let st_file = snapshot.join("model.safetensors");
+            if st_file.exists() {
+                return Some(st_file);
+            }
+        }
+    }
+    None
+}
+
+/// Split a HuggingFace model ID into (org, repo).
+///
+/// e.g. `"Qwen/Qwen2.5-Coder-1.5B-Instruct"` → `("Qwen", "Qwen2.5-Coder-1.5B-Instruct")`
+fn split_model_id(model_id: &str) -> (&str, &str) {
+    model_id.split_once('/').unwrap_or(("unknown", model_id))
 }

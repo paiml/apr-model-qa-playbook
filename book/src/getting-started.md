@@ -97,16 +97,24 @@ cargo run --bin apr-qa -- certify Qwen/Qwen2.5-Coder-1.5B-Instruct --tier mvp
 To measure actual throughput (tok/s), use subprocess mode:
 
 ```bash
-# Certify with real inference profiling
+# Certify with real inference profiling (auto-resolves model cache)
+cargo run --bin apr-qa -- certify --family qwen-coder --tier mvp \
+  --subprocess \
+  --apr-binary apr
+
+# Or specify a custom cache directory
 cargo run --bin apr-qa -- certify --family qwen-coder --tier mvp \
   --subprocess \
   --model-cache ~/.cache/apr-models \
-  --apr-binary /path/to/apr
+  --apr-binary apr
 ```
 
+When `--model-cache` is omitted, the certifier defaults to `~/.cache/apr-models` and
+auto-populates it by symlinking models from the pacha cache (GGUF) and HuggingFace
+cache (SafeTensors). The `apr/` format is populated during 6-column profiling.
+
 This requires:
-- Model files in the cache directory (GGUF/APR/SafeTensors formats)
-- The `apr` binary for inference execution
+- The `apr` binary for inference execution and model pulling
 
 See [Certified Testing](./reference/certified-testing.md) for details.
 

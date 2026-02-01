@@ -134,39 +134,54 @@ These metrics are tracked in `models.csv` and displayed in the README certificat
 
 ### Running Real Profiling
 
-To get actual tok/s measurements, use subprocess mode with a model cache:
+To get actual tok/s measurements, use subprocess mode:
 
 ```bash
-# Set up model cache directory structure
-mkdir -p ~/.cache/apr-models/qwen2-5-coder-0-5b-instruct/{gguf,apr,safetensors}
-# Copy model files to appropriate format directories
+# Run certification with real profiling (cache auto-populated)
+apr-qa certify --family qwen-coder --tier mvp \
+  --subprocess \
+  --apr-binary apr
 
-# Run certification with real profiling
+# Or with an explicit cache directory
 apr-qa certify --family qwen-coder --tier mvp \
   --subprocess \
   --model-cache ~/.cache/apr-models \
-  --apr-binary /path/to/apr
+  --apr-binary apr
 ```
+
+When `--model-cache` is omitted, the certifier defaults to `~/.cache/apr-models`
+and auto-populates it for each model before execution:
+
+1. Creates `gguf/`, `apr/`, `safetensors/` subdirectories
+2. Runs `apr pull <model_id>` to ensure the model is in the pacha cache
+3. Symlinks the GGUF from `~/.cache/pacha/models/` into `gguf/model.gguf`
+4. Symlinks SafeTensors from `~/.cache/huggingface/hub/` into `safetensors/model.safetensors`
+5. Copies `config.json` from the HuggingFace snapshot
+6. The `apr/` format is populated during 6-column profiling (GGUF -> APR conversion)
+
+If the cache directory already contains a `.gguf` file, auto-population is skipped.
 
 **Model cache structure:**
 ```
 ~/.cache/apr-models/
 ├── qwen2-5-coder-0-5b-instruct/
 │   ├── gguf/
-│   │   └── model-q4_k_m.gguf
+│   │   └── model.gguf -> ~/.cache/pacha/models/<hash>.gguf
 │   ├── apr/
-│   │   └── model.apr
+│   │   └── model.apr          (created during profiling)
 │   └── safetensors/
-│       └── model.safetensors
+│       ├── model.safetensors -> ~/.cache/huggingface/hub/.../model.safetensors
+│       └── config.json
 └── qwen2-5-coder-1-5b-instruct/
     └── ...
 ```
 
 The `--subprocess` flag tells the certifier to:
-1. Find model files in the cache directory
-2. Run `apr profile --ci --json` for each format
-3. Parse throughput from JSON output
-4. Store tok/s values in the certification record
+1. Auto-populate the model cache (if needed)
+2. Find model files in the cache directory
+3. Run `apr profile --ci --json` for each format
+4. Parse throughput from JSON output
+5. Store tok/s values in the certification record
 
 ### Playbook Configuration
 

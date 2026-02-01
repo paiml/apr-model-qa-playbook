@@ -19,23 +19,34 @@ apr-qa certify [OPTIONS] [MODEL...]
 Options:
 - `--all` - Certify all models in registry
 - `--family <NAME>` - Certify by model family (e.g., "qwen-coder", "llama")
-- `--tier <TIER>` - Certification tier: `mvp` (default) or `full`
+- `--tier <TIER>` - Certification tier: `smoke`, `quick` (default), `standard`, `deep`
 - `--output <DIR>` - Output directory for certification artifacts
 - `--dry-run` - Preview what would be certified
+- `--subprocess` - Enable real subprocess execution (auto-resolves cache if omitted)
+- `--model-cache <DIR>` - Model cache directory (defaults to `~/.cache/apr-models`)
+- `--apr-binary <PATH>` - Path to apr binary for inference (default: `apr`)
 
 Examples:
 ```bash
 # MVP certification for a model family (recommended)
 apr-qa certify --family qwen-coder --tier mvp
 
+# Real profiling with auto-resolved cache
+apr-qa certify --family qwen-coder --tier mvp --subprocess --apr-binary apr
+
 # Full certification for production release
 apr-qa certify --family qwen-coder --tier full
 
-# Certify specific model
-apr-qa certify Qwen/Qwen2.5-Coder-1.5B-Instruct --tier mvp
+# Certify specific model with subprocess
+apr-qa certify Qwen/Qwen2.5-Coder-1.5B-Instruct --tier mvp \
+  --subprocess --apr-binary apr
 
 # Dry run to preview plan
 apr-qa certify --family qwen-coder --dry-run
+
+# Explicit cache directory
+apr-qa certify --family qwen-coder --tier mvp \
+  --subprocess --model-cache /custom/cache --apr-binary apr
 ```
 
 #### run
