@@ -111,6 +111,17 @@ pub trait CommandRunner: Send + Sync {
         max_tokens: u32,
         tolerance: f64,
     ) -> CommandOutput;
+
+    /// Execute apr run with --profile and --profile-output for flamegraph
+    fn profile_with_flamegraph(
+        &self,
+        model_path: &Path,
+        output_path: &Path,
+        no_gpu: bool,
+    ) -> CommandOutput;
+
+    /// Execute apr run with --profile and --focus
+    fn profile_with_focus(&self, model_path: &Path, focus: &str, no_gpu: bool) -> CommandOutput;
 }
 
 /// Real command runner that executes actual subprocess commands
@@ -305,6 +316,56 @@ impl CommandRunner for RealCommandRunner {
             "--json",
         ])
     }
+
+    fn profile_with_flamegraph(
+        &self,
+        model_path: &Path,
+        output_path: &Path,
+        no_gpu: bool,
+    ) -> CommandOutput {
+        let model_str = model_path.display().to_string();
+        let output_str = output_path.display().to_string();
+
+        let mut args = vec![
+            "run",
+            &model_str,
+            "-p",
+            "Hello",
+            "--max-tokens",
+            "4",
+            "--profile",
+            "--profile-output",
+            &output_str,
+        ];
+
+        if no_gpu {
+            args.push("--no-gpu");
+        }
+
+        self.execute(&args)
+    }
+
+    fn profile_with_focus(&self, model_path: &Path, focus: &str, no_gpu: bool) -> CommandOutput {
+        let model_str = model_path.display().to_string();
+
+        let mut args = vec![
+            "run",
+            &model_str,
+            "-p",
+            "Hello",
+            "--max-tokens",
+            "4",
+            "--profile",
+            "--focus",
+            focus,
+        ];
+
+        if no_gpu {
+            args.push("--no-gpu");
+        }
+
+        self.execute(&args)
+    }
 }
 
 /// Mock command runner for testing
@@ -346,6 +407,10 @@ pub struct MockCommandRunner {
     pub compare_inference_success: bool,
     /// Custom exit code (if Some, overrides normal exit code logic)
     pub custom_exit_code: Option<i32>,
+    /// Whether profile_with_flamegraph should fail
+    pub profile_flamegraph_success: bool,
+    /// Whether profile_with_focus should fail
+    pub profile_focus_success: bool,
 }
 
 impl Default for MockCommandRunner {
@@ -367,6 +432,8 @@ impl Default for MockCommandRunner {
             diff_tensors_success: true,
             compare_inference_success: true,
             custom_exit_code: None,
+            profile_flamegraph_success: true,
+            profile_focus_success: true,
         }
     }
 }
@@ -492,6 +559,20 @@ impl MockCommandRunner {
     #[must_use]
     pub fn with_exit_code(mut self, code: i32) -> Self {
         self.custom_exit_code = Some(code);
+        self
+    }
+
+    /// Set whether profile_with_flamegraph should fail
+    #[must_use]
+    pub fn with_profile_flamegraph_failure(mut self) -> Self {
+        self.profile_flamegraph_success = false;
+        self
+    }
+
+    /// Set whether profile_with_focus should fail
+    #[must_use]
+    pub fn with_profile_focus_failure(mut self) -> Self {
+        self.profile_focus_success = false;
         self
     }
 }
@@ -668,6 +749,31 @@ impl CommandRunner for MockCommandRunner {
             )
         } else {
             CommandOutput::failure(1, "Compare inference failed: output mismatch")
+        }
+    }
+
+    fn profile_with_flamegraph(
+        &self,
+        _model_path: &Path,
+        _output_path: &Path,
+        _no_gpu: bool,
+    ) -> CommandOutput {
+        if self.profile_flamegraph_success {
+            CommandOutput::success("Profile complete, flamegraph written")
+        } else {
+            CommandOutput::failure(1, "Profile flamegraph failed: profiler error")
+        }
+    }
+
+    fn profile_with_focus(&self, _model_path: &Path, _focus: &str, _no_gpu: bool) -> CommandOutput {
+        if self.profile_focus_success {
+            let output = format!(
+                r#"{{"throughput_tps":{:.1},"latency_p50_ms":78.2,"latency_p99_ms":156.5}}"#,
+                self.tps
+            );
+            CommandOutput::success(output)
+        } else {
+            CommandOutput::failure(1, "Profile focus failed: invalid focus target")
         }
     }
 }
@@ -1334,5 +1440,93 @@ mod tests {
         let b = PathBuf::from("b.apr");
         let output = runner.compare_inference(&a, &b, "prompt", 10, 1e-5);
         assert!(!output.success);
+    }
+
+    #[test]
+    fn test_mock_runner_profile_flamegraph_success() {
+        let runner = MockCommandRunner::new();
+        let model = PathBuf::from("model.gguf");
+        let output_path = PathBuf::from("/tmp/profile.svg");
+        let output = runner.profile_with_flamegraph(&model, &output_path, false);
+        assert!(output.success);
+        assert!(output.stdout.contains("flamegraph"));
+    }
+
+    #[test]
+    fn test_mock_runner_profile_flamegraph_failure() {
+        let runner = MockCommandRunner::new().with_profile_flamegraph_failure();
+        let model = PathBuf::from("model.gguf");
+        let output_path = PathBuf::from("/tmp/profile.svg");
+        let output = runner.profile_with_flamegraph(&model, &output_path, false);
+        assert!(!output.success);
+        assert!(output.stderr.contains("profiler error"));
+    }
+
+    #[test]
+    fn test_mock_runner_profile_focus_success() {
+        let runner = MockCommandRunner::new().with_tps(42.0);
+        let model = PathBuf::from("model.gguf");
+        let output = runner.profile_with_focus(&model, "attention", false);
+        assert!(output.success);
+        assert!(output.stdout.contains("42.0"));
+    }
+
+    #[test]
+    fn test_mock_runner_profile_focus_failure() {
+        let runner = MockCommandRunner::new().with_profile_focus_failure();
+        let model = PathBuf::from("model.gguf");
+        let output = runner.profile_with_focus(&model, "attention", false);
+        assert!(!output.success);
+        assert!(output.stderr.contains("invalid focus target"));
+    }
+
+    #[test]
+    fn test_real_runner_profile_flamegraph() {
+        let runner = RealCommandRunner::with_binary("/nonexistent/binary");
+        let model = PathBuf::from("model.gguf");
+        let output_path = PathBuf::from("/tmp/profile.svg");
+        let output = runner.profile_with_flamegraph(&model, &output_path, false);
+        assert!(!output.success);
+    }
+
+    #[test]
+    fn test_real_runner_profile_flamegraph_no_gpu() {
+        let runner = RealCommandRunner::with_binary("/nonexistent/binary");
+        let model = PathBuf::from("model.gguf");
+        let output_path = PathBuf::from("/tmp/profile.svg");
+        let output = runner.profile_with_flamegraph(&model, &output_path, true);
+        assert!(!output.success);
+    }
+
+    #[test]
+    fn test_real_runner_profile_focus() {
+        let runner = RealCommandRunner::with_binary("/nonexistent/binary");
+        let model = PathBuf::from("model.gguf");
+        let output = runner.profile_with_focus(&model, "attention", false);
+        assert!(!output.success);
+    }
+
+    #[test]
+    fn test_real_runner_profile_focus_no_gpu() {
+        let runner = RealCommandRunner::with_binary("/nonexistent/binary");
+        let model = PathBuf::from("model.gguf");
+        let output = runner.profile_with_focus(&model, "matmul", true);
+        assert!(!output.success);
+    }
+
+    #[test]
+    fn test_mock_runner_default_new_profile_fields() {
+        let runner = MockCommandRunner::default();
+        assert!(runner.profile_flamegraph_success);
+        assert!(runner.profile_focus_success);
+    }
+
+    #[test]
+    fn test_mock_runner_chained_profile_failures() {
+        let runner = MockCommandRunner::new()
+            .with_profile_flamegraph_failure()
+            .with_profile_focus_failure();
+        assert!(!runner.profile_flamegraph_success);
+        assert!(!runner.profile_focus_success);
     }
 }

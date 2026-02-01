@@ -287,19 +287,184 @@ apr profile model.gguf --backend gpu --format json
 
 If `--backend gpu` is unavailable (no GPU hardware), the GPU columns record `-`.
 
-### 7.4 Format Conversion Pipeline
+### 7.4 Ground Truth Policy
 
-To populate all 6 columns, models must be available in all 3 formats:
+**SafeTensors is the canonical source of truth.** All format comparisons derive from the original HuggingFace SafeTensors model.
+
+#### 7.4.1 Unquantized Testing (Precision Parity)
+
+For testing format handling at the same precision:
 
 ```bash
-# Convert GGUF to APR
-apr convert model.gguf --to apr -o model.apr
+# Source: HuggingFace SafeTensors (BF16/FP16)
+apr pull Qwen/Qwen2.5-Coder-0.5B-Instruct
 
-# Convert GGUF to SafeTensors
-apr convert model.gguf --to safetensors -o model.safetensors
+# Derive GGUF from SafeTensors (same precision)
+apr convert model.safetensors --to gguf -o model.gguf
+
+# Derive APR from SafeTensors (same precision)
+apr import model.safetensors -o model.apr
 ```
 
-### 7.5 Certification Database Schema
+**Never use third-party GGUF files** (e.g., bartowski, TheBloke) for qualification. These have unknown provenance and different quantization.
+
+#### 7.4.2 Quantized Testing (Quantization Parity)
+
+For testing quantization impact, apr-cli performs the quantization:
+
+```bash
+# Quantize SafeTensors → APR Q4_K_M
+apr import model.safetensors -o model_q4km.apr --quantize q4_k_m
+
+# Quantize SafeTensors → GGUF Q4_K_M
+apr convert model.safetensors --to gguf -o model_q4km.gguf --quantize q4_k_m
+
+# Compare: APR Q4_K_M vs GGUF Q4_K_M (same quantization, same source)
+```
+
+**Rule:** Quantized-to-quantized comparisons must use the same:
+1. Source model (SafeTensors)
+2. Quantization method (apr-cli)
+3. Quantization level (e.g., Q4_K_M)
+
+#### 7.4.3 Format Conversion Matrix
+
+| Source | Target | Command | Use Case |
+|--------|--------|---------|----------|
+| SafeTensors | GGUF (FP16) | `apr convert --to gguf` | Precision parity |
+| SafeTensors | APR (FP16) | `apr import` | Precision parity |
+| SafeTensors | GGUF (Q4_K_M) | `apr convert --to gguf --quantize q4_k_m` | Quantization parity |
+| SafeTensors | APR (Q4_K_M) | `apr import --quantize q4_k_m` | Quantization parity |
+
+**Prohibited:**
+- Using pre-quantized GGUF from third parties
+- Comparing different quantization levels
+- Comparing different source models
+
+### 7.5 Provenance Validation (PMAT-PROV-001)
+
+**All derived formats MUST include provenance metadata** linking back to the SafeTensors source. This prevents the critical error of comparing models from different sources.
+
+#### 7.5.1 Provenance File Format
+
+Each model directory contains a `.provenance.json` file:
+
+```json
+{
+  "source": {
+    "format": "safetensors",
+    "path": "model.safetensors",
+    "sha256": "a1b2c3d4e5f6...",
+    "hf_repo": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+    "downloaded_at": "2026-02-01T12:00:00Z"
+  },
+  "derived": [
+    {
+      "format": "gguf",
+      "path": "model.gguf",
+      "sha256": "f6e5d4c3b2a1...",
+      "converter": "apr-cli",
+      "converter_version": "0.2.12",
+      "quantization": null,
+      "created_at": "2026-02-01T12:05:00Z"
+    },
+    {
+      "format": "apr",
+      "path": "model.apr",
+      "sha256": "1a2b3c4d5e6f...",
+      "converter": "apr-cli",
+      "converter_version": "0.2.12",
+      "quantization": null,
+      "created_at": "2026-02-01T12:06:00Z"
+    }
+  ]
+}
+```
+
+#### 7.5.2 Validation Rules
+
+| Rule ID | Description | Failure Action |
+|---------|-------------|----------------|
+| **PROV-001** | All formats in certification must share same `source.sha256` | REJECT certification |
+| **PROV-002** | Derived files must have `converter: "apr-cli"` | REJECT file |
+| **PROV-003** | Source must be `format: "safetensors"` | REJECT certification |
+| **PROV-004** | Third-party files (no provenance) are prohibited | REJECT file |
+| **PROV-005** | Quantization levels must match for comparisons | REJECT comparison |
+| **PROV-006** | File hash must match recorded hash (integrity) | REJECT file |
+| **PROV-007** | Referenced files must exist (no ghost files) | REJECT provenance |
+| **PROV-008** | No duplicate format+quantization entries | REJECT entry |
+| **PROV-009** | Compared formats must exist in derived list | REJECT comparison |
+
+#### 7.5.3 Test Requirements
+
+The following tests MUST exist to enforce provenance:
+
+```rust
+// PMAT-PROV-001: Reject certification with mismatched sources
+#[test]
+fn test_reject_mismatched_source_hash() {
+    // GGUF from bartowski, SafeTensors from HuggingFace
+    // Must fail with ProvenanceMismatch error
+}
+
+// PMAT-PROV-002: Reject third-party files without provenance
+#[test]
+fn test_reject_third_party_gguf() {
+    // GGUF downloaded directly (no .provenance.json)
+    // Must fail with MissingProvenance error
+}
+
+// PMAT-PROV-003: Accept only SafeTensors as source
+#[test]
+fn test_reject_gguf_as_source() {
+    // Attempt to use GGUF as ground truth
+    // Must fail with InvalidSourceFormat error
+}
+
+// PMAT-PROV-004: Reject quantization mismatch
+#[test]
+fn test_reject_quantization_mismatch() {
+    // Compare Q4_K_M APR with FP16 GGUF
+    // Must fail with QuantizationMismatch error
+}
+```
+
+#### 7.5.4 Provenance Integrity Falsification Matrix (P0)
+
+These tests constitute permanent regression gates for the Chain of Custody system.
+
+| Gate ID | Hypothesis | Falsification Criteria | Points |
+|---------|------------|------------------------|--------|
+| **F-PROV-001** | **Chain of Custody** | Provenance record allows mismatch between recorded hash and actual file content. | 10 |
+| **F-PROV-002** | **Referential Integrity** | System proceeds with comparison when referenced source/derived files are missing (ghost files). | 10 |
+| **F-PROV-003** | **Uniqueness** | System allows duplicate format/quantization entries in the derived list. | 5 |
+| **F-PROV-004** | **Format Existence** | System allows comparison against non-existent formats in derived list. | 5 |
+
+**Verification Workflow (3-Stage Defense):**
+
+```
+validate_provenance()     →  verify_files_exist()    →  verify_provenance_integrity()
+     (Logic Check)              (Availability Check)        (Integrity Check)
+     PROV-002, PROV-003         PROV-007                     PROV-006, PROV-007
+```
+
+**Known Limitation (F-PROV-LOGIC-003):**
+
+The Quantization Lie attack (claiming Q8_0 file is Q4_K_M) is not detected by hash verification alone. Future mitigation: Header Sample check reading first 4KB of GGUF/SafeTensors to verify internal metadata matches provenance record.
+
+#### 7.5.5 Provenance Generation
+
+The `apr-qa` tool automatically generates provenance during conversion:
+
+```bash
+# This creates .provenance.json automatically
+apr-qa prepare-model Qwen/Qwen2.5-Coder-0.5B-Instruct
+
+# Verify provenance before certification
+apr-qa verify-provenance ~/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/
+```
+
+### 7.6 Certification Database Schema
 
 The `docs/certifications/models.csv` schema:
 
@@ -309,26 +474,35 @@ model_id,family,parameters,size_category,status,mqs_score,grade,certified_tier,l
 
 All 6 throughput columns are **mandatory fields**. Empty values indicate the combination was not tested.
 
-### 7.6 Conversion Caching
+### 7.7 Conversion Caching
 
 To keep MVP certification under 5 minutes, format conversions are cached:
 
 ```
 <cache>/<model>/
-├── gguf/model.gguf          # Source (symlink to pacha cache)
-├── apr/model.apr            # Converted (cached)
-├── safetensors/model.safetensors  # Converted (cached, when #190 fixed)
-└── .conversion_hash         # SHA256 of source GGUF
+├── safetensors/
+│   ├── model.safetensors    # Ground truth (from HuggingFace)
+│   └── config.json          # Model config (required for inference)
+├── gguf/
+│   └── model.gguf           # Derived from SafeTensors
+├── apr/
+│   └── model.apr            # Derived from SafeTensors
+└── .conversion_hash         # SHA256 of source SafeTensors
 ```
+
+**Ground truth flow:**
+1. `apr pull` downloads SafeTensors from HuggingFace
+2. `apr convert` derives GGUF from SafeTensors
+3. `apr import` derives APR from SafeTensors
 
 **Cache invalidation**: Conversion is skipped if:
 1. Target file exists
-2. `.conversion_hash` matches current source file hash
+2. `.conversion_hash` matches current SafeTensors file hash
 
 **First run**: ~4 minutes (includes conversion)
 **Subsequent runs**: ~2 minutes (benchmarks only)
 
-### 7.7 Minimum Throughput Gates
+### 7.8 Minimum Throughput Gates
 
 From the Verification Matrix (F-PERF-001):
 

@@ -12,6 +12,10 @@
 //! are equivalent; verify by running both and comparing outputs.
 
 use crate::error::{Error, Result};
+use crate::provenance::{
+    Provenance, add_derived, create_source_provenance, get_apr_cli_version, load_provenance,
+    save_provenance, validate_provenance,
+};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::process::Command;
@@ -707,6 +711,164 @@ pub fn convert_format_cached(
             cached: false,
         })
     }
+}
+
+// ============================================================================
+// Provenance-Aware Model Preparation (PMAT-PROV-001)
+// ============================================================================
+
+/// Result of model preparation with provenance
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ModelPreparationResult {
+    /// Provenance record
+    pub provenance: Provenance,
+    /// Path to SafeTensors source
+    pub safetensors_path: std::path::PathBuf,
+    /// Path to GGUF (if conversion succeeded)
+    pub gguf_path: Option<std::path::PathBuf>,
+    /// Path to APR (if conversion succeeded)
+    pub apr_path: Option<std::path::PathBuf>,
+    /// Conversion results
+    pub conversions: Vec<FormatConversionResult>,
+}
+
+/// Prepare a model from SafeTensors source with full provenance tracking
+///
+/// Implements spec 7.4 (Ground Truth Policy) and 7.5 (Provenance Validation):
+/// 1. SafeTensors is the canonical source (PROV-003)
+/// 2. All conversions use apr-cli (PROV-002)
+/// 3. Provenance tracks all derived formats
+///
+/// # Arguments
+///
+/// * `apr_binary` - Path to apr binary
+/// * `safetensors_path` - Path to source SafeTensors file
+/// * `hf_repo` - HuggingFace repository ID (e.g., "Qwen/Qwen2.5-Coder-0.5B-Instruct")
+/// * `output_dir` - Directory to write converted files and provenance
+/// * `quantization` - Optional quantization level (e.g., "q4_k_m")
+///
+/// # Errors
+///
+/// Returns error if any conversion fails or provenance validation fails.
+pub fn prepare_model_with_provenance(
+    apr_binary: &str,
+    safetensors_path: &Path,
+    hf_repo: &str,
+    output_dir: &Path,
+    quantization: Option<&str>,
+) -> Result<ModelPreparationResult> {
+    // Check for existing provenance (resume workflow)
+    let prov_result = load_provenance(output_dir);
+    let mut provenance = if let Ok(existing) = prov_result {
+        // Verify existing provenance matches source
+        let current_hash = crate::provenance::compute_sha256(safetensors_path)?;
+        if existing.source.sha256 == current_hash {
+            existing
+        } else {
+            // Source changed, recreate provenance
+            create_source_provenance(safetensors_path, hf_repo)?
+        }
+    } else {
+        // Create new provenance
+        create_source_provenance(safetensors_path, hf_repo)?
+    };
+
+    let cli_version = get_apr_cli_version();
+    let mut conversions = Vec::new();
+    let mut gguf_path = None;
+    let mut apr_path = None;
+
+    // Create output directories
+    std::fs::create_dir_all(output_dir)?;
+
+    // Convert SafeTensors → GGUF
+    let gguf_target = quantization.map_or_else(
+        || output_dir.join("model.gguf"),
+        |q| output_dir.join(format!("model-{q}.gguf")),
+    );
+    let gguf_hash_path = output_dir.join(".gguf_conversion_hash");
+
+    let gguf_conv =
+        convert_format_cached(apr_binary, safetensors_path, &gguf_target, &gguf_hash_path)?;
+    if gguf_conv.success {
+        // Check if we need to add this derived format
+        let already_tracked = provenance
+            .derived
+            .iter()
+            .any(|d| d.format == "gguf" && d.quantization.as_deref() == quantization);
+
+        if !already_tracked {
+            add_derived(
+                &mut provenance,
+                "gguf",
+                &gguf_target,
+                quantization,
+                &cli_version,
+            )?;
+        }
+        gguf_path = Some(gguf_target.clone());
+    }
+    conversions.push(gguf_conv);
+
+    // Convert SafeTensors → APR
+    let apr_target = quantization.map_or_else(
+        || output_dir.join("model.apr"),
+        |q| output_dir.join(format!("model-{q}.apr")),
+    );
+    let apr_hash_path = output_dir.join(".apr_conversion_hash");
+
+    let apr_conv =
+        convert_format_cached(apr_binary, safetensors_path, &apr_target, &apr_hash_path)?;
+    if apr_conv.success {
+        let already_tracked = provenance
+            .derived
+            .iter()
+            .any(|d| d.format == "apr" && d.quantization.as_deref() == quantization);
+
+        if !already_tracked {
+            add_derived(
+                &mut provenance,
+                "apr",
+                &apr_target,
+                quantization,
+                &cli_version,
+            )?;
+        }
+        apr_path = Some(apr_target.clone());
+    }
+    conversions.push(apr_conv);
+
+    // Validate provenance
+    validate_provenance(&provenance)?;
+
+    // Save provenance
+    save_provenance(output_dir, &provenance)?;
+
+    Ok(ModelPreparationResult {
+        provenance,
+        safetensors_path: safetensors_path.to_path_buf(),
+        gguf_path,
+        apr_path,
+        conversions,
+    })
+}
+
+/// Verify provenance before running comparisons
+///
+/// Checks PROV-005 (quantization parity) for format comparison.
+///
+/// # Errors
+///
+/// Returns error if provenance is invalid or formats can't be compared.
+pub fn verify_comparison_provenance(
+    model_dir: &Path,
+    format_a: &str,
+    format_b: &str,
+) -> Result<Provenance> {
+    let provenance = load_provenance(model_dir)?;
+    validate_provenance(&provenance)?;
+    crate::provenance::validate_comparison(&provenance, format_a, format_b)?;
+    Ok(provenance)
 }
 
 /// Six-column throughput profile result
@@ -2853,5 +3015,179 @@ mod tests {
         assert!((result.throughput() - 200.0).abs() < 0.01);
         assert!((result.p50_latency() - 5.0).abs() < 0.01);
         assert!((result.p99_latency() - 15.0).abs() < 0.01);
+    }
+
+    // =========================================================================
+    // Provenance-Aware Model Preparation Tests (PMAT-PROV-001)
+    // =========================================================================
+
+    #[test]
+    fn test_model_preparation_result_fields() {
+        use crate::provenance::{DerivedProvenance, Provenance, SourceProvenance};
+
+        let result = ModelPreparationResult {
+            provenance: Provenance {
+                source: SourceProvenance {
+                    format: "safetensors".to_string(),
+                    path: "model.safetensors".to_string(),
+                    sha256: "abc123".to_string(),
+                    hf_repo: "test/model".to_string(),
+                    downloaded_at: "2026-02-01T12:00:00Z".to_string(),
+                },
+                derived: vec![DerivedProvenance {
+                    format: "gguf".to_string(),
+                    path: "model.gguf".to_string(),
+                    sha256: "def456".to_string(),
+                    converter: "apr-cli".to_string(),
+                    converter_version: "0.2.12".to_string(),
+                    quantization: None,
+                    created_at: "2026-02-01T12:05:00Z".to_string(),
+                }],
+            },
+            safetensors_path: std::path::PathBuf::from("/models/model.safetensors"),
+            gguf_path: Some(std::path::PathBuf::from("/models/model.gguf")),
+            apr_path: None,
+            conversions: vec![],
+        };
+
+        assert_eq!(result.provenance.source.format, "safetensors");
+        assert!(result.gguf_path.is_some());
+        assert!(result.apr_path.is_none());
+    }
+
+    #[test]
+    fn test_model_preparation_result_serialization() {
+        use crate::provenance::{Provenance, SourceProvenance};
+
+        let result = ModelPreparationResult {
+            provenance: Provenance {
+                source: SourceProvenance {
+                    format: "safetensors".to_string(),
+                    path: "model.safetensors".to_string(),
+                    sha256: "abc123".to_string(),
+                    hf_repo: "test/model".to_string(),
+                    downloaded_at: "2026-02-01T12:00:00Z".to_string(),
+                },
+                derived: vec![],
+            },
+            safetensors_path: std::path::PathBuf::from("/models/model.safetensors"),
+            gguf_path: None,
+            apr_path: None,
+            conversions: vec![],
+        };
+
+        let json = serde_json::to_string(&result).unwrap();
+        assert!(json.contains("safetensors"));
+        assert!(json.contains("test/model"));
+    }
+
+    #[test]
+    fn test_verify_comparison_provenance_missing_file() {
+        let temp_dir = tempfile::tempdir().unwrap();
+        let result = verify_comparison_provenance(temp_dir.path(), "gguf", "apr");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_verify_comparison_provenance_valid() {
+        use crate::provenance::{DerivedProvenance, Provenance, SourceProvenance, save_provenance};
+
+        let temp_dir = tempfile::tempdir().unwrap();
+
+        // Create valid provenance
+        let provenance = Provenance {
+            source: SourceProvenance {
+                format: "safetensors".to_string(),
+                path: "model.safetensors".to_string(),
+                sha256: "abc123".to_string(),
+                hf_repo: "test/model".to_string(),
+                downloaded_at: "2026-02-01T12:00:00Z".to_string(),
+            },
+            derived: vec![
+                DerivedProvenance {
+                    format: "gguf".to_string(),
+                    path: "model.gguf".to_string(),
+                    sha256: "def456".to_string(),
+                    converter: "apr-cli".to_string(),
+                    converter_version: "0.2.12".to_string(),
+                    quantization: None,
+                    created_at: "2026-02-01T12:05:00Z".to_string(),
+                },
+                DerivedProvenance {
+                    format: "apr".to_string(),
+                    path: "model.apr".to_string(),
+                    sha256: "789ghi".to_string(),
+                    converter: "apr-cli".to_string(),
+                    converter_version: "0.2.12".to_string(),
+                    quantization: None,
+                    created_at: "2026-02-01T12:06:00Z".to_string(),
+                },
+            ],
+        };
+        save_provenance(temp_dir.path(), &provenance).unwrap();
+
+        let result = verify_comparison_provenance(temp_dir.path(), "gguf", "apr");
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_verify_comparison_provenance_quantization_mismatch() {
+        use crate::provenance::{DerivedProvenance, Provenance, SourceProvenance, save_provenance};
+
+        let temp_dir = tempfile::tempdir().unwrap();
+
+        // Create provenance with mismatched quantization
+        let provenance = Provenance {
+            source: SourceProvenance {
+                format: "safetensors".to_string(),
+                path: "model.safetensors".to_string(),
+                sha256: "abc123".to_string(),
+                hf_repo: "test/model".to_string(),
+                downloaded_at: "2026-02-01T12:00:00Z".to_string(),
+            },
+            derived: vec![
+                DerivedProvenance {
+                    format: "gguf".to_string(),
+                    path: "model-q4.gguf".to_string(),
+                    sha256: "def456".to_string(),
+                    converter: "apr-cli".to_string(),
+                    converter_version: "0.2.12".to_string(),
+                    quantization: Some("q4_k_m".to_string()), // Quantized
+                    created_at: "2026-02-01T12:05:00Z".to_string(),
+                },
+                DerivedProvenance {
+                    format: "apr".to_string(),
+                    path: "model.apr".to_string(),
+                    sha256: "789ghi".to_string(),
+                    converter: "apr-cli".to_string(),
+                    converter_version: "0.2.12".to_string(),
+                    quantization: None, // Not quantized
+                    created_at: "2026-02-01T12:06:00Z".to_string(),
+                },
+            ],
+        };
+        save_provenance(temp_dir.path(), &provenance).unwrap();
+
+        let result = verify_comparison_provenance(temp_dir.path(), "gguf", "apr");
+        assert!(result.is_err()); // PROV-005 violation
+    }
+
+    #[test]
+    fn test_prepare_model_fails_without_apr_binary() {
+        let temp_dir = tempfile::tempdir().unwrap();
+        let safetensors = temp_dir.path().join("model.safetensors");
+        std::fs::write(&safetensors, b"fake safetensors content").unwrap();
+
+        let output_dir = temp_dir.path().join("output");
+        let result = prepare_model_with_provenance(
+            "/nonexistent/apr",
+            &safetensors,
+            "test/model",
+            &output_dir,
+            None,
+        );
+
+        // Will fail because apr binary doesn't exist
+        assert!(result.is_err());
     }
 }

@@ -631,4 +631,68 @@ mod tests {
     fn test_html_escaping_special_chars() {
         assert_eq!(HtmlDashboard::escape_html("test<>test"), "test&lt;&gt;test");
     }
+
+    #[test]
+    fn test_pass_rate_warning_class() {
+        // Test pass rate between 70 and 90 for "warning" class
+        let mut mqs = test_mqs();
+        mqs.tests_passed = 80;
+        mqs.tests_failed = 20;
+        mqs.total_tests = 100;
+
+        let dashboard = HtmlDashboard::new("Test");
+        let collector = EvidenceCollector::new();
+
+        let html = dashboard
+            .generate(&mqs, &test_popperian(), &collector)
+            .expect("Failed to generate");
+
+        // 80% pass rate should get "warning" class
+        assert!(html.contains("warning"));
+    }
+
+    #[test]
+    fn test_empty_gateways() {
+        let dashboard = HtmlDashboard::new("Test");
+        let mut mqs = test_mqs();
+        mqs.gateways = vec![]; // Empty gateways
+
+        let html = dashboard.render_gateways(&mqs);
+        assert!(html.contains("No gateway checks recorded"));
+    }
+
+    #[test]
+    fn test_more_than_ten_falsifications() {
+        let dashboard = HtmlDashboard::new("Test");
+
+        // Create more than 10 falsifications
+        let mut falsifications = Vec::new();
+        for i in 0..15 {
+            falsifications.push(FalsificationDetail {
+                gate_id: format!("F-EDGE-{:03}", i),
+                hypothesis: format!("Test hypothesis {}", i),
+                evidence: format!("Evidence {}", i),
+                severity: 3,
+                is_black_swan: false,
+                occurrence_count: 1,
+            });
+        }
+
+        let popperian = PopperianScore {
+            model_id: "test".to_string(),
+            hypotheses_tested: 100,
+            corroborated: 85,
+            falsified: 15,
+            inconclusive: 0,
+            corroboration_ratio: 0.85,
+            severity_weighted_score: 0.80,
+            confidence_level: 0.75,
+            reproducibility_index: 0.70,
+            black_swan_count: 0,
+            falsifications,
+        };
+
+        let html = dashboard.render_falsifications(&popperian);
+        assert!(html.contains("and 5 more falsifications"));
+    }
 }

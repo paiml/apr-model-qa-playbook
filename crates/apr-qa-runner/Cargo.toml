@@ -23,6 +23,7 @@ chrono = { workspace = true }
 apr-qa-gen = { workspace = true }
 hostname = "0.4"
 rayon = "1.10"
+sha2 = "0.10"
 num_cpus = "1.16"
 # Test fixtures dependencies (optional)
 tempfile = { version = "3", optional = true }

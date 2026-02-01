@@ -219,4 +219,43 @@ mod tests {
         let guard = ProcessGuard::new(child);
         assert_eq!(guard.pid(), expected_pid);
     }
+
+    #[test]
+    fn test_process_guard_wait_already_consumed() {
+        let child = Command::new("echo")
+            .arg("test")
+            .spawn()
+            .expect("Failed to spawn");
+
+        let mut guard = ProcessGuard::new(child);
+        // Take the child to consume it
+        let taken = guard.child.take();
+        assert!(taken.is_some());
+
+        // Now wait should fail with "already consumed"
+        let result = guard.wait();
+        assert!(result.is_err());
+        assert!(result.unwrap_err().to_string().contains("already consumed"));
+    }
+
+    #[test]
+    fn test_process_guard_wait_with_output_already_consumed() {
+        use std::process::Stdio;
+
+        let child = Command::new("echo")
+            .arg("test")
+            .stdout(Stdio::piped())
+            .spawn()
+            .expect("Failed to spawn");
+
+        let mut guard = ProcessGuard::new(child);
+        // Take the child to consume it
+        let taken = guard.child.take();
+        assert!(taken.is_some());
+
+        // Now wait_with_output should fail
+        let result = guard.wait_with_output();
+        assert!(result.is_err());
+        assert!(result.unwrap_err().to_string().contains("already consumed"));
+    }
 }

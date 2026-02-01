@@ -453,4 +453,23 @@ mod tests {
         ]);
         assert_eq!(n_metadata, 2);
     }
+
+    #[test]
+    fn test_gguf_builder_default() {
+        let builder = GgufBuilder::default();
+        let data = builder.build();
+
+        // Should have valid header
+        let magic = u32::from_le_bytes([data[0], data[1], data[2], data[3]]);
+        assert_eq!(magic, GGUF_MAGIC);
+    }
+
+    #[test]
+    fn test_pygmy_model_dir_root_str() {
+        let dir = PygmyModelDir::new().expect("Should create temp dir");
+        let root_str = dir.root_str();
+
+        // Should return a non-empty path string
+        assert!(!root_str.is_empty());
+    }
 }

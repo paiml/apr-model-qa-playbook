@@ -1068,4 +1068,44 @@ differential_tests:
         assert!((default_embedding_tolerance() - 0.1).abs() < 1e-10);
         assert!((default_attention_tolerance() - 0.01).abs() < 1e-10);
     }
+
+    #[test]
+    fn test_profile_ci_min_throughput_for() {
+        // Test with all fields set
+        let assertions = ProfileCiAssertions {
+            min_throughput: Some(10.0),
+            min_throughput_cpu: Some(5.0),
+            min_throughput_gpu: Some(50.0),
+            max_p99_ms: None,
+            max_p50_ms: None,
+        };
+
+        assert_eq!(assertions.min_throughput_for("cpu"), Some(5.0));
+        assert_eq!(assertions.min_throughput_for("gpu"), Some(50.0));
+        assert_eq!(assertions.min_throughput_for("tpu"), Some(10.0));
+
+        // Test with only min_throughput set (fallback)
+        let assertions_fallback = ProfileCiAssertions {
+            min_throughput: Some(20.0),
+            min_throughput_cpu: None,
+            min_throughput_gpu: None,
+            max_p99_ms: None,
+            max_p50_ms: None,
+        };
+
+        assert_eq!(assertions_fallback.min_throughput_for("cpu"), Some(20.0));
+        assert_eq!(assertions_fallback.min_throughput_for("gpu"), Some(20.0));
+
+        // Test with nothing set
+        let assertions_none = ProfileCiAssertions {
+            min_throughput: None,
+            min_throughput_cpu: None,
+            min_throughput_gpu: None,
+            max_p99_ms: None,
+            max_p50_ms: None,
+        };
+
+        assert_eq!(assertions_none.min_throughput_for("cpu"), None);
+        assert_eq!(assertions_none.min_throughput_for("gpu"), None);
+    }
 }

@@ -2415,4 +2415,50 @@ mod tests {
         assert!((thresholds.max_memory_growth_percent - 5.0).abs() < f64::EPSILON);
         assert!((thresholds.min_gpu_utilization - 50.0).abs() < f64::EPSILON);
     }
+
+    #[test]
+    fn test_companion_files_found() {
+        // Create temp directory with companion files
+        let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
+        let model_path = temp_dir.path().join("model.safetensors");
+        let config_path = temp_dir.path().join("config.json");
+        let tokenizer_path = temp_dir.path().join("tokenizer.json");
+
+        // Create the files
+        std::fs::write(&model_path, "model data").expect("Failed to write model");
+        std::fs::write(&config_path, "{}").expect("Failed to write config");
+        std::fs::write(&tokenizer_path, "{}").expect("Failed to write tokenizer");
+
+        let detector = PatternDetector::new();
+        let result =
+            detector.check_companion_files(&model_path, &["config.json", "tokenizer.json"]);
+
+        assert!(result.all_present, "All companions should be found");
+        assert_eq!(result.found.len(), 2);
+        assert!(result.missing.is_empty());
+        assert!(result.found.contains(&"config.json".to_string()));
+        assert!(result.found.contains(&"tokenizer.json".to_string()));
+    }
+
+    #[test]
+    fn test_companion_files_mixed() {
+        // Create temp directory with only some companion files
+        let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
+        let model_path = temp_dir.path().join("model.safetensors");
+        let config_path = temp_dir.path().join("config.json");
+
+        // Create only model and config, not tokenizer
+        std::fs::write(&model_path, "model data").expect("Failed to write model");
+        std::fs::write(&config_path, "{}").expect("Failed to write config");
+
+        let detector = PatternDetector::new();
+        let result =
+            detector.check_companion_files(&model_path, &["config.json", "tokenizer.json"]);
+
+        assert!(!result.all_present, "Not all companions present");
+        assert_eq!(result.found.len(), 1);
+        assert_eq!(result.missing.len(), 1);
+        assert!(result.found.contains(&"config.json".to_string()));
+        assert!(result.missing.contains(&"tokenizer.json".to_string()));
+    }
 }

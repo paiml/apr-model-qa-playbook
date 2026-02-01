@@ -32,6 +32,12 @@ pub mod parallel;
 pub mod patterns;
 pub mod playbook;
 pub mod process;
+pub mod provenance;
+pub use provenance::{
+    DerivedProvenance, Provenance, ProvenanceError, SourceProvenance, add_derived, compute_sha256,
+    create_source_provenance, get_apr_cli_version, load_provenance, save_provenance,
+    validate_comparison, validate_provenance, verify_files_exist, verify_provenance_integrity,
+};
 
 #[cfg(test)]
 pub mod test_fixtures;
@@ -45,10 +51,11 @@ pub use conversion::{
 };
 pub use differential::{
     BenchResult, BenchmarkMetrics, CiAssertion, CiProfileResult, DiffBenchmarkResult, DiffConfig,
-    DifferentialExecutor, FormatConversionResult, InferenceComparisonResult, ProfileAssertion,
-    SixColumnProfile, TensorDiffResult, TensorMismatch, TensorMismatchType, TokenComparison,
-    convert_format_cached, run_bench_throughput, run_diff_benchmark, run_profile_ci,
-    run_six_column_profile,
+    DifferentialExecutor, FormatConversionResult, InferenceComparisonResult,
+    ModelPreparationResult, ProfileAssertion, SixColumnProfile, TensorDiffResult, TensorMismatch,
+    TensorMismatchType, TokenComparison, convert_format_cached, prepare_model_with_provenance,
+    run_bench_throughput, run_diff_benchmark, run_profile_ci, run_six_column_profile,
+    verify_comparison_provenance,
 };
 pub use error::{Error, Result};
 pub use evidence::{Evidence, EvidenceCollector, Outcome, PerformanceMetrics};

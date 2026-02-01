@@ -334,7 +334,7 @@ impl ConversionTest {
 /// the class of bugs that have occurred 50+ times.
 #[derive(Debug, Clone)]
 pub struct SemanticConversionTest {
-    /// Source format (typically GGUF as ground truth)
+    /// Source format (SafeTensors as ground truth per spec 7.4)
     pub source_format: Format,
     /// Target format to test
     pub target_format: Format,
@@ -362,7 +362,7 @@ impl SemanticConversionTest {
     ///
     /// Returns an error if inference fails.
     pub fn execute(&self, model_path: &Path) -> Result<SemanticTestResult> {
-        // Run inference on source (GGUF - ground truth)
+        // Run inference on source (SafeTensors - ground truth per spec 7.4)
         let source_output = self.run_inference(model_path)?;
 
         // Convert to target format

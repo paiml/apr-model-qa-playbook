@@ -60,6 +60,8 @@ coverage-full:
 # Coverage with threshold check for PMAT compliance (95%)
 # Uses --lib to exclude binary code (main.rs files)
 # NO GAMING: All library code must meet the threshold
+# Note: ~5% uncovered code is in subprocess execution paths requiring integration tests
+# with actual apr binary - these are tested via E2E tests, not unit tests
 coverage-check:
 	@echo "Checking PMAT coverage compliance (>= 95%)..."
 	@cargo llvm-cov --workspace --lib 2>&1 | \
@@ -156,7 +158,7 @@ help:
 	@echo "  coverage               Generate coverage report (library code)"
 	@echo "  coverage-summary       Coverage summary (library code)"
 	@echo "  coverage-full          Full coverage including CLI"
-	@echo "  coverage-check         Verify PMAT compliance (>= 95%)"
+	@echo "  coverage-check         Verify PMAT compliance (>= 95%, see CLAUDE.md)"
 	@echo "  doc                    Generate documentation"
 	@echo "  clean                  Clean build artifacts"
 	@echo "  watch                  Watch mode for development"

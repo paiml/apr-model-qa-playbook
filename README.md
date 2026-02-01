@@ -87,20 +87,20 @@ We don't test to pass—we **test to fail**. No amount of passing tests proves c
 
 **Priority Family:** Qwen Coder (see [Certified Testing Spec](docs/specifications/certified-testing.md))
 
-| Model | Family | Size | Status | MQS | Grade | G1-4 | GGUF CPU | GGUF GPU | APR CPU | APR GPU | ST CPU | ST GPU |
-|-------|--------|------|--------|-----|-------|------|----------|----------|---------|---------|--------|--------|
-| [deepseek-coder-1.3b-instruct](https://huggingface.co/deepseek-ai/deepseek-coder-1.3b-instruct) | deepseek-coder | 1.3B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - |
-| [gemma-2-2b-it](https://huggingface.co/google/gemma-2-2b-it) | gemma | 2B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - |
-| [Llama-3.2-1B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct) | llama | 1B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - |
-| [Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) | llama | 3B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - |
-| [Mistral-7B-Instruct-v0.3](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.3) | mistral | 7B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - |
-| [Phi-3-mini-4k-instruct](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct) | phi | 3.8B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - |
-| [Qwen2.5-Coder-0.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-0.5B-Instruct) | qwen-coder | 0.5B | ![provisional](https://img.shields.io/badge/PROVISIONAL-yellow) | 800 | B | ✓ | 1.6 | 270.5 | - | - | - | - |
-| [Qwen2.5-Coder-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct) | qwen-coder | 1.5B | ![provisional](https://img.shields.io/badge/PROVISIONAL-yellow) | 800 | B | ✓ | 16.5 | 115.4 | - | - | - | - |
-| [Qwen2.5-Coder-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-3B-Instruct) | qwen-coder | 3B | ![provisional](https://img.shields.io/badge/PROVISIONAL-yellow) | 800 | B | ✓ | 10.5 | 66.9 | - | - | - | - |
-| [Qwen2.5-Coder-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct) | qwen-coder | 7B | ![provisional](https://img.shields.io/badge/PROVISIONAL-yellow) | 800 | B | ✓ | 7.7 | 32.3 | - | - | - | - |
-| [Qwen2.5-Coder-14B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct) | qwen-coder | 14B | ![provisional](https://img.shields.io/badge/PROVISIONAL-yellow) | 800 | B | ✓ | 4.1 | 15.1 | - | - | - | - |
-| [Qwen2.5-Coder-32B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-32B-Instruct) | qwen-coder | 32B | ![provisional](https://img.shields.io/badge/PROVISIONAL-yellow) | 800 | B | ✓ | - | - | - | - | - | - |
+| Model | Family | Size | Status | MQS | Grade | G1-4 | Prov | GGUF CPU | GGUF GPU | APR CPU | APR GPU | ST CPU | ST GPU |
+|-------|--------|------|--------|-----|-------|------|------|----------|----------|---------|---------|--------|--------|
+| [deepseek-coder-1.3b-instruct](https://huggingface.co/deepseek-ai/deepseek-coder-1.3b-instruct) | deepseek-coder | 1.3B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
+| [gemma-2-2b-it](https://huggingface.co/google/gemma-2-2b-it) | gemma | 2B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
+| [Llama-3.2-1B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct) | llama | 1B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
+| [Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) | llama | 3B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
+| [Mistral-7B-Instruct-v0.3](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.3) | mistral | 7B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
+| [Phi-3-mini-4k-instruct](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct) | phi | 3.8B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
+| [Qwen2.5-Coder-0.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-0.5B-Instruct) | qwen-coder | 0.5B | ![blocked](https://img.shields.io/badge/BLOCKED-red) | 270 | - | ✗ | ✗ | 3.0 | 272.4 | 0.0 | 0.9 | 0.0 | 0.0 |
+| [Qwen2.5-Coder-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct) | qwen-coder | 1.5B | ![provisional](https://img.shields.io/badge/PROVISIONAL-yellow) | 800 | B | ✓ | ✗ | 16.5 | 115.4 | - | - | - | - |
+| [Qwen2.5-Coder-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-3B-Instruct) | qwen-coder | 3B | ![provisional](https://img.shields.io/badge/PROVISIONAL-yellow) | 800 | B | ✓ | ✗ | 10.5 | 66.9 | - | - | - | - |
+| [Qwen2.5-Coder-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct) | qwen-coder | 7B | ![provisional](https://img.shields.io/badge/PROVISIONAL-yellow) | 800 | B | ✓ | ✗ | 7.7 | 32.3 | - | - | - | - |
+| [Qwen2.5-Coder-14B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct) | qwen-coder | 14B | ![provisional](https://img.shields.io/badge/PROVISIONAL-yellow) | 800 | B | ✓ | ✗ | 4.1 | 15.1 | - | - | - | - |
+| [Qwen2.5-Coder-32B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-32B-Instruct) | qwen-coder | 32B | ![provisional](https://img.shields.io/badge/PROVISIONAL-yellow) | 800 | B | ✓ | ✗ | - | - | - | - | - | - |
 <!-- CERTIFICATION_TABLE_END -->
 
 ## Quick Start

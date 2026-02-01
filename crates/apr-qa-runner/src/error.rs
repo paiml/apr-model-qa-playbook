@@ -73,6 +73,10 @@ pub enum Error {
     /// Generator error
     #[error("Generator error: {0}")]
     GeneratorError(#[from] apr_qa_gen::Error),
+
+    /// Provenance validation error (PMAT-PROV-001)
+    #[error("Provenance error: {0}")]
+    Provenance(#[from] crate::provenance::ProvenanceError),
 }
 
 #[cfg(test)]

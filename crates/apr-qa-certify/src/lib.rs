@@ -161,6 +161,8 @@ pub struct ModelCertification {
     pub tps_st_cpu: Option<f64>,
     /// Throughput in tokens/sec for `SafeTensors` format (GPU).
     pub tps_st_gpu: Option<f64>,
+    /// Provenance verified (PMAT-PROV-001).
+    pub provenance_verified: bool,
 }
 
 impl ModelCertification {
@@ -255,6 +257,7 @@ pub fn parse_csv(content: &str) -> Result<Vec<ModelCertification>> {
         let tps_apr_gpu = fields.get(16).and_then(|s| s.parse().ok());
         let tps_st_cpu = fields.get(17).and_then(|s| s.parse().ok());
         let tps_st_gpu = fields.get(18).and_then(|s| s.parse().ok());
+        let provenance_verified = fields.get(19).is_some_and(|s| s.to_lowercase() == "true");
 
         models.push(ModelCertification {
             model_id: fields[0].to_string(),
@@ -276,6 +279,7 @@ pub fn parse_csv(content: &str) -> Result<Vec<ModelCertification>> {
             tps_apr_gpu,
             tps_st_cpu,
             tps_st_gpu,
+            provenance_verified,
         });
     }
 
@@ -322,13 +326,13 @@ pub fn generate_summary(models: &[ModelCertification], timestamp: &str) -> Strin
 pub fn generate_table(models: &[ModelCertification]) -> String {
     let mut lines = Vec::new();
 
-    // Header with tok/s columns (format × backend = 6 columns)
+    // Header with tok/s columns (format × backend = 6 columns) + provenance
     lines.push(
-        "| Model | Family | Size | Status | MQS | Grade | G1-4 | GGUF CPU | GGUF GPU | APR CPU | APR GPU | ST CPU | ST GPU |"
+        "| Model | Family | Size | Status | MQS | Grade | G1-4 | Prov | GGUF CPU | GGUF GPU | APR CPU | APR GPU | ST CPU | ST GPU |"
             .to_string(),
     );
     lines.push(
-        "|-------|--------|------|--------|-----|-------|------|----------|----------|---------|---------|--------|--------|"
+        "|-------|--------|------|--------|-----|-------|------|------|----------|----------|---------|---------|--------|--------|"
             .to_string(),
     );
 
@@ -352,11 +356,20 @@ pub fn generate_table(models: &[ModelCertification]) -> String {
             "\u{2717}".to_string() // x mark
         };
 
+        // Provenance status
+        let prov = if matches!(m.status, CertificationStatus::Pending) {
+            "-"
+        } else if m.provenance_verified {
+            "\u{2713}" // checkmark
+        } else {
+            "\u{2717}" // x mark
+        };
+
         // Format tok/s values (6 columns)
         let fmt = |v: Option<f64>| v.map_or_else(|| "-".to_string(), |x| format!("{x:.1}"));
 
         lines.push(format!(
-            "| {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} |",
+            "| {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} |",
             m.markdown_link(),
             m.family,
             m.parameters,
@@ -364,6 +377,7 @@ pub fn generate_table(models: &[ModelCertification]) -> String {
             m.mqs_score,
             m.grade,
             gateways,
+            prov,
             fmt(m.tps_gguf_cpu),
             fmt(m.tps_gguf_gpu),
             fmt(m.tps_apr_cpu),
@@ -388,9 +402,9 @@ pub const END_MARKER: &str = "<!-- CERTIFICATION_TABLE_END -->";
 pub fn write_csv(models: &[ModelCertification]) -> String {
     let mut lines = Vec::new();
 
-    // Header with 6 tps columns (format × backend)
+    // Header with 6 tps columns (format × backend) + provenance
     lines.push(
-        "model_id,family,parameters,size_category,status,mqs_score,grade,certified_tier,last_certified,g1,g2,g3,g4,tps_gguf_cpu,tps_gguf_gpu,tps_apr_cpu,tps_apr_gpu,tps_st_cpu,tps_st_gpu"
+        "model_id,family,parameters,size_category,status,mqs_score,grade,certified_tier,last_certified,g1,g2,g3,g4,tps_gguf_cpu,tps_gguf_gpu,tps_apr_cpu,tps_apr_gpu,tps_st_cpu,tps_st_gpu,provenance_verified"
             .to_string(),
     );
 
@@ -410,7 +424,7 @@ pub fn write_csv(models: &[ModelCertification]) -> String {
         let fmt = |v: Option<f64>| v.map_or(String::new(), |x| format!("{x:.1}"));
 
         lines.push(format!(
-            "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}",
+            "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}",
             m.model_id,
             m.family,
             m.parameters,
@@ -430,6 +444,7 @@ pub fn write_csv(models: &[ModelCertification]) -> String {
             fmt(m.tps_apr_gpu),
             fmt(m.tps_st_cpu),
             fmt(m.tps_st_gpu),
+            m.provenance_verified,
         ));
     }
 
@@ -619,10 +634,10 @@ pub fn update_readme(readme: &str, table_content: &str) -> Result<String> {
 mod tests {
     use super::*;
 
-    const SAMPLE_CSV: &str = r"model_id,family,parameters,size_category,status,mqs_score,grade,certified_tier,last_certified,g1,g2,g3,g4,tps_gguf_cpu,tps_gguf_gpu,tps_apr_cpu,tps_apr_gpu,tps_st_cpu,tps_st_gpu
-Qwen/Qwen2.5-Coder-0.5B-Instruct,qwen-coder,0.5B,tiny,PENDING,0,-,none,2026-01-31T00:00:00Z,false,false,false,false,,,,,,
-Qwen/Qwen2.5-Coder-1.5B-Instruct,qwen-coder,1.5B,small,CERTIFIED,920,A,deep,2026-01-31T12:00:00Z,true,true,true,true,25.5,85.2,22.3,78.1,18.1,62.5
-meta-llama/Llama-3.2-1B-Instruct,llama,1B,small,BLOCKED,450,F,smoke,2026-01-31T00:00:00Z,true,false,false,false,12.0,45.0,,,,";
+    const SAMPLE_CSV: &str = r"model_id,family,parameters,size_category,status,mqs_score,grade,certified_tier,last_certified,g1,g2,g3,g4,tps_gguf_cpu,tps_gguf_gpu,tps_apr_cpu,tps_apr_gpu,tps_st_cpu,tps_st_gpu,provenance_verified
+Qwen/Qwen2.5-Coder-0.5B-Instruct,qwen-coder,0.5B,tiny,PENDING,0,-,none,2026-01-31T00:00:00Z,false,false,false,false,,,,,,false,false
+Qwen/Qwen2.5-Coder-1.5B-Instruct,qwen-coder,1.5B,small,CERTIFIED,920,A,deep,2026-01-31T12:00:00Z,true,true,true,true,25.5,85.2,22.3,78.1,18.1,62.5,true
+meta-llama/Llama-3.2-1B-Instruct,llama,1B,small,BLOCKED,450,F,smoke,2026-01-31T00:00:00Z,true,false,false,false,12.0,45.0,,,,,false";
 
     #[test]
     fn test_parse_csv_valid() {
@@ -726,6 +741,7 @@ meta-llama/Llama-3.2-1B-Instruct,llama,1B,small,BLOCKED,450,F,smoke,2026-01-31T0
             tps_apr_gpu: None,
             tps_st_cpu: None,
             tps_st_gpu: None,
+            provenance_verified: false,
         };
         assert_eq!(model.short_name(), "Qwen2.5-Coder-1.5B-Instruct");
     }
@@ -752,6 +768,7 @@ meta-llama/Llama-3.2-1B-Instruct,llama,1B,small,BLOCKED,450,F,smoke,2026-01-31T0
             tps_apr_gpu: None,
             tps_st_cpu: None,
             tps_st_gpu: None,
+            provenance_verified: false,
         };
         assert_eq!(
             model.hf_url(),
@@ -781,6 +798,7 @@ meta-llama/Llama-3.2-1B-Instruct,llama,1B,small,BLOCKED,450,F,smoke,2026-01-31T0
             tps_apr_gpu: None,
             tps_st_cpu: None,
             tps_st_gpu: None,
+            provenance_verified: false,
         };
         assert!((model.param_count() - 1.5).abs() < f64::EPSILON);
 
@@ -944,6 +962,7 @@ More content";
             tps_apr_gpu: None,
             tps_st_cpu: None,
             tps_st_gpu: None,
+            provenance_verified: false,
         };
         assert_eq!(model.short_name(), "model-without-org");
     }
@@ -970,6 +989,7 @@ More content";
             tps_apr_gpu: None,
             tps_st_cpu: None,
             tps_st_gpu: None,
+            provenance_verified: false,
         };
         assert_eq!(
             model.markdown_link(),
@@ -1144,5 +1164,131 @@ More content";
     fn test_certification_tier_default() {
         let tier = CertificationTier::default();
         assert!(matches!(tier, CertificationTier::Mvp));
+    }
+
+    #[test]
+    fn test_parse_csv_with_empty_lines() {
+        let csv = r"model_id,family,parameters,size_category,status,mqs_score,grade,certified_tier,last_certified,g1,g2,g3,g4
+
+Qwen/Qwen2.5-Coder-0.5B-Instruct,qwen-coder,0.5B,tiny,PENDING,0,-,none,2026-01-31T00:00:00Z,false,false,false,false
+
+";
+        let models = parse_csv(csv).expect("should parse with empty lines");
+        assert_eq!(models.len(), 1);
+        assert_eq!(models[0].model_id, "Qwen/Qwen2.5-Coder-0.5B-Instruct");
+    }
+
+    #[test]
+    fn test_parse_csv_insufficient_fields_in_line() {
+        let csv = r"model_id,family,parameters,size_category,status,mqs_score,grade,certified_tier,last_certified,g1,g2,g3,g4
+only,a,few,fields";
+        let result = parse_csv(csv);
+        assert!(result.is_err());
+        let err = result.expect_err("Should be an error");
+        assert!(
+            matches!(err, CertifyError::CsvParse { line: 2, .. }),
+            "Error should indicate line 2"
+        );
+    }
+
+    #[test]
+    fn test_write_csv_all_size_categories() {
+        // Test that write_csv correctly handles all size categories
+        let models = vec![
+            ModelCertification {
+                model_id: "tiny-model".to_string(),
+                family: "test".to_string(),
+                parameters: "0.5B".to_string(),
+                size_category: SizeCategory::Tiny,
+                status: CertificationStatus::Pending,
+                mqs_score: 0,
+                grade: "-".to_string(),
+                certified_tier: "none".to_string(),
+                last_certified: None,
+                g1: false,
+                g2: false,
+                g3: false,
+                g4: false,
+                tps_gguf_cpu: None,
+                tps_gguf_gpu: None,
+                tps_apr_cpu: None,
+                tps_apr_gpu: None,
+                tps_st_cpu: None,
+                tps_st_gpu: None,
+                provenance_verified: false,
+            },
+            ModelCertification {
+                model_id: "medium-model".to_string(),
+                family: "test".to_string(),
+                parameters: "7B".to_string(),
+                size_category: SizeCategory::Medium,
+                status: CertificationStatus::Pending,
+                mqs_score: 0,
+                grade: "-".to_string(),
+                certified_tier: "none".to_string(),
+                last_certified: None,
+                g1: false,
+                g2: false,
+                g3: false,
+                g4: false,
+                tps_gguf_cpu: None,
+                tps_gguf_gpu: None,
+                tps_apr_cpu: None,
+                tps_apr_gpu: None,
+                tps_st_cpu: None,
+                tps_st_gpu: None,
+                provenance_verified: false,
+            },
+            ModelCertification {
+                model_id: "large-model".to_string(),
+                family: "test".to_string(),
+                parameters: "34B".to_string(),
+                size_category: SizeCategory::Large,
+                status: CertificationStatus::Pending,
+                mqs_score: 0,
+                grade: "-".to_string(),
+                certified_tier: "none".to_string(),
+                last_certified: None,
+                g1: false,
+                g2: false,
+                g3: false,
+                g4: false,
+                tps_gguf_cpu: None,
+                tps_gguf_gpu: None,
+                tps_apr_cpu: None,
+                tps_apr_gpu: None,
+                tps_st_cpu: None,
+                tps_st_gpu: None,
+                provenance_verified: false,
+            },
+            ModelCertification {
+                model_id: "xlarge-model".to_string(),
+                family: "test".to_string(),
+                parameters: "70B".to_string(),
+                size_category: SizeCategory::XLarge,
+                status: CertificationStatus::Pending,
+                mqs_score: 0,
+                grade: "-".to_string(),
+                certified_tier: "none".to_string(),
+                last_certified: None,
+                g1: false,
+                g2: false,
+                g3: false,
+                g4: false,
+                tps_gguf_cpu: None,
+                tps_gguf_gpu: None,
+                tps_apr_cpu: None,
+                tps_apr_gpu: None,
+                tps_st_cpu: None,
+                tps_st_gpu: None,
+                provenance_verified: false,
+            },
+        ];
+
+        let csv_output = write_csv(&models);
+        assert!(csv_output.contains(",tiny,"));
+        assert!(csv_output.contains(",medium,"));
+        assert!(csv_output.contains(",large,"));
+        assert!(csv_output.contains(",xlarge,"));
     }
 }
