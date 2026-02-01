@@ -85,3 +85,25 @@ Tests follow Popperian falsification:
 - Design tests to fail, not to pass
 
 The parallel executor implements Jidoka—stops on first P0 failure when configured with `stop_on_p0` policy.
+
+## Stack Documentation Search
+
+Query this component's documentation and the entire Sovereign AI Stack using batuta's RAG Oracle:
+
+```bash
+# Index all stack documentation (run once, persists to ~/.cache/batuta/rag/)
+batuta oracle --rag-index
+
+# Search across the entire stack
+batuta oracle --rag "your question here"
+
+# Examples
+batuta oracle --rag "property-based testing strategies"
+batuta oracle --rag "MQS scoring implementation"
+batuta oracle --rag "Jidoka stop-on-error patterns"
+```
+
+The oracle indexes:
+- All Sovereign AI Stack repos (trueno, aprender, realizar, etc.)
+- Ground truth corpora (HuggingFace, JAX, vLLM, TGI patterns)
+- This playbook's documentation and source code
