@@ -1,6 +1,6 @@
 [
   {
-    "id": "000000000000000018902b2b66070af6",
+    "id": "000000000000000018902c4744d3412d",
     "gate_id": "F-A1-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_gguf_0000000000000000",
@@ -21,17 +21,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 14064.83ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
-    "stderr": "Generated 32 tokens in 13196.6ms (2.4 tok/s)\n",
+    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 14256.03ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 13156.6ms (2.4 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 1.6,
+      "tokens_per_second": 1.5,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 14072
+      "duration_ms": 14262
     },
-    "timestamp": "2026-02-01T16:08:38.951934540Z",
+    "timestamp": "2026-02-01T16:28:58.165604082Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -42,7 +42,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b36b3f4fe4a",
+    "id": "000000000000000018902c528b804d23",
     "gate_id": "F-A1-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_apr_0000000000000001",
@@ -63,17 +63,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/apr/model.apr\n\ntokens: 5\nlatency: 48538.82ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/apr/model.apr",
-    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151643 vocab, 151387 merges, 3 special tokens\n[AprV2ModelCuda] Pre-cached 3155 MB of weights on GPU (24 layers, 0 quantized, 264 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 519 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151643 vocab, 151387 merges, 3 special tokens\nGenerated 32 tokens in 42259.4ms (0.8 tok/s)\n",
+    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/apr/model.apr\n\ntokens: 5\nlatency: 48415.03ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/apr/model.apr",
+    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151643 vocab, 151387 merges, 3 special tokens\n[AprV2ModelCuda] Pre-cached 3155 MB of weights on GPU (24 layers, 0 quantized, 264 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 519 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151643 vocab, 151387 merges, 3 special tokens\nGenerated 32 tokens in 42156.9ms (0.8 tok/s)\n",
     "exit_code": 0,
     "metrics": {
       "tokens_per_second": 0.1,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 48552
+      "duration_ms": 48430
     },
-    "timestamp": "2026-02-01T16:09:27.504015313Z",
+    "timestamp": "2026-02-01T16:29:46.595990389Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -84,8 +84,8 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b3799d7e161",
-    "gate_id": "F-A1-001",
+    "id": "000000000000000018902c537dbf3e36",
+    "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000002",
       "model": {
@@ -103,19 +103,19 @@
       "trace_level": "none",
       "oracle_type": "arithmetic"
     },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n\ntokens: 0\nlatency: 3842.16ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors",
-    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 0 tokens in 140.6ms (0.0 tok/s)\n",
-    "exit_code": 0,
+    "outcome": "Falsified",
+    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with either name: 'model.norm.weight' or 'output_norm.weight'\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with either name: 'model.norm.weight' or 'output_norm.weight'\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors",
+    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with either name: 'model.norm.weight' or 'output_norm.weight'\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with either name: 'model.norm.weight' or 'output_norm.weight'\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "exit_code": 8,
     "metrics": {
-      "tokens_per_second": 0.0,
+      "tokens_per_second": null,
       "time_to_first_token_ms": null,
-      "total_tokens": 32,
+      "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 3856
+      "duration_ms": 4064
     },
-    "timestamp": "2026-02-01T16:09:31.360866667Z",
+    "timestamp": "2026-02-01T16:29:50.660202229Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -126,7 +126,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b3adbdf9fdf",
+    "id": "000000000000000018902c56c276bbb3",
     "gate_id": "F-A2-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_gguf_0000000000000003",
@@ -147,17 +147,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 13984.44ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
-    "stderr": "Generated 32 tokens in 13114.0ms (2.4 tok/s)\n",
+    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 14030.36ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 13169.3ms (2.4 tok/s)\n",
     "exit_code": 0,
     "metrics": {
       "tokens_per_second": 1.6,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 13992
+      "duration_ms": 14037
     },
-    "timestamp": "2026-02-01T16:09:45.353571769Z",
+    "timestamp": "2026-02-01T16:30:04.697979346Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -168,7 +168,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b4635290854",
+    "id": "000000000000000018902c61fcd0cd6e",
     "gate_id": "F-A2-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_apr_0000000000000004",
@@ -189,17 +189,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/apr/model.apr\n\ntokens: 5\nlatency: 48727.16ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/apr/model.apr",
-    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151643 vocab, 151387 merges, 3 special tokens\n[AprV2ModelCuda] Pre-cached 3155 MB of weights on GPU (24 layers, 0 quantized, 264 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 519 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151643 vocab, 151387 merges, 3 special tokens\nGenerated 32 tokens in 42460.4ms (0.8 tok/s)\n",
+    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/apr/model.apr\n\ntokens: 5\nlatency: 48207.68ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/apr/model.apr",
+    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151643 vocab, 151387 merges, 3 special tokens\n[AprV2ModelCuda] Pre-cached 3155 MB of weights on GPU (24 layers, 0 quantized, 264 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 519 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151643 vocab, 151387 merges, 3 special tokens\nGenerated 32 tokens in 42035.7ms (0.8 tok/s)\n",
     "exit_code": 0,
     "metrics": {
       "tokens_per_second": 0.1,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 48742
+      "duration_ms": 48223
     },
-    "timestamp": "2026-02-01T16:10:34.096195248Z",
+    "timestamp": "2026-02-01T16:30:52.921601641Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -210,8 +210,8 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b471b178a7a",
-    "gate_id": "F-A2-001",
+    "id": "000000000000000018902c62d6025298",
+    "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_safetensors_0000000000000005",
       "model": {
@@ -229,19 +229,19 @@
       "trace_level": "none",
       "oracle_type": "arithmetic"
     },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n\ntokens: 0\nlatency: 3842.20ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors",
-    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 0 tokens in 146.7ms (0.0 tok/s)\n",
-    "exit_code": 0,
+    "outcome": "Falsified",
+    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with either name: 'model.norm.weight' or 'output_norm.weight'\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with either name: 'model.norm.weight' or 'output_norm.weight'\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors",
+    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with either name: 'model.norm.weight' or 'output_norm.weight'\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with either name: 'model.norm.weight' or 'output_norm.weight'\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "exit_code": 8,
     "metrics": {
-      "tokens_per_second": 0.0,
+      "tokens_per_second": null,
       "time_to_first_token_ms": null,
-      "total_tokens": 32,
+      "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 3857
+      "duration_ms": 3643
     },
-    "timestamp": "2026-02-01T16:10:37.953808908Z",
+    "timestamp": "2026-02-01T16:30:56.565502606Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -252,7 +252,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b4a68f36915",
+    "id": "000000000000000018902c661c0d36c7",
     "gate_id": "F-A3-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_chat_cpu_gguf_0000000000000006",
@@ -273,17 +273,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 14183.38ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
-    "stderr": "Generated 32 tokens in 13305.1ms (2.4 tok/s)\n",
+    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 14052.28ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 13177.1ms (2.4 tok/s)\n",
     "exit_code": 0,
     "metrics": {
       "tokens_per_second": 1.6,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 14191
+      "duration_ms": 14059
     },
-    "timestamp": "2026-02-01T16:10:52.144965629Z",
+    "timestamp": "2026-02-01T16:31:10.625523139Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -294,7 +294,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b55a5b641a4",
+    "id": "000000000000000018902c718a6ef9d0",
     "gate_id": "F-A3-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_chat_cpu_apr_0000000000000007",
@@ -315,17 +315,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/apr/model.apr\n\ntokens: 5\nlatency: 48247.80ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/apr/model.apr",
-    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151643 vocab, 151387 merges, 3 special tokens\n[AprV2ModelCuda] Pre-cached 3155 MB of weights on GPU (24 layers, 0 quantized, 264 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 519 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151643 vocab, 151387 merges, 3 special tokens\nGenerated 32 tokens in 41932.1ms (0.8 tok/s)\n",
+    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/apr/model.apr\n\ntokens: 5\nlatency: 49081.54ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/apr/model.apr",
+    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151643 vocab, 151387 merges, 3 special tokens\n[AprV2ModelCuda] Pre-cached 3155 MB of weights on GPU (24 layers, 0 quantized, 264 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 519 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151643 vocab, 151387 merges, 3 special tokens\nGenerated 32 tokens in 42676.3ms (0.7 tok/s)\n",
     "exit_code": 0,
     "metrics": {
       "tokens_per_second": 0.1,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 48264
+      "duration_ms": 49096
     },
-    "timestamp": "2026-02-01T16:11:40.409008638Z",
+    "timestamp": "2026-02-01T16:31:59.722064606Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -336,8 +336,8 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b56870f3b85",
-    "gate_id": "F-A3-001",
+    "id": "000000000000000018902c72620e136e",
+    "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_chat_cpu_safetensors_0000000000000008",
       "model": {
@@ -355,19 +355,19 @@
       "trace_level": "none",
       "oracle_type": "arithmetic"
     },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n\ntokens: 0\nlatency: 3766.48ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors",
-    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 0 tokens in 137.6ms (0.0 tok/s)\n",
-    "exit_code": 0,
+    "outcome": "Falsified",
+    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with either name: 'model.norm.weight' or 'output_norm.weight'\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with either name: 'model.norm.weight' or 'output_norm.weight'\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors",
+    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with either name: 'model.norm.weight' or 'output_norm.weight'\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with either name: 'model.norm.weight' or 'output_norm.weight'\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "exit_code": 8,
     "metrics": {
-      "tokens_per_second": 0.0,
+      "tokens_per_second": null,
       "time_to_first_token_ms": null,
-      "total_tokens": 32,
+      "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 3780
+      "duration_ms": 3617
     },
-    "timestamp": "2026-02-01T16:11:44.189712785Z",
+    "timestamp": "2026-02-01T16:32:03.339592829Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -378,7 +378,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b59cff0fb1b",
+    "id": "000000000000000018902c75be1cf722",
     "gate_id": "F-A4-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_chat_gpu_gguf_0000000000000009",
@@ -399,17 +399,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 14100.19ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
-    "stderr": "Generated 32 tokens in 13237.6ms (2.4 tok/s)\n",
+    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 14422.48ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 13558.4ms (2.4 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 1.6,
+      "tokens_per_second": 1.5,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 14107
+      "duration_ms": 14429
     },
-    "timestamp": "2026-02-01T16:11:58.297369261Z",
+    "timestamp": "2026-02-01T16:32:17.768973674Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -420,7 +420,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b6543f0eacb",
+    "id": "000000000000000018902c8117aafffe",
     "gate_id": "F-A4-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_chat_gpu_apr_000000000000000a",
@@ -441,17 +441,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/apr/model.apr\n\ntokens: 5\nlatency: 49176.75ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/apr/model.apr",
-    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151643 vocab, 151387 merges, 3 special tokens\n[AprV2ModelCuda] Pre-cached 3155 MB of weights on GPU (24 layers, 0 quantized, 264 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 519 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151643 vocab, 151387 merges, 3 special tokens\nGenerated 32 tokens in 43147.3ms (0.7 tok/s)\n",
+    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/apr/model.apr\n\ntokens: 5\nlatency: 48732.91ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/apr/model.apr",
+    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151643 vocab, 151387 merges, 3 special tokens\n[AprV2ModelCuda] Pre-cached 3155 MB of weights on GPU (24 layers, 0 quantized, 264 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 519 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151643 vocab, 151387 merges, 3 special tokens\nGenerated 32 tokens in 42622.0ms (0.8 tok/s)\n",
     "exit_code": 0,
     "metrics": {
       "tokens_per_second": 0.1,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 49190
+      "duration_ms": 48747
     },
-    "timestamp": "2026-02-01T16:12:47.488162277Z",
+    "timestamp": "2026-02-01T16:33:06.516094884Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -462,8 +462,8 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b662b1556fe",
-    "gate_id": "F-A4-001",
+    "id": "000000000000000018902c81efe50ee4",
+    "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_chat_gpu_safetensors_000000000000000b",
       "model": {
@@ -481,19 +481,19 @@
       "trace_level": "none",
       "oracle_type": "arithmetic"
     },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n\ntokens: 0\nlatency: 3860.67ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors",
-    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 0 tokens in 149.7ms (0.0 tok/s)\n",
-    "exit_code": 0,
+    "outcome": "Falsified",
+    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with either name: 'model.norm.weight' or 'output_norm.weight'\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with either name: 'model.norm.weight' or 'output_norm.weight'\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors",
+    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with either name: 'model.norm.weight' or 'output_norm.weight'\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with either name: 'model.norm.weight' or 'output_norm.weight'\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "exit_code": 8,
     "metrics": {
-      "tokens_per_second": 0.0,
+      "tokens_per_second": null,
       "time_to_first_token_ms": null,
-      "total_tokens": 32,
+      "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 3877
+      "duration_ms": 3627
     },
-    "timestamp": "2026-02-01T16:12:51.366085917Z",
+    "timestamp": "2026-02-01T16:33:10.143779073Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -504,7 +504,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b6979ea92a9",
+    "id": "000000000000000018902c853e6e5b4e",
     "gate_id": "F-A5-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_serve_cpu_gguf_000000000000000c",
@@ -525,17 +525,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 14199.68ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
-    "stderr": "Generated 32 tokens in 13320.7ms (2.4 tok/s)\n",
+    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 14194.04ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 13330.9ms (2.4 tok/s)\n",
     "exit_code": 0,
     "metrics": {
       "tokens_per_second": 1.5,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 14207
+      "duration_ms": 14202
     },
-    "timestamp": "2026-02-01T16:13:05.573585067Z",
+    "timestamp": "2026-02-01T16:33:24.346300662Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -546,7 +546,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b74f1925cfa",
+    "id": "000000000000000018902c908ad63d1e",
     "gate_id": "F-A5-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_serve_cpu_apr_000000000000000d",
@@ -567,17 +567,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/apr/model.apr\n\ntokens: 5\nlatency: 49236.69ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/apr/model.apr",
-    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151643 vocab, 151387 merges, 3 special tokens\n[AprV2ModelCuda] Pre-cached 3155 MB of weights on GPU (24 layers, 0 quantized, 264 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 519 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151643 vocab, 151387 merges, 3 special tokens\nGenerated 32 tokens in 42877.3ms (0.7 tok/s)\n",
+    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/apr/model.apr\n\ntokens: 5\nlatency: 48511.59ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/apr/model.apr",
+    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151643 vocab, 151387 merges, 3 special tokens\n[AprV2ModelCuda] Pre-cached 3155 MB of weights on GPU (24 layers, 0 quantized, 264 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 519 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151643 vocab, 151387 merges, 3 special tokens\nGenerated 32 tokens in 42466.4ms (0.8 tok/s)\n",
     "exit_code": 0,
     "metrics": {
       "tokens_per_second": 0.1,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 49252
+      "duration_ms": 48526
     },
-    "timestamp": "2026-02-01T16:13:54.825710642Z",
+    "timestamp": "2026-02-01T16:34:12.872818141Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -588,8 +588,8 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b75d9f7468f",
-    "gate_id": "F-A5-001",
+    "id": "000000000000000018902c91661f0f2f",
+    "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_serve_cpu_safetensors_000000000000000e",
       "model": {
@@ -607,19 +607,19 @@
       "trace_level": "none",
       "oracle_type": "arithmetic"
     },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n\ntokens: 0\nlatency: 3883.88ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors",
-    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 0 tokens in 154.7ms (0.0 tok/s)\n",
-    "exit_code": 0,
+    "outcome": "Falsified",
+    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with either name: 'model.norm.weight' or 'output_norm.weight'\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with either name: 'model.norm.weight' or 'output_norm.weight'\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors",
+    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with either name: 'model.norm.weight' or 'output_norm.weight'\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with either name: 'model.norm.weight' or 'output_norm.weight'\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "exit_code": 8,
     "metrics": {
-      "tokens_per_second": 0.0,
+      "tokens_per_second": null,
       "time_to_first_token_ms": null,
-      "total_tokens": 32,
+      "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 3898
+      "duration_ms": 3678
     },
-    "timestamp": "2026-02-01T16:13:58.724638341Z",
+    "timestamp": "2026-02-01T16:34:16.551800753Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -630,7 +630,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b793446b3f2",
+    "id": "000000000000000018902c94b3d6bdc5",
     "gate_id": "F-A6-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_serve_gpu_gguf_000000000000000f",
@@ -651,17 +651,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 14392.69ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
-    "stderr": "Generated 32 tokens in 13494.0ms (2.4 tok/s)\n",
+    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 14181.40ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 13297.5ms (2.4 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 1.5,
+      "tokens_per_second": 1.6,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 14400
+      "duration_ms": 14188
     },
-    "timestamp": "2026-02-01T16:14:13.124694756Z",
+    "timestamp": "2026-02-01T16:34:30.740585675Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -672,7 +672,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b87db55f3b8",
+    "id": "000000000000000018902c9ff3f900f4",
     "gate_id": "F-A6-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_serve_gpu_apr_0000000000000010",
@@ -693,17 +693,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/apr/model.apr\n\ntokens: 5\nlatency: 62915.11ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/apr/model.apr",
-    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151643 vocab, 151387 merges, 3 special tokens\n[AprV2ModelCuda] Pre-cached 3155 MB of weights on GPU (24 layers, 0 quantized, 264 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 519 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151643 vocab, 151387 merges, 3 special tokens\nGenerated 32 tokens in 56474.0ms (0.6 tok/s)\n",
+    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/apr/model.apr\n\ntokens: 5\nlatency: 48305.06ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/apr/model.apr",
+    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151643 vocab, 151387 merges, 3 special tokens\n[AprV2ModelCuda] Pre-cached 3155 MB of weights on GPU (24 layers, 0 quantized, 264 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 519 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151643 vocab, 151387 merges, 3 special tokens\nGenerated 32 tokens in 41979.8ms (0.8 tok/s)\n",
     "exit_code": 0,
     "metrics": {
       "tokens_per_second": 0.1,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 62932
+      "duration_ms": 48320
     },
-    "timestamp": "2026-02-01T16:15:16.057032289Z",
+    "timestamp": "2026-02-01T16:35:19.061213148Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -714,8 +714,8 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b88f12cf199",
-    "gate_id": "F-A6-001",
+    "id": "000000000000000018902ca0d207b391",
+    "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_serve_gpu_safetensors_0000000000000011",
       "model": {
@@ -733,19 +733,19 @@
       "trace_level": "none",
       "oracle_type": "arithmetic"
     },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n\ntokens: 0\nlatency: 4646.50ms\nmodel: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors",
-    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 0 tokens in 154.1ms (0.0 tok/s)\n",
-    "exit_code": 0,
+    "outcome": "Falsified",
+    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with either name: 'model.norm.weight' or 'output_norm.weight'\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with either name: 'model.norm.weight' or 'output_norm.weight'\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "output": "Source: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors",
+    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with either name: 'model.norm.weight' or 'output_norm.weight'\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with either name: 'model.norm.weight' or 'output_norm.weight'\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/pacha/models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "exit_code": 8,
     "metrics": {
-      "tokens_per_second": 0.0,
+      "tokens_per_second": null,
       "time_to_first_token_ms": null,
-      "total_tokens": 32,
+      "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 4661
+      "duration_ms": 3725
     },
-    "timestamp": "2026-02-01T16:15:20.718410307Z",
+    "timestamp": "2026-02-01T16:35:22.786718349Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -756,7 +756,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b88f1658a1f",
+    "id": "000000000000000018902ca0d234d1d1",
     "gate_id": "F-CONV-G-A",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_apr_0000000000000000",
@@ -787,7 +787,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-01T16:15:20.722117306Z",
+    "timestamp": "2026-02-01T16:35:22.789674562Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -798,7 +798,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b88f18fed0a",
+    "id": "000000000000000018902ca0d25f62da",
     "gate_id": "F-CONV-G-A",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_apr_0000000000000000",
@@ -829,7 +829,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-01T16:15:20.724894610Z",
+    "timestamp": "2026-02-01T16:35:22.792462209Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -840,7 +840,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b88f1c386f3",
+    "id": "000000000000000018902ca0d2851b5f",
     "gate_id": "F-CONV-A-G",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_gguf_0000000000000000",
@@ -871,7 +871,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-01T16:15:20.728278040Z",
+    "timestamp": "2026-02-01T16:35:22.794934118Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -882,7 +882,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b88f1eccfec",
+    "id": "000000000000000018902ca0d2a80791",
     "gate_id": "F-CONV-A-G",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_gguf_0000000000000000",
@@ -913,7 +913,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-01T16:15:20.730983627Z",
+    "timestamp": "2026-02-01T16:35:22.797222769Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -924,7 +924,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b88f21f96bb",
+    "id": "000000000000000018902ca0d2cbeb4a",
     "gate_id": "F-CONV-G-S",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -955,7 +955,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-01T16:15:20.734311312Z",
+    "timestamp": "2026-02-01T16:35:22.799574836Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -966,7 +966,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b88f2481d30",
+    "id": "000000000000000018902ca0d2ef28c8",
     "gate_id": "F-CONV-G-S",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_safetensors_0000000000000000",
@@ -997,7 +997,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-01T16:15:20.736965150Z",
+    "timestamp": "2026-02-01T16:35:22.801884588Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1008,7 +1008,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b88f280b44e",
+    "id": "000000000000000018902ca0d3223aca",
     "gate_id": "F-CONV-S-G",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_gguf_0000000000000000",
@@ -1039,7 +1039,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-01T16:15:20.740675334Z",
+    "timestamp": "2026-02-01T16:35:22.805233557Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1050,7 +1050,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b88f2b15a9f",
+    "id": "000000000000000018902ca0d34bfbcf",
     "gate_id": "F-CONV-S-G",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_gguf_0000000000000000",
@@ -1081,7 +1081,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-01T16:15:20.743864420Z",
+    "timestamp": "2026-02-01T16:35:22.807968064Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1092,7 +1092,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b88f2dc823e",
+    "id": "000000000000000018902ca0d375eee8",
     "gate_id": "F-CONV-A-S",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -1123,7 +1123,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-01T16:15:20.746690508Z",
+    "timestamp": "2026-02-01T16:35:22.810716652Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1134,7 +1134,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b88f30a3a5d",
+    "id": "000000000000000018902ca0d39d1d14",
     "gate_id": "F-CONV-A-S",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_safetensors_0000000000000000",
@@ -1165,7 +1165,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-01T16:15:20.749686954Z",
+    "timestamp": "2026-02-01T16:35:22.813284786Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1176,7 +1176,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b88f3325f2d",
+    "id": "000000000000000018902ca0d3c3736a",
     "gate_id": "F-CONV-S-A",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_apr_0000000000000000",
@@ -1207,7 +1207,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-01T16:15:20.752316806Z",
+    "timestamp": "2026-02-01T16:35:22.815797056Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1218,7 +1218,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b88f36390a6",
+    "id": "000000000000000018902ca0d3e71a2f",
     "gate_id": "F-CONV-S-A",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_apr_0000000000000000",
@@ -1249,7 +1249,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-01T16:15:20.755542287Z",
+    "timestamp": "2026-02-01T16:35:22.818133639Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1260,7 +1260,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b88f3b8afeb",
+    "id": "000000000000000018902ca0d440ad86",
     "gate_id": "F-CONV-RT-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_gguf_0000000000000000",
@@ -1291,7 +1291,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-01T16:15:20.761119720Z",
+    "timestamp": "2026-02-01T16:35:22.824005063Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1302,7 +1302,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b88f410629f",
+    "id": "000000000000000018902ca0d49a78e2",
     "gate_id": "F-CONV-RT-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_gguf_0000000000000000",
@@ -1333,7 +1333,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-01T16:15:20.766866740Z",
+    "timestamp": "2026-02-01T16:35:22.829888996Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1344,7 +1344,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018902b88f443d2fc",
+    "id": "000000000000000018902ca0d4bf6e25",
     "gate_id": "F-GOLDEN-RULE-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_apr_0000000000000000",
@@ -1375,7 +1375,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-01T16:15:20.770241166Z",
+    "timestamp": "2026-02-01T16:35:22.832310498Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
