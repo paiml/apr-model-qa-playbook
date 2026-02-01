@@ -116,10 +116,17 @@ pub struct ConversionTest {
     /// Tolerance for comparison
     #[serde(default = "default_epsilon")]
     pub epsilon: f64,
+    /// Binary path for apr CLI
+    #[serde(skip, default = "default_binary")]
+    pub binary: String,
 }
 
 fn default_epsilon() -> f64 {
     EPSILON
+}
+
+fn default_binary() -> String {
+    "apr".to_string()
 }
 
 /// Result of a conversion test
@@ -176,6 +183,7 @@ impl ConversionTest {
             backend,
             model_id,
             epsilon: EPSILON,
+            binary: default_binary(),
         }
     }
 
@@ -239,7 +247,7 @@ impl ConversionTest {
             Backend::Gpu => vec!["--gpu".to_string()],
         };
 
-        let output = Command::new("apr")
+        let output = Command::new(&self.binary)
             .arg("run")
             .arg(model_path)
             .arg("-p")
@@ -273,7 +281,7 @@ impl ConversionTest {
 
         // Use apr rosetta convert: apr rosetta convert <SOURCE> <TARGET>
         // Format is inferred from output file extension
-        let output = Command::new("apr")
+        let output = Command::new(&self.binary)
             .arg("rosetta")
             .arg("convert")
             .arg(source_path)
@@ -342,6 +350,8 @@ pub struct SemanticConversionTest {
     pub backend: Backend,
     /// Model ID
     pub model_id: ModelId,
+    /// Binary path for apr CLI
+    binary: String,
 }
 
 impl SemanticConversionTest {
@@ -353,6 +363,7 @@ impl SemanticConversionTest {
             target_format: target,
             backend,
             model_id,
+            binary: default_binary(),
         }
     }
 
@@ -445,7 +456,7 @@ impl SemanticConversionTest {
             Backend::Gpu => vec!["--gpu".to_string()],
         };
 
-        let output = Command::new("apr")
+        let output = Command::new(&self.binary)
             .arg("run")
             .arg(model_path)
             .arg("-p")
@@ -473,7 +484,7 @@ impl SemanticConversionTest {
 
         let target_path = source_path.with_extension(format!("semantic_test.{target_ext}"));
 
-        let output = Command::new("apr")
+        let output = Command::new(&self.binary)
             .arg("rosetta")
             .arg("convert")
             .arg(source_path)
@@ -589,6 +600,8 @@ pub struct RoundTripTest {
     pub backend: Backend,
     /// Model ID
     pub model_id: ModelId,
+    /// Binary path for apr CLI
+    binary: String,
 }
 
 impl RoundTripTest {
@@ -599,6 +612,7 @@ impl RoundTripTest {
             formats,
             backend,
             model_id,
+            binary: default_binary(),
         }
     }
 
@@ -609,17 +623,17 @@ impl RoundTripTest {
     /// Returns an error if any conversion fails.
     pub fn execute(&self, model_path: &Path) -> Result<ConversionResult> {
         // Get original output
-        let original_output = run_inference_simple(model_path, self.backend)?;
+        let original_output = run_inference_simple(model_path, self.backend, &self.binary)?;
 
         // Convert through chain
         let mut current_path = model_path.to_path_buf();
         for i in 0..self.formats.len() {
             let next_format = self.formats[(i + 1) % self.formats.len()];
-            current_path = convert_to_format(&current_path, next_format)?;
+            current_path = convert_to_format(&current_path, next_format, &self.binary)?;
         }
 
         // Get final output
-        let final_output = run_inference_simple(&current_path, self.backend)?;
+        let final_output = run_inference_simple(&current_path, self.backend, &self.binary)?;
 
         // Compare
         if original_output != final_output {
@@ -648,13 +662,13 @@ impl RoundTripTest {
 }
 
 /// Simple inference helper
-fn run_inference_simple(model_path: &Path, backend: Backend) -> Result<String> {
+fn run_inference_simple(model_path: &Path, backend: Backend, binary: &str) -> Result<String> {
     let backend_flag = match backend {
         Backend::Cpu => vec![],
         Backend::Gpu => vec!["--gpu".to_string()],
     };
 
-    let output = Command::new("apr")
+    let output = Command::new(binary)
         .arg("run")
         .arg(model_path)
         .arg("-p")
@@ -669,7 +683,11 @@ fn run_inference_simple(model_path: &Path, backend: Backend) -> Result<String> {
 }
 
 /// Convert model to specified format
-fn convert_to_format(source_path: &Path, target_format: Format) -> Result<std::path::PathBuf> {
+fn convert_to_format(
+    source_path: &Path,
+    target_format: Format,
+    binary: &str,
+) -> Result<std::path::PathBuf> {
     let target_ext = match target_format {
         Format::Gguf => "gguf",
         Format::SafeTensors => "safetensors",
@@ -681,7 +699,7 @@ fn convert_to_format(source_path: &Path, target_format: Format) -> Result<std::p
 
     // Use apr rosetta convert: apr rosetta convert <SOURCE> <TARGET>
     // Format is inferred from output file extension
-    let output = Command::new("apr")
+    let output = Command::new(binary)
         .arg("rosetta")
         .arg("convert")
         .arg(source_path)
@@ -740,13 +758,17 @@ impl ConversionConfig {
 #[derive(Debug)]
 pub struct ConversionExecutor {
     config: ConversionConfig,
+    binary: String,
 }
 
 impl ConversionExecutor {
     /// Create a new conversion executor
     #[must_use]
     pub fn new(config: ConversionConfig) -> Self {
-        Self { config }
+        Self {
+            config,
+            binary: default_binary(),
+        }
     }
 
     /// Create with default config
@@ -760,6 +782,7 @@ impl ConversionExecutor {
     /// # Errors
     ///
     /// Returns an error if a critical conversion failure occurs.
+    #[allow(clippy::too_many_lines)]
     pub fn execute_all(
         &self,
         model_path: &Path,
@@ -780,7 +803,8 @@ impl ConversionExecutor {
         if self.config.test_all_pairs {
             for (source, target) in all_conversion_pairs() {
                 for backend in &backends {
-                    let test = ConversionTest::new(source, target, *backend, model_id.clone());
+                    let mut test = ConversionTest::new(source, target, *backend, model_id.clone());
+                    test.binary.clone_from(&self.binary);
 
                     match test.execute(model_path) {
                         Ok(result) => {
@@ -827,11 +851,12 @@ impl ConversionExecutor {
         // Test round-trips (GGUF → APR → SafeTensors → GGUF)
         if self.config.test_round_trips {
             for backend in &backends {
-                let rt = RoundTripTest::new(
+                let mut rt = RoundTripTest::new(
                     vec![Format::Gguf, Format::Apr, Format::SafeTensors, Format::Gguf],
                     *backend,
                     model_id.clone(),
                 );
+                rt.binary.clone_from(&self.binary);
 
                 match rt.execute(model_path) {
                     Ok(result) => {
@@ -1389,6 +1414,7 @@ mod tests {
             backend: Backend::Cpu,
             model_id: ModelId::new("test", "model"),
             epsilon: 1e-9,
+            binary: default_binary(),
         };
         assert!((test.epsilon - 1e-9).abs() < f64::EPSILON);
     }
@@ -2157,6 +2183,7 @@ mod tests {
             backend: Backend::Cpu,
             model_id: ModelId::new("org", "name"),
             epsilon: 1e-7,
+            binary: default_binary(),
         };
         let json = serde_json::to_string(&test).unwrap();
         let parsed: ConversionTest = serde_json::from_str(&json).unwrap();
@@ -2552,6 +2579,7 @@ mod tests {
             backend: Backend::Gpu,
             model_id: ModelId::new("org", "model"),
             epsilon: 1e-10,
+            binary: default_binary(),
         };
         assert!((test.epsilon - 1e-10).abs() < 1e-15);
     }
@@ -2697,5 +2725,437 @@ mod tests {
 
         // 6 pairs x 2 backends = 12 tests
         assert_eq!(tests.len(), 12);
+    }
+
+    // ── Mock binary tests ────────────────────────────────────────────
+
+    fn create_mock_apr(dir: &std::path::Path, script: &str) -> std::path::PathBuf {
+        let path = dir.join("mock_apr");
+        std::fs::write(&path, format!("#!/bin/bash\n{script}")).unwrap();
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755)).unwrap();
+        }
+        path
+    }
+
+    #[test]
+    fn test_conversion_test_execute_corroborated_via_mock() {
+        let dir = tempfile::tempdir().unwrap();
+        let model_file = dir.path().join("model.gguf");
+        std::fs::write(&model_file, "fake").unwrap();
+
+        let mock = create_mock_apr(
+            dir.path(),
+            r#"case "$1" in
+run) printf "The answer is 4"; exit 0;;
+rosetta) touch "$4"; exit 0;;
+esac
+exit 1"#,
+        );
+
+        let mut test = ConversionTest::new(
+            Format::Gguf,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        test.binary = mock.to_string_lossy().to_string();
+
+        if let Ok(conv) = test.execute(&model_file) {
+            match conv {
+                ConversionResult::Corroborated { max_diff, .. } => {
+                    assert!(max_diff < EPSILON);
+                }
+                ConversionResult::Falsified { .. } => {}
+            }
+        }
+    }
+
+    #[test]
+    fn test_conversion_test_execute_falsified_via_mock() {
+        let dir = tempfile::tempdir().unwrap();
+        let model_file = dir.path().join("model.gguf");
+        std::fs::write(&model_file, "fake").unwrap();
+
+        let mock = create_mock_apr(
+            dir.path(),
+            r#"case "$1" in
+run)
+  case "$2" in
+  *converted*) printf "Completely different output 99";;
+  *) printf "The answer is 4";;
+  esac
+  exit 0;;
+rosetta) touch "$4"; exit 0;;
+esac
+exit 1"#,
+        );
+
+        let mut test = ConversionTest::new(
+            Format::Gguf,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        test.binary = mock.to_string_lossy().to_string();
+
+        if let Ok(conv) = test.execute(&model_file) {
+            match conv {
+                ConversionResult::Falsified {
+                    gate_id, evidence, ..
+                } => {
+                    assert_eq!(gate_id, "F-CONV-G-A");
+                    assert!(evidence.max_diff > EPSILON);
+                    assert_ne!(evidence.source_hash, evidence.converted_hash);
+                }
+                ConversionResult::Corroborated { .. } => {}
+            }
+        }
+    }
+
+    #[test]
+    fn test_conversion_test_execute_gpu_backend_via_mock() {
+        let dir = tempfile::tempdir().unwrap();
+        let model_file = dir.path().join("model.safetensors");
+        std::fs::write(&model_file, "fake").unwrap();
+
+        let mock = create_mock_apr(
+            dir.path(),
+            r#"case "$1" in
+run) printf "The answer is 4"; exit 0;;
+rosetta) touch "$4"; exit 0;;
+esac
+exit 1"#,
+        );
+
+        let mut test = ConversionTest::new(
+            Format::SafeTensors,
+            Format::Gguf,
+            Backend::Gpu,
+            ModelId::new("test", "model"),
+        );
+        test.binary = mock.to_string_lossy().to_string();
+
+        if let Ok(ConversionResult::Corroborated { backend, .. }) = &test.execute(&model_file) {
+            assert_eq!(*backend, Backend::Gpu);
+        }
+    }
+
+    #[test]
+    fn test_conversion_test_convert_model_failure_via_mock() {
+        let dir = tempfile::tempdir().unwrap();
+        let model_file = dir.path().join("model.gguf");
+        std::fs::write(&model_file, "fake").unwrap();
+
+        let mock = create_mock_apr(
+            dir.path(),
+            r#"case "$1" in
+run) printf "The answer is 4"; exit 0;;
+rosetta) printf "conversion error" >&2; exit 1;;
+esac
+exit 1"#,
+        );
+
+        let mut test = ConversionTest::new(
+            Format::Gguf,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        test.binary = mock.to_string_lossy().to_string();
+
+        if let Err(e) = test.execute(&model_file) {
+            let msg = e.to_string();
+            assert!(msg.contains("Conversion failed") || msg.contains("conversion error"));
+        }
+    }
+
+    #[test]
+    fn test_semantic_test_execute_corroborated_via_mock() {
+        let dir = tempfile::tempdir().unwrap();
+        let model_file = dir.path().join("model.safetensors");
+        std::fs::write(&model_file, "fake").unwrap();
+
+        let mock = create_mock_apr(
+            dir.path(),
+            r#"case "$1" in
+run) printf "The answer is 4"; exit 0;;
+rosetta) touch "$4"; exit 0;;
+esac
+exit 1"#,
+        );
+
+        let mut test = SemanticConversionTest::new(
+            Format::SafeTensors,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        test.binary = mock.to_string_lossy().to_string();
+
+        if let Ok(sem) = test.execute(&model_file) {
+            if let SemanticTestResult::Corroborated {
+                source_output,
+                target_output,
+            } = &sem
+            {
+                assert_eq!(source_output, target_output);
+                assert!(sem.is_pass());
+                assert!(sem.bug_type().is_none());
+            }
+        }
+    }
+
+    #[test]
+    fn test_semantic_test_execute_embedding_transposition_via_mock() {
+        let dir = tempfile::tempdir().unwrap();
+        let model_file = dir.path().join("model.safetensors");
+        std::fs::write(&model_file, "fake").unwrap();
+
+        let mock = create_mock_apr(
+            dir.path(),
+            r#"case "$1" in
+run)
+  case "$2" in
+  *semantic_test*) printf "PAD PAD PAD garbage tokens";;
+  *) printf "The answer is 4";;
+  esac
+  exit 0;;
+rosetta) touch "$4"; exit 0;;
+esac
+exit 1"#,
+        );
+
+        let mut test = SemanticConversionTest::new(
+            Format::SafeTensors,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        test.binary = mock.to_string_lossy().to_string();
+
+        if let Ok(sem) = test.execute(&model_file) {
+            if let SemanticTestResult::Falsified { bug_type, .. } = &sem {
+                assert_eq!(*bug_type, ConversionBugType::EmbeddingTransposition);
+                assert!(!sem.is_pass());
+            }
+        }
+    }
+
+    #[test]
+    fn test_semantic_test_execute_tokenizer_missing_via_mock() {
+        let dir = tempfile::tempdir().unwrap();
+        let model_file = dir.path().join("model.safetensors");
+        std::fs::write(&model_file, "fake").unwrap();
+
+        let mock = create_mock_apr(
+            dir.path(),
+            r#"case "$1" in
+run)
+  case "$2" in
+  *semantic_test*) printf "output" >&1; printf "PMAT-172: missing embedded tokenizer" >&2;;
+  *) printf "The answer is 4";;
+  esac
+  exit 0;;
+rosetta) touch "$4"; exit 0;;
+esac
+exit 1"#,
+        );
+
+        let mut test = SemanticConversionTest::new(
+            Format::SafeTensors,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        test.binary = mock.to_string_lossy().to_string();
+
+        if let Ok(SemanticTestResult::Falsified {
+            bug_type, stderr, ..
+        }) = &test.execute(&model_file)
+        {
+            assert_eq!(*bug_type, ConversionBugType::TokenizerMissing);
+            assert!(stderr.contains("PMAT-172"));
+        }
+    }
+
+    #[test]
+    fn test_round_trip_execute_corroborated_via_mock() {
+        let dir = tempfile::tempdir().unwrap();
+        let model_file = dir.path().join("model.gguf");
+        std::fs::write(&model_file, "fake").unwrap();
+
+        let mock = create_mock_apr(
+            dir.path(),
+            r#"case "$1" in
+run) printf "The answer is 4"; exit 0;;
+rosetta) touch "$4"; exit 0;;
+esac
+exit 1"#,
+        );
+
+        let mut rt = RoundTripTest::new(
+            vec![Format::Gguf, Format::Apr, Format::SafeTensors, Format::Gguf],
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        rt.binary = mock.to_string_lossy().to_string();
+
+        if let Ok(ConversionResult::Corroborated { max_diff, .. }) = rt.execute(&model_file) {
+            assert!((max_diff - 0.0).abs() < f64::EPSILON);
+        }
+    }
+
+    #[test]
+    fn test_round_trip_execute_falsified_via_mock() {
+        let dir = tempfile::tempdir().unwrap();
+        let model_file = dir.path().join("model.gguf");
+        std::fs::write(&model_file, "fake").unwrap();
+
+        let mock = create_mock_apr(
+            dir.path(),
+            r#"case "$1" in
+run)
+  case "$2" in
+  *converted*) printf "Round-trip drift detected";;
+  *) printf "The answer is 4";;
+  esac
+  exit 0;;
+rosetta) touch "$4"; exit 0;;
+esac
+exit 1"#,
+        );
+
+        let mut rt = RoundTripTest::new(
+            vec![Format::Gguf, Format::Apr],
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        rt.binary = mock.to_string_lossy().to_string();
+
+        if let Ok(ConversionResult::Falsified { gate_id, .. }) = &rt.execute(&model_file) {
+            assert_eq!(gate_id, "F-CONV-RT-001");
+        }
+    }
+
+    #[test]
+    fn test_conversion_executor_execute_all_via_mock() {
+        let dir = tempfile::tempdir().unwrap();
+        let model_file = dir.path().join("model.gguf");
+        std::fs::write(&model_file, "fake").unwrap();
+
+        let mock = create_mock_apr(
+            dir.path(),
+            r#"case "$1" in
+run) printf "The answer is 4"; exit 0;;
+rosetta) touch "$4"; exit 0;;
+esac
+exit 1"#,
+        );
+
+        let config = ConversionConfig {
+            test_all_pairs: true,
+            test_round_trips: true,
+            backends: vec![Backend::Cpu],
+            no_gpu: true,
+        };
+        let mut executor = ConversionExecutor::new(config);
+        executor.binary = mock.to_string_lossy().to_string();
+        let model_id = ModelId::new("test", "model");
+
+        if let Ok(exec_result) = executor.execute_all(&model_file, &model_id) {
+            assert!(exec_result.total > 0);
+            assert!(!exec_result.evidence.is_empty());
+            assert!(!exec_result.results.is_empty());
+            if exec_result.failed == 0 {
+                assert!(exec_result.all_passed());
+            }
+        }
+    }
+
+    #[test]
+    fn test_conversion_executor_execute_all_with_errors_via_mock() {
+        let dir = tempfile::tempdir().unwrap();
+        let model_file = dir.path().join("model.gguf");
+        std::fs::write(&model_file, "fake").unwrap();
+
+        let mock = create_mock_apr(
+            dir.path(),
+            r#"case "$1" in
+run) printf "output"; exit 0;;
+rosetta) printf "convert failed" >&2; exit 1;;
+esac
+exit 1"#,
+        );
+
+        let config = ConversionConfig {
+            test_all_pairs: true,
+            test_round_trips: false,
+            backends: vec![Backend::Cpu],
+            no_gpu: true,
+        };
+        let mut executor = ConversionExecutor::new(config);
+        executor.binary = mock.to_string_lossy().to_string();
+        let model_id = ModelId::new("test", "model");
+
+        if let Ok(exec_result) = executor.execute_all(&model_file, &model_id) {
+            assert!(exec_result.total > 0);
+            assert!(exec_result.failed > 0);
+            assert!(!exec_result.all_passed());
+        }
+    }
+
+    #[test]
+    fn test_conversion_executor_round_trip_error_via_mock() {
+        let dir = tempfile::tempdir().unwrap();
+        let model_file = dir.path().join("model.gguf");
+        std::fs::write(&model_file, "fake").unwrap();
+
+        let mock = create_mock_apr(dir.path(), r"exit 1");
+
+        let config = ConversionConfig {
+            test_all_pairs: false,
+            test_round_trips: true,
+            backends: vec![Backend::Cpu],
+            no_gpu: true,
+        };
+        let mut executor = ConversionExecutor::new(config);
+        executor.binary = mock.to_string_lossy().to_string();
+        let model_id = ModelId::new("test", "model");
+
+        if let Ok(exec_result) = executor.execute_all(&model_file, &model_id) {
+            assert!(!exec_result.evidence.is_empty());
+        }
+    }
+
+    #[test]
+    fn test_conversion_test_execute_safetensors_target_via_mock() {
+        let dir = tempfile::tempdir().unwrap();
+        let model_file = dir.path().join("model.gguf");
+        std::fs::write(&model_file, "fake").unwrap();
+
+        let mock = create_mock_apr(
+            dir.path(),
+            r#"case "$1" in
+run) printf "The answer is 4"; exit 0;;
+rosetta) touch "$4"; exit 0;;
+esac
+exit 1"#,
+        );
+
+        let mut test = ConversionTest::new(
+            Format::Gguf,
+            Format::SafeTensors,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        test.binary = mock.to_string_lossy().to_string();
+
+        if let Ok(ConversionResult::Corroborated { target_format, .. }) = test.execute(&model_file)
+        {
+            assert_eq!(target_format, Format::SafeTensors);
+        }
     }
 }

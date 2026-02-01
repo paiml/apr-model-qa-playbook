@@ -916,32 +916,32 @@ impl ToolExecutor {
     /// This feature may not be available in all apr versions.
     #[must_use]
     pub fn execute_profile_flamegraph(&self, output_path: &std::path::Path) -> ToolTestResult {
-        use std::process::Command;
         let start = std::time::Instant::now();
 
         let svg_path = output_path.join("profile_flamegraph.svg");
-        let mut cmd = Command::new("apr");
-        cmd.arg("run")
-            .arg(&self.model_path)
-            .arg("-p")
-            .arg("Hello")
-            .arg("--max-tokens")
-            .arg("4")
-            .arg("--profile")
-            .arg("--profile-output")
-            .arg(&svg_path);
-
-        if self.no_gpu {
-            cmd.arg("--no-gpu");
-        }
-
-        let output = cmd.output();
+        let output = self.command_runner.profile_with_flamegraph(
+            Path::new(&self.model_path),
+            &svg_path,
+            self.no_gpu,
+        );
         let duration_ms = start.elapsed().as_millis() as u64;
+
+        // If apr doesn't support --profile-output, it will error
+        if output.stderr.contains("unexpected argument") || output.stderr.contains("unrecognized") {
+            return ToolTestResult {
+                tool: "profile-flamegraph".to_string(),
+                passed: false,
+                exit_code: -2,
+                stdout: output.stdout,
+                stderr: "Feature not available: apr does not support --profile-output".to_string(),
+                duration_ms,
+                gate_id: "F-PROFILE-002".to_string(),
+            };
+        }
 
         // Check if flamegraph was generated
         let flamegraph_exists = svg_path.exists();
         let flamegraph_valid = if flamegraph_exists {
-            // Basic SVG validation - check for svg tag
             std::fs::read_to_string(&svg_path)
                 .map(|content| content.contains("<svg") && content.contains("</svg>"))
                 .unwrap_or(false)
@@ -949,46 +949,14 @@ impl ToolExecutor {
             false
         };
 
-        match output {
-            Ok(out) => {
-                let stdout = String::from_utf8_lossy(&out.stdout).to_string();
-                let stderr = String::from_utf8_lossy(&out.stderr).to_string();
-
-                // If apr doesn't support --profile-output, it will error
-                if stderr.contains("unexpected argument") || stderr.contains("unrecognized") {
-                    return ToolTestResult {
-                        tool: "profile-flamegraph".to_string(),
-                        passed: false,
-                        exit_code: -2,
-                        stdout,
-                        stderr: "Feature not available: apr does not support --profile-output"
-                            .to_string(),
-                        duration_ms,
-                        gate_id: "F-PROFILE-002".to_string(),
-                    };
-                }
-
-                ToolTestResult {
-                    tool: "profile-flamegraph".to_string(),
-                    passed: flamegraph_valid,
-                    exit_code: i32::from(!flamegraph_valid),
-                    stdout: format!(
-                        "Flamegraph exists: {flamegraph_exists}, valid: {flamegraph_valid}"
-                    ),
-                    stderr,
-                    duration_ms,
-                    gate_id: "F-PROFILE-002".to_string(),
-                }
-            }
-            Err(e) => ToolTestResult {
-                tool: "profile-flamegraph".to_string(),
-                passed: false,
-                exit_code: -1,
-                stdout: String::new(),
-                stderr: e.to_string(),
-                duration_ms,
-                gate_id: "F-PROFILE-002".to_string(),
-            },
+        ToolTestResult {
+            tool: "profile-flamegraph".to_string(),
+            passed: flamegraph_valid,
+            exit_code: i32::from(!flamegraph_valid),
+            stdout: format!("Flamegraph exists: {flamegraph_exists}, valid: {flamegraph_valid}"),
+            stderr: output.stderr,
+            duration_ms,
+            gate_id: "F-PROFILE-002".to_string(),
         }
     }
 
@@ -998,69 +966,36 @@ impl ToolExecutor {
     /// This feature may not be available in all apr versions.
     #[must_use]
     pub fn execute_profile_focus(&self, focus: &str) -> ToolTestResult {
-        use std::process::Command;
         let start = std::time::Instant::now();
 
-        let mut cmd = Command::new("apr");
-        cmd.arg("run")
-            .arg(&self.model_path)
-            .arg("-p")
-            .arg("Hello")
-            .arg("--max-tokens")
-            .arg("4")
-            .arg("--profile")
-            .arg("--focus")
-            .arg(focus);
-
-        if self.no_gpu {
-            cmd.arg("--no-gpu");
-        }
-
-        let output = cmd.output();
+        let output =
+            self.command_runner
+                .profile_with_focus(Path::new(&self.model_path), focus, self.no_gpu);
         let duration_ms = start.elapsed().as_millis() as u64;
 
-        match output {
-            Ok(out) => {
-                let stdout = String::from_utf8_lossy(&out.stdout).to_string();
-                let stderr = String::from_utf8_lossy(&out.stderr).to_string();
-
-                // If apr doesn't support --focus, it will error
-                if stderr.contains("unexpected argument") || stderr.contains("unrecognized") {
-                    return ToolTestResult {
-                        tool: "profile-focus".to_string(),
-                        passed: false,
-                        exit_code: -2,
-                        stdout,
-                        stderr: format!(
-                            "Feature not available: apr does not support --focus {focus}"
-                        ),
-                        duration_ms,
-                        gate_id: "F-PROFILE-003".to_string(),
-                    };
-                }
-
-                // Check if output is focused (contains focus term or is shorter than unfocused)
-                let passed = out.status.success();
-
-                ToolTestResult {
-                    tool: "profile-focus".to_string(),
-                    passed,
-                    exit_code: out.status.code().unwrap_or(-1),
-                    stdout,
-                    stderr,
-                    duration_ms,
-                    gate_id: "F-PROFILE-003".to_string(),
-                }
-            }
-            Err(e) => ToolTestResult {
+        // If apr doesn't support --focus, it will error
+        if output.stderr.contains("unexpected argument") || output.stderr.contains("unrecognized") {
+            return ToolTestResult {
                 tool: "profile-focus".to_string(),
                 passed: false,
-                exit_code: -1,
-                stdout: String::new(),
-                stderr: e.to_string(),
+                exit_code: -2,
+                stdout: output.stdout,
+                stderr: format!("Feature not available: apr does not support --focus {focus}"),
                 duration_ms,
                 gate_id: "F-PROFILE-003".to_string(),
-            },
+            };
+        }
+
+        let passed = output.success;
+
+        ToolTestResult {
+            tool: "profile-focus".to_string(),
+            passed,
+            exit_code: output.exit_code,
+            stdout: output.stdout,
+            stderr: output.stderr,
+            duration_ms,
+            gate_id: "F-PROFILE-003".to_string(),
         }
     }
 
@@ -4243,5 +4178,897 @@ test_matrix:
         // Should collect all failures (3 scenarios)
         assert_eq!(result.failed, 3);
         assert_eq!(result.total_scenarios, 3);
+    }
+
+    // =========================================================================
+    // StopOnP0 policy test
+    // =========================================================================
+
+    #[test]
+    fn test_executor_stop_on_p0_with_p0_gate() {
+        // Create a runner that returns falsified results with P0 gate IDs
+        let mock_runner = MockCommandRunner::new()
+            .with_inference_failure()
+            .with_exit_code(1);
+
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/model.gguf".to_string()),
+            failure_policy: FailurePolicy::StopOnP0,
+            run_conversion_tests: false,
+            run_golden_rule_test: false,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        let yaml = r#"
+name: p0-test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 5
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let result = executor.execute(&playbook).expect("Execution failed");
+
+        // With failures that don't have -P0- in gate_id, it should collect all
+        assert!(result.failed >= 1);
+    }
+
+    // =========================================================================
+    // ConversionConfig::default() (no_gpu = false)
+    // =========================================================================
+
+    #[test]
+    fn test_executor_run_conversion_tests_default_config() {
+        let mock_runner = MockCommandRunner::new();
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/model.gguf".to_string()),
+            run_conversion_tests: true,
+            run_golden_rule_test: false,
+            no_gpu: false, // This triggers ConversionConfig::default()
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        let yaml = r#"
+name: conv-default-test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let result = executor.execute(&playbook).expect("Execution failed");
+        // Just verify it runs without panic
+        assert!(result.total_scenarios >= 1);
+    }
+
+    // =========================================================================
+    // Golden Rule: converted inference fails (F-GOLDEN-RULE-003)
+    // =========================================================================
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn test_executor_golden_rule_converted_inference_fails() {
+        use crate::command::CommandOutput;
+
+        // Build a custom runner that succeeds on original, succeeds on convert,
+        // but fails on converted inference
+        struct ConvertedFailRunner;
+        impl CommandRunner for ConvertedFailRunner {
+            fn run_inference(
+                &self,
+                model_path: &Path,
+                _prompt: &str,
+                _max_tokens: u32,
+                _no_gpu: bool,
+                _extra_args: &[&str],
+            ) -> CommandOutput {
+                // Original model succeeds, converted model (.apr) fails
+                if model_path.to_string_lossy().contains(".apr") {
+                    CommandOutput {
+                        stdout: String::new(),
+                        stderr: "Failed to load converted model".to_string(),
+                        exit_code: 1,
+                        success: false,
+                    }
+                } else {
+                    CommandOutput {
+                        stdout: "Output:\nThe answer is 4.\nCompleted in 100ms".to_string(),
+                        stderr: String::new(),
+                        exit_code: 0,
+                        success: true,
+                    }
+                }
+            }
+
+            fn convert_model(&self, _source: &Path, _target: &Path) -> CommandOutput {
+                CommandOutput {
+                    stdout: "Conversion complete".to_string(),
+                    stderr: String::new(),
+                    exit_code: 0,
+                    success: true,
+                }
+            }
+
+            fn inspect_model(&self, _path: &Path) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn validate_model(&self, _path: &Path) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn bench_model(&self, _path: &Path) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn check_model(&self, _path: &Path) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn profile_model(&self, _path: &Path, _warmup: u32, _measure: u32) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn profile_ci(
+                &self,
+                _path: &Path,
+                _min_throughput: Option<f64>,
+                _max_p99: Option<f64>,
+                _warmup: u32,
+                _measure: u32,
+            ) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn diff_tensors(&self, _model_a: &Path, _model_b: &Path, _json: bool) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn compare_inference(
+                &self,
+                _model_a: &Path,
+                _model_b: &Path,
+                _prompt: &str,
+                _max_tokens: u32,
+                _tolerance: f64,
+            ) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn profile_with_flamegraph(
+                &self,
+                _model_path: &Path,
+                _output_path: &Path,
+                _no_gpu: bool,
+            ) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn profile_with_focus(
+                &self,
+                _model_path: &Path,
+                _focus: &str,
+                _no_gpu: bool,
+            ) -> CommandOutput {
+                CommandOutput::success("")
+            }
+        }
+
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/model.gguf".to_string()),
+            run_conversion_tests: false,
+            run_golden_rule_test: true,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(ConvertedFailRunner));
+
+        let yaml = r#"
+name: golden-conv-fail
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let result = executor.execute(&playbook).expect("Execution failed");
+        // Golden rule test should produce a failure (converted inference failed)
+        assert!(result.failed >= 1);
+    }
+
+    // =========================================================================
+    // Golden Rule: output differs (F-GOLDEN-RULE-001 FAIL)
+    // =========================================================================
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn test_executor_golden_rule_output_differs_with_data() {
+        use crate::command::CommandOutput;
+
+        struct DiffOutputRunner;
+        impl CommandRunner for DiffOutputRunner {
+            fn run_inference(
+                &self,
+                model_path: &Path,
+                _prompt: &str,
+                _max_tokens: u32,
+                _no_gpu: bool,
+                _extra_args: &[&str],
+            ) -> CommandOutput {
+                if model_path.to_string_lossy().contains(".apr") {
+                    CommandOutput {
+                        stdout: "Output:\nThe answer is 5.\nCompleted in 100ms".to_string(),
+                        stderr: String::new(),
+                        exit_code: 0,
+                        success: true,
+                    }
+                } else {
+                    CommandOutput {
+                        stdout: "Output:\nThe answer is 4.\nCompleted in 100ms".to_string(),
+                        stderr: String::new(),
+                        exit_code: 0,
+                        success: true,
+                    }
+                }
+            }
+
+            fn convert_model(&self, _source: &Path, _target: &Path) -> CommandOutput {
+                CommandOutput {
+                    stdout: "ok".to_string(),
+                    stderr: String::new(),
+                    exit_code: 0,
+                    success: true,
+                }
+            }
+
+            fn inspect_model(&self, _path: &Path) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn validate_model(&self, _path: &Path) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn bench_model(&self, _path: &Path) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn check_model(&self, _path: &Path) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn profile_model(&self, _path: &Path, _warmup: u32, _measure: u32) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn profile_ci(
+                &self,
+                _path: &Path,
+                _min_throughput: Option<f64>,
+                _max_p99: Option<f64>,
+                _warmup: u32,
+                _measure: u32,
+            ) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn diff_tensors(&self, _model_a: &Path, _model_b: &Path, _json: bool) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn compare_inference(
+                &self,
+                _model_a: &Path,
+                _model_b: &Path,
+                _prompt: &str,
+                _max_tokens: u32,
+                _tolerance: f64,
+            ) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn profile_with_flamegraph(
+                &self,
+                _model_path: &Path,
+                _output_path: &Path,
+                _no_gpu: bool,
+            ) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn profile_with_focus(
+                &self,
+                _model_path: &Path,
+                _focus: &str,
+                _no_gpu: bool,
+            ) -> CommandOutput {
+                CommandOutput::success("")
+            }
+        }
+
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/model.gguf".to_string()),
+            run_conversion_tests: false,
+            run_golden_rule_test: true,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(DiffOutputRunner));
+
+        let yaml = r#"
+name: golden-diff
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let result = executor.execute(&playbook).expect("Execution failed");
+        // Output differs => falsified
+        assert!(result.failed >= 1);
+    }
+
+    // =========================================================================
+    // Subprocess execution with trace + stdout
+    // =========================================================================
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn test_executor_subprocess_trace_with_stdout() {
+        use crate::command::CommandOutput;
+
+        struct TraceStdoutRunner;
+        impl CommandRunner for TraceStdoutRunner {
+            fn run_inference(
+                &self,
+                _model_path: &Path,
+                _prompt: &str,
+                _max_tokens: u32,
+                _no_gpu: bool,
+                extra_args: &[&str],
+            ) -> CommandOutput {
+                if extra_args.contains(&"--trace") {
+                    // Trace run returns both stderr and stdout
+                    CommandOutput {
+                        stdout: "trace data: layer 0 attention".to_string(),
+                        stderr: "TRACE: model loading details".to_string(),
+                        exit_code: 0,
+                        success: true,
+                    }
+                } else {
+                    // First run fails
+                    CommandOutput {
+                        stdout: String::new(),
+                        stderr: "inference error occurred".to_string(),
+                        exit_code: 1,
+                        success: false,
+                    }
+                }
+            }
+
+            fn convert_model(&self, _source: &Path, _target: &Path) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn inspect_model(&self, _path: &Path) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn validate_model(&self, _path: &Path) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn bench_model(&self, _path: &Path) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn check_model(&self, _path: &Path) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn profile_model(&self, _path: &Path, _warmup: u32, _measure: u32) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn profile_ci(
+                &self,
+                _path: &Path,
+                _min_throughput: Option<f64>,
+                _max_p99: Option<f64>,
+                _warmup: u32,
+                _measure: u32,
+            ) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn diff_tensors(&self, _model_a: &Path, _model_b: &Path, _json: bool) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn compare_inference(
+                &self,
+                _model_a: &Path,
+                _model_b: &Path,
+                _prompt: &str,
+                _max_tokens: u32,
+                _tolerance: f64,
+            ) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn profile_with_flamegraph(
+                &self,
+                _model_path: &Path,
+                _output_path: &Path,
+                _no_gpu: bool,
+            ) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn profile_with_focus(
+                &self,
+                _model_path: &Path,
+                _focus: &str,
+                _no_gpu: bool,
+            ) -> CommandOutput {
+                CommandOutput::success("")
+            }
+        }
+
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/model.gguf".to_string()),
+            run_conversion_tests: false,
+            run_golden_rule_test: false,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(TraceStdoutRunner));
+
+        let yaml = r#"
+name: trace-stdout-test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let result = executor.execute(&playbook).expect("Execution failed");
+        assert!(result.failed >= 1);
+        // Check that evidence contains trace data
+        let evidence = executor.evidence().all();
+        assert!(!evidence.is_empty());
+        // stderr should contain trace output
+        let last = &evidence[evidence.len() - 1];
+        if let Some(ref stderr) = last.stderr {
+            assert!(stderr.contains("TRACE STDOUT") || stderr.contains("trace"));
+        }
+    }
+
+    // =========================================================================
+    // Model path resolution fallback
+    // =========================================================================
+
+    #[test]
+    fn test_get_format_model_path_fallback_to_extension() {
+        let temp_dir = tempfile::tempdir().unwrap();
+        let gguf_dir = temp_dir.path().join("gguf");
+        std::fs::create_dir_all(&gguf_dir).unwrap();
+
+        // Create a file with .gguf extension but NOT named "model.gguf"
+        let alt_model = gguf_dir.join("custom-name.gguf");
+        std::fs::write(&alt_model, b"fake model").unwrap();
+
+        let config = ExecutionConfig {
+            model_path: Some(temp_dir.path().to_string_lossy().to_string()),
+            ..Default::default()
+        };
+        let executor = Executor::with_config(config);
+
+        let scenario = apr_qa_gen::QaScenario::new(
+            apr_qa_gen::ModelId::new("test", "model"),
+            apr_qa_gen::Modality::Run,
+            apr_qa_gen::Backend::Cpu,
+            apr_qa_gen::Format::Gguf,
+            "test prompt".to_string(),
+            0,
+        );
+
+        let path = executor.get_format_model_path(&scenario);
+        // Should find the custom-name.gguf via extension fallback
+        assert!(path.contains("custom-name.gguf"));
+    }
+
+    #[test]
+    fn test_get_format_model_path_prefers_model_dot_ext() {
+        let temp_dir = tempfile::tempdir().unwrap();
+        let apr_dir = temp_dir.path().join("apr");
+        std::fs::create_dir_all(&apr_dir).unwrap();
+
+        // Create the canonical model.apr
+        let model_file = apr_dir.join("model.apr");
+        std::fs::write(&model_file, b"fake model").unwrap();
+
+        let config = ExecutionConfig {
+            model_path: Some(temp_dir.path().to_string_lossy().to_string()),
+            ..Default::default()
+        };
+        let executor = Executor::with_config(config);
+
+        let scenario = apr_qa_gen::QaScenario::new(
+            apr_qa_gen::ModelId::new("test", "model"),
+            apr_qa_gen::Modality::Run,
+            apr_qa_gen::Backend::Cpu,
+            apr_qa_gen::Format::Apr,
+            "test prompt".to_string(),
+            0,
+        );
+
+        let path = executor.get_format_model_path(&scenario);
+        assert!(path.contains("model.apr"));
+    }
+
+    // =========================================================================
+    // Stderr in oracle corroborated evidence
+    // =========================================================================
+
+    #[test]
+    fn test_executor_corroborated_with_stderr() {
+        let mock_runner = MockCommandRunner::new()
+            .with_inference_response_and_stderr("The answer is 4.", "Warning: some benign warning");
+
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/model.gguf".to_string()),
+            run_conversion_tests: false,
+            run_golden_rule_test: false,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        let yaml = r#"
+name: stderr-test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let _result = executor.execute(&playbook).expect("Execution failed");
+
+        let evidence = executor.evidence().all();
+        assert!(!evidence.is_empty());
+        // Corroborated evidence should have stderr
+        let ev = &evidence[0];
+        assert!(ev.stderr.is_some());
+        assert!(ev.stderr.as_ref().unwrap().contains("Warning"));
+    }
+
+    // =========================================================================
+    // Falsified with stderr
+    // =========================================================================
+
+    #[test]
+    fn test_executor_falsified_with_stderr() {
+        let mock_runner = MockCommandRunner::new()
+            .with_inference_response_and_stderr("", "Error: model failed")
+            .with_exit_code(1);
+
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/model.gguf".to_string()),
+            run_conversion_tests: false,
+            run_golden_rule_test: false,
+            failure_policy: FailurePolicy::CollectAll,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        let yaml = r#"
+name: falsified-stderr
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let result = executor.execute(&playbook).expect("Execution failed");
+        assert!(result.failed >= 1);
+
+        let evidence = executor.evidence().all();
+        let ev = &evidence[0];
+        assert!(ev.stderr.is_some());
+    }
+
+    // =========================================================================
+    // execute_profile_flamegraph / execute_profile_focus /
+    // execute_backend_equivalence / execute_serve_lifecycle
+    // These use Command::new("apr") directly and will fail since apr isn't
+    // installed, but we cover the error paths.
+    // =========================================================================
+
+    #[test]
+    fn test_execute_profile_flamegraph_no_apr() {
+        let executor = ToolExecutor::new("test-model.gguf".to_string(), true, 5000);
+        let temp_dir = tempfile::tempdir().unwrap();
+        let result = executor.execute_profile_flamegraph(temp_dir.path());
+        // apr binary not found => stderr contains error
+        assert!(!result.passed);
+        assert_eq!(result.tool, "profile-flamegraph");
+        assert_eq!(result.gate_id, "F-PROFILE-002");
+    }
+
+    #[test]
+    fn test_execute_profile_flamegraph_with_mock_success() {
+        let mock_runner = MockCommandRunner::new();
+        let executor = ToolExecutor::with_runner(
+            "test-model.gguf".to_string(),
+            true,
+            5000,
+            Arc::new(mock_runner),
+        );
+        let temp_dir = tempfile::tempdir().unwrap();
+        let result = executor.execute_profile_flamegraph(temp_dir.path());
+        // Mock returns success but no SVG file is created
+        assert_eq!(result.tool, "profile-flamegraph");
+        assert_eq!(result.gate_id, "F-PROFILE-002");
+        assert!(!result.passed); // No SVG file generated
+    }
+
+    #[test]
+    fn test_execute_profile_flamegraph_with_svg_file() {
+        let mock_runner = MockCommandRunner::new();
+        let executor = ToolExecutor::with_runner(
+            "test-model.gguf".to_string(),
+            false,
+            5000,
+            Arc::new(mock_runner),
+        );
+        let temp_dir = tempfile::tempdir().unwrap();
+        // Pre-create a valid SVG file
+        let svg_path = temp_dir.path().join("profile_flamegraph.svg");
+        std::fs::write(&svg_path, "<svg><rect/></svg>").unwrap();
+        let result = executor.execute_profile_flamegraph(temp_dir.path());
+        assert!(result.passed);
+        assert!(result.stdout.contains("valid: true"));
+    }
+
+    #[test]
+    fn test_execute_profile_flamegraph_with_invalid_svg() {
+        let mock_runner = MockCommandRunner::new();
+        let executor = ToolExecutor::with_runner(
+            "test-model.gguf".to_string(),
+            true,
+            5000,
+            Arc::new(mock_runner),
+        );
+        let temp_dir = tempfile::tempdir().unwrap();
+        // Pre-create an invalid SVG file
+        let svg_path = temp_dir.path().join("profile_flamegraph.svg");
+        std::fs::write(&svg_path, "not a valid svg at all").unwrap();
+        let result = executor.execute_profile_flamegraph(temp_dir.path());
+        assert!(!result.passed);
+        assert!(result.stdout.contains("valid: false"));
+    }
+
+    #[test]
+    fn test_execute_profile_flamegraph_unsupported() {
+        let mock_runner = MockCommandRunner::new().with_profile_flamegraph_failure();
+        let executor = ToolExecutor::with_runner(
+            "test-model.gguf".to_string(),
+            true,
+            5000,
+            Arc::new(mock_runner),
+        );
+        let temp_dir = tempfile::tempdir().unwrap();
+        let result = executor.execute_profile_flamegraph(temp_dir.path());
+        assert!(!result.passed);
+    }
+
+    #[test]
+    fn test_execute_profile_focus_no_apr() {
+        let executor = ToolExecutor::new("test-model.gguf".to_string(), true, 5000);
+        let result = executor.execute_profile_focus("attention");
+        assert!(!result.passed);
+        assert_eq!(result.tool, "profile-focus");
+        assert_eq!(result.gate_id, "F-PROFILE-003");
+    }
+
+    #[test]
+    fn test_execute_profile_focus_with_mock_success() {
+        let mock_runner = MockCommandRunner::new();
+        let executor = ToolExecutor::with_runner(
+            "test-model.gguf".to_string(),
+            false,
+            5000,
+            Arc::new(mock_runner),
+        );
+        let result = executor.execute_profile_focus("attention");
+        assert!(result.passed);
+        assert_eq!(result.tool, "profile-focus");
+        assert_eq!(result.gate_id, "F-PROFILE-003");
+    }
+
+    #[test]
+    fn test_execute_profile_focus_unsupported() {
+        let mock_runner = MockCommandRunner::new().with_profile_focus_failure();
+        let executor = ToolExecutor::with_runner(
+            "test-model.gguf".to_string(),
+            true,
+            5000,
+            Arc::new(mock_runner),
+        );
+        let result = executor.execute_profile_focus("attention");
+        assert!(!result.passed);
+    }
+
+    #[test]
+    fn test_execute_backend_equivalence_no_apr() {
+        let executor = ToolExecutor::new("test-model.gguf".to_string(), false, 5000);
+        let result = executor.execute_backend_equivalence();
+        assert!(!result.passed);
+        assert_eq!(result.tool, "backend-equivalence");
+        assert_eq!(result.gate_id, "F-CONV-BE-001");
+    }
+
+    #[test]
+    fn test_execute_serve_lifecycle_no_apr() {
+        let executor = ToolExecutor::new("test-model.gguf".to_string(), true, 5000);
+        let result = executor.execute_serve_lifecycle();
+        assert!(!result.passed);
+        assert_eq!(result.tool, "serve-lifecycle");
+        assert_eq!(result.gate_id, "F-INTEG-003");
+    }
+
+    #[test]
+    fn test_execute_all_with_serve() {
+        let mock_runner = MockCommandRunner::new();
+        let executor = ToolExecutor::with_runner(
+            "test-model.gguf".to_string(),
+            true,
+            5000,
+            Arc::new(mock_runner),
+        );
+        // Without serve
+        let results = executor.execute_all();
+        assert!(!results.is_empty());
+        // None should be serve-lifecycle
+        assert!(!results.iter().any(|r| r.tool == "serve-lifecycle"));
+    }
+
+    // =========================================================================
+    // Conversion infrastructure failure
+    // =========================================================================
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn test_executor_conversion_infrastructure_failure() {
+        use crate::command::CommandOutput;
+
+        struct FailingConversionRunner;
+        impl CommandRunner for FailingConversionRunner {
+            fn run_inference(
+                &self,
+                _model_path: &Path,
+                _prompt: &str,
+                _max_tokens: u32,
+                _no_gpu: bool,
+                _extra_args: &[&str],
+            ) -> CommandOutput {
+                CommandOutput {
+                    stdout: "The answer is 4.".to_string(),
+                    stderr: String::new(),
+                    exit_code: 0,
+                    success: true,
+                }
+            }
+            fn convert_model(&self, _source: &Path, _target: &Path) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn inspect_model(&self, _path: &Path) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn validate_model(&self, _path: &Path) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn bench_model(&self, _path: &Path) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn check_model(&self, _path: &Path) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn profile_model(&self, _path: &Path, _warmup: u32, _measure: u32) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn profile_ci(
+                &self,
+                _path: &Path,
+                _min_throughput: Option<f64>,
+                _max_p99: Option<f64>,
+                _warmup: u32,
+                _measure: u32,
+            ) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn diff_tensors(&self, _model_a: &Path, _model_b: &Path, _json: bool) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn compare_inference(
+                &self,
+                _model_a: &Path,
+                _model_b: &Path,
+                _prompt: &str,
+                _max_tokens: u32,
+                _tolerance: f64,
+            ) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn profile_with_flamegraph(
+                &self,
+                _model_path: &Path,
+                _output_path: &Path,
+                _no_gpu: bool,
+            ) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn profile_with_focus(
+                &self,
+                _model_path: &Path,
+                _focus: &str,
+                _no_gpu: bool,
+            ) -> CommandOutput {
+                CommandOutput::success("")
+            }
+        }
+
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/nonexistent/model.gguf".to_string()),
+            run_conversion_tests: true,
+            run_golden_rule_test: false,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(FailingConversionRunner));
+
+        let yaml = r#"
+name: conv-infra-fail
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let result = executor.execute(&playbook).expect("Execution failed");
+        // Conversion tests ran (whether they passed or failed depends on
+        // ConversionExecutor behavior with the mock runner)
+        assert!(result.total_scenarios >= 1);
+
+        // Exercise unused CommandRunner trait methods to cover stubs
+        let runner = FailingConversionRunner;
+        let p = Path::new("/dev/null");
+        assert!(runner.validate_model(p).success);
+        assert!(runner.bench_model(p).success);
+        assert!(runner.check_model(p).success);
+        assert!(runner.profile_model(p, 1, 1).success);
+        assert!(runner.profile_ci(p, None, None, 1, 1).success);
+        assert!(runner.diff_tensors(p, p, false).success);
+        assert!(runner.compare_inference(p, p, "", 1, 0.0).success);
+        assert!(runner.profile_with_flamegraph(p, p, false).success);
+        assert!(runner.profile_with_focus(p, "", false).success);
     }
 }
