@@ -216,6 +216,29 @@ impl Evidence {
         }
     }
 
+    /// Create new evidence for a skipped test
+    #[must_use]
+    pub fn skipped(
+        gate_id: impl Into<String>,
+        scenario: QaScenario,
+        reason: impl Into<String>,
+    ) -> Self {
+        Self {
+            id: uuid_v4(),
+            gate_id: gate_id.into(),
+            scenario,
+            outcome: Outcome::Skipped,
+            reason: reason.into(),
+            output: String::new(),
+            stderr: None,
+            exit_code: None,
+            metrics: PerformanceMetrics::default(),
+            timestamp: Utc::now(),
+            host: HostInfo::default(),
+            metadata: HashMap::new(),
+        }
+    }
+
     /// Add performance metrics
     #[must_use]
     pub const fn with_metrics(mut self, metrics: PerformanceMetrics) -> Self {
@@ -389,6 +412,17 @@ mod tests {
         assert!(evidence.reason.contains("139"));
         assert_eq!(evidence.stderr, Some("segfault".to_string()));
         assert_eq!(evidence.exit_code, Some(139));
+    }
+
+    #[test]
+    fn test_evidence_skipped() {
+        let evidence = Evidence::skipped("F-TEST-001", test_scenario(), "Format not available");
+        assert_eq!(evidence.outcome, Outcome::Skipped);
+        assert!(evidence.outcome.is_pass());
+        assert!(!evidence.outcome.is_fail());
+        assert!(evidence.reason.contains("Format not available"));
+        assert!(evidence.output.is_empty());
+        assert!(evidence.exit_code.is_none());
     }
 
     #[test]

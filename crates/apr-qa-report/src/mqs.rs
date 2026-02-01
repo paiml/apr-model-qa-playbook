@@ -299,9 +299,36 @@ impl MqsCalculator {
         })
     }
 
-    /// Check gateway conditions (G1-G4)
+    /// Check gateway conditions (G0-G4)
     fn check_gateways(&self, evidence: &[Evidence]) -> Vec<GatewayResult> {
         let mut results = Vec::new();
+
+        // G0: Model integrity (config/tensor consistency)
+        // Checks for G0-INTEGRITY-* gate IDs
+        let integrity_failures: Vec<&Evidence> = evidence
+            .iter()
+            .filter(|e| e.gate_id.starts_with("G0-INTEGRITY") && e.outcome.is_fail())
+            .collect();
+        if integrity_failures.is_empty() {
+            results.push(GatewayResult::passed(
+                "G0",
+                "Model integrity (config/tensor match)",
+            ));
+        } else {
+            let error_details: Vec<&str> = integrity_failures
+                .iter()
+                .map(|e| e.reason.as_str())
+                .collect();
+            results.push(GatewayResult::failed(
+                "G0",
+                "Model integrity (config/tensor match)",
+                format!(
+                    "{} integrity check(s) failed: {}",
+                    integrity_failures.len(),
+                    error_details.join("; ")
+                ),
+            ));
+        }
 
         // G1: Model loads successfully
         let has_load_failure = evidence
@@ -869,8 +896,8 @@ mod tests {
         let collector = EvidenceCollector::new();
 
         let gateways = calc.check_gateways(collector.all());
-        // Should have 4 gateways
-        assert_eq!(gateways.len(), 4);
+        // Should have 5 gateways (G0-G4)
+        assert_eq!(gateways.len(), 5);
     }
 
     #[test]
@@ -1179,5 +1206,104 @@ mod tests {
         let score: MqsScore = serde_json::from_str(json).expect("deserialize");
         assert_eq!(score.model_id, "test");
         assert_eq!(score.raw_score, 800);
+    }
+
+    #[test]
+    fn test_gateway_g0_integrity_failure() {
+        let calc = MqsCalculator::new();
+        let mut collector = EvidenceCollector::new();
+
+        // Add a G0 integrity failure (layer count mismatch)
+        collector.add(Evidence::falsified(
+            "G0-INTEGRITY-LAYERS",
+            test_scenario(),
+            "config says 14 layers but tensors have 24",
+            "",
+            100,
+        ));
+
+        let score = calc
+            .calculate("test/model", &collector)
+            .expect("Calculation failed");
+
+        // G0 failed should fail all gateways and zero score
+        assert!(!score.gateways_passed);
+        assert_eq!(score.raw_score, 0);
+        assert_eq!(score.normalized_score, 0.0);
+        let g0 = score.gateways.iter().find(|g| g.id == "G0").unwrap();
+        assert!(!g0.passed);
+        assert!(g0.failure_reason.as_ref().unwrap().contains("integrity"));
+    }
+
+    #[test]
+    fn test_gateway_g0_integrity_multiple_failures() {
+        let calc = MqsCalculator::new();
+        let mut collector = EvidenceCollector::new();
+
+        // Add multiple G0 integrity failures (corrupted config scenario)
+        collector.add(Evidence::falsified(
+            "G0-INTEGRITY-LAYERS",
+            test_scenario(),
+            "config says 14 layers but tensors have 24",
+            "",
+            100,
+        ));
+        collector.add(Evidence::falsified(
+            "G0-INTEGRITY-HIDDEN",
+            test_scenario(),
+            "config says hidden_size=4096 but embedding has 896",
+            "",
+            100,
+        ));
+        collector.add(Evidence::falsified(
+            "G0-INTEGRITY-VOCAB",
+            test_scenario(),
+            "config says vocab_size=896 but embedding has 151936",
+            "",
+            100,
+        ));
+
+        let score = calc
+            .calculate("test/model", &collector)
+            .expect("Calculation failed");
+
+        assert!(!score.gateways_passed);
+        assert_eq!(score.raw_score, 0);
+        let g0 = score.gateways.iter().find(|g| g.id == "G0").unwrap();
+        assert!(!g0.passed);
+        // Should mention all 3 failures
+        assert!(g0.failure_reason.as_ref().unwrap().contains("3 integrity"));
+    }
+
+    #[test]
+    fn test_gateway_g0_passes_when_no_integrity_failures() {
+        let calc = MqsCalculator::new();
+        let mut collector = EvidenceCollector::new();
+
+        // Add only regular test evidence, no G0 failures
+        collector.add(test_evidence_passed("F-QUAL-001"));
+        collector.add(test_evidence_passed("F-PERF-001"));
+
+        let score = calc
+            .calculate("test/model", &collector)
+            .expect("Calculation failed");
+
+        assert!(score.gateways_passed);
+        let g0 = score.gateways.iter().find(|g| g.id == "G0").unwrap();
+        assert!(g0.passed);
+    }
+
+    #[test]
+    fn test_gateway_order_g0_first() {
+        let calc = MqsCalculator::new();
+        let collector = EvidenceCollector::new();
+
+        let gateways = calc.check_gateways(collector.all());
+        // G0 should be first
+        assert_eq!(gateways[0].id, "G0");
+        assert_eq!(gateways[1].id, "G1");
+        assert_eq!(gateways[2].id, "G2");
+        assert_eq!(gateways[3].id, "G3");
+        assert_eq!(gateways[4].id, "G4");
     }
 }

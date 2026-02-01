@@ -7,7 +7,8 @@
 use crate::command::{CommandRunner, RealCommandRunner};
 use crate::conversion::{ConversionConfig, ConversionExecutor};
 use crate::error::Result;
-use crate::evidence::{Evidence, EvidenceCollector, PerformanceMetrics};
+use crate::evidence::{Evidence, EvidenceCollector, Outcome, PerformanceMetrics};
+use crate::integrity;
 use crate::playbook::Playbook;
 use apr_qa_gen::{Backend, Format, Modality, ModelId, QaScenario};
 use std::path::Path;
@@ -152,6 +153,19 @@ impl Executor {
             });
         }
 
+        // G0: Model integrity check for SafeTensors models (pre-flight)
+        // This catches corrupted config.json before inference even starts
+        let mut integrity_passed = 0;
+        let mut integrity_failed = 0;
+        if self.config.subprocess_mode {
+            if let Some(model_path) = self.config.model_path.clone() {
+                let model_id = playbook.model_id();
+                let (ip, if_) = self.run_g0_integrity_check(Path::new(&model_path), &model_id);
+                integrity_passed = ip;
+                integrity_failed = if_;
+            }
+        }
+
         let mut passed = 0;
         let mut failed = 0;
         let mut skipped = 0;
@@ -166,6 +180,11 @@ impl Executor {
             }
 
             let evidence = self.execute_scenario(&scenario);
+            if evidence.outcome == Outcome::Skipped {
+                skipped += 1;
+                self.collector.add(evidence);
+                continue;
+            }
             if evidence.outcome.is_pass() {
                 passed += 1;
             } else {
@@ -215,8 +234,8 @@ impl Executor {
             }
         }
 
-        let total_passed = passed + conversion_passed + golden_passed;
-        let total_failed = failed + conversion_failed + golden_failed;
+        let total_passed = passed + conversion_passed + golden_passed + integrity_passed;
+        let total_failed = failed + conversion_failed + golden_failed + integrity_failed;
 
         Ok(ExecutionResult {
             playbook_name: playbook.name.clone(),
@@ -224,7 +243,9 @@ impl Executor {
                 + conversion_passed
                 + conversion_failed
                 + golden_passed
-                + golden_failed,
+                + golden_failed
+                + integrity_passed
+                + integrity_failed,
             passed: total_passed,
             failed: total_failed,
             skipped,
@@ -236,6 +257,10 @@ impl Executor {
 
     /// Run P0 format conversion tests
     fn run_conversion_tests(&mut self, model_path: &Path, model_id: &ModelId) -> (usize, usize) {
+        if model_path.is_file() {
+            return (0, 0); // not applicable for single-file models
+        }
+
         let config = if self.config.no_gpu {
             ConversionConfig::cpu_only()
         } else {
@@ -283,6 +308,10 @@ impl Executor {
     /// Would have caught: GH-186, GH-189, GH-190 (all 3 P0 conversion bugs).
     /// See: docs/five-whys/GH-190-systemic-conversion-failures.md
     fn run_golden_rule_test(&mut self, model_path: &Path, model_id: &ModelId) -> (usize, usize) {
+        if model_path.is_file() {
+            return (0, 0); // not applicable for single-file models
+        }
+
         let prompt = "What is 2+2?";
         let max_tokens = 10;
 
@@ -410,15 +439,141 @@ impl Executor {
         )
     }
 
+    /// G0 Model Integrity Check: Validates config.json matches tensor metadata
+    ///
+    /// This pre-flight check catches corrupted configs that would pass G1 (model loads)
+    /// but cause silent inference failures. Designed to detect the bug found in
+    /// `~/.cache/apr-models/qwen2-5-coder-0-5b-instruct/` where config.json had:
+    /// - `num_hidden_layers: 14` (should be 24)
+    /// - `hidden_size: 4096` (should be 896)
+    /// - `vocab_size: 896` (should be 151936)
+    ///
+    /// # Returns
+    ///
+    /// (passed_count, failed_count) - evidence is added to collector
+    fn run_g0_integrity_check(&mut self, model_path: &Path, model_id: &ModelId) -> (usize, usize) {
+        // Check if the model directory contains SafeTensors files
+        let safetensors_dir = Self::find_safetensors_dir(model_path);
+
+        let Some(st_dir) = safetensors_dir else {
+            // No SafeTensors found - G0 check not applicable, auto-pass
+            return (0, 0);
+        };
+
+        // Run integrity check
+        let result = integrity::check_safetensors_integrity(&st_dir);
+
+        if result.passed {
+            // All integrity checks passed
+            let ev = Evidence::corroborated(
+                integrity::gate_ids::CONFIG,
+                Self::integrity_scenario(model_id),
+                "G0 PASS: config.json matches tensor metadata",
+                0,
+            );
+            self.collector.add(ev);
+            (1, 0)
+        } else {
+            // Add evidence for each failure
+            let mut failed = 0;
+            for error in &result.errors {
+                let gate_id = if error.contains("LAYERS") {
+                    integrity::gate_ids::LAYERS
+                } else if error.contains("HIDDEN") {
+                    integrity::gate_ids::HIDDEN
+                } else if error.contains("VOCAB") {
+                    integrity::gate_ids::VOCAB
+                } else {
+                    integrity::gate_ids::CONFIG
+                };
+
+                let ev = Evidence::falsified(
+                    gate_id,
+                    Self::integrity_scenario(model_id),
+                    error,
+                    &format!(
+                        "Config: {:?}, Tensors: {:?}",
+                        result.config_values, result.tensor_values
+                    ),
+                    0,
+                );
+                self.collector.add(ev);
+                failed += 1;
+            }
+            (0, failed)
+        }
+    }
+
+    /// Find the SafeTensors directory within a model path
+    ///
+    /// Supports common cache structures:
+    /// - `<model_path>/safetensors/` - apr-model-qa-playbook structure
+    /// - `<model_path>/` - direct HF cache structure
+    fn find_safetensors_dir(model_path: &Path) -> Option<std::path::PathBuf> {
+        // File mode: check parent directory for sibling .safetensors files
+        if model_path.is_file() {
+            if model_path.extension().is_some_and(|e| e == "safetensors") {
+                return model_path.parent().map(Path::to_path_buf);
+            }
+            return None;
+        }
+
+        // Try explicit safetensors subdirectory first (apr cache structure)
+        let st_subdir = model_path.join("safetensors");
+        if st_subdir.exists() && Self::has_safetensors_files(&st_subdir) {
+            return Some(st_subdir);
+        }
+
+        // Try the model path directly (HF cache structure)
+        if Self::has_safetensors_files(model_path) {
+            return Some(model_path.to_path_buf());
+        }
+
+        // No SafeTensors found
+        None
+    }
+
+    /// Check if a directory contains .safetensors files
+    fn has_safetensors_files(dir: &Path) -> bool {
+        dir.read_dir()
+            .map(|entries| {
+                entries
+                    .flatten()
+                    .any(|e| e.path().extension().is_some_and(|ext| ext == "safetensors"))
+            })
+            .unwrap_or(false)
+    }
+
+    /// Create a scenario for G0 integrity evidence
+    fn integrity_scenario(model_id: &ModelId) -> apr_qa_gen::QaScenario {
+        apr_qa_gen::QaScenario::new(
+            model_id.clone(),
+            apr_qa_gen::Modality::Run,
+            apr_qa_gen::Backend::Cpu,
+            apr_qa_gen::Format::SafeTensors,
+            "G0 Integrity: config.json vs tensor metadata".to_string(),
+            0,
+        )
+    }
+
     /// Execute a single scenario
     fn execute_scenario(&self, scenario: &QaScenario) -> Evidence {
         let start = Instant::now();
 
-        let (output, stderr, exit_code, tps) = if self.config.subprocess_mode {
+        let (output, stderr, exit_code, tps, skipped) = if self.config.subprocess_mode {
             self.subprocess_execution(scenario)
         } else {
-            (self.simulate_execution(scenario), None, 0, None)
+            (self.simulate_execution(scenario), None, 0, None, false)
         };
+
+        if skipped {
+            let gate_id = format!("F-{}-001", scenario.mqs_category());
+            return Evidence::skipped(
+                &gate_id,
+                scenario.clone(),
+                format!("Format {:?} not available for model file", scenario.format),
+            );
+        }
 
         let duration = start.elapsed().as_millis() as u64;
 
@@ -504,12 +659,17 @@ impl Executor {
 
     /// Execute via subprocess (real apr commands)
     /// On failure, re-runs with --trace for full diagnostics
+    ///
+    /// Returns `(stdout, stderr, exit_code, tps, skipped)`.
+    /// When `skipped` is `true` the scenario format is unavailable for the
+    /// model file and the caller should emit `Evidence::skipped`.
     fn subprocess_execution(
         &self,
         scenario: &QaScenario,
-    ) -> (String, Option<String>, i32, Option<f64>) {
-        // Derive format-specific path from cache directory and scenario format
-        let model_path = self.get_format_model_path(scenario);
+    ) -> (String, Option<String>, i32, Option<f64>, bool) {
+        let Some(model_path) = self.resolve_model_path(scenario) else {
+            return (String::new(), None, 0, None, true);
+        };
 
         let output = self.command_runner.run_inference(
             Path::new(&model_path),
@@ -555,40 +715,61 @@ impl Executor {
             (Some(full_trace), output.exit_code)
         };
 
-        (generated_text, final_stderr, final_exit_code, tps)
+        (generated_text, final_stderr, final_exit_code, tps, false)
     }
 
-    /// Get the model path for a specific format from the cache directory
-    fn get_format_model_path(&self, scenario: &QaScenario) -> String {
-        let cache_dir = self.config.model_path.as_deref().unwrap_or(".");
+    /// Resolve the model path for a specific format.
+    ///
+    /// Supports two modes:
+    /// - **File mode**: `model_path` points to a single file (e.g. `<hash>.safetensors`).
+    ///   Returns `Some` if the file extension matches the scenario format, `None` otherwise.
+    /// - **Directory mode**: `model_path` is a cache directory with `{format}/model.{ext}` layout.
+    ///   Falls back to finding any file with the matching extension in the format subdirectory.
+    fn resolve_model_path(&self, scenario: &QaScenario) -> Option<String> {
+        let model_path = self.config.model_path.as_deref().unwrap_or(".");
+        let path = Path::new(model_path);
 
+        if path.is_file() {
+            // FILE MODE: pass directly to apr if format matches extension
+            let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
+            let matches = match scenario.format {
+                Format::Gguf => ext == "gguf",
+                Format::SafeTensors => ext == "safetensors",
+                Format::Apr => ext == "apr",
+            };
+            return if matches {
+                Some(model_path.to_string())
+            } else {
+                None
+            };
+        }
+
+        // DIRECTORY MODE: existing subdirectory logic
         let (subdir, extension) = match scenario.format {
-            apr_qa_gen::Format::Gguf => ("gguf", "gguf"),
-            apr_qa_gen::Format::Apr => ("apr", "apr"),
-            apr_qa_gen::Format::SafeTensors => ("safetensors", "safetensors"),
+            Format::Gguf => ("gguf", "gguf"),
+            Format::Apr => ("apr", "apr"),
+            Format::SafeTensors => ("safetensors", "safetensors"),
         };
 
         // Try model.<ext> first, then look for any matching file
-        let model_path = Path::new(cache_dir)
-            .join(subdir)
-            .join(format!("model.{extension}"));
-        if model_path.exists() {
-            return model_path.to_string_lossy().to_string();
+        let resolved = path.join(subdir).join(format!("model.{extension}"));
+        if resolved.exists() {
+            return Some(resolved.to_string_lossy().to_string());
         }
 
         // Fall back to finding any file with the extension
-        let format_dir = Path::new(cache_dir).join(subdir);
+        let format_dir = path.join(subdir);
         if let Ok(entries) = std::fs::read_dir(&format_dir) {
             for entry in entries.flatten() {
-                let path = entry.path();
-                if path.extension().is_some_and(|e| e == extension) {
-                    return path.to_string_lossy().to_string();
+                let ep = entry.path();
+                if ep.extension().is_some_and(|e| e == extension) {
+                    return Some(ep.to_string_lossy().to_string());
                 }
             }
         }
 
-        // Final fallback to the default path
-        model_path.to_string_lossy().to_string()
+        // Final fallback to the default path (directory mode always returns Some)
+        Some(resolved.to_string_lossy().to_string())
     }
 
     /// Parse tokens per second from apr output
@@ -2538,8 +2719,9 @@ test_matrix:
             0,
         );
 
-        let (output, stderr, exit_code, tps) = executor.subprocess_execution(&scenario);
+        let (output, stderr, exit_code, tps, skipped) = executor.subprocess_execution(&scenario);
 
+        assert!(!skipped);
         assert!(output.contains("4") || output.is_empty()); // Depends on extract logic
         assert!(stderr.is_none_or(|s| s.is_empty()));
         assert_eq!(exit_code, 0);
@@ -2568,7 +2750,7 @@ test_matrix:
             0,
         );
 
-        let (_, stderr, exit_code, _) = executor.subprocess_execution(&scenario);
+        let (_, stderr, exit_code, _, _) = executor.subprocess_execution(&scenario);
 
         assert_eq!(exit_code, 1);
         assert!(stderr.is_some());
@@ -2876,7 +3058,7 @@ test_matrix:
             0,
         );
 
-        let (_, _, exit_code, _) = executor.subprocess_execution(&scenario);
+        let (_, _, exit_code, _, _) = executor.subprocess_execution(&scenario);
         assert_eq!(exit_code, 0);
     }
 
@@ -3139,7 +3321,7 @@ test_matrix:
         let executor = Executor::with_runner(config, Arc::new(mock_runner));
 
         let scenario = test_scenario();
-        let (_, _, _, tps) = executor.subprocess_execution(&scenario);
+        let (_, _, _, tps, _) = executor.subprocess_execution(&scenario);
 
         // tps should be parsed from output
         assert!(tps.is_some());
@@ -3543,7 +3725,7 @@ test_matrix:
     }
 
     #[test]
-    fn test_get_format_model_path_gguf() {
+    fn test_resolve_model_path_gguf() {
         let config = ExecutionConfig {
             subprocess_mode: true,
             model_path: Some("/test/cache".to_string()),
@@ -3560,12 +3742,12 @@ test_matrix:
             0,
         );
 
-        let path = executor.get_format_model_path(&scenario);
-        assert!(path.contains("gguf"));
+        let path = executor.resolve_model_path(&scenario);
+        assert!(path.unwrap().contains("gguf"));
     }
 
     #[test]
-    fn test_get_format_model_path_apr() {
+    fn test_resolve_model_path_apr() {
         let config = ExecutionConfig {
             subprocess_mode: true,
             model_path: Some("/test/cache".to_string()),
@@ -3582,12 +3764,12 @@ test_matrix:
             0,
         );
 
-        let path = executor.get_format_model_path(&scenario);
-        assert!(path.contains("apr"));
+        let path = executor.resolve_model_path(&scenario);
+        assert!(path.unwrap().contains("apr"));
     }
 
     #[test]
-    fn test_get_format_model_path_safetensors() {
+    fn test_resolve_model_path_safetensors() {
         let config = ExecutionConfig {
             subprocess_mode: true,
             model_path: Some("/test/cache".to_string()),
@@ -3604,12 +3786,12 @@ test_matrix:
             0,
         );
 
-        let path = executor.get_format_model_path(&scenario);
-        assert!(path.contains("safetensors"));
+        let path = executor.resolve_model_path(&scenario);
+        assert!(path.unwrap().contains("safetensors"));
     }
 
     #[test]
-    fn test_get_format_model_path_no_cache() {
+    fn test_resolve_model_path_no_cache() {
         let config = ExecutionConfig {
             subprocess_mode: true,
             model_path: None, // No cache directory
@@ -3626,9 +3808,9 @@ test_matrix:
             0,
         );
 
-        let path = executor.get_format_model_path(&scenario);
+        let path = executor.resolve_model_path(&scenario);
         // Should use "." as default
-        assert!(path.contains("gguf"));
+        assert!(path.unwrap().contains("gguf"));
     }
 
     #[test]
@@ -3878,7 +4060,7 @@ test_matrix:
             0,
         );
 
-        let (_, stderr, exit_code, _) = executor.subprocess_execution(&scenario);
+        let (_, stderr, exit_code, _, _) = executor.subprocess_execution(&scenario);
 
         // Should include trace output in stderr
         assert_eq!(exit_code, 1);
@@ -3886,7 +4068,7 @@ test_matrix:
     }
 
     #[test]
-    fn test_get_format_model_path_apr_format() {
+    fn test_resolve_model_path_apr_format() {
         let config = ExecutionConfig {
             subprocess_mode: true,
             model_path: Some("/test/cache".to_string()),
@@ -3901,12 +4083,12 @@ test_matrix:
             "test".to_string(),
             0,
         );
-        let path = executor.get_format_model_path(&scenario);
-        assert!(path.contains("apr"));
+        let path = executor.resolve_model_path(&scenario);
+        assert!(path.unwrap().contains("apr"));
     }
 
     #[test]
-    fn test_get_format_model_path_safetensors_format() {
+    fn test_resolve_model_path_safetensors_format() {
         let config = ExecutionConfig {
             subprocess_mode: true,
             model_path: Some("/test/cache".to_string()),
@@ -3921,12 +4103,12 @@ test_matrix:
             "test".to_string(),
             0,
         );
-        let path = executor.get_format_model_path(&scenario);
-        assert!(path.contains("safetensors"));
+        let path = executor.resolve_model_path(&scenario);
+        assert!(path.unwrap().contains("safetensors"));
     }
 
     #[test]
-    fn test_get_format_model_path_gguf_format() {
+    fn test_resolve_model_path_gguf_format() {
         let config = ExecutionConfig {
             subprocess_mode: true,
             model_path: Some("/test/cache".to_string()),
@@ -3941,12 +4123,12 @@ test_matrix:
             "test".to_string(),
             0,
         );
-        let path = executor.get_format_model_path(&scenario);
-        assert!(path.contains("gguf"));
+        let path = executor.resolve_model_path(&scenario);
+        assert!(path.unwrap().contains("gguf"));
     }
 
     #[test]
-    fn test_get_format_model_path_no_model_path() {
+    fn test_resolve_model_path_no_model_path() {
         let config = ExecutionConfig {
             subprocess_mode: true,
             model_path: None,
@@ -3961,9 +4143,9 @@ test_matrix:
             "test".to_string(),
             0,
         );
-        let path = executor.get_format_model_path(&scenario);
+        let path = executor.resolve_model_path(&scenario);
         // Should default to "." with gguf subdir
-        assert!(path.contains("gguf"));
+        assert!(path.unwrap().contains("gguf"));
     }
 
     #[test]
@@ -3987,7 +4169,7 @@ test_matrix:
             "What is 2+2?".to_string(),
             0,
         );
-        let (_, _, exit_code, _) = executor.subprocess_execution(&scenario_apr);
+        let (_, _, exit_code, _, _) = executor.subprocess_execution(&scenario_apr);
         assert_eq!(exit_code, 0);
     }
 
@@ -4011,7 +4193,7 @@ test_matrix:
             "What is 2+2?".to_string(),
             0,
         );
-        let (_, _, exit_code, _) = executor.subprocess_execution(&scenario);
+        let (_, _, exit_code, _, _) = executor.subprocess_execution(&scenario);
         assert_eq!(exit_code, 0);
     }
 
@@ -4650,7 +4832,7 @@ test_matrix:
     // =========================================================================
 
     #[test]
-    fn test_get_format_model_path_fallback_to_extension() {
+    fn test_resolve_model_path_fallback_to_extension() {
         let temp_dir = tempfile::tempdir().unwrap();
         let gguf_dir = temp_dir.path().join("gguf");
         std::fs::create_dir_all(&gguf_dir).unwrap();
@@ -4674,13 +4856,13 @@ test_matrix:
             0,
         );
 
-        let path = executor.get_format_model_path(&scenario);
+        let path = executor.resolve_model_path(&scenario);
         // Should find the custom-name.gguf via extension fallback
-        assert!(path.contains("custom-name.gguf"));
+        assert!(path.unwrap().contains("custom-name.gguf"));
     }
 
     #[test]
-    fn test_get_format_model_path_prefers_model_dot_ext() {
+    fn test_resolve_model_path_prefers_model_dot_ext() {
         let temp_dir = tempfile::tempdir().unwrap();
         let apr_dir = temp_dir.path().join("apr");
         std::fs::create_dir_all(&apr_dir).unwrap();
@@ -4704,8 +4886,185 @@ test_matrix:
             0,
         );
 
-        let path = executor.get_format_model_path(&scenario);
-        assert!(path.contains("model.apr"));
+        let path = executor.resolve_model_path(&scenario);
+        assert!(path.unwrap().contains("model.apr"));
+    }
+
+    // =========================================================================
+    // File-mode model path resolution
+    // =========================================================================
+
+    #[test]
+    fn test_resolve_model_path_file_matching_format() {
+        let temp_dir = tempfile::tempdir().unwrap();
+        let model_file = temp_dir.path().join("abc123.safetensors");
+        std::fs::write(&model_file, b"fake model data").unwrap();
+
+        let config = ExecutionConfig {
+            model_path: Some(model_file.to_string_lossy().to_string()),
+            ..Default::default()
+        };
+        let executor = Executor::with_config(config);
+
+        // SafeTensors format should match .safetensors file
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::SafeTensors,
+            "test".to_string(),
+            0,
+        );
+        let path = executor.resolve_model_path(&scenario);
+        assert!(path.is_some());
+        assert!(path.unwrap().contains("abc123.safetensors"));
+    }
+
+    #[test]
+    fn test_resolve_model_path_file_nonmatching_format() {
+        let temp_dir = tempfile::tempdir().unwrap();
+        let model_file = temp_dir.path().join("abc123.safetensors");
+        std::fs::write(&model_file, b"fake model data").unwrap();
+
+        let config = ExecutionConfig {
+            model_path: Some(model_file.to_string_lossy().to_string()),
+            ..Default::default()
+        };
+        let executor = Executor::with_config(config);
+
+        // GGUF format should NOT match .safetensors file
+        let scenario_gguf = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "test".to_string(),
+            0,
+        );
+        assert!(executor.resolve_model_path(&scenario_gguf).is_none());
+
+        // APR format should NOT match .safetensors file
+        let scenario_apr = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Apr,
+            "test".to_string(),
+            0,
+        );
+        assert!(executor.resolve_model_path(&scenario_apr).is_none());
+    }
+
+    #[test]
+    fn test_resolve_model_path_file_gguf() {
+        let temp_dir = tempfile::tempdir().unwrap();
+        let model_file = temp_dir.path().join("hash123.gguf");
+        std::fs::write(&model_file, b"fake gguf").unwrap();
+
+        let config = ExecutionConfig {
+            model_path: Some(model_file.to_string_lossy().to_string()),
+            ..Default::default()
+        };
+        let executor = Executor::with_config(config);
+
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "test".to_string(),
+            0,
+        );
+        let path = executor.resolve_model_path(&scenario);
+        assert!(path.is_some());
+        assert!(path.unwrap().contains("hash123.gguf"));
+    }
+
+    #[test]
+    fn test_execute_scenario_skips_nonmatching_format() {
+        let temp_dir = tempfile::tempdir().unwrap();
+        let model_file = temp_dir.path().join("abc123.safetensors");
+        std::fs::write(&model_file, b"fake model").unwrap();
+
+        let mock_runner = MockCommandRunner::new().with_inference_response("The answer is 4.");
+
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some(model_file.to_string_lossy().to_string()),
+            ..Default::default()
+        };
+        let executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        // GGUF scenario against .safetensors file should be skipped
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "2+2=".to_string(),
+            42,
+        );
+        let evidence = executor.execute_scenario(&scenario);
+        assert_eq!(evidence.outcome, Outcome::Skipped);
+        assert!(evidence.reason.contains("Format"));
+    }
+
+    #[test]
+    fn test_find_safetensors_dir_file_mode() {
+        let temp_dir = tempfile::tempdir().unwrap();
+
+        // File with .safetensors extension → returns parent dir
+        let st_file = temp_dir.path().join("model.safetensors");
+        std::fs::write(&st_file, b"fake").unwrap();
+        let result = Executor::find_safetensors_dir(&st_file);
+        assert!(result.is_some());
+        assert_eq!(result.unwrap(), temp_dir.path());
+
+        // File with non-safetensors extension → returns None
+        let gguf_file = temp_dir.path().join("model.gguf");
+        std::fs::write(&gguf_file, b"fake").unwrap();
+        let result = Executor::find_safetensors_dir(&gguf_file);
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_subprocess_execution_skip_flag() {
+        let temp_dir = tempfile::tempdir().unwrap();
+        let model_file = temp_dir.path().join("abc.safetensors");
+        std::fs::write(&model_file, b"fake").unwrap();
+
+        let mock_runner = MockCommandRunner::new().with_inference_response("The answer is 4.");
+
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some(model_file.to_string_lossy().to_string()),
+            ..Default::default()
+        };
+        let executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        // Matching format → not skipped
+        let scenario_st = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::SafeTensors,
+            "test".to_string(),
+            0,
+        );
+        let (_, _, _, _, skipped) = executor.subprocess_execution(&scenario_st);
+        assert!(!skipped);
+
+        // Non-matching format → skipped
+        let scenario_gguf = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "test".to_string(),
+            0,
+        );
+        let (_, _, _, _, skipped) = executor.subprocess_execution(&scenario_gguf);
+        assert!(skipped);
     }
 
     // =========================================================================
@@ -5070,5 +5429,233 @@ test_matrix:
         assert!(runner.compare_inference(p, p, "", 1, 0.0).success);
         assert!(runner.profile_with_flamegraph(p, p, false).success);
         assert!(runner.profile_with_focus(p, "", false).success);
+    }
+
+    // ========================================================================
+    // G0 INTEGRITY CHECK TESTS
+    // ========================================================================
+
+    #[test]
+    fn test_find_safetensors_dir_with_subdir() {
+        use tempfile::TempDir;
+        let dir = TempDir::new().expect("create temp dir");
+        let st_dir = dir.path().join("safetensors");
+        std::fs::create_dir(&st_dir).expect("create safetensors dir");
+        std::fs::write(st_dir.join("model.safetensors"), "test").expect("write file");
+
+        let result = Executor::find_safetensors_dir(dir.path());
+        assert!(result.is_some());
+        assert_eq!(result.unwrap(), st_dir);
+    }
+
+    #[test]
+    fn test_find_safetensors_dir_direct() {
+        use tempfile::TempDir;
+        let dir = TempDir::new().expect("create temp dir");
+        std::fs::write(dir.path().join("model.safetensors"), "test").expect("write file");
+
+        let result = Executor::find_safetensors_dir(dir.path());
+        assert!(result.is_some());
+        assert_eq!(result.unwrap(), dir.path());
+    }
+
+    #[test]
+    fn test_find_safetensors_dir_none() {
+        use tempfile::TempDir;
+        let dir = TempDir::new().expect("create temp dir");
+        // No safetensors files
+
+        let result = Executor::find_safetensors_dir(dir.path());
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_has_safetensors_files_true() {
+        use tempfile::TempDir;
+        let dir = TempDir::new().expect("create temp dir");
+        std::fs::write(dir.path().join("model.safetensors"), "test").expect("write file");
+
+        assert!(Executor::has_safetensors_files(dir.path()));
+    }
+
+    #[test]
+    fn test_has_safetensors_files_false() {
+        use tempfile::TempDir;
+        let dir = TempDir::new().expect("create temp dir");
+        std::fs::write(dir.path().join("model.gguf"), "test").expect("write file");
+
+        assert!(!Executor::has_safetensors_files(dir.path()));
+    }
+
+    #[test]
+    fn test_has_safetensors_files_nonexistent_dir() {
+        let nonexistent = std::path::Path::new("/nonexistent/path/xyz123");
+        assert!(!Executor::has_safetensors_files(nonexistent));
+    }
+
+    #[test]
+    fn test_integrity_scenario_creation() {
+        let model_id = ModelId::new("test", "model");
+        let scenario = Executor::integrity_scenario(&model_id);
+
+        assert_eq!(scenario.model.org, "test");
+        assert_eq!(scenario.model.name, "model");
+        assert_eq!(scenario.format, Format::SafeTensors);
+        assert!(scenario.prompt.contains("G0"));
+    }
+
+    #[test]
+    fn test_run_g0_integrity_check_no_safetensors() {
+        use tempfile::TempDir;
+        let dir = TempDir::new().expect("create temp dir");
+        // No safetensors files
+
+        let mut executor = Executor::new();
+        let model_id = ModelId::new("test", "model");
+        let (passed, failed) = executor.run_g0_integrity_check(dir.path(), &model_id);
+
+        // No safetensors = auto-pass (0, 0)
+        assert_eq!(passed, 0);
+        assert_eq!(failed, 0);
+    }
+
+    #[test]
+    fn test_run_g0_integrity_check_missing_config() {
+        use tempfile::TempDir;
+        let dir = TempDir::new().expect("create temp dir");
+
+        // Create safetensors but no config.json
+        create_mock_safetensors_for_test(dir.path(), 24, 896, 151_936);
+
+        let mut executor = Executor::new();
+        let model_id = ModelId::new("test", "model");
+        let (passed, failed) = executor.run_g0_integrity_check(dir.path(), &model_id);
+
+        // Should fail due to missing config
+        assert_eq!(passed, 0);
+        assert!(failed > 0);
+
+        // Evidence should contain G0-INTEGRITY failure
+        let evidence = executor.evidence();
+        assert!(
+            evidence
+                .all()
+                .iter()
+                .any(|e| e.gate_id.starts_with("G0-INTEGRITY"))
+        );
+    }
+
+    #[test]
+    fn test_run_g0_integrity_check_pass() {
+        use tempfile::TempDir;
+        let dir = TempDir::new().expect("create temp dir");
+
+        // Create matching config and safetensors
+        create_test_config_for_executor(dir.path(), 24, 896, 151_936);
+        create_mock_safetensors_for_test(dir.path(), 24, 896, 151_936);
+
+        let mut executor = Executor::new();
+        let model_id = ModelId::new("test", "model");
+        let (passed, failed) = executor.run_g0_integrity_check(dir.path(), &model_id);
+
+        assert_eq!(passed, 1);
+        assert_eq!(failed, 0);
+
+        // Evidence should show corroborated
+        let evidence = executor.evidence();
+        assert!(
+            evidence
+                .all()
+                .iter()
+                .any(|e| { e.gate_id.starts_with("G0-INTEGRITY") && e.outcome.is_pass() })
+        );
+    }
+
+    #[test]
+    fn test_run_g0_integrity_check_layer_mismatch() {
+        use tempfile::TempDir;
+        let dir = TempDir::new().expect("create temp dir");
+
+        // Config says 14 layers but tensors have 24 (the corrupted cache bug)
+        create_test_config_for_executor(dir.path(), 14, 896, 151_936);
+        create_mock_safetensors_for_test(dir.path(), 24, 896, 151_936);
+
+        let mut executor = Executor::new();
+        let model_id = ModelId::new("test", "model");
+        let (passed, failed) = executor.run_g0_integrity_check(dir.path(), &model_id);
+
+        assert_eq!(passed, 0);
+        assert!(failed > 0);
+
+        // Evidence should contain LAYERS failure
+        let evidence = executor.evidence();
+        assert!(evidence.all().iter().any(|e| e.gate_id.contains("LAYERS")));
+    }
+
+    /// Helper to create test config.json
+    fn create_test_config_for_executor(
+        dir: &std::path::Path,
+        layers: usize,
+        hidden: usize,
+        vocab: usize,
+    ) {
+        let config = format!(
+            r#"{{"num_hidden_layers": {layers}, "hidden_size": {hidden}, "vocab_size": {vocab}}}"#
+        );
+        std::fs::write(dir.join("config.json"), config).expect("write config");
+    }
+
+    /// Helper to create mock SafeTensors file with specific dimensions
+    #[allow(clippy::items_after_statements)]
+    fn create_mock_safetensors_for_test(
+        dir: &std::path::Path,
+        layers: usize,
+        hidden: usize,
+        vocab: usize,
+    ) {
+        let mut header_obj = serde_json::Map::new();
+
+        // Embedding tensor
+        let mut embed_info = serde_json::Map::new();
+        embed_info.insert("shape".to_string(), serde_json::json!([vocab, hidden]));
+        embed_info.insert(
+            "dtype".to_string(),
+            serde_json::Value::String("F32".to_string()),
+        );
+        embed_info.insert(
+            "data_offsets".to_string(),
+            serde_json::json!([0, vocab * hidden * 4]),
+        );
+        header_obj.insert(
+            "model.embed_tokens.weight".to_string(),
+            serde_json::Value::Object(embed_info),
+        );
+
+        // Layer tensors
+        for i in 0..layers {
+            let mut layer_info = serde_json::Map::new();
+            layer_info.insert("shape".to_string(), serde_json::json!([hidden, hidden]));
+            layer_info.insert(
+                "dtype".to_string(),
+                serde_json::Value::String("F32".to_string()),
+            );
+            layer_info.insert("data_offsets".to_string(), serde_json::json!([0, 0]));
+            header_obj.insert(
+                format!("model.layers.{i}.self_attn.q_proj.weight"),
+                serde_json::Value::Object(layer_info),
+            );
+        }
+
+        let header_json = serde_json::to_string(&header_obj).expect("serialize header");
+        let header_bytes = header_json.as_bytes();
+        let header_len = header_bytes.len() as u64;
+
+        let path = dir.join("model.safetensors");
+        let mut file = std::fs::File::create(path).expect("create safetensors");
+        use std::io::Write;
+        file.write_all(&header_len.to_le_bytes())
+            .expect("write len");
+        file.write_all(header_bytes).expect("write header");
+        file.write_all(&[0u8; 1024]).expect("write data");
     }
 }

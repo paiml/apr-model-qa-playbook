@@ -25,6 +25,7 @@ hostname = "0.4"
 rayon = "1.10"
 sha2 = "0.10"
 num_cpus = "1.16"
+safetensors = { workspace = true }
 # Test fixtures dependencies (optional)
 tempfile = { version = "3", optional = true }
 half = { version = "2.4", optional = true }

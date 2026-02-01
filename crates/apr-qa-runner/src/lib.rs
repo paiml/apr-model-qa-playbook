@@ -28,6 +28,7 @@ pub mod differential;
 pub mod error;
 pub mod evidence;
 pub mod executor;
+pub mod integrity;
 pub mod parallel;
 pub mod patterns;
 pub mod playbook;
@@ -61,6 +62,10 @@ pub use error::{Error, Result};
 pub use evidence::{Evidence, EvidenceCollector, Outcome, PerformanceMetrics};
 pub use executor::{
     ExecutionConfig, ExecutionResult, Executor, FailurePolicy, ToolExecutor, ToolTestResult,
+};
+pub use integrity::{
+    ConfigValues, IntegrityResult, TensorDerivedValues, check_safetensors_integrity,
+    gate_ids as integrity_gate_ids,
 };
 pub use parallel::{ExecutionMode, ParallelConfig, ParallelExecutor, ParallelResult};
 pub use patterns::{
