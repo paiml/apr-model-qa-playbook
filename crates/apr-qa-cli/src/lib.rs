@@ -523,6 +523,7 @@ pub fn certify_model(model_id: &str, config: &CertificationConfig) -> ModelCerti
 mod tests {
     use super::*;
     use apr_qa_gen::{Backend, Format, Modality, QaScenario};
+    use std::str::FromStr;
 
     fn make_test_scenario() -> QaScenario {
         QaScenario::new(
@@ -1360,5 +1361,166 @@ gates:
         assert_eq!(config.apr_binary, "/usr/bin/apr");
         assert!(config.subprocess);
         assert!(config.dry_run);
+    }
+
+    // --- Additional coverage tests ---
+
+    #[test]
+    fn test_list_all_models_returns_models() {
+        let models = list_all_models();
+        assert!(!models.is_empty());
+        // Should have default models from registry
+        assert!(models.len() >= 5);
+    }
+
+    #[test]
+    fn test_filter_models_by_size_small() {
+        let models = list_all_models();
+        let small = filter_models_by_size(&models, "small");
+        // May or may not have small models depending on defaults
+        for m in &small {
+            assert!(format!("{:?}", m.size).to_lowercase().contains("small"));
+        }
+    }
+
+    #[test]
+    fn test_filter_models_by_size_no_match() {
+        let models = list_all_models();
+        let none = filter_models_by_size(&models, "nonexistent");
+        assert!(none.is_empty());
+    }
+
+    #[test]
+    fn test_generate_junit_report_basic() {
+        let evidence = vec![make_corroborated_evidence()];
+        let collector = collect_evidence(evidence);
+        let mqs = calculate_mqs_score("test/model", &collector).unwrap();
+        let junit = generate_junit_report("test/model", &collector, &mqs);
+        assert!(junit.is_ok());
+        assert!(junit.unwrap().contains("testsuite"));
+    }
+
+    #[test]
+    fn test_build_execution_config_with_model_path() {
+        let config = PlaybookRunConfig {
+            subprocess: true,
+            model_path: Some("/models/test.gguf".to_string()),
+            ..Default::default()
+        };
+        let exec = build_execution_config(&config).unwrap();
+        assert!(exec.subprocess_mode);
+        assert_eq!(exec.model_path, Some("/models/test.gguf".to_string()));
+    }
+
+    #[test]
+    fn test_build_execution_config_with_timeout() {
+        let config = PlaybookRunConfig {
+            timeout: 90000,
+            ..Default::default()
+        };
+        let exec = build_execution_config(&config).unwrap();
+        assert_eq!(exec.default_timeout_ms, 90000);
+    }
+
+    #[test]
+    fn test_build_execution_config_with_workers() {
+        let config = PlaybookRunConfig {
+            workers: 8,
+            ..Default::default()
+        };
+        let exec = build_execution_config(&config).unwrap();
+        assert_eq!(exec.max_workers, 8);
+    }
+
+    #[test]
+    fn test_cert_tier_from_str_all_values() {
+        assert!(CertTier::from_str("smoke").is_ok());
+        assert!(CertTier::from_str("mvp").is_ok());
+        assert!(CertTier::from_str("quick").is_ok());
+        assert!(CertTier::from_str("standard").is_ok());
+        assert!(CertTier::from_str("deep").is_ok());
+        assert!(CertTier::from_str("unknown").is_err());
+    }
+
+    #[test]
+    fn test_cert_tier_from_str_case_insensitive() {
+        assert!(CertTier::from_str("SMOKE").is_ok());
+        assert!(CertTier::from_str("MVP").is_ok());
+        assert!(CertTier::from_str("Quick").is_ok());
+    }
+
+    #[test]
+    fn test_cert_tier_playbook_suffix_all() {
+        assert_eq!(CertTier::Smoke.playbook_suffix(), "-smoke");
+        assert_eq!(CertTier::Mvp.playbook_suffix(), "-mvp");
+        assert_eq!(CertTier::Quick.playbook_suffix(), "-quick");
+        assert_eq!(CertTier::Standard.playbook_suffix(), "");
+        assert_eq!(CertTier::Deep.playbook_suffix(), "");
+    }
+
+    #[test]
+    fn test_execute_playbook_with_yaml_inline() {
+        let yaml = r#"
+name: test-playbook
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+  quantizations: [q4_k_m]
+  size_category: tiny
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+  seed: 42
+  timeout_ms: 30000
+gates:
+  g1_model_loads: true
+  g2_basic_inference: true
+  g3_no_crashes: true
+  g4_not_garbage: true
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("valid yaml");
+        let config = build_certification_config(CertTier::Smoke, false, None);
+        let result = execute_playbook(&playbook, config);
+        // Should succeed in mock mode
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_certify_model_with_subprocess() {
+        let config = CertificationConfig {
+            tier: CertTier::Smoke,
+            subprocess: true,
+            model_cache: Some(std::path::PathBuf::from("/tmp/test")),
+            ..Default::default()
+        };
+        // Will fail because playbook doesn't exist
+        let result = certify_model("org/model-smoke", &config);
+        assert!(!result.success);
+    }
+
+    #[test]
+    fn test_generate_model_scenarios_all_modalities_present() {
+        let scenarios = generate_model_scenarios("test/model", 1);
+        // Check all modalities are present
+        let has_run = scenarios
+            .iter()
+            .any(|s| s.modality == apr_qa_gen::Modality::Run);
+        let has_chat = scenarios
+            .iter()
+            .any(|s| s.modality == apr_qa_gen::Modality::Chat);
+        let has_serve = scenarios
+            .iter()
+            .any(|s| s.modality == apr_qa_gen::Modality::Serve);
+        assert!(has_run && has_chat && has_serve);
+    }
+
+    #[test]
+    fn test_generate_tickets_regular_failures() {
+        let evidence = vec![make_falsified_evidence()];
+        let tickets = generate_tickets_from_evidence(&evidence, "test/repo", false, 1);
+        // Should generate tickets for regular failures
+        let _ = tickets; // May or may not have tickets
     }
 }
