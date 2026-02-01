@@ -107,3 +107,7 @@ The oracle indexes:
 - All Sovereign AI Stack repos (trueno, aprender, realizar, etc.)
 - Ground truth corpora (HuggingFace, JAX, vLLM, TGI patterns)
 - This playbook's documentation and source code
+
+Index auto-updates via post-commit hooks and `ora-fresh` on shell login.
+To manually check freshness: `ora-fresh`
+To force full reindex: `batuta oracle --rag-index --force`
