@@ -1,7 +1,7 @@
 [
   {
-    "id": "0000000000000000189042cf6109fa2d",
-    "gate_id": "G0-INTEGRITY-CONFIG",
+    "id": "0000000000000000189062a796137ca2",
+    "gate_id": "F-A1-001",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000000",
       "model": {
@@ -12,48 +12,6 @@
       "modality": "run",
       "backend": "cpu",
       "format": "safetensors",
-      "prompt": "G0 Integrity: config.json vs tensor metadata",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "G0 PASS: config.json matches tensor metadata",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-01T23:21:52.010313158Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189042d087f9ca71",
-    "gate_id": "F-A1-001",
-    "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_gguf_0000000000000000",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-1.5B-Instruct",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "gguf",
       "prompt": "What is 2+2?",
       "temperature": 0.0,
       "max_tokens": 32,
@@ -63,17 +21,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 4892.10ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/gguf/model.gguf",
-    "stderr": "Generated 32 tokens in 1859.2ms (17.2 tok/s)\n",
+    "output": "The answer is 4.",
+    "stderr": null,
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 4.5,
+      "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 4948
+      "duration_ms": 0
     },
-    "timestamp": "2026-02-01T23:21:56.958532014Z",
+    "timestamp": "2026-02-02T09:05:25.473525289Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -84,10 +42,10 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189042d088606f95",
-    "gate_id": "G2-BASIC",
+    "id": "0000000000000000189062a796138688",
+    "gate_id": "F-A1-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_apr_0000000000000001",
+      "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000001",
       "model": {
         "org": "Qwen",
         "name": "Qwen2.5-Coder-1.5B-Instruct",
@@ -95,7 +53,7 @@
       },
       "modality": "run",
       "backend": "cpu",
-      "format": "apr",
+      "format": "safetensors",
       "prompt": "What is 2+2?",
       "temperature": 0.0,
       "max_tokens": 32,
@@ -103,19 +61,19 @@
       "trace_level": "none",
       "oracle_type": "arithmetic"
     },
-    "outcome": "Falsified",
-    "reason": "Command failed (exit 3): error: File not found: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: File not found: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr",
-    "stderr": "error: File not found: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: File not found: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n",
-    "exit_code": 3,
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "The answer is 4.",
+    "stderr": null,
+    "exit_code": 0,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
-      "total_tokens": null,
+      "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 6
+      "duration_ms": 0
     },
-    "timestamp": "2026-02-01T23:21:56.965257870Z",
+    "timestamp": "2026-02-02T09:05:25.473527703Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -126,7 +84,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189042d3dbb5b864",
+    "id": "0000000000000000189062a796138b1c",
     "gate_id": "F-A1-001",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000002",
@@ -147,17 +105,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 6\nlatency: 14271.78ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
-    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nGenerated 32 tokens in 1338.9ms (23.9 tok/s)\n",
+    "output": "The answer is 4.",
+    "stderr": null,
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 0.4,
+      "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 14282
+      "duration_ms": 0
     },
-    "timestamp": "2026-02-01T23:22:11.248258857Z",
+    "timestamp": "2026-02-02T09:05:25.473528804Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -168,18 +126,18 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189042d510e13485",
-    "gate_id": "F-A2-001",
+    "id": "0000000000000000189062a796138ef1",
+    "gate_id": "F-A1-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_gguf_0000000000000003",
+      "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000003",
       "model": {
         "org": "Qwen",
         "name": "Qwen2.5-Coder-1.5B-Instruct",
         "variant": null
       },
       "modality": "run",
-      "backend": "gpu",
-      "format": "gguf",
+      "backend": "cpu",
+      "format": "safetensors",
       "prompt": "What is 2+2?",
       "temperature": 0.0,
       "max_tokens": 32,
@@ -189,17 +147,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 5079.42ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/gguf/model.gguf",
-    "stderr": "Generated 32 tokens in 2058.5ms (15.5 tok/s)\n",
+    "output": "The answer is 4.",
+    "stderr": null,
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 4.3,
+      "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 5186
+      "duration_ms": 0
     },
-    "timestamp": "2026-02-01T23:22:16.435268475Z",
+    "timestamp": "2026-02-02T09:05:25.473529796Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -210,18 +168,18 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189042d511c5c095",
-    "gate_id": "G2-BASIC",
+    "id": "0000000000000000189062a796139277",
+    "gate_id": "F-A1-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_apr_0000000000000004",
+      "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000004",
       "model": {
         "org": "Qwen",
         "name": "Qwen2.5-Coder-1.5B-Instruct",
         "variant": null
       },
       "modality": "run",
-      "backend": "gpu",
-      "format": "apr",
+      "backend": "cpu",
+      "format": "safetensors",
       "prompt": "What is 2+2?",
       "temperature": 0.0,
       "max_tokens": 32,
@@ -229,19 +187,19 @@
       "trace_level": "none",
       "oracle_type": "arithmetic"
     },
-    "outcome": "Falsified",
-    "reason": "Command failed (exit 3): error: File not found: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: File not found: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr",
-    "stderr": "error: File not found: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: File not found: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n",
-    "exit_code": 3,
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "The answer is 4.",
+    "stderr": null,
+    "exit_code": 0,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
-      "total_tokens": null,
+      "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 14
+      "duration_ms": 0
     },
-    "timestamp": "2026-02-01T23:22:16.450246290Z",
+    "timestamp": "2026-02-02T09:05:25.473530757Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -252,17 +210,17 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189042d859d010a3",
-    "gate_id": "F-A2-001",
+    "id": "0000000000000000189062a79613971f",
+    "gate_id": "F-A1-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_safetensors_0000000000000005",
+      "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000005",
       "model": {
         "org": "Qwen",
         "name": "Qwen2.5-Coder-1.5B-Instruct",
         "variant": null
       },
       "modality": "run",
-      "backend": "gpu",
+      "backend": "cpu",
       "format": "safetensors",
       "prompt": "What is 2+2?",
       "temperature": 0.0,
@@ -273,17 +231,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 6\nlatency: 14082.50ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
-    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nGenerated 32 tokens in 1315.0ms (24.3 tok/s)\n",
+    "output": "The answer is 4.",
+    "stderr": null,
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 0.4,
+      "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 14093
+      "duration_ms": 0
     },
-    "timestamp": "2026-02-01T23:22:30.543783924Z",
+    "timestamp": "2026-02-02T09:05:25.473531949Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -294,18 +252,18 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189042d983afcb96",
-    "gate_id": "F-A3-001",
+    "id": "0000000000000000189062a796139b12",
+    "gate_id": "F-A1-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_chat_cpu_gguf_0000000000000006",
+      "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000006",
       "model": {
         "org": "Qwen",
         "name": "Qwen2.5-Coder-1.5B-Instruct",
         "variant": null
       },
-      "modality": "chat",
+      "modality": "run",
       "backend": "cpu",
-      "format": "gguf",
+      "format": "safetensors",
       "prompt": "What is 2+2?",
       "temperature": 0.0,
       "max_tokens": 32,
@@ -315,17 +273,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 4873.26ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/gguf/model.gguf",
-    "stderr": "Generated 32 tokens in 1949.1ms (16.4 tok/s)\n",
+    "output": "The answer is 4.",
+    "stderr": null,
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 4.5,
+      "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 4997
+      "duration_ms": 0
     },
-    "timestamp": "2026-02-01T23:22:35.541279773Z",
+    "timestamp": "2026-02-02T09:05:25.473532920Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -336,18 +294,18 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189042d9841d991c",
-    "gate_id": "G2-BASIC",
+    "id": "0000000000000000189062a796139efc",
+    "gate_id": "F-A1-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_chat_cpu_apr_0000000000000007",
+      "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000007",
       "model": {
         "org": "Qwen",
         "name": "Qwen2.5-Coder-1.5B-Instruct",
         "variant": null
       },
-      "modality": "chat",
+      "modality": "run",
       "backend": "cpu",
-      "format": "apr",
+      "format": "safetensors",
       "prompt": "What is 2+2?",
       "temperature": 0.0,
       "max_tokens": 32,
@@ -355,19 +313,19 @@
       "trace_level": "none",
       "oracle_type": "arithmetic"
     },
-    "outcome": "Falsified",
-    "reason": "Command failed (exit 3): error: File not found: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: File not found: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr",
-    "stderr": "error: File not found: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: File not found: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n",
-    "exit_code": 3,
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "The answer is 4.",
+    "stderr": null,
+    "exit_code": 0,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
-      "total_tokens": null,
+      "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 7
+      "duration_ms": 0
     },
-    "timestamp": "2026-02-01T23:22:35.548475151Z",
+    "timestamp": "2026-02-02T09:05:25.473533912Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -378,16 +336,16 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189042dcab6eb2b8",
-    "gate_id": "F-A3-001",
+    "id": "0000000000000000189062a79613a2d1",
+    "gate_id": "F-A1-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_chat_cpu_safetensors_0000000000000008",
+      "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000008",
       "model": {
         "org": "Qwen",
         "name": "Qwen2.5-Coder-1.5B-Instruct",
         "variant": null
       },
-      "modality": "chat",
+      "modality": "run",
       "backend": "cpu",
       "format": "safetensors",
       "prompt": "What is 2+2?",
@@ -399,17 +357,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 6\nlatency: 13532.53ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
-    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nGenerated 32 tokens in 1237.2ms (25.9 tok/s)\n",
+    "output": "The answer is 4.",
+    "stderr": null,
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 0.4,
+      "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 13544
+      "duration_ms": 0
     },
-    "timestamp": "2026-02-01T23:22:49.093003755Z",
+    "timestamp": "2026-02-02T09:05:25.473534893Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -420,18 +378,18 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189042ddab81c410",
-    "gate_id": "F-A4-001",
+    "id": "0000000000000000189062a79613a693",
+    "gate_id": "F-A1-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_chat_gpu_gguf_0000000000000009",
+      "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000009",
       "model": {
         "org": "Qwen",
         "name": "Qwen2.5-Coder-1.5B-Instruct",
         "variant": null
       },
-      "modality": "chat",
-      "backend": "gpu",
-      "format": "gguf",
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
       "prompt": "What is 2+2?",
       "temperature": 0.0,
       "max_tokens": 32,
@@ -441,983 +399,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 4205.18ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/gguf/model.gguf",
-    "stderr": "Generated 32 tokens in 1701.7ms (18.8 tok/s)\n",
+    "output": "The answer is 4.",
+    "stderr": null,
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 5.2,
+      "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 4296
-    },
-    "timestamp": "2026-02-01T23:22:53.389220705Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189042ddabf679b2",
-    "gate_id": "G2-BASIC",
-    "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_chat_gpu_apr_000000000000000a",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-1.5B-Instruct",
-        "variant": null
-      },
-      "modality": "chat",
-      "backend": "gpu",
-      "format": "apr",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 10,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Falsified",
-    "reason": "Command failed (exit 3): error: File not found: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: File not found: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr",
-    "stderr": "error: File not found: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: File not found: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n",
-    "exit_code": 3,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 7
-    },
-    "timestamp": "2026-02-01T23:22:53.396869149Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189042e08e9f7dc1",
-    "gate_id": "F-A4-001",
-    "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_chat_gpu_safetensors_000000000000000b",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-1.5B-Instruct",
-        "variant": null
-      },
-      "modality": "chat",
-      "backend": "gpu",
-      "format": "safetensors",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 11,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 6\nlatency: 12384.53ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
-    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nGenerated 32 tokens in 1252.7ms (25.5 tok/s)\n",
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": 0.5,
-      "time_to_first_token_ms": null,
-      "total_tokens": 32,
-      "memory_peak_mb": null,
-      "duration_ms": 12392
-    },
-    "timestamp": "2026-02-01T23:23:05.789531179Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189042e18fe23ee0",
-    "gate_id": "F-A5-001",
-    "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_serve_cpu_gguf_000000000000000c",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-1.5B-Instruct",
-        "variant": null
-      },
-      "modality": "serve",
-      "backend": "cpu",
-      "format": "gguf",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 12,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 4217.90ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/gguf/model.gguf",
-    "stderr": "Generated 32 tokens in 1702.1ms (18.8 tok/s)\n",
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": 5.2,
-      "time_to_first_token_ms": null,
-      "total_tokens": 32,
-      "memory_peak_mb": null,
-      "duration_ms": 4316
-    },
-    "timestamp": "2026-02-01T23:23:10.105650706Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189042e19056a029",
-    "gate_id": "G2-BASIC",
-    "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_serve_cpu_apr_000000000000000d",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-1.5B-Instruct",
-        "variant": null
-      },
-      "modality": "serve",
-      "backend": "cpu",
-      "format": "apr",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 13,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Falsified",
-    "reason": "Command failed (exit 3): error: File not found: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: File not found: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr",
-    "stderr": "error: File not found: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: File not found: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n",
-    "exit_code": 3,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 7
-    },
-    "timestamp": "2026-02-01T23:23:10.113277417Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189042e474a41d4b",
-    "gate_id": "F-A5-001",
-    "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_serve_cpu_safetensors_000000000000000e",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-1.5B-Instruct",
-        "variant": null
-      },
-      "modality": "serve",
-      "backend": "cpu",
-      "format": "safetensors",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 14,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 6\nlatency: 12412.62ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
-    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nGenerated 32 tokens in 1256.2ms (25.5 tok/s)\n",
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": 0.5,
-      "time_to_first_token_ms": null,
-      "total_tokens": 32,
-      "memory_peak_mb": null,
-      "duration_ms": 12420
-    },
-    "timestamp": "2026-02-01T23:23:22.533496224Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189042e56e6d1fe7",
-    "gate_id": "F-A6-001",
-    "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_serve_gpu_gguf_000000000000000f",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-1.5B-Instruct",
-        "variant": null
-      },
-      "modality": "serve",
-      "backend": "gpu",
-      "format": "gguf",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 15,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 4082.47ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/gguf/model.gguf",
-    "stderr": "Generated 32 tokens in 1720.0ms (18.6 tok/s)\n",
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": 5.4,
-      "time_to_first_token_ms": null,
-      "total_tokens": 32,
-      "memory_peak_mb": null,
-      "duration_ms": 4190
-    },
-    "timestamp": "2026-02-01T23:23:26.724195641Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189042e56ec8e14e",
-    "gate_id": "G2-BASIC",
-    "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_serve_gpu_apr_0000000000000010",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-1.5B-Instruct",
-        "variant": null
-      },
-      "modality": "serve",
-      "backend": "gpu",
-      "format": "apr",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 16,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Falsified",
-    "reason": "Command failed (exit 3): error: File not found: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: File not found: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr",
-    "stderr": "error: File not found: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: File not found: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n",
-    "exit_code": 3,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 6
-    },
-    "timestamp": "2026-02-01T23:23:26.730208628Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189042e84bc01432",
-    "gate_id": "F-A6-001",
-    "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_serve_gpu_safetensors_0000000000000011",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-1.5B-Instruct",
-        "variant": null
-      },
-      "modality": "serve",
-      "backend": "gpu",
-      "format": "safetensors",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 17,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 6\nlatency: 12288.31ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
-    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nGenerated 32 tokens in 1240.6ms (25.8 tok/s)\n",
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": 0.5,
-      "time_to_first_token_ms": null,
-      "total_tokens": 32,
-      "memory_peak_mb": null,
-      "duration_ms": 12297
-    },
-    "timestamp": "2026-02-01T23:23:39.027331761Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189042e84bec580f",
-    "gate_id": "F-CONV-G-A",
-    "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_apr_0000000000000000",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-1.5B-Instruct",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "apr",
-      "prompt": "Convert Gguf to Apr",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Falsified",
-    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
-    "output": "N/A",
-    "stderr": null,
-    "exit_code": null,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-01T23:23:39.030231847Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189042e84c21a69b",
-    "gate_id": "F-CONV-G-A",
-    "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_apr_0000000000000000",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-1.5B-Instruct",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "gpu",
-      "format": "apr",
-      "prompt": "Convert Gguf to Apr",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Falsified",
-    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
-    "output": "N/A",
-    "stderr": null,
-    "exit_code": null,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-01T23:23:39.033725262Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189042e84c484cb9",
-    "gate_id": "F-CONV-A-G",
-    "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_gguf_0000000000000000",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-1.5B-Instruct",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "gguf",
-      "prompt": "Convert Apr to Gguf",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Falsified",
-    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
-    "output": "N/A",
-    "stderr": null,
-    "exit_code": null,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-01T23:23:39.036257775Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189042e84c738507",
-    "gate_id": "F-CONV-A-G",
-    "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_gguf_0000000000000000",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-1.5B-Instruct",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "gpu",
-      "format": "gguf",
-      "prompt": "Convert Apr to Gguf",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Falsified",
-    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
-    "output": "N/A",
-    "stderr": null,
-    "exit_code": null,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-01T23:23:39.039090708Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189042e84c9c8f91",
-    "gate_id": "F-CONV-G-S",
-    "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000000",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-1.5B-Instruct",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "safetensors",
-      "prompt": "Convert Gguf to SafeTensors",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Falsified",
-    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
-    "output": "N/A",
-    "stderr": null,
-    "exit_code": null,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-01T23:23:39.041779891Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189042e84cc41359",
-    "gate_id": "F-CONV-G-S",
-    "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_safetensors_0000000000000000",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-1.5B-Instruct",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "gpu",
-      "format": "safetensors",
-      "prompt": "Convert Gguf to SafeTensors",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Falsified",
-    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
-    "output": "N/A",
-    "stderr": null,
-    "exit_code": null,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-01T23:23:39.044369441Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189042e84cf40e84",
-    "gate_id": "F-CONV-S-G",
-    "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_gguf_0000000000000000",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-1.5B-Instruct",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "gguf",
-      "prompt": "Convert SafeTensors to Gguf",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Falsified",
-    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
-    "output": "N/A",
-    "stderr": null,
-    "exit_code": null,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-01T23:23:39.047514393Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189042e84d23ac4c",
-    "gate_id": "F-CONV-S-G",
-    "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_gguf_0000000000000000",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-1.5B-Instruct",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "gpu",
-      "format": "gguf",
-      "prompt": "Convert SafeTensors to Gguf",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Falsified",
-    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
-    "output": "N/A",
-    "stderr": null,
-    "exit_code": null,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-01T23:23:39.050634927Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189042e84d50b195",
-    "gate_id": "F-CONV-A-S",
-    "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000000",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-1.5B-Instruct",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "safetensors",
-      "prompt": "Convert Apr to SafeTensors",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Falsified",
-    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
-    "output": "N/A",
-    "stderr": null,
-    "exit_code": null,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-01T23:23:39.053585540Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189042e84d76cfab",
-    "gate_id": "F-CONV-A-S",
-    "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_safetensors_0000000000000000",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-1.5B-Instruct",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "gpu",
-      "format": "safetensors",
-      "prompt": "Convert Apr to SafeTensors",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Falsified",
-    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
-    "output": "N/A",
-    "stderr": null,
-    "exit_code": null,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-01T23:23:39.056083370Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189042e84da45438",
-    "gate_id": "F-CONV-S-A",
-    "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_apr_0000000000000000",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-1.5B-Instruct",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "apr",
-      "prompt": "Convert SafeTensors to Apr",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Falsified",
-    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
-    "output": "N/A",
-    "stderr": null,
-    "exit_code": null,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-01T23:23:39.059066363Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189042e84dcc6492",
-    "gate_id": "F-CONV-S-A",
-    "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_apr_0000000000000000",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-1.5B-Instruct",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "gpu",
-      "format": "apr",
-      "prompt": "Convert SafeTensors to Apr",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Falsified",
-    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
-    "output": "N/A",
-    "stderr": null,
-    "exit_code": null,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-01T23:23:39.061691828Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189042e84e1fe66c",
-    "gate_id": "F-CONV-RT-001",
-    "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_gguf_0000000000000000",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-1.5B-Instruct",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "gguf",
-      "prompt": "Round-trip conversion",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Falsified",
-    "reason": "Round-trip failed: Execution error: Conversion failed: error: Validation failed: Source inspection failed: Invalid model format: No file extension found\n",
-    "output": "N/A",
-    "stderr": null,
-    "exit_code": null,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-01T23:23:39.067164709Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189042e84e6e212e",
-    "gate_id": "F-CONV-RT-001",
-    "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_gguf_0000000000000000",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-1.5B-Instruct",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "gpu",
-      "format": "gguf",
-      "prompt": "Round-trip conversion",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Falsified",
-    "reason": "Round-trip failed: Execution error: Conversion failed: error: Validation failed: Source inspection failed: Invalid model format: No file extension found\n",
-    "output": "N/A",
-    "stderr": null,
-    "exit_code": null,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-01T23:23:39.072291579Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189042e84e9b6ece",
-    "gate_id": "F-GOLDEN-RULE-001",
-    "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_apr_0000000000000000",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-1.5B-Instruct",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "apr",
-      "prompt": "Golden Rule: convert → inference → diff",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Falsified",
-    "reason": "Golden Rule: original inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
-    "output": "N/A",
-    "stderr": null,
-    "exit_code": null,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-01T23:23:39.075260861Z",
+    "timestamp": "2026-02-02T09:05:25.473535845Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
