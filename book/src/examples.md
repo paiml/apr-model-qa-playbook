@@ -428,6 +428,61 @@ Results are stored in:
 - `certifications/<model>/evidence.json` - Raw test evidence
 - `README.md` - Certification table (via `apr-qa-readme-sync`)
 
+## Playbook Integrity Locking
+
+Lock playbook hashes to detect unauthorized modifications:
+
+```bash
+# Generate lock file
+cargo run --bin apr-qa -- lock-playbooks
+
+# Output: playbooks/playbook.lock.yaml
+# Contains SHA-256 hashes for each .playbook.yaml file
+```
+
+During certification, the executor automatically verifies playbooks against the
+lock file. If a playbook has been modified since locking, certification refuses
+to proceed (Jidoka: stop the line).
+
+## Auto-Ticket Generation from Failures
+
+Generate structured upstream tickets that group failures by root cause:
+
+```bash
+# Certify with auto-ticket generation
+cargo run --bin apr-qa -- certify --family qwen-coder --tier mvp --auto-ticket
+
+# Output:
+# === Auto-Generated Tickets (2) ===
+#   [QA] F-CONV-001: tensor_name_mismatch (12 occurrences) [P1-High]
+#     Fixture: fixtures/tensor_name_mismatch.py
+#   [QA] F-CONV-002: missing_artifact (3 occurrences) [P1-High]
+#     Fixture: fixtures/artifact_completeness.py
+```
+
+The auto-ticket system:
+1. Classifies failures by stderr pattern matching (tensor mismatch, dequantization, missing artifact, etc.)
+2. Groups by root cause (12 same-type failures become 1 ticket)
+3. Renders ticket body from the defect-fixture map with reproduction steps
+4. Attaches upstream fixture paths and pygmy builder names
+
+### Programmatic Usage
+
+```rust
+use apr_qa_report::defect_map::load_defect_fixture_map;
+use apr_qa_report::ticket::generate_structured_tickets;
+
+let defect_map = load_defect_fixture_map().expect("load map");
+let tickets = generate_structured_tickets(&evidence, &defect_map);
+
+for ticket in &tickets {
+    println!("{} [{}]", ticket.title, ticket.priority);
+    if let Some(ref fixture) = ticket.upstream_fixture {
+        println!("  Fixture: {fixture}");
+    }
+}
+```
+
 ## YAML Playbook Examples
 
 The `playbooks/` directory contains YAML playbooks:

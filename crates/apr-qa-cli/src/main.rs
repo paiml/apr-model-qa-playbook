@@ -9,10 +9,11 @@
 
 use apr_qa_cli::{
     CertTier, PlaybookRunConfig, build_certification_config, build_execution_config,
-    calculate_mqs_score, calculate_popperian_score, collect_evidence, execute_playbook,
-    filter_models_by_size, generate_html_report, generate_junit_report, generate_model_scenarios,
-    generate_tickets_from_evidence, list_all_models, load_playbook, parse_evidence,
-    parse_failure_policy, playbook_path_for_model, scenarios_to_json, scenarios_to_yaml,
+    calculate_mqs_score, calculate_popperian_score, collect_evidence, execute_auto_tickets,
+    execute_playbook, filter_models_by_size, generate_html_report, generate_junit_report,
+    generate_lock_file, generate_model_scenarios, generate_tickets_from_evidence, list_all_models,
+    load_playbook, parse_evidence, parse_failure_policy, playbook_path_for_model,
+    scenarios_to_json, scenarios_to_yaml,
 };
 use apr_qa_runner::ToolExecutor;
 use clap::{Parser, Subcommand};
@@ -65,6 +66,18 @@ enum Commands {
         /// Path to apr binary for real inference
         #[arg(long, default_value = "apr")]
         apr_binary: String,
+
+        /// Auto-generate structured tickets from failures (§3.6)
+        #[arg(long)]
+        auto_ticket: bool,
+
+        /// Repository for auto-ticket creation (e.g., "paiml/aprender")
+        #[arg(long, default_value = "paiml/aprender")]
+        ticket_repo: String,
+
+        /// Disable playbook integrity checks (§3.1)
+        #[arg(long)]
+        no_integrity_check: bool,
     },
 
     /// Run a playbook
@@ -193,6 +206,17 @@ enum Commands {
         size: Option<String>,
     },
 
+    /// Lock playbook hashes for integrity verification (§3.1)
+    LockPlaybooks {
+        /// Directory containing playbook YAML files
+        #[arg(value_name = "DIR", default_value = "playbooks")]
+        dir: PathBuf,
+
+        /// Output lock file path
+        #[arg(short, long, default_value = "playbooks/playbook.lock.yaml")]
+        output: PathBuf,
+    },
+
     /// Generate upstream tickets from failures
     Tickets {
         /// Path to evidence JSON file
@@ -249,6 +273,9 @@ fn main() {
             dry_run,
             model_cache,
             apr_binary,
+            auto_ticket,
+            ticket_repo,
+            no_integrity_check,
         } => {
             run_certification(
                 all,
@@ -259,6 +286,9 @@ fn main() {
                 dry_run,
                 model_cache,
                 &apr_binary,
+                auto_ticket,
+                &ticket_repo,
+                no_integrity_check,
             );
         }
         Commands::Run {
@@ -321,6 +351,13 @@ fn main() {
         Commands::List { size } => {
             list_models(size.as_deref());
         }
+        Commands::LockPlaybooks { dir, output } => match generate_lock_file(&dir, &output) {
+            Ok(count) => println!("Locked {count} playbook(s) → {}", output.display()),
+            Err(e) => {
+                eprintln!("Error generating lock file: {e}");
+                std::process::exit(1);
+            }
+        },
         Commands::Tickets {
             evidence,
             repo,
@@ -778,6 +815,7 @@ fn run_tool_tests(
 }
 
 #[allow(clippy::too_many_lines)]
+#[allow(clippy::fn_params_excessive_bools)]
 fn run_certification(
     all: bool,
     family: Option<String>,
@@ -787,6 +825,9 @@ fn run_certification(
     dry_run: bool,
     model_cache: Option<PathBuf>,
     apr_binary: &str,
+    auto_ticket: bool,
+    ticket_repo: &str,
+    no_integrity_check: bool,
 ) {
     use apr_qa_certify::{
         CertificationStatus, CertificationTier, grade_from_tier, parse_csv, score_from_tier,
@@ -1118,6 +1159,50 @@ fn run_certification(
         eprintln!("Error writing models.csv: {e}");
     } else {
         println!("Updated: {}", csv_path.display());
+    }
+
+    // §3.1: Integrity check warning
+    if !no_integrity_check {
+        let lock_path = "playbooks/playbook.lock.yaml";
+        if !std::path::Path::new(lock_path).exists() {
+            eprintln!(
+                "[WARN] No playbook lock file found at {lock_path}. Run `apr-qa lock-playbooks` to generate one."
+            );
+        }
+    }
+
+    // §3.6: Auto-ticket generation from failures
+    if auto_ticket {
+        // Collect all evidence files from output directory
+        let mut all_evidence: Vec<apr_qa_runner::Evidence> = Vec::new();
+        for model_id in &models_to_certify {
+            let short: &str = model_id.split('/').next_back().unwrap_or(model_id);
+            let evidence_path = output_dir
+                .join(short.to_lowercase().replace('.', "-"))
+                .join("evidence.json");
+            if let Ok(json) = std::fs::read_to_string(&evidence_path) {
+                if let Ok(ev) = parse_evidence(&json) {
+                    all_evidence.extend(ev);
+                }
+            }
+        }
+
+        if !all_evidence.is_empty() {
+            let tickets = execute_auto_tickets(&all_evidence, ticket_repo);
+            if tickets.is_empty() {
+                println!(
+                    "\n[AUTO-TICKET] No structured tickets generated (no classified failures)."
+                );
+            } else {
+                println!("\n=== Auto-Generated Tickets ({}) ===", tickets.len());
+                for ticket in &tickets {
+                    println!("  {} [{}]", ticket.title, ticket.priority);
+                    if let Some(ref fixture) = ticket.upstream_fixture {
+                        println!("    Fixture: {fixture}");
+                    }
+                }
+            }
+        }
     }
 
     println!("\n=== Certification Summary ===");

@@ -35,6 +35,7 @@
 #![cfg_attr(test, allow(clippy::float_cmp))]
 
 pub mod certificate;
+pub mod defect_map;
 pub mod error;
 pub mod html;
 pub mod junit;

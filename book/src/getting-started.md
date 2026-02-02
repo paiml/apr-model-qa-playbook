@@ -116,6 +116,31 @@ This requires:
 
 See [Certified Testing](./reference/certified-testing.md) for details.
 
+## Playbook Integrity (Lock Files)
+
+Lock playbook hashes to prevent undetected modifications:
+
+```bash
+# Generate lock file for all playbooks
+cargo run --bin apr-qa -- lock-playbooks
+
+# Certification will verify integrity automatically
+# (use --no-integrity-check to skip)
+cargo run --bin apr-qa -- certify --family qwen-coder --tier mvp
+```
+
+## Auto-Ticket Generation
+
+After certification, automatically generate structured upstream tickets
+grouped by root cause:
+
+```bash
+cargo run --bin apr-qa -- certify --family qwen-coder --tier mvp --auto-ticket
+```
+
+Failures are classified (tensor name mismatch, dequantization failure, etc.),
+deduplicated by root cause, and rendered with reproduction fixtures.
+
 ## Running Examples
 
 Run the included examples to see the libraries in action:

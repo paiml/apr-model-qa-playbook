@@ -544,6 +544,179 @@ pub struct TracePayloadConfig {
     pub gates: Vec<String>,
 }
 
+// ── Playbook Integrity Lock (§3.1) ──────────────────────────────────────
+
+/// A single entry in the playbook lock file
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PlaybookLockEntry {
+    /// SHA-256 hash of the playbook file
+    pub sha256: String,
+    /// Fields that are locked (changing them requires re-approval)
+    pub locked_fields: Vec<String>,
+}
+
+/// Lock file mapping playbook names to their integrity entries
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct PlaybookLockFile {
+    /// Map of playbook name → lock entry
+    pub entries: HashMap<String, PlaybookLockEntry>,
+}
+
+/// Compute SHA-256 hash of a playbook file
+///
+/// # Errors
+///
+/// Returns an error if the file cannot be read.
+pub fn compute_playbook_hash(path: impl AsRef<Path>) -> Result<String> {
+    use sha2::{Digest, Sha256};
+    let content = std::fs::read(path)?;
+    let mut hasher = Sha256::new();
+    hasher.update(&content);
+    Ok(format!("{:x}", hasher.finalize()))
+}
+
+/// Load a lock file from YAML
+///
+/// # Errors
+///
+/// Returns an error if the file cannot be read or parsed.
+pub fn load_lock_file(path: impl AsRef<Path>) -> Result<PlaybookLockFile> {
+    let content = std::fs::read_to_string(path)?;
+    serde_yaml::from_str(&content).map_err(Error::from)
+}
+
+/// Save a lock file to YAML
+///
+/// # Errors
+///
+/// Returns an error if serialization or writing fails.
+pub fn save_lock_file(lock: &PlaybookLockFile, path: impl AsRef<Path>) -> Result<()> {
+    let yaml = serde_yaml::to_string(lock).map_err(Error::from)?;
+    std::fs::write(path, yaml)?;
+    Ok(())
+}
+
+/// Verify a playbook's integrity against the lock file
+///
+/// # Errors
+///
+/// Returns an error if the hash does not match or if file operations fail.
+pub fn verify_playbook_integrity(
+    playbook_path: impl AsRef<Path>,
+    lock_file: &PlaybookLockFile,
+    name: &str,
+) -> Result<()> {
+    let entry = lock_file
+        .entries
+        .get(name)
+        .ok_or_else(|| Error::Execution(format!("Playbook '{name}' not found in lock file")))?;
+
+    let current_hash = compute_playbook_hash(&playbook_path)?;
+    if current_hash != entry.sha256 {
+        return Err(Error::Execution(format!(
+            "Integrity check failed for '{name}': expected {}, got {current_hash}",
+            entry.sha256
+        )));
+    }
+
+    Ok(())
+}
+
+/// Generate a lock entry for a playbook file
+///
+/// # Errors
+///
+/// Returns an error if the file cannot be read.
+pub fn generate_lock_entry(path: impl AsRef<Path>) -> Result<(String, PlaybookLockEntry)> {
+    let path_ref = path.as_ref();
+    let name = path_ref
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("unknown")
+        .to_string();
+
+    // Strip common suffixes like ".playbook"
+    let name = name.strip_suffix(".playbook").unwrap_or(&name).to_string();
+
+    let sha256 = compute_playbook_hash(path_ref)?;
+
+    let entry = PlaybookLockEntry {
+        sha256,
+        locked_fields: vec![
+            "model.hf_repo".to_string(),
+            "model.formats".to_string(),
+            "test_matrix".to_string(),
+            "falsification_gates".to_string(),
+        ],
+    };
+
+    Ok((name, entry))
+}
+
+// ── Skip Mechanism (§3.3) ──────────────────────────────────────────────
+
+/// Reason for skipping a test
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SkipReason {
+    /// Format or backend being skipped
+    pub format_or_backend: String,
+    /// Why it's skipped
+    pub reason: String,
+    /// Tracking issue (e.g., "GH-123")
+    pub tracking_issue: Option<String>,
+}
+
+/// Type of skip
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum SkipType {
+    /// Explicitly declared via .skip file
+    Explicit,
+    /// Implicitly missing from the format list
+    Implicit,
+}
+
+/// Find skip files for a given playbook
+///
+/// Looks for `<playbook_dir>/<name>.skip.yaml` files.
+#[must_use]
+pub fn find_skip_files(playbook_dir: &Path, name: &str) -> Vec<SkipReason> {
+    let skip_path = playbook_dir.join(format!("{name}.skip.yaml"));
+    if !skip_path.exists() {
+        return Vec::new();
+    }
+
+    let Ok(content) = std::fs::read_to_string(&skip_path) else {
+        return Vec::new();
+    };
+
+    serde_yaml::from_str(&content).unwrap_or_default()
+}
+
+/// Detect implicit skips by comparing playbook formats against all known formats
+#[must_use]
+pub fn detect_implicit_skips(
+    playbook: &Playbook,
+    all_formats: &[Format],
+    skip_files: &[SkipReason],
+) -> Vec<String> {
+    let mut implicit = Vec::new();
+    let explicit_formats: Vec<&str> = skip_files
+        .iter()
+        .map(|s| s.format_or_backend.as_str())
+        .collect();
+
+    for format in all_formats {
+        let format_str = format!("{format:?}").to_lowercase();
+        if !playbook.model.formats.contains(format)
+            && !explicit_formats.contains(&format_str.as_str())
+        {
+            implicit.push(format_str);
+        }
+    }
+
+    implicit
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1107,5 +1280,260 @@ differential_tests:
 
         assert_eq!(assertions_none.min_throughput_for("cpu"), None);
         assert_eq!(assertions_none.min_throughput_for("gpu"), None);
+    }
+
+    // ── §3.1 Playbook integrity lock tests ─────────────────────────────
+
+    #[test]
+    fn test_compute_playbook_hash_consistent() {
+        let dir = tempfile::tempdir().expect("create temp dir");
+        let path = dir.path().join("test.playbook.yaml");
+        std::fs::write(&path, "name: test\nversion: 1.0").expect("write");
+
+        let hash1 = compute_playbook_hash(&path).expect("hash1");
+        let hash2 = compute_playbook_hash(&path).expect("hash2");
+        assert_eq!(hash1, hash2);
+        assert_eq!(hash1.len(), 64); // SHA-256 hex
+    }
+
+    #[test]
+    fn test_compute_playbook_hash_differs() {
+        let dir = tempfile::tempdir().expect("create temp dir");
+        let path1 = dir.path().join("a.yaml");
+        let path2 = dir.path().join("b.yaml");
+        std::fs::write(&path1, "content-a").expect("write");
+        std::fs::write(&path2, "content-b").expect("write");
+
+        let hash1 = compute_playbook_hash(&path1).expect("hash1");
+        let hash2 = compute_playbook_hash(&path2).expect("hash2");
+        assert_ne!(hash1, hash2);
+    }
+
+    #[test]
+    fn test_verify_playbook_integrity_pass() {
+        let dir = tempfile::tempdir().expect("create temp dir");
+        let path = dir.path().join("test.playbook.yaml");
+        std::fs::write(&path, "name: test\nversion: 1.0").expect("write");
+
+        let hash = compute_playbook_hash(&path).expect("hash");
+        let mut lock = PlaybookLockFile::default();
+        lock.entries.insert(
+            "test".to_string(),
+            PlaybookLockEntry {
+                sha256: hash,
+                locked_fields: vec!["model.hf_repo".to_string()],
+            },
+        );
+
+        assert!(verify_playbook_integrity(&path, &lock, "test").is_ok());
+    }
+
+    #[test]
+    fn test_verify_playbook_integrity_fail_mismatch() {
+        let dir = tempfile::tempdir().expect("create temp dir");
+        let path = dir.path().join("test.playbook.yaml");
+        std::fs::write(&path, "name: test\nversion: 1.0").expect("write");
+
+        let mut lock = PlaybookLockFile::default();
+        lock.entries.insert(
+            "test".to_string(),
+            PlaybookLockEntry {
+                sha256: "wrong_hash".to_string(),
+                locked_fields: vec![],
+            },
+        );
+
+        let result = verify_playbook_integrity(&path, &lock, "test");
+        assert!(result.is_err());
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("Integrity check failed")
+        );
+    }
+
+    #[test]
+    fn test_verify_playbook_integrity_missing_entry() {
+        let dir = tempfile::tempdir().expect("create temp dir");
+        let path = dir.path().join("test.playbook.yaml");
+        std::fs::write(&path, "name: test").expect("write");
+
+        let lock = PlaybookLockFile::default();
+        let result = verify_playbook_integrity(&path, &lock, "test");
+        assert!(result.is_err());
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("not found in lock file")
+        );
+    }
+
+    #[test]
+    fn test_generate_lock_entry() {
+        let dir = tempfile::tempdir().expect("create temp dir");
+        let path = dir.path().join("my-model.playbook.yaml");
+        std::fs::write(&path, "name: my-model\nversion: 1.0").expect("write");
+
+        let (name, entry) = generate_lock_entry(&path).expect("generate");
+        assert_eq!(name, "my-model");
+        assert_eq!(entry.sha256.len(), 64);
+        assert!(!entry.locked_fields.is_empty());
+    }
+
+    #[test]
+    fn test_lock_file_save_load_roundtrip() {
+        let dir = tempfile::tempdir().expect("create temp dir");
+        let lock_path = dir.path().join("playbook.lock.yaml");
+
+        let mut lock = PlaybookLockFile::default();
+        lock.entries.insert(
+            "model-a".to_string(),
+            PlaybookLockEntry {
+                sha256: "abc123".to_string(),
+                locked_fields: vec!["model.hf_repo".to_string()],
+            },
+        );
+
+        save_lock_file(&lock, &lock_path).expect("save");
+        let loaded = load_lock_file(&lock_path).expect("load");
+
+        assert_eq!(loaded.entries.len(), 1);
+        assert_eq!(loaded.entries["model-a"].sha256, "abc123");
+    }
+
+    #[test]
+    fn test_lock_file_serde_roundtrip() {
+        let mut lock = PlaybookLockFile::default();
+        lock.entries.insert(
+            "test".to_string(),
+            PlaybookLockEntry {
+                sha256: "deadbeef".to_string(),
+                locked_fields: vec!["a".to_string(), "b".to_string()],
+            },
+        );
+
+        let yaml = serde_yaml::to_string(&lock).expect("serialize");
+        let parsed: PlaybookLockFile = serde_yaml::from_str(&yaml).expect("deserialize");
+        assert_eq!(parsed.entries["test"].sha256, "deadbeef");
+        assert_eq!(parsed.entries["test"].locked_fields.len(), 2);
+    }
+
+    // ── §3.3 Skip mechanism tests ──────────────────────────────────────
+
+    #[test]
+    fn test_find_skip_files_empty_dir() {
+        let dir = tempfile::tempdir().expect("create temp dir");
+        let skips = find_skip_files(dir.path(), "test-model");
+        assert!(skips.is_empty());
+    }
+
+    #[test]
+    fn test_find_skip_files_with_skip() {
+        let dir = tempfile::tempdir().expect("create temp dir");
+        let skip_path = dir.path().join("test-model.skip.yaml");
+        std::fs::write(
+            &skip_path,
+            r#"- format_or_backend: gpu
+  reason: "No GPU available"
+  tracking_issue: "GH-123"
+"#,
+        )
+        .expect("write");
+
+        let skips = find_skip_files(dir.path(), "test-model");
+        assert_eq!(skips.len(), 1);
+        assert_eq!(skips[0].format_or_backend, "gpu");
+        assert_eq!(skips[0].tracking_issue.as_deref(), Some("GH-123"));
+    }
+
+    #[test]
+    fn test_detect_implicit_skips() {
+        let yaml = r#"
+name: test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("parse");
+        let all = vec![Format::Gguf, Format::SafeTensors, Format::Apr];
+        let skips: Vec<SkipReason> = vec![];
+        let implicit = detect_implicit_skips(&playbook, &all, &skips);
+        // safetensors and apr are missing from playbook formats
+        assert_eq!(implicit.len(), 2);
+        assert!(implicit.contains(&"safetensors".to_string()));
+        assert!(implicit.contains(&"apr".to_string()));
+    }
+
+    #[test]
+    fn test_detect_implicit_skips_with_explicit() {
+        let yaml = r#"
+name: test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("parse");
+        let all = vec![Format::Gguf, Format::SafeTensors, Format::Apr];
+        // safetensors is explicitly skipped
+        let skips = vec![SkipReason {
+            format_or_backend: "safetensors".to_string(),
+            reason: "Not supported".to_string(),
+            tracking_issue: None,
+        }];
+        let implicit = detect_implicit_skips(&playbook, &all, &skips);
+        // Only apr is implicitly skipped
+        assert_eq!(implicit.len(), 1);
+        assert_eq!(implicit[0], "apr");
+    }
+
+    #[test]
+    fn test_detect_implicit_skips_all_covered() {
+        let yaml = r#"
+name: test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf, safetensors, apr]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("parse");
+        let all = vec![Format::Gguf, Format::SafeTensors, Format::Apr];
+        let skips: Vec<SkipReason> = vec![];
+        let implicit = detect_implicit_skips(&playbook, &all, &skips);
+        assert!(implicit.is_empty());
+    }
+
+    #[test]
+    fn test_skip_reason_serde() {
+        let reason = SkipReason {
+            format_or_backend: "gpu".to_string(),
+            reason: "No GPU".to_string(),
+            tracking_issue: Some("GH-100".to_string()),
+        };
+        let json = serde_json::to_string(&reason).expect("serialize");
+        let parsed: SkipReason = serde_json::from_str(&json).expect("deserialize");
+        assert_eq!(parsed.format_or_backend, "gpu");
+        assert_eq!(parsed.tracking_issue.as_deref(), Some("GH-100"));
+    }
+
+    #[test]
+    fn test_skip_type_eq() {
+        assert_eq!(SkipType::Explicit, SkipType::Explicit);
+        assert_ne!(SkipType::Explicit, SkipType::Implicit);
     }
 }

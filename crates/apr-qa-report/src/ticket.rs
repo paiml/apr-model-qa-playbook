@@ -3,8 +3,9 @@
 //! Creates tickets for aprender repository when bugs are found.
 //! Generates structured issue reports with reproduction steps.
 
-use apr_qa_runner::{Evidence, Outcome};
+use apr_qa_runner::{Evidence, Outcome, classify_failure};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 use crate::popperian::PopperianScore;
 
@@ -81,6 +82,12 @@ pub struct UpstreamTicket {
     pub model_id: String,
     /// Is this a black swan event?
     pub is_black_swan: bool,
+    /// Upstream fixture path for reproduction (§3.5)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub upstream_fixture: Option<String>,
+    /// Pygmy builder function name (§3.5)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pygmy_builder: Option<String>,
 }
 
 impl UpstreamTicket {
@@ -262,6 +269,8 @@ This issue was detected by `apr-model-qa-playbook` during automated qualificatio
                 gate_id: falsification.gate_id.clone(),
                 model_id: popperian.model_id.clone(),
                 is_black_swan: falsification.is_black_swan,
+                upstream_fixture: None,
+                pygmy_builder: None,
             });
         }
 
@@ -386,6 +395,8 @@ Max Tokens: {}
             gate_id: evidence.gate_id.clone(),
             model_id: evidence.scenario.model.to_string(),
             is_black_swan,
+            upstream_fixture: None,
+            pygmy_builder: None,
         }
     }
 
@@ -426,6 +437,107 @@ Max Tokens: {}
     pub fn repo(&self) -> &str {
         &self.repo
     }
+}
+
+/// Generate structured tickets from evidence using the defect-fixture map (§3.6)
+///
+/// Groups failures by root cause (`ConversionFailureType`), deduplicates,
+/// and renders each group as a single ticket with the corresponding fixture template.
+#[must_use]
+pub fn generate_structured_tickets<S: ::std::hash::BuildHasher>(
+    evidence: &[Evidence],
+    defect_map: &HashMap<String, crate::defect_map::DefectFixtureEntry, S>,
+) -> Vec<UpstreamTicket> {
+    // Step 1: Filter to failures only
+    let failures: Vec<&Evidence> = evidence.iter().filter(|e| e.outcome.is_fail()).collect();
+
+    if failures.is_empty() {
+        return Vec::new();
+    }
+
+    // Step 2: Classify each failure and group by root cause key
+    let mut groups: HashMap<String, Vec<&Evidence>> = HashMap::new();
+    for ev in &failures {
+        let stderr = ev.stderr.as_deref().unwrap_or("");
+        let exit_code = ev.exit_code.unwrap_or(1);
+        let ft = classify_failure(stderr, exit_code);
+        let key = ft.key().to_string();
+        groups.entry(key).or_default().push(ev);
+    }
+
+    // Step 3: One ticket per root cause
+    let mut tickets = Vec::new();
+    for (key, group) in &groups {
+        let first = group[0];
+        let is_black_swan = first.outcome == Outcome::Crashed;
+
+        let priority = if is_black_swan {
+            TicketPriority::P0
+        } else if first.gate_id.contains("-P0-") || first.gate_id.starts_with('G') {
+            TicketPriority::P0
+        } else {
+            TicketPriority::P1
+        };
+
+        let (upstream_fixture, pygmy_builder, body) = if let Some(entry) = defect_map.get(key) {
+            let mut fields = HashMap::new();
+            fields.insert("model_id".to_string(), first.scenario.model.to_string());
+            fields.insert(
+                "exit_code".to_string(),
+                format!("{}", first.exit_code.unwrap_or(1)),
+            );
+            fields.insert(
+                "stderr".to_string(),
+                first.stderr.clone().unwrap_or_default(),
+            );
+            fields.insert("occurrences".to_string(), group.len().to_string());
+
+            let rendered =
+                crate::defect_map::render_ticket_template(&entry.ticket_template, &fields);
+            (
+                Some(entry.upstream_fixture.clone()),
+                Some(entry.pygmy_builder.clone()),
+                rendered,
+            )
+        } else {
+            let body = format!(
+                "## Conversion Failure\n\n- **Type**: `{key}`\n- **Model**: `{}`\n- **Occurrences**: {}\n\n```\n{}\n```",
+                first.scenario.model,
+                group.len(),
+                first.stderr.as_deref().unwrap_or("N/A"),
+            );
+            (None, None, body)
+        };
+
+        let title = format!(
+            "[QA] {}: {} ({} occurrence{})",
+            first.gate_id,
+            key,
+            group.len(),
+            if group.len() == 1 { "" } else { "s" },
+        );
+
+        let labels = vec![
+            format!("priority:{priority}"),
+            "qa-automated".to_string(),
+            format!("failure-type:{key}"),
+        ];
+
+        tickets.push(UpstreamTicket {
+            title,
+            body,
+            priority,
+            category: TicketCategory::Bug,
+            labels,
+            gate_id: first.gate_id.clone(),
+            model_id: first.scenario.model.to_string(),
+            is_black_swan,
+            upstream_fixture,
+            pygmy_builder,
+        });
+    }
+
+    tickets
 }
 
 #[cfg(test)]
@@ -553,6 +665,8 @@ mod tests {
             gate_id: "F-TEST-001".to_string(),
             model_id: "test/model".to_string(),
             is_black_swan: false,
+            upstream_fixture: None,
+            pygmy_builder: None,
         };
 
         let cmd = ticket.to_gh_command("paiml/aprender");
@@ -687,6 +801,8 @@ mod tests {
             gate_id: "F-001".to_string(),
             model_id: "test/model".to_string(),
             is_black_swan: false,
+            upstream_fixture: None,
+            pygmy_builder: None,
         };
         let cloned = ticket.clone();
         assert_eq!(cloned.title, ticket.title);
@@ -761,5 +877,138 @@ mod tests {
 
         assert!(tickets[0].is_black_swan);
         assert!(tickets[0].labels.contains(&"black-swan".to_string()));
+    }
+
+    fn falsified_with_stderr(gate_id: &str, stderr: &str) -> Evidence {
+        let mut ev = Evidence::falsified(gate_id, test_scenario(), "failure", "N/A", 100);
+        ev.stderr = Some(stderr.to_string());
+        ev
+    }
+
+    #[test]
+    fn test_structured_tickets_same_cause_dedup() {
+        let defect_map = crate::defect_map::load_defect_fixture_map().expect("load map");
+
+        // 12 failures with the same stderr pattern → all classify as same root cause
+        let evidence: Vec<Evidence> = (0..12)
+            .map(|i| {
+                falsified_with_stderr(
+                    "F-CONV-001",
+                    &format!("tensor name mismatch: layer.{i}.weight"),
+                )
+            })
+            .collect();
+
+        let tickets = generate_structured_tickets(&evidence, &defect_map);
+
+        // Should be 1 ticket (12 same-cause failures → 1 grouped ticket)
+        assert_eq!(tickets.len(), 1);
+        assert!(tickets[0].title.contains("12 occurrences"));
+    }
+
+    #[test]
+    fn test_structured_tickets_two_causes() {
+        let defect_map = crate::defect_map::load_defect_fixture_map().expect("load map");
+
+        let mut evidence = Vec::new();
+        // 3 tensor name mismatches
+        for _ in 0..3 {
+            evidence.push(falsified_with_stderr(
+                "F-CONV-001",
+                "tensor name mismatch: layer.0.weight",
+            ));
+        }
+        // 2 missing artifact failures
+        for _ in 0..2 {
+            evidence.push(falsified_with_stderr(
+                "F-CONV-002",
+                "file not found: model.safetensors",
+            ));
+        }
+
+        let tickets = generate_structured_tickets(&evidence, &defect_map);
+
+        // Should be 2 tickets (2 different root causes)
+        assert_eq!(tickets.len(), 2);
+    }
+
+    #[test]
+    fn test_structured_tickets_fixture_in_body() {
+        let defect_map = crate::defect_map::load_defect_fixture_map().expect("load map");
+
+        let evidence = vec![falsified_with_stderr(
+            "F-CONV-001",
+            "tensor name mismatch: layer.0.weight",
+        )];
+
+        let tickets = generate_structured_tickets(&evidence, &defect_map);
+
+        assert_eq!(tickets.len(), 1);
+        assert!(tickets[0].upstream_fixture.is_some());
+        assert!(tickets[0].pygmy_builder.is_some());
+        assert_eq!(
+            tickets[0].upstream_fixture.as_deref(),
+            Some("fixtures/tensor_name_mismatch.py")
+        );
+    }
+
+    #[test]
+    fn test_structured_tickets_no_failures() {
+        let defect_map = crate::defect_map::load_defect_fixture_map().expect("load map");
+
+        let evidence = vec![Evidence::corroborated(
+            "F-CONV-001",
+            test_scenario(),
+            "4",
+            100,
+        )];
+
+        let tickets = generate_structured_tickets(&evidence, &defect_map);
+        assert!(tickets.is_empty());
+    }
+
+    #[test]
+    fn test_structured_tickets_unknown_cause_no_fixture() {
+        let defect_map = crate::defect_map::load_defect_fixture_map().expect("load map");
+
+        // Stderr that doesn't match any known pattern
+        let evidence = vec![Evidence::falsified(
+            "F-CONV-001",
+            test_scenario(),
+            "some unknown error xyz",
+            "N/A",
+            100,
+        )];
+
+        let tickets = generate_structured_tickets(&evidence, &defect_map);
+
+        assert_eq!(tickets.len(), 1);
+        // Unknown cause → no fixture mapping
+        assert!(tickets[0].upstream_fixture.is_none());
+        assert!(tickets[0].pygmy_builder.is_none());
+    }
+
+    #[test]
+    fn test_structured_tickets_labels() {
+        let defect_map = crate::defect_map::load_defect_fixture_map().expect("load map");
+
+        let evidence = vec![Evidence::falsified(
+            "F-CONV-001",
+            test_scenario(),
+            "tensor name mismatch: layer.0.weight",
+            "N/A",
+            100,
+        )];
+
+        let tickets = generate_structured_tickets(&evidence, &defect_map);
+
+        assert!(!tickets.is_empty());
+        assert!(
+            tickets[0]
+                .labels
+                .iter()
+                .any(|l| l.starts_with("failure-type:"))
+        );
+        assert!(tickets[0].labels.contains(&"qa-automated".to_string()));
     }
 }

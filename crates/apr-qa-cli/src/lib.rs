@@ -19,7 +19,7 @@ use apr_qa_report::{
     junit::JunitReport,
     mqs::MqsCalculator,
     popperian::PopperianCalculator,
-    ticket::{TicketGenerator, UpstreamTicket},
+    ticket::{TicketGenerator, UpstreamTicket, generate_structured_tickets},
 };
 use apr_qa_runner::{
     Evidence, EvidenceCollector, ExecutionConfig, ExecutionResult, Executor, FailurePolicy,
@@ -277,6 +277,9 @@ pub fn build_execution_config(config: &PlaybookRunConfig) -> Result<ExecutionCon
         run_trace_payload: config.run_trace_payload,
         run_golden_rule_test: true,
         golden_reference_path: None,
+        lock_file_path: None,
+        check_integrity: false,
+        warn_implicit_skips: false,
     })
 }
 
@@ -403,6 +406,9 @@ pub fn build_certification_config(
         run_trace_payload: false,
         run_golden_rule_test: true,
         golden_reference_path: None,
+        lock_file_path: None,
+        check_integrity: false,
+        warn_implicit_skips: false,
     }
 }
 
@@ -503,6 +509,63 @@ pub fn certify_model(model_id: &str, config: &CertificationConfig) -> ModelCerti
             error: Some(e),
         },
     }
+}
+
+/// Generate a playbook lock file from all YAML playbooks in a directory (§3.1)
+///
+/// Scans the directory recursively for `.playbook.yaml` files, computes SHA-256
+/// hashes, and writes the lock file.
+///
+/// # Errors
+///
+/// Returns an error if the directory cannot be read or the lock file cannot be written.
+pub fn generate_lock_file(dir: &Path, output: &Path) -> Result<usize, String> {
+    use apr_qa_runner::{PlaybookLockFile, generate_lock_entry, save_lock_file};
+    use std::collections::HashMap;
+
+    // Walk directory for .playbook.yaml files
+    fn walk_dir(dir: &Path, entries: &mut HashMap<String, apr_qa_runner::PlaybookLockEntry>) {
+        let Ok(read_dir) = std::fs::read_dir(dir) else {
+            return;
+        };
+        for entry in read_dir.flatten() {
+            let path = entry.path();
+            if path.is_dir() {
+                walk_dir(&path, entries);
+            } else if path
+                .file_name()
+                .is_some_and(|n| n.to_string_lossy().ends_with(".playbook.yaml"))
+            {
+                if let Ok((name, lock_entry)) = generate_lock_entry(&path) {
+                    entries.insert(name, lock_entry);
+                }
+            }
+        }
+    }
+
+    let mut entries = HashMap::new();
+    walk_dir(dir, &mut entries);
+    let count = entries.len();
+
+    let lock_file = PlaybookLockFile { entries };
+    save_lock_file(&lock_file, output).map_err(|e| format!("Failed to save lock file: {e}"))?;
+
+    Ok(count)
+}
+
+/// Execute auto-ticket generation from evidence using the defect-fixture map (§3.6)
+///
+/// Classifies failures, deduplicates by root cause, and returns structured tickets.
+pub fn execute_auto_tickets(evidence: &[Evidence], _repo: &str) -> Vec<UpstreamTicket> {
+    let defect_map = match apr_qa_report::defect_map::load_defect_fixture_map() {
+        Ok(map) => map,
+        Err(e) => {
+            eprintln!("[WARN] Could not load defect fixture map: {e}");
+            return Vec::new();
+        }
+    };
+
+    generate_structured_tickets(evidence, &defect_map)
 }
 
 #[cfg(test)]
@@ -1579,5 +1642,95 @@ test_matrix:
         std::fs::write(&path, "not: [valid: yaml: {{{").expect("write");
         let result = load_playbook(&path);
         assert!(result.is_err());
+    }
+
+    // =========================================================================
+    // Phase 4 tests: lock-playbooks + auto-ticket
+    // =========================================================================
+
+    #[test]
+    fn test_generate_lock_file_empty_dir() {
+        let dir = tempfile::tempdir().expect("create temp dir");
+        let output = dir.path().join("playbook.lock.yaml");
+        let result = generate_lock_file(dir.path(), &output);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), 0);
+    }
+
+    #[test]
+    fn test_generate_lock_file_with_playbooks() {
+        let dir = tempfile::tempdir().expect("create temp dir");
+        let playbook_yaml = r#"
+name: test-lock
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+"#;
+        std::fs::write(dir.path().join("test.playbook.yaml"), playbook_yaml).expect("write");
+
+        let output = dir.path().join("playbook.lock.yaml");
+        let result = generate_lock_file(dir.path(), &output);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), 1);
+        assert!(output.exists());
+    }
+
+    #[test]
+    fn test_generate_lock_file_recursive() {
+        let dir = tempfile::tempdir().expect("create temp dir");
+        let sub = dir.path().join("models");
+        std::fs::create_dir_all(&sub).expect("mkdir");
+
+        let yaml = "name: sub\nversion: '1.0'\nmodel:\n  hf_repo: test/m\n  formats: [gguf]\ntest_matrix:\n  modalities: [run]\n  backends: [cpu]\n  scenario_count: 1\n";
+        std::fs::write(sub.join("m.playbook.yaml"), yaml).expect("write");
+
+        let output = dir.path().join("lock.yaml");
+        let result = generate_lock_file(dir.path(), &output);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), 1);
+    }
+
+    #[test]
+    fn test_execute_auto_tickets_no_failures() {
+        let evidence = vec![make_corroborated_evidence()];
+        let tickets = execute_auto_tickets(&evidence, "test/repo");
+        assert!(tickets.is_empty());
+    }
+
+    #[test]
+    fn test_execute_auto_tickets_with_failures() {
+        let mut ev = make_falsified_evidence();
+        ev.stderr = Some("tensor name mismatch: layer.0".to_string());
+        let tickets = execute_auto_tickets(&[ev], "test/repo");
+        // Should generate at least 1 ticket for the classified failure
+        assert_eq!(tickets.len(), 1);
+    }
+
+    #[test]
+    fn test_execute_auto_tickets_deduplication() {
+        let evidence: Vec<Evidence> = (0..5)
+            .map(|_| {
+                let mut ev = make_falsified_evidence();
+                ev.stderr = Some("tensor name mismatch: layer.0".to_string());
+                ev
+            })
+            .collect();
+        let tickets = execute_auto_tickets(&evidence, "test/repo");
+        // 5 same-cause failures should produce 1 ticket
+        assert_eq!(tickets.len(), 1);
+    }
+
+    #[test]
+    fn test_generate_lock_file_nonexistent_dir() {
+        let output = std::path::Path::new("/tmp/test-lock-output.yaml");
+        let result = generate_lock_file(std::path::Path::new("/nonexistent"), output);
+        // Should succeed with 0 entries (no files found)
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), 0);
     }
 }

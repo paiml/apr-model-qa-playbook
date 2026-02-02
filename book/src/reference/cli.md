@@ -24,6 +24,9 @@ Options:
 - `--dry-run` - Preview what would be certified
 - `--model-cache <DIR>` - Model cache directory (defaults to `~/.cache/apr-models`)
 - `--apr-binary <PATH>` - Path to apr binary for inference (default: `apr`)
+- `--auto-ticket` - Auto-generate structured tickets from failures (groups by root cause)
+- `--ticket-repo <REPO>` - Repository for auto-ticket creation (default: `paiml/aprender`)
+- `--no-integrity-check` - Disable playbook integrity verification against lock file
 
 Examples:
 ```bash
@@ -45,6 +48,12 @@ apr-qa certify --family qwen-coder --dry-run
 # Explicit cache directory
 apr-qa certify --family qwen-coder --tier mvp \
   --model-cache /custom/cache --apr-binary apr
+
+# Auto-generate upstream tickets from failures
+apr-qa certify --family qwen-coder --tier mvp --auto-ticket
+
+# Skip integrity checks (not recommended)
+apr-qa certify --family qwen-coder --tier mvp --no-integrity-check
 ```
 
 #### run
@@ -81,6 +90,31 @@ Validate playbook against schema:
 ```bash
 apr-qa validate <playbook.yaml>
 ```
+
+#### lock-playbooks
+
+Lock playbook hashes for integrity verification:
+
+```bash
+apr-qa lock-playbooks [DIR] [OPTIONS]
+```
+
+Options:
+- `DIR` - Directory containing playbook YAML files (default: `playbooks`)
+- `-o, --output <PATH>` - Output lock file path (default: `playbooks/playbook.lock.yaml`)
+
+Examples:
+```bash
+# Lock all playbooks in the default directory
+apr-qa lock-playbooks
+
+# Lock playbooks in a custom directory
+apr-qa lock-playbooks playbooks/models -o playbooks/models.lock.yaml
+```
+
+The lock file records SHA-256 hashes of each `.playbook.yaml` file. During certification,
+the executor verifies playbooks haven't been modified since locking (unless `--no-integrity-check`
+is passed).
 
 #### list-models
 

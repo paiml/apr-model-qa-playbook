@@ -46,9 +46,11 @@ pub mod test_fixtures;
 pub use command::{CommandOutput, CommandRunner, MockCommandRunner, RealCommandRunner};
 pub use conversion::{
     CommutativityTest, ConversionBugType, ConversionConfig, ConversionEvidence,
-    ConversionExecutionResult, ConversionExecutor, ConversionResult, ConversionTest, EPSILON,
-    IdempotencyTest, RoundTripTest, SemanticConversionTest, SemanticTestResult, all_backends,
-    all_conversion_pairs, check_cardinality, check_tensor_names, generate_conversion_tests,
+    ConversionExecutionResult, ConversionExecutor, ConversionFailureType, ConversionResult,
+    ConversionTest, ConversionTolerance, DEFAULT_TOLERANCES, EPSILON, IdempotencyTest, QuantType,
+    RoundTripTest, SemanticConversionTest, SemanticTestResult, TensorNaming, all_backends,
+    all_conversion_pairs, check_cardinality, check_tensor_names, classify_failure,
+    generate_conversion_tests, tolerance_for,
 };
 pub use differential::{
     BenchResult, BenchmarkMetrics, CiAssertion, CiProfileResult, DiffBenchmarkResult, DiffConfig,
@@ -77,6 +79,9 @@ pub use patterns::{
 };
 pub use playbook::{
     DifferentialTestConfig, FingerprintConfig, FormatValidationConfig, InferenceCompareConfig,
-    Playbook, PlaybookStep, ProfileCiAssertions, ProfileCiConfig, StatsToleranceConfig,
-    TensorDiffConfig, TracePayloadConfig, ValidateStatsConfig,
+    Playbook, PlaybookLockEntry, PlaybookLockFile, PlaybookStep, ProfileCiAssertions,
+    ProfileCiConfig, SkipReason, SkipType, StatsToleranceConfig, TensorDiffConfig,
+    TracePayloadConfig, ValidateStatsConfig, compute_playbook_hash, detect_implicit_skips,
+    find_skip_files, generate_lock_entry, load_lock_file, save_lock_file,
+    verify_playbook_integrity,
 };

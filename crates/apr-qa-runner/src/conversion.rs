@@ -89,6 +89,228 @@ impl ConversionBugType {
     }
 }
 
+/// Tensor naming convention
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TensorNaming {
+    /// HuggingFace convention (e.g., model.layers.0.self_attn.q_proj.weight)
+    HuggingFace,
+    /// GGUF convention (e.g., blk.0.attn_q.weight)
+    Gguf,
+    /// APR convention
+    Apr,
+    /// Unknown naming convention
+    Unknown(String),
+}
+
+/// Quantization type for tolerance selection
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum QuantType {
+    /// Full precision 32-bit float
+    F32,
+    /// Half precision 16-bit float
+    F16,
+    /// Brain floating point 16-bit
+    BF16,
+    /// 4-bit K-quant medium
+    Q4KM,
+    /// 6-bit K-quant
+    Q6K,
+    /// 4-bit quantization (legacy)
+    Q4_0,
+    /// 8-bit quantization
+    Q8_0,
+    /// Unknown quantization type
+    Unknown,
+}
+
+impl QuantType {
+    /// Parse quantization type from a string label
+    #[must_use]
+    pub fn from_str_label(label: &str) -> Self {
+        match label.to_lowercase().replace('-', "_").as_str() {
+            "f32" | "fp32" | "float32" => Self::F32,
+            "f16" | "fp16" | "float16" => Self::F16,
+            "bf16" | "bfloat16" => Self::BF16,
+            "q4_k_m" | "q4km" => Self::Q4KM,
+            "q6_k" | "q6k" => Self::Q6K,
+            "q4_0" | "q40" => Self::Q4_0,
+            "q8_0" | "q80" => Self::Q8_0,
+            _ => Self::Unknown,
+        }
+    }
+}
+
+/// Typed conversion failure classification (§3.4)
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ConversionFailureType {
+    /// Tensor names differ between source and target
+    TensorNameMismatch,
+    /// Dequantization produced incorrect values
+    DequantizationFailure,
+    /// Config metadata (hidden_size, num_layers) doesn't match
+    ConfigMetadataMismatch,
+    /// Required artifact (config.json, tokenizer) is missing
+    MissingArtifact,
+    /// Inference failed after conversion
+    InferenceFailure,
+    /// Unknown failure type
+    Unknown,
+}
+
+impl ConversionFailureType {
+    /// Get the gate ID for this failure type
+    #[must_use]
+    pub fn gate_id(&self) -> &'static str {
+        match self {
+            Self::TensorNameMismatch => "F-CONV-TNAME-001",
+            Self::DequantizationFailure => "F-CONV-DEQUANT-001",
+            Self::ConfigMetadataMismatch => "F-CONV-CONFIG-001",
+            Self::MissingArtifact => "F-CONV-MISSING-001",
+            Self::InferenceFailure => "F-CONV-INFER-001",
+            Self::Unknown => "F-CONV-UNKNOWN-002",
+        }
+    }
+
+    /// Get a human-readable key for defect mapping
+    #[must_use]
+    pub fn key(&self) -> &'static str {
+        match self {
+            Self::TensorNameMismatch => "tensor_name_mismatch",
+            Self::DequantizationFailure => "dequantization_failure",
+            Self::ConfigMetadataMismatch => "config_metadata_mismatch",
+            Self::MissingArtifact => "missing_artifact",
+            Self::InferenceFailure => "inference_failure",
+            Self::Unknown => "unknown",
+        }
+    }
+}
+
+/// Tolerance configuration for a specific quantization type (§3.7)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ConversionTolerance {
+    /// Quantization type this tolerance applies to
+    pub quant_type: QuantType,
+    /// Absolute tolerance
+    pub atol: f64,
+    /// Relative tolerance
+    pub rtol: f64,
+    /// Expected pygmy fixture name (for defect mapping)
+    pub expected_pygmy_fixture: String,
+}
+
+/// Default tolerances per quantization type
+pub const DEFAULT_TOLERANCES: &[ConversionTolerance] = &[
+    ConversionTolerance {
+        quant_type: QuantType::F32,
+        atol: 1e-6,
+        rtol: 1e-5,
+        expected_pygmy_fixture: String::new(),
+    },
+    ConversionTolerance {
+        quant_type: QuantType::F16,
+        atol: 1e-3,
+        rtol: 1e-3,
+        expected_pygmy_fixture: String::new(),
+    },
+    ConversionTolerance {
+        quant_type: QuantType::BF16,
+        atol: 1e-2,
+        rtol: 1e-2,
+        expected_pygmy_fixture: String::new(),
+    },
+    ConversionTolerance {
+        quant_type: QuantType::Q4KM,
+        atol: 1e-1,
+        rtol: 5e-2,
+        expected_pygmy_fixture: String::new(),
+    },
+    ConversionTolerance {
+        quant_type: QuantType::Q6K,
+        atol: 5e-2,
+        rtol: 5e-2,
+        expected_pygmy_fixture: String::new(),
+    },
+    ConversionTolerance {
+        quant_type: QuantType::Q4_0,
+        atol: 1e-1,
+        rtol: 1e-1,
+        expected_pygmy_fixture: String::new(),
+    },
+    ConversionTolerance {
+        quant_type: QuantType::Q8_0,
+        atol: 1e-2,
+        rtol: 1e-2,
+        expected_pygmy_fixture: String::new(),
+    },
+];
+
+/// Get the tolerance for a given quantization type
+#[must_use]
+pub fn tolerance_for(qt: QuantType) -> &'static ConversionTolerance {
+    DEFAULT_TOLERANCES
+        .iter()
+        .find(|t| t.quant_type == qt)
+        .unwrap_or(&DEFAULT_TOLERANCES[0]) // F32 fallback
+}
+
+/// Classify a conversion failure from stderr output and exit code
+#[must_use]
+pub fn classify_failure(stderr: &str, exit_code: i32) -> ConversionFailureType {
+    let lower = stderr.to_lowercase();
+
+    // Tensor name patterns
+    if lower.contains("tensor name")
+        || lower.contains("name mismatch")
+        || lower.contains("missing tensor")
+        || lower.contains("unexpected tensor")
+    {
+        return ConversionFailureType::TensorNameMismatch;
+    }
+
+    // Dequantization patterns
+    if lower.contains("dequantiz")
+        || lower.contains("quantiz")
+        || lower.contains("nan")
+        || lower.contains("infinity")
+        || lower.contains("overflow")
+    {
+        return ConversionFailureType::DequantizationFailure;
+    }
+
+    // Missing artifact patterns (check before config metadata — "config.json" is an artifact)
+    if lower.contains("not found")
+        || lower.contains("no such file")
+        || lower.contains("config.json")
+        || (lower.contains("missing") && !lower.contains("mismatch"))
+        || (lower.contains("tokenizer") && !lower.contains("mismatch"))
+    {
+        return ConversionFailureType::MissingArtifact;
+    }
+
+    // Config metadata patterns
+    if lower.contains("hidden_size")
+        || lower.contains("num_layers")
+        || lower.contains("num_hidden_layers")
+        || lower.contains("vocab_size")
+        || lower.contains("metadata mismatch")
+        || lower.contains("config mismatch")
+    {
+        return ConversionFailureType::ConfigMetadataMismatch;
+    }
+
+    // Inference failure patterns
+    if lower.contains("inference")
+        || lower.contains("forward pass")
+        || lower.contains("segfault")
+        || lower.contains("sigsegv")
+        || exit_code == -11
+    {
+        return ConversionFailureType::InferenceFailure;
+    }
+
+    ConversionFailureType::Unknown
+}
+
 /// Patterns that indicate specific bug types
 const GARBAGE_PATTERNS: &[&str] = &[
     "PAD",
@@ -119,6 +341,9 @@ pub struct ConversionTest {
     /// Binary path for apr CLI
     #[serde(skip, default = "default_binary")]
     pub binary: String,
+    /// Quantization type for dtype-aware tolerance (§3.7)
+    #[serde(default)]
+    pub quant_type: Option<QuantType>,
 }
 
 fn default_epsilon() -> f64 {
@@ -171,6 +396,12 @@ pub struct ConversionEvidence {
     pub target_format: Format,
     /// Backend
     pub backend: Backend,
+    /// Typed failure classification (§3.4)
+    #[serde(default)]
+    pub failure_type: Option<ConversionFailureType>,
+    /// Quantization type (§3.7)
+    #[serde(default)]
+    pub quant_type: Option<QuantType>,
 }
 
 impl ConversionTest {
@@ -184,7 +415,15 @@ impl ConversionTest {
             model_id,
             epsilon: EPSILON,
             binary: default_binary(),
+            quant_type: None,
         }
+    }
+
+    /// Get the effective epsilon, using dtype-aware tolerance when quant_type is set
+    #[must_use]
+    pub fn effective_epsilon(&self) -> f64 {
+        self.quant_type
+            .map_or(self.epsilon, |qt| tolerance_for(qt).atol)
     }
 
     /// Get the gate ID for this conversion
@@ -213,12 +452,15 @@ impl ConversionTest {
         // 4. Compare outputs
         let diff = self.compute_diff(&source_output, &converted_output);
 
-        if diff > self.epsilon {
+        if diff > self.effective_epsilon() {
             Ok(ConversionResult::Falsified {
                 gate_id: self.gate_id(),
                 reason: format!(
                     "Conversion {:?} → {:?} produced different output (diff: {:.2e}, ε: {:.2e})",
-                    self.source_format, self.target_format, diff, self.epsilon
+                    self.source_format,
+                    self.target_format,
+                    diff,
+                    self.effective_epsilon()
                 ),
                 evidence: ConversionEvidence {
                     source_hash: Self::hash_output(&source_output),
@@ -228,6 +470,8 @@ impl ConversionTest {
                     source_format: self.source_format,
                     target_format: self.target_format,
                     backend: self.backend,
+                    failure_type: None,
+                    quant_type: None,
                 },
             })
         } else {
@@ -648,6 +892,8 @@ impl RoundTripTest {
                     source_format: self.formats[0],
                     target_format: self.formats[0],
                     backend: self.backend,
+                    failure_type: None,
+                    quant_type: None,
                 },
             })
         } else {
@@ -723,6 +969,8 @@ impl IdempotencyTest {
                     source_format: self.format_a,
                     target_format: self.format_b,
                     backend: self.backend,
+                    failure_type: None,
+                    quant_type: None,
                 },
             })
         } else {
@@ -794,6 +1042,8 @@ impl CommutativityTest {
                     source_format: Format::Gguf,
                     target_format: Format::Apr,
                     backend: self.backend,
+                    failure_type: None,
+                    quant_type: None,
                 },
             })
         } else {
@@ -1136,6 +1386,8 @@ impl ConversionExecutor {
                                     source_format: source,
                                     target_format: target,
                                     backend: *backend,
+                                    failure_type: None,
+                                    quant_type: None,
                                 },
                             });
                         }
@@ -1360,6 +1612,8 @@ impl ConversionExecutor {
                                     source_format: source,
                                     target_format: target,
                                     backend: Backend::Cpu,
+                                    failure_type: None,
+                                    quant_type: None,
                                 },
                             });
                         }
@@ -1635,6 +1889,8 @@ mod tests {
                 source_format: Format::Gguf,
                 target_format: Format::Apr,
                 backend: Backend::Cpu,
+                failure_type: None,
+                quant_type: None,
             },
         };
         let evidence: Evidence = result.into();
@@ -1759,6 +2015,8 @@ mod tests {
             source_format: Format::Gguf,
             target_format: Format::Apr,
             backend: Backend::Cpu,
+            failure_type: None,
+            quant_type: None,
         };
         let cloned = evidence.clone();
         assert_eq!(evidence.source_hash, cloned.source_hash);
@@ -1828,6 +2086,8 @@ mod tests {
             source_format: Format::Gguf,
             target_format: Format::Apr,
             backend: Backend::Cpu,
+            failure_type: None,
+            quant_type: None,
         };
         let debug_str = format!("{evidence:?}");
         assert!(debug_str.contains("ConversionEvidence"));
@@ -1954,6 +2214,7 @@ mod tests {
             model_id: ModelId::new("test", "model"),
             epsilon: 1e-9,
             binary: default_binary(),
+            quant_type: None,
         };
         assert!((test.epsilon - 1e-9).abs() < f64::EPSILON);
     }
@@ -2447,6 +2708,8 @@ mod tests {
             source_format: Format::SafeTensors,
             target_format: Format::Apr,
             backend: Backend::Gpu,
+            failure_type: None,
+            quant_type: None,
         };
         assert_eq!(evidence.source_format, Format::SafeTensors);
         assert_eq!(evidence.target_format, Format::Apr);
@@ -2558,6 +2821,8 @@ mod tests {
                 source_format: Format::Gguf,
                 target_format: Format::Apr,
                 backend: Backend::Cpu,
+                failure_type: None,
+                quant_type: None,
             },
         };
         match result {
@@ -2644,6 +2909,8 @@ mod tests {
             source_format: Format::Gguf,
             target_format: Format::Apr,
             backend: Backend::Cpu,
+            failure_type: None,
+            quant_type: None,
         };
         assert_eq!(evidence.diff_indices.len(), 5);
     }
@@ -2724,6 +2991,7 @@ mod tests {
             model_id: ModelId::new("org", "name"),
             epsilon: 1e-7,
             binary: default_binary(),
+            quant_type: None,
         };
         let json = serde_json::to_string(&test).unwrap();
         let parsed: ConversionTest = serde_json::from_str(&json).unwrap();
@@ -2762,6 +3030,8 @@ mod tests {
                 source_format: Format::Gguf,
                 target_format: Format::Apr,
                 backend: Backend::Cpu,
+                failure_type: None,
+                quant_type: None,
             },
         };
         let json = serde_json::to_string(&result).unwrap();
@@ -2784,6 +3054,8 @@ mod tests {
             source_format: Format::SafeTensors,
             target_format: Format::Gguf,
             backend: Backend::Gpu,
+            failure_type: None,
+            quant_type: None,
         };
         let json = serde_json::to_string(&evidence).unwrap();
         let parsed: ConversionEvidence = serde_json::from_str(&json).unwrap();
@@ -2948,6 +3220,8 @@ mod tests {
             source_format: Format::Gguf,
             target_format: Format::Apr,
             backend: Backend::Cpu,
+            failure_type: None,
+            quant_type: None,
         };
         assert!(evidence.diff_indices.is_empty());
         assert!((evidence.max_diff - 0.0).abs() < f64::EPSILON);
@@ -3106,6 +3380,8 @@ mod tests {
                 source_format: Format::Gguf,
                 target_format: Format::Apr,
                 backend: Backend::Cpu,
+                failure_type: None,
+                quant_type: None,
             },
         };
         let json = serde_json::to_string(&result).unwrap();
@@ -3122,6 +3398,7 @@ mod tests {
             model_id: ModelId::new("org", "model"),
             epsilon: 1e-10,
             binary: default_binary(),
+            quant_type: None,
         };
         assert!((test.epsilon - 1e-10).abs() < 1e-15);
     }
@@ -4030,6 +4307,8 @@ exit 1"#,
                 source_format: Format::Gguf,
                 target_format: Format::Apr,
                 backend: Backend::Cpu,
+                failure_type: None,
+                quant_type: None,
             },
         };
         match result {
@@ -4056,6 +4335,8 @@ exit 1"#,
                 source_format: Format::Gguf,
                 target_format: Format::Apr,
                 backend: Backend::Cpu,
+                failure_type: None,
+                quant_type: None,
             },
         };
         match result {
@@ -4090,5 +4371,366 @@ exit 1"#,
             "/nonexistent/apr",
         );
         assert!(result.is_err());
+    }
+
+    // ── §3.4 classify_failure tests ────────────────────────────────────
+
+    #[test]
+    fn test_classify_failure_tensor_name_mismatch() {
+        assert_eq!(
+            classify_failure("tensor name mismatch: q_proj not found", 1),
+            ConversionFailureType::TensorNameMismatch
+        );
+        assert_eq!(
+            classify_failure("missing tensor 'lm_head.weight'", 1),
+            ConversionFailureType::TensorNameMismatch
+        );
+        assert_eq!(
+            classify_failure("unexpected tensor in output", 1),
+            ConversionFailureType::TensorNameMismatch
+        );
+    }
+
+    #[test]
+    fn test_classify_failure_dequantization() {
+        assert_eq!(
+            classify_failure("dequantization error: NaN values produced", 1),
+            ConversionFailureType::DequantizationFailure
+        );
+        assert_eq!(
+            classify_failure("quantization overflow detected", 1),
+            ConversionFailureType::DequantizationFailure
+        );
+        assert_eq!(
+            classify_failure("NaN in output tensor", 1),
+            ConversionFailureType::DequantizationFailure
+        );
+        assert_eq!(
+            classify_failure("infinity values in layer 5", 1),
+            ConversionFailureType::DequantizationFailure
+        );
+    }
+
+    #[test]
+    fn test_classify_failure_config_metadata() {
+        assert_eq!(
+            classify_failure("hidden_size mismatch: expected 768 got 512", 1),
+            ConversionFailureType::ConfigMetadataMismatch
+        );
+        assert_eq!(
+            classify_failure("metadata mismatch: num_layers differs", 1),
+            ConversionFailureType::ConfigMetadataMismatch
+        );
+        assert_eq!(
+            classify_failure("vocab_size does not match model", 1),
+            ConversionFailureType::ConfigMetadataMismatch
+        );
+        assert_eq!(
+            classify_failure("config mismatch detected", 1),
+            ConversionFailureType::ConfigMetadataMismatch
+        );
+    }
+
+    #[test]
+    fn test_classify_failure_missing_artifact() {
+        assert_eq!(
+            classify_failure("file not found: model.safetensors", 1),
+            ConversionFailureType::MissingArtifact
+        );
+        assert_eq!(
+            classify_failure("No such file or directory", 1),
+            ConversionFailureType::MissingArtifact
+        );
+        assert_eq!(
+            classify_failure("tokenizer.json missing from model directory", 1),
+            ConversionFailureType::MissingArtifact
+        );
+        assert_eq!(
+            classify_failure("config.json: file not found", 1),
+            ConversionFailureType::MissingArtifact
+        );
+    }
+
+    #[test]
+    fn test_classify_failure_inference() {
+        assert_eq!(
+            classify_failure("inference failed: out of memory", 1),
+            ConversionFailureType::InferenceFailure
+        );
+        assert_eq!(
+            classify_failure("forward pass error", 1),
+            ConversionFailureType::InferenceFailure
+        );
+        assert_eq!(
+            classify_failure("", -11), // SIGSEGV
+            ConversionFailureType::InferenceFailure
+        );
+    }
+
+    #[test]
+    fn test_classify_failure_unknown() {
+        assert_eq!(
+            classify_failure("some generic error", 1),
+            ConversionFailureType::Unknown
+        );
+        assert_eq!(classify_failure("", 1), ConversionFailureType::Unknown);
+    }
+
+    #[test]
+    fn test_classify_failure_case_insensitive() {
+        assert_eq!(
+            classify_failure("TENSOR NAME MISMATCH", 1),
+            ConversionFailureType::TensorNameMismatch
+        );
+        assert_eq!(
+            classify_failure("Dequantization Error", 1),
+            ConversionFailureType::DequantizationFailure
+        );
+    }
+
+    // ── §3.7 QuantType + tolerance tests ───────────────────────────────
+
+    #[test]
+    fn test_quant_type_from_str_label() {
+        assert_eq!(QuantType::from_str_label("f32"), QuantType::F32);
+        assert_eq!(QuantType::from_str_label("fp32"), QuantType::F32);
+        assert_eq!(QuantType::from_str_label("float32"), QuantType::F32);
+        assert_eq!(QuantType::from_str_label("f16"), QuantType::F16);
+        assert_eq!(QuantType::from_str_label("fp16"), QuantType::F16);
+        assert_eq!(QuantType::from_str_label("bf16"), QuantType::BF16);
+        assert_eq!(QuantType::from_str_label("bfloat16"), QuantType::BF16);
+        assert_eq!(QuantType::from_str_label("q4_k_m"), QuantType::Q4KM);
+        assert_eq!(QuantType::from_str_label("q4km"), QuantType::Q4KM);
+        assert_eq!(QuantType::from_str_label("q6_k"), QuantType::Q6K);
+        assert_eq!(QuantType::from_str_label("q4_0"), QuantType::Q4_0);
+        assert_eq!(QuantType::from_str_label("q8_0"), QuantType::Q8_0);
+        assert_eq!(
+            QuantType::from_str_label("unknown_type"),
+            QuantType::Unknown
+        );
+    }
+
+    #[test]
+    fn test_quant_type_from_str_label_case_insensitive() {
+        assert_eq!(QuantType::from_str_label("F32"), QuantType::F32);
+        assert_eq!(QuantType::from_str_label("BF16"), QuantType::BF16);
+        assert_eq!(QuantType::from_str_label("Q4_K_M"), QuantType::Q4KM);
+    }
+
+    #[test]
+    fn test_quant_type_from_str_label_with_hyphens() {
+        assert_eq!(QuantType::from_str_label("q4-k-m"), QuantType::Q4KM);
+        assert_eq!(QuantType::from_str_label("q6-k"), QuantType::Q6K);
+    }
+
+    #[test]
+    fn test_tolerance_for_f32() {
+        let tol = tolerance_for(QuantType::F32);
+        assert!((tol.atol - 1e-6).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_tolerance_for_f16() {
+        let tol = tolerance_for(QuantType::F16);
+        assert!((tol.atol - 1e-3).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_tolerance_for_q4km() {
+        let tol = tolerance_for(QuantType::Q4KM);
+        assert!((tol.atol - 1e-1).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_tolerance_for_q6k() {
+        let tol = tolerance_for(QuantType::Q6K);
+        assert!((tol.atol - 5e-2).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_tolerance_for_unknown_falls_back_to_f32() {
+        let tol = tolerance_for(QuantType::Unknown);
+        assert!((tol.atol - 1e-6).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_effective_epsilon_without_quant() {
+        let test = ConversionTest::new(
+            Format::Gguf,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        assert!((test.effective_epsilon() - EPSILON).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn test_effective_epsilon_with_quant() {
+        let mut test = ConversionTest::new(
+            Format::Gguf,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        test.quant_type = Some(QuantType::Q4KM);
+        assert!((test.effective_epsilon() - 1e-1).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_effective_epsilon_f32_quant() {
+        let mut test = ConversionTest::new(
+            Format::Gguf,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        test.quant_type = Some(QuantType::F32);
+        assert!((test.effective_epsilon() - 1e-6).abs() < 1e-10);
+    }
+
+    // ── ConversionFailureType / TensorNaming serde tests ───────────────
+
+    #[test]
+    fn test_conversion_failure_type_serde() {
+        let types = [
+            ConversionFailureType::TensorNameMismatch,
+            ConversionFailureType::DequantizationFailure,
+            ConversionFailureType::ConfigMetadataMismatch,
+            ConversionFailureType::MissingArtifact,
+            ConversionFailureType::InferenceFailure,
+            ConversionFailureType::Unknown,
+        ];
+        for ft in types {
+            let json = serde_json::to_string(&ft).unwrap();
+            let parsed: ConversionFailureType = serde_json::from_str(&json).unwrap();
+            assert_eq!(parsed, ft);
+        }
+    }
+
+    #[test]
+    fn test_conversion_failure_type_gate_ids() {
+        assert_eq!(
+            ConversionFailureType::TensorNameMismatch.gate_id(),
+            "F-CONV-TNAME-001"
+        );
+        assert_eq!(
+            ConversionFailureType::DequantizationFailure.gate_id(),
+            "F-CONV-DEQUANT-001"
+        );
+        assert_eq!(
+            ConversionFailureType::ConfigMetadataMismatch.gate_id(),
+            "F-CONV-CONFIG-001"
+        );
+        assert_eq!(
+            ConversionFailureType::MissingArtifact.gate_id(),
+            "F-CONV-MISSING-001"
+        );
+        assert_eq!(
+            ConversionFailureType::InferenceFailure.gate_id(),
+            "F-CONV-INFER-001"
+        );
+        assert_eq!(
+            ConversionFailureType::Unknown.gate_id(),
+            "F-CONV-UNKNOWN-002"
+        );
+    }
+
+    #[test]
+    fn test_conversion_failure_type_keys() {
+        assert_eq!(
+            ConversionFailureType::TensorNameMismatch.key(),
+            "tensor_name_mismatch"
+        );
+        assert_eq!(ConversionFailureType::Unknown.key(), "unknown");
+    }
+
+    #[test]
+    fn test_quant_type_serde() {
+        let types = [
+            QuantType::F32,
+            QuantType::F16,
+            QuantType::BF16,
+            QuantType::Q4KM,
+            QuantType::Q6K,
+            QuantType::Q4_0,
+            QuantType::Q8_0,
+            QuantType::Unknown,
+        ];
+        for qt in types {
+            let json = serde_json::to_string(&qt).unwrap();
+            let parsed: QuantType = serde_json::from_str(&json).unwrap();
+            assert_eq!(parsed, qt);
+        }
+    }
+
+    #[test]
+    fn test_tensor_naming_serde() {
+        let variants = [
+            TensorNaming::HuggingFace,
+            TensorNaming::Gguf,
+            TensorNaming::Apr,
+            TensorNaming::Unknown("custom".to_string()),
+        ];
+        for tn in &variants {
+            let json = serde_json::to_string(tn).unwrap();
+            let parsed: TensorNaming = serde_json::from_str(&json).unwrap();
+            assert_eq!(parsed, *tn);
+        }
+    }
+
+    #[test]
+    fn test_conversion_evidence_with_failure_type() {
+        let evidence = ConversionEvidence {
+            source_hash: "a".to_string(),
+            converted_hash: "b".to_string(),
+            max_diff: 0.5,
+            diff_indices: vec![],
+            source_format: Format::Gguf,
+            target_format: Format::Apr,
+            backend: Backend::Cpu,
+            failure_type: Some(ConversionFailureType::TensorNameMismatch),
+            quant_type: Some(QuantType::Q4KM),
+        };
+        let json = serde_json::to_string(&evidence).unwrap();
+        let parsed: ConversionEvidence = serde_json::from_str(&json).unwrap();
+        assert_eq!(
+            parsed.failure_type,
+            Some(ConversionFailureType::TensorNameMismatch)
+        );
+        assert_eq!(parsed.quant_type, Some(QuantType::Q4KM));
+    }
+
+    #[test]
+    fn test_conversion_evidence_default_optional_fields() {
+        // Deserialize without optional fields — should default to None
+        let json = r#"{
+            "source_hash": "a",
+            "converted_hash": "b",
+            "max_diff": 0.1,
+            "diff_indices": [],
+            "source_format": "gguf",
+            "target_format": "apr",
+            "backend": "cpu"
+        }"#;
+        let parsed: ConversionEvidence = serde_json::from_str(json).unwrap();
+        assert!(parsed.failure_type.is_none());
+        assert!(parsed.quant_type.is_none());
+    }
+
+    #[test]
+    fn test_default_tolerances_count() {
+        assert_eq!(DEFAULT_TOLERANCES.len(), 7);
+    }
+
+    #[test]
+    fn test_default_tolerances_all_quant_types() {
+        let types: Vec<QuantType> = DEFAULT_TOLERANCES.iter().map(|t| t.quant_type).collect();
+        assert!(types.contains(&QuantType::F32));
+        assert!(types.contains(&QuantType::F16));
+        assert!(types.contains(&QuantType::BF16));
+        assert!(types.contains(&QuantType::Q4KM));
+        assert!(types.contains(&QuantType::Q6K));
+        assert!(types.contains(&QuantType::Q4_0));
+        assert!(types.contains(&QuantType::Q8_0));
     }
 }

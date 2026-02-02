@@ -1,7 +1,49 @@
 [
   {
-    "id": "0000000000000000189062a795e6c861",
-    "gate_id": "F-A1-001",
+    "id": "00000000000000001890652bf19e488a",
+    "gate_id": "G0-INTEGRITY-CONFIG",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "G0 Integrity: config.json vs tensor metadata",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "G0-INTEGRITY-CONFIG: config.json not found or unreadable: No such file or directory (os error 2)",
+    "output": "Config: None, Tensors: None",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-02T09:51:32.968287027Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890652c465c9bdf",
+    "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000000",
       "model": {
@@ -19,19 +61,19 @@
       "trace_level": "none",
       "oracle_type": "arithmetic"
     },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "The answer is 4.",
-    "stderr": null,
-    "exit_code": 0,
+    "outcome": "Falsified",
+    "reason": "Command failed (exit 8): \n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors",
+    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "exit_code": 8,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
-      "total_tokens": 32,
+      "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 1421
     },
-    "timestamp": "2026-02-02T09:05:25.470595750Z",
+    "timestamp": "2026-02-02T09:51:34.390046935Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -42,8 +84,8 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189062a795e6da9c",
-    "gate_id": "F-A1-001",
+    "id": "00000000000000001890652c8a6788c8",
+    "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000001",
       "model": {
@@ -61,19 +103,19 @@
       "trace_level": "none",
       "oracle_type": "arithmetic"
     },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "The answer is 4.",
-    "stderr": null,
-    "exit_code": 0,
+    "outcome": "Falsified",
+    "reason": "Command failed (exit 8): \n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors",
+    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "exit_code": 8,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
-      "total_tokens": 32,
+      "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 1141
     },
-    "timestamp": "2026-02-02T09:05:25.470600126Z",
+    "timestamp": "2026-02-02T09:51:35.531613733Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -84,8 +126,8 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189062a795e6df80",
-    "gate_id": "F-A1-001",
+    "id": "00000000000000001890652ccac12dad",
+    "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000002",
       "model": {
@@ -103,19 +145,19 @@
       "trace_level": "none",
       "oracle_type": "arithmetic"
     },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "The answer is 4.",
-    "stderr": null,
-    "exit_code": 0,
+    "outcome": "Falsified",
+    "reason": "Command failed (exit 8): \n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors",
+    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "exit_code": 8,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
-      "total_tokens": 32,
+      "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 1079
     },
-    "timestamp": "2026-02-02T09:05:25.470601318Z",
+    "timestamp": "2026-02-02T09:51:36.611230233Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -126,8 +168,8 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189062a795e6e32d",
-    "gate_id": "F-A1-001",
+    "id": "00000000000000001890652d0c011abc",
+    "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000003",
       "model": {
@@ -145,19 +187,19 @@
       "trace_level": "none",
       "oracle_type": "arithmetic"
     },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "The answer is 4.",
-    "stderr": null,
-    "exit_code": 0,
+    "outcome": "Falsified",
+    "reason": "Command failed (exit 8): \n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors",
+    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "exit_code": 8,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
-      "total_tokens": 32,
+      "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 1094
     },
-    "timestamp": "2026-02-02T09:05:25.470602199Z",
+    "timestamp": "2026-02-02T09:51:37.705939078Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -168,8 +210,8 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189062a795e6e66c",
-    "gate_id": "F-A1-001",
+    "id": "00000000000000001890652d4e2bf742",
+    "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000004",
       "model": {
@@ -187,19 +229,19 @@
       "trace_level": "none",
       "oracle_type": "arithmetic"
     },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "The answer is 4.",
-    "stderr": null,
-    "exit_code": 0,
+    "outcome": "Falsified",
+    "reason": "Command failed (exit 8): \n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors",
+    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "exit_code": 8,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
-      "total_tokens": 32,
+      "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 1110
     },
-    "timestamp": "2026-02-02T09:05:25.470603041Z",
+    "timestamp": "2026-02-02T09:51:38.816044020Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -210,8 +252,8 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189062a795e6ea6a",
-    "gate_id": "F-A1-001",
+    "id": "00000000000000001890652d90a671e5",
+    "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000005",
       "model": {
@@ -229,19 +271,19 @@
       "trace_level": "none",
       "oracle_type": "arithmetic"
     },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "The answer is 4.",
-    "stderr": null,
-    "exit_code": 0,
+    "outcome": "Falsified",
+    "reason": "Command failed (exit 8): \n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors",
+    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "exit_code": 8,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
-      "total_tokens": 32,
+      "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 1115
     },
-    "timestamp": "2026-02-02T09:05:25.470604102Z",
+    "timestamp": "2026-02-02T09:51:39.931367093Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -252,8 +294,8 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189062a795e6ee03",
-    "gate_id": "F-A1-001",
+    "id": "00000000000000001890652dd262947c",
+    "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000006",
       "model": {
@@ -271,19 +313,19 @@
       "trace_level": "none",
       "oracle_type": "arithmetic"
     },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "The answer is 4.",
-    "stderr": null,
-    "exit_code": 0,
+    "outcome": "Falsified",
+    "reason": "Command failed (exit 8): \n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors",
+    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "exit_code": 8,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
-      "total_tokens": 32,
+      "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 1102
     },
-    "timestamp": "2026-02-02T09:05:25.470605024Z",
+    "timestamp": "2026-02-02T09:51:41.034215816Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -294,8 +336,8 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189062a795e6f1a7",
-    "gate_id": "F-A1-001",
+    "id": "00000000000000001890652e14c43052",
+    "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000007",
       "model": {
@@ -313,19 +355,19 @@
       "trace_level": "none",
       "oracle_type": "arithmetic"
     },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "The answer is 4.",
-    "stderr": null,
-    "exit_code": 0,
+    "outcome": "Falsified",
+    "reason": "Command failed (exit 8): \n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors",
+    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "exit_code": 8,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
-      "total_tokens": 32,
+      "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 1113
     },
-    "timestamp": "2026-02-02T09:05:25.470605945Z",
+    "timestamp": "2026-02-02T09:51:42.147908838Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -336,8 +378,8 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189062a795e6f54a",
-    "gate_id": "F-A1-001",
+    "id": "00000000000000001890652e5793e6c0",
+    "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000008",
       "model": {
@@ -355,19 +397,19 @@
       "trace_level": "none",
       "oracle_type": "arithmetic"
     },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "The answer is 4.",
-    "stderr": null,
-    "exit_code": 0,
+    "outcome": "Falsified",
+    "reason": "Command failed (exit 8): \n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors",
+    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "exit_code": 8,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
-      "total_tokens": 32,
+      "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 1120
     },
-    "timestamp": "2026-02-02T09:05:25.470606906Z",
+    "timestamp": "2026-02-02T09:51:43.268817747Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -378,8 +420,8 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189062a795e6fa24",
-    "gate_id": "F-A1-001",
+    "id": "00000000000000001890652e9aec6959",
+    "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000009",
       "model": {
@@ -397,19 +439,985 @@
       "trace_level": "none",
       "oracle_type": "arithmetic"
     },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "The answer is 4.",
-    "stderr": null,
-    "exit_code": 0,
+    "outcome": "Falsified",
+    "reason": "Command failed (exit 8): \n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors",
+    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Operation 'safetensors_convert' not supported: config.json not found (required for SafeTensors inference)\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-0-5b-instruct/safetensors/model.safetensors\n",
+    "exit_code": 8,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
-      "total_tokens": 32,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 1129
+    },
+    "timestamp": "2026-02-02T09:51:44.398691951Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890652e9b2107d1",
+    "gate_id": "F-CONV-G-A",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_apr_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "Convert Gguf to Apr",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T09:05:25.470608138Z",
+    "timestamp": "2026-02-02T09:51:44.402139920Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890652e9b4d1132",
+    "gate_id": "F-CONV-G-A",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_apr_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "gpu",
+      "format": "apr",
+      "prompt": "Convert Gguf to Apr",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-02T09:51:44.405025965Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890652e9b737541",
+    "gate_id": "F-CONV-A-G",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_gguf_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "gguf",
+      "prompt": "Convert Apr to Gguf",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-02T09:51:44.407541467Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890652e9ba6b074",
+    "gate_id": "F-CONV-A-G",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_gguf_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "gpu",
+      "format": "gguf",
+      "prompt": "Convert Apr to Gguf",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-02T09:51:44.410899199Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890652e9bcd6e74",
+    "gate_id": "F-CONV-G-S",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Convert Gguf to SafeTensors",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-02T09:51:44.413437936Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890652e9c00ac3c",
+    "gate_id": "F-CONV-G-S",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_safetensors_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "gpu",
+      "format": "safetensors",
+      "prompt": "Convert Gguf to SafeTensors",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-02T09:51:44.416796409Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890652e9c296631",
+    "gate_id": "F-CONV-S-G",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_gguf_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "gguf",
+      "prompt": "Convert SafeTensors to Gguf",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-02T09:51:44.419465545Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890652e9c4e6c30",
+    "gate_id": "F-CONV-S-G",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_gguf_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "gpu",
+      "format": "gguf",
+      "prompt": "Convert SafeTensors to Gguf",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-02T09:51:44.421891521Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890652e9c79766a",
+    "gate_id": "F-CONV-A-S",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Convert Apr to SafeTensors",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-02T09:51:44.424712277Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890652e9ca2b093",
+    "gate_id": "F-CONV-A-S",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_safetensors_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "gpu",
+      "format": "safetensors",
+      "prompt": "Convert Apr to SafeTensors",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-02T09:51:44.427414172Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890652e9cc9a62a",
+    "gate_id": "F-CONV-S-A",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_apr_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "Convert SafeTensors to Apr",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-02T09:51:44.429967421Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890652e9cf3d975",
+    "gate_id": "F-CONV-S-A",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_apr_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "gpu",
+      "format": "apr",
+      "prompt": "Convert SafeTensors to Apr",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-02T09:51:44.432732873Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890652e9d4f7814",
+    "gate_id": "F-CONV-RT-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_gguf_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "gguf",
+      "prompt": "Round-trip conversion",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Round-trip failed: Execution error: Conversion failed: error: Validation failed: Source inspection failed: Invalid model format: No file extension found\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-02T09:51:44.438737456Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890652e9d992f54",
+    "gate_id": "F-CONV-RT-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_gguf_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "gpu",
+      "format": "gguf",
+      "prompt": "Round-trip conversion",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Round-trip failed: Execution error: Conversion failed: error: Validation failed: Source inspection failed: Invalid model format: No file extension found\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-02T09:51:44.443568356Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890652e9dec5e43",
+    "gate_id": "F-CONV-RT-002",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Multi-hop: SafeTensors→Apr→Gguf→SafeTensors",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Multi-hop chain failed: Execution error: Conversion failed: error: Validation failed: Source inspection failed: Invalid model format: No file extension found\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-02T09:51:44.449020Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890652e9e34e195",
+    "gate_id": "F-CONV-RT-002",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_safetensors_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "gpu",
+      "format": "safetensors",
+      "prompt": "Multi-hop: SafeTensors→Apr→Gguf→SafeTensors",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Multi-hop chain failed: Execution error: Conversion failed: error: Validation failed: Source inspection failed: Invalid model format: No file extension found\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-02T09:51:44.453772280Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890652e9e87d933",
+    "gate_id": "F-CONV-RT-003",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Multi-hop: SafeTensors→Apr→Gguf→Apr→SafeTensors",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Multi-hop chain failed: Execution error: Conversion failed: error: Validation failed: Source inspection failed: Invalid model format: No file extension found\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-02T09:51:44.459209451Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890652e9ed40ad0",
+    "gate_id": "F-CONV-RT-003",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_safetensors_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "gpu",
+      "format": "safetensors",
+      "prompt": "Multi-hop: SafeTensors→Apr→Gguf→Apr→SafeTensors",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Multi-hop chain failed: Execution error: Conversion failed: error: Validation failed: Source inspection failed: Invalid model format: No file extension found\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-02T09:51:44.464202929Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890652e9f04ff05",
+    "gate_id": "F-CONV-IDEM-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_apr_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "Idempotency: GGUF→APR twice",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Idempotency test failed: Execution error: Conversion failed: error: Validation failed: Source inspection failed: Invalid model format: No file extension found\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-02T09:51:44.467411564Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890652e9f27f600",
+    "gate_id": "F-CONV-IDEM-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_apr_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "gpu",
+      "format": "apr",
+      "prompt": "Idempotency: GGUF→APR twice",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Idempotency test failed: Execution error: Conversion failed: error: Validation failed: Source inspection failed: Invalid model format: No file extension found\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-02T09:51:44.469702585Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890652e9f4c93d0",
+    "gate_id": "F-CONV-COM-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_apr_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "Commutativity: GGUF→APR vs GGUF→ST→APR",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Commutativity test failed: Execution error: Conversion failed: error: Validation failed: Source inspection failed: Invalid model format: No file extension found\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-02T09:51:44.472102281Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890652e9f74db43",
+    "gate_id": "F-CONV-COM-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_apr_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "gpu",
+      "format": "apr",
+      "prompt": "Commutativity: GGUF→APR vs GGUF→ST→APR",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Commutativity test failed: Execution error: Conversion failed: error: Validation failed: Source inspection failed: Invalid model format: No file extension found\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-02T09:51:44.474742112Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890652e9f9b397e",
+    "gate_id": "F-GOLDEN-RULE-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_apr_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "Golden Rule: convert → inference → diff",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "Golden Rule: original inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
+    "output": "N/A",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-02T09:51:44.477256733Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
