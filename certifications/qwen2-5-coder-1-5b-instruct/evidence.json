@@ -1,6 +1,6 @@
 [
   {
-    "id": "000000000000000018906555a0d0aa9e",
+    "id": "000000000000000018906ce326656052",
     "gate_id": "G0-INTEGRITY-CONFIG",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -31,7 +31,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T09:54:32.001260641Z",
+    "timestamp": "2026-02-02T12:12:56.414159681Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -42,7 +42,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890655894de153d",
+    "id": "000000000000000018906ce6a1feb898",
     "gate_id": "F-A1-001",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -63,17 +63,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 6\nlatency: 12674.34ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
-    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nGenerated 32 tokens in 1297.5ms (24.7 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 26\nlatency: 14944.09ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
+    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 32 tokens in 1511.7ms (21.2 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 0.5,
+      "tokens_per_second": 1.7,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 12684
+      "duration_ms": 14958
     },
-    "timestamp": "2026-02-02T09:54:44.685716562Z",
+    "timestamp": "2026-02-02T12:13:11.372710095Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -84,7 +84,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890655b87f131a9",
+    "id": "000000000000000018906ce9de9da5a3",
     "gate_id": "F-A1-001",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000001",
@@ -105,17 +105,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 6\nlatency: 12658.22ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
-    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nGenerated 32 tokens in 1288.9ms (24.8 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 26\nlatency: 13888.27ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
+    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 32 tokens in 1530.2ms (20.9 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 0.5,
+      "tokens_per_second": 1.9,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 12668
+      "duration_ms": 13901
     },
-    "timestamp": "2026-02-02T09:54:57.353767052Z",
+    "timestamp": "2026-02-02T12:13:25.274660133Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -126,7 +126,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890655e7ff9ea0c",
+    "id": "000000000000000018906ced77ed7a75",
     "gate_id": "F-A1-001",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000002",
@@ -147,17 +147,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 6\nlatency: 12741.82ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
-    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nGenerated 32 tokens in 1315.0ms (24.3 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 26\nlatency: 15446.05ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
+    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 32 tokens in 1557.9ms (20.5 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 0.5,
+      "tokens_per_second": 1.7,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 12751
+      "duration_ms": 15457
     },
-    "timestamp": "2026-02-02T09:55:10.105022984Z",
+    "timestamp": "2026-02-02T12:13:40.731707866Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -168,7 +168,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189065615d578bf6",
+    "id": "000000000000000018906cf2135c6a59",
     "gate_id": "F-A1-001",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000003",
@@ -189,17 +189,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 6\nlatency: 12293.64ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
-    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nGenerated 32 tokens in 1231.1ms (26.0 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 26\nlatency: 19776.03ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
+    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 32 tokens in 1486.6ms (21.5 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 0.5,
+      "tokens_per_second": 1.3,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 12303
+      "duration_ms": 19787
     },
-    "timestamp": "2026-02-02T09:55:22.408857998Z",
+    "timestamp": "2026-02-02T12:14:00.519315582Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -210,7 +210,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189065644ee48b11",
+    "id": "000000000000000018906cf535b4a53a",
     "gate_id": "F-A1-001",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000004",
@@ -231,17 +231,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 6\nlatency: 12634.51ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
-    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nGenerated 32 tokens in 1246.0ms (25.7 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 26\nlatency: 13446.90ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
+    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 32 tokens in 1522.5ms (21.0 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 0.5,
+      "tokens_per_second": 1.9,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 12642
+      "duration_ms": 13461
     },
-    "timestamp": "2026-02-02T09:55:35.051342223Z",
+    "timestamp": "2026-02-02T12:14:13.980424954Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -252,7 +252,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189065673b23c490",
+    "id": "000000000000000018906cf826ad2b44",
     "gate_id": "F-A1-001",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000005",
@@ -273,17 +273,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 6\nlatency: 12543.95ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
-    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nGenerated 32 tokens in 1290.1ms (24.8 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 26\nlatency: 12621.27ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
+    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 32 tokens in 1502.4ms (21.3 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 0.5,
+      "tokens_per_second": 2.1,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 12553
+      "duration_ms": 12632
     },
-    "timestamp": "2026-02-02T09:55:47.604843308Z",
+    "timestamp": "2026-02-02T12:14:26.613178828Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -294,7 +294,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890656a154ba12a",
+    "id": "000000000000000018906cfb2bbc7f3a",
     "gate_id": "F-A1-001",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000006",
@@ -315,17 +315,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 6\nlatency: 12239.55ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
-    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nGenerated 32 tokens in 1223.1ms (26.2 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 26\nlatency: 12952.54ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
+    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 32 tokens in 1490.8ms (21.5 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 0.5,
+      "tokens_per_second": 2.0,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 12249
+      "duration_ms": 12969
     },
-    "timestamp": "2026-02-02T09:55:59.854823627Z",
+    "timestamp": "2026-02-02T12:14:39.582971481Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -336,7 +336,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890656d15c10453",
+    "id": "000000000000000018906cfe2c46aa58",
     "gate_id": "F-A1-001",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000007",
@@ -357,17 +357,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 6\nlatency: 12884.09ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
-    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nGenerated 32 tokens in 1253.2ms (25.5 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 26\nlatency: 12880.11ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
+    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 32 tokens in 1505.8ms (21.3 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 0.5,
+      "tokens_per_second": 2.0,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 12892
+      "duration_ms": 12893
     },
-    "timestamp": "2026-02-02T09:56:12.747418432Z",
+    "timestamp": "2026-02-02T12:14:52.476928234Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -378,7 +378,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890656ffa3116e6",
+    "id": "000000000000000018906d01fd60df5f",
     "gate_id": "F-A1-001",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000008",
@@ -399,17 +399,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 6\nlatency: 12413.23ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
-    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nGenerated 32 tokens in 1251.6ms (25.6 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 26\nlatency: 16380.54ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
+    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 32 tokens in 1551.4ms (20.6 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 0.5,
+      "tokens_per_second": 1.6,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 12422
+      "duration_ms": 16392
     },
-    "timestamp": "2026-02-02T09:56:25.169902758Z",
+    "timestamp": "2026-02-02T12:15:08.869986268Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -420,7 +420,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890657312d0bf68",
+    "id": "000000000000000018906d05869dbc2d",
     "gate_id": "F-A1-001",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000009",
@@ -441,17 +441,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 6\nlatency: 13288.29ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
-    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nGenerated 32 tokens in 1312.0ms (24.4 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 26\nlatency: 15173.31ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
+    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 32 tokens in 1513.4ms (21.1 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 0.5,
+      "tokens_per_second": 1.7,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 13298
+      "duration_ms": 15187
     },
-    "timestamp": "2026-02-02T09:56:38.467921603Z",
+    "timestamp": "2026-02-02T12:15:24.057355444Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -462,7 +462,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890657313090037",
+    "id": "000000000000000018906d05870306f5",
     "gate_id": "F-CONV-G-A",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_apr_0000000000000000",
@@ -493,7 +493,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T09:56:38.471607108Z",
+    "timestamp": "2026-02-02T12:15:24.063992232Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -504,7 +504,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906573134b7f53",
+    "id": "000000000000000018906d05873d4098",
     "gate_id": "F-CONV-G-A",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_apr_0000000000000000",
@@ -535,7 +535,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T09:56:38.475965114Z",
+    "timestamp": "2026-02-02T12:15:24.067808246Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -546,7 +546,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890657313824781",
+    "id": "000000000000000018906d05877e106c",
     "gate_id": "F-CONV-A-G",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_gguf_0000000000000000",
@@ -577,7 +577,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T09:56:38.479554904Z",
+    "timestamp": "2026-02-02T12:15:24.072055833Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -588,7 +588,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890657313bee082",
+    "id": "000000000000000018906d0587bbd28e",
     "gate_id": "F-CONV-A-G",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_gguf_0000000000000000",
@@ -619,7 +619,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T09:56:38.483526544Z",
+    "timestamp": "2026-02-02T12:15:24.076103317Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -630,7 +630,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890657313f948db",
+    "id": "000000000000000018906d05880e3273",
     "gate_id": "F-CONV-G-S",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -661,7 +661,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T09:56:38.487354234Z",
+    "timestamp": "2026-02-02T12:15:24.081501638Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -672,7 +672,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906573142d6fc0",
+    "id": "000000000000000018906d0588554f76",
     "gate_id": "F-CONV-G-S",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_safetensors_0000000000000000",
@@ -703,7 +703,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T09:56:38.490772153Z",
+    "timestamp": "2026-02-02T12:15:24.086162091Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -714,7 +714,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890657314606787",
+    "id": "000000000000000018906d05888ede0f",
     "gate_id": "F-CONV-S-G",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_gguf_0000000000000000",
@@ -745,7 +745,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T09:56:38.494112334Z",
+    "timestamp": "2026-02-02T12:15:24.089934278Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -756,7 +756,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189065731490664e",
+    "id": "000000000000000018906d0588d96228",
     "gate_id": "F-CONV-S-G",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_gguf_0000000000000000",
@@ -787,7 +787,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T09:56:38.497257509Z",
+    "timestamp": "2026-02-02T12:15:24.094818100Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -798,7 +798,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890657314c0bd80",
+    "id": "000000000000000018906d0589255fc7",
     "gate_id": "F-CONV-A-S",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -829,7 +829,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T09:56:38.500425438Z",
+    "timestamp": "2026-02-02T12:15:24.099797727Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -840,7 +840,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890657314f0fce8",
+    "id": "000000000000000018906d05897cc56a",
     "gate_id": "F-CONV-A-S",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_safetensors_0000000000000000",
@@ -871,7 +871,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T09:56:38.503587529Z",
+    "timestamp": "2026-02-02T12:15:24.105525417Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -882,7 +882,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906573152300c2",
+    "id": "000000000000000018906d0589c8ec31",
     "gate_id": "F-CONV-S-A",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_apr_0000000000000000",
@@ -913,7 +913,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T09:56:38.506865535Z",
+    "timestamp": "2026-02-02T12:15:24.110516161Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -924,7 +924,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906573155714cb",
+    "id": "000000000000000018906d058a07f3d2",
     "gate_id": "F-CONV-S-A",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_apr_0000000000000000",
@@ -955,7 +955,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T09:56:38.510278366Z",
+    "timestamp": "2026-02-02T12:15:24.114646851Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -966,7 +966,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890657315c19730",
+    "id": "000000000000000018906d058a810e32",
     "gate_id": "F-CONV-RT-001",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_gguf_0000000000000000",
@@ -997,7 +997,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T09:56:38.517258754Z",
+    "timestamp": "2026-02-02T12:15:24.122583229Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1008,7 +1008,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189065731622a31e",
+    "id": "000000000000000018906d058aed560f",
     "gate_id": "F-CONV-RT-001",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_gguf_0000000000000000",
@@ -1039,7 +1039,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T09:56:38.523618779Z",
+    "timestamp": "2026-02-02T12:15:24.129679474Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1050,7 +1050,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189065731685bad9",
+    "id": "000000000000000018906d058b535730",
     "gate_id": "F-CONV-RT-002",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -1081,7 +1081,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T09:56:38.530112968Z",
+    "timestamp": "2026-02-02T12:15:24.136364575Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1092,7 +1092,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890657316ecdf27",
+    "id": "000000000000000018906d058bb269fd",
     "gate_id": "F-CONV-RT-002",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_safetensors_0000000000000000",
@@ -1123,7 +1123,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T09:56:38.536872310Z",
+    "timestamp": "2026-02-02T12:15:24.142596189Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1134,7 +1134,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890657317549a63",
+    "id": "000000000000000018906d058c225fa1",
     "gate_id": "F-CONV-RT-003",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -1165,7 +1165,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T09:56:38.543670811Z",
+    "timestamp": "2026-02-02T12:15:24.149932928Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1176,7 +1176,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890657317b6e55b",
+    "id": "000000000000000018906d058c82b3ef",
     "gate_id": "F-CONV-RT-003",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_safetensors_0000000000000000",
@@ -1207,7 +1207,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T09:56:38.550112630Z",
+    "timestamp": "2026-02-02T12:15:24.156245836Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1218,7 +1218,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890657317ef16f1",
+    "id": "000000000000000018906d058ca93216",
     "gate_id": "F-CONV-IDEM-001",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_apr_0000000000000000",
@@ -1249,7 +1249,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T09:56:38.553795111Z",
+    "timestamp": "2026-02-02T12:15:24.158768118Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1260,7 +1260,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890657318203269",
+    "id": "000000000000000018906d058cd7e6af",
     "gate_id": "F-CONV-IDEM-001",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_apr_0000000000000000",
@@ -1291,7 +1291,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T09:56:38.557013376Z",
+    "timestamp": "2026-02-02T12:15:24.161829318Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1302,7 +1302,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890657318557d31",
+    "id": "000000000000000018906d058d041557",
     "gate_id": "F-CONV-COM-001",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_apr_0000000000000000",
@@ -1333,7 +1333,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T09:56:38.560505869Z",
+    "timestamp": "2026-02-02T12:15:24.164724826Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1344,7 +1344,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890657318871dd5",
+    "id": "000000000000000018906d058d324912",
     "gate_id": "F-CONV-COM-001",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_apr_0000000000000000",
@@ -1375,7 +1375,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T09:56:38.563758246Z",
+    "timestamp": "2026-02-02T12:15:24.167752354Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1386,7 +1386,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890657318b3f9a2",
+    "id": "000000000000000018906d058d9148a9",
     "gate_id": "F-GOLDEN-RULE-001",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_apr_0000000000000000",
@@ -1417,7 +1417,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T09:56:38.566698309Z",
+    "timestamp": "2026-02-02T12:15:24.173978610Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",

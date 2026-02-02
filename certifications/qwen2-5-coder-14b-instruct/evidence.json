@@ -1,6 +1,6 @@
 [
   {
-    "id": "000000000000000018906627b9a0fa2f",
+    "id": "000000000000000018906dc32d4ff6a6",
     "gate_id": "G0-INTEGRITY-CONFIG",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -31,7 +31,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T10:09:34.360698132Z",
+    "timestamp": "2026-02-02T12:28:58.602871259Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -42,7 +42,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890662993696870",
+    "id": "000000000000000018906dc52b72a383",
     "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -62,18 +62,18 @@
       "oracle_type": "arithmetic"
     },
     "outcome": "Falsified",
-    "reason": "Command failed (exit 8): \n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
+    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.11.attn_q.bias\", \"blk.11.attn_norm.weight\", \"blk.10.attn_q.bias\", \"blk.11.ffn_gate.weight\", \"blk.13.attn_k.bias\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.0.attn_k.weight\", \"blk.12.ffn_norm.weight\", \"blk.12.attn_v.weight\", \"blk.11.attn_q.weight\", \"blk.12.attn_k.bias\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
     "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors",
-    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
+    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.11.attn_q.bias\", \"blk.11.attn_norm.weight\", \"blk.10.attn_q.bias\", \"blk.11.ffn_gate.weight\", \"blk.13.attn_k.bias\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.0.attn_k.weight\", \"blk.12.ffn_norm.weight\", \"blk.12.attn_v.weight\", \"blk.11.attn_q.weight\", \"blk.12.attn_k.bias\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
     "exit_code": 8,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 7948
+      "duration_ms": 8558
     },
-    "timestamp": "2026-02-02T10:09:42.309457597Z",
+    "timestamp": "2026-02-02T12:29:07.161524417Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -84,7 +84,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890662aff71abf5",
+    "id": "000000000000000018906dc6ba965fbe",
     "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_cpu_safetensors_0000000000000001",
@@ -104,18 +104,18 @@
       "oracle_type": "arithmetic"
     },
     "outcome": "Falsified",
-    "reason": "Command failed (exit 8): \n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
+    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.11.ffn_down.weight\", \"blk.12.ffn_gate.weight\", \"blk.12.attn_v.weight\", \"blk.0.attn_k.bias\", \"blk.0.attn_norm.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.0.attn_norm.weight\", \"blk.1.ffn_gate.weight\", \"blk.0.attn_v.weight\", \"blk.10.ffn_norm.weight\", \"blk.1.ffn_down.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
     "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors",
-    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
+    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.11.ffn_down.weight\", \"blk.12.ffn_gate.weight\", \"blk.12.attn_v.weight\", \"blk.0.attn_k.bias\", \"blk.0.attn_norm.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.0.attn_norm.weight\", \"blk.1.ffn_gate.weight\", \"blk.0.attn_v.weight\", \"blk.10.ffn_norm.weight\", \"blk.1.ffn_down.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
     "exit_code": 8,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 6107
+      "duration_ms": 6696
     },
-    "timestamp": "2026-02-02T10:09:48.416905433Z",
+    "timestamp": "2026-02-02T12:29:13.857975478Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -126,7 +126,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890662c6a22daa6",
+    "id": "000000000000000018906dc845dbb88e",
     "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_cpu_safetensors_0000000000000002",
@@ -146,18 +146,18 @@
       "oracle_type": "arithmetic"
     },
     "outcome": "Falsified",
-    "reason": "Command failed (exit 8): \n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
+    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.11.attn_k.weight\", \"blk.1.attn_q.weight\", \"blk.13.attn_norm.weight\", \"blk.0.attn_norm.weight\", \"blk.0.attn_q.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.11.ffn_down.weight\", \"blk.0.attn_v.weight\", \"blk.10.attn_k.bias\", \"blk.0.attn_q.bias\", \"blk.1.ffn_gate.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
     "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors",
-    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
+    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.11.attn_k.weight\", \"blk.1.attn_q.weight\", \"blk.13.attn_norm.weight\", \"blk.0.attn_norm.weight\", \"blk.0.attn_q.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.11.ffn_down.weight\", \"blk.0.attn_v.weight\", \"blk.10.attn_k.bias\", \"blk.0.attn_q.bias\", \"blk.1.ffn_gate.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
     "exit_code": 8,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 6084
+      "duration_ms": 6631
     },
-    "timestamp": "2026-02-02T10:09:54.501869970Z",
+    "timestamp": "2026-02-02T12:29:20.489520608Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -168,7 +168,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890662dd1de5b8a",
+    "id": "000000000000000018906dc9d2091e4a",
     "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_cpu_safetensors_0000000000000003",
@@ -188,18 +188,18 @@
       "oracle_type": "arithmetic"
     },
     "outcome": "Falsified",
-    "reason": "Command failed (exit 8): \n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
+    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.0.ffn_gate.weight\", \"blk.1.attn_q.bias\", \"blk.0.attn_v.weight\", \"blk.10.ffn_gate.weight\", \"blk.12.ffn_down.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.11.attn_q.bias\", \"blk.12.attn_k.weight\", \"blk.0.attn_q.bias\", \"blk.0.attn_q.weight\", \"blk.0.attn_output.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
     "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors",
-    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
+    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.0.ffn_gate.weight\", \"blk.1.attn_q.bias\", \"blk.0.attn_v.weight\", \"blk.10.ffn_gate.weight\", \"blk.12.ffn_down.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.11.attn_q.bias\", \"blk.12.attn_k.weight\", \"blk.0.attn_q.bias\", \"blk.0.attn_q.weight\", \"blk.0.attn_output.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
     "exit_code": 8,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 6035
+      "duration_ms": 6646
     },
-    "timestamp": "2026-02-02T10:10:00.537178242Z",
+    "timestamp": "2026-02-02T12:29:27.136273268Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -210,7 +210,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890662f3b133e47",
+    "id": "000000000000000018906dcb63d4f655",
     "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_cpu_safetensors_0000000000000004",
@@ -230,18 +230,18 @@
       "oracle_type": "arithmetic"
     },
     "outcome": "Falsified",
-    "reason": "Command failed (exit 8): \n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
+    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.1.attn_output.weight\", \"blk.12.attn_q.weight\", \"blk.12.attn_output.weight\", \"blk.0.ffn_norm.weight\", \"blk.0.ffn_gate.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.10.attn_k.weight\", \"blk.12.attn_v.bias\", \"blk.12.attn_q.weight\", \"blk.0.attn_k.weight\", \"blk.0.attn_v.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
     "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors",
-    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
+    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.1.attn_output.weight\", \"blk.12.attn_q.weight\", \"blk.12.attn_output.weight\", \"blk.0.ffn_norm.weight\", \"blk.0.ffn_gate.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.10.attn_k.weight\", \"blk.12.attn_v.bias\", \"blk.12.attn_q.weight\", \"blk.0.attn_k.weight\", \"blk.0.attn_v.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
     "exit_code": 8,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 6060
+      "duration_ms": 6741
     },
-    "timestamp": "2026-02-02T10:10:06.597219105Z",
+    "timestamp": "2026-02-02T12:29:33.877295899Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -252,7 +252,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906630a87f6c24",
+    "id": "000000000000000018906dcd05906ea6",
     "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_cpu_safetensors_0000000000000005",
@@ -272,18 +272,18 @@
       "oracle_type": "arithmetic"
     },
     "outcome": "Falsified",
-    "reason": "Command failed (exit 8): \n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
+    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.1.attn_norm.weight\", \"blk.1.attn_q.bias\", \"blk.12.ffn_norm.weight\", \"blk.12.attn_q.weight\", \"blk.0.attn_output.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.12.attn_q.bias\", \"blk.11.attn_q.weight\", \"blk.12.attn_v.weight\", \"blk.10.attn_output.weight\", \"blk.0.attn_v.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
     "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors",
-    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
+    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.1.attn_norm.weight\", \"blk.1.attn_q.bias\", \"blk.12.ffn_norm.weight\", \"blk.12.attn_q.weight\", \"blk.0.attn_output.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.12.attn_q.bias\", \"blk.11.attn_q.weight\", \"blk.12.attn_v.weight\", \"blk.10.attn_output.weight\", \"blk.0.attn_v.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
     "exit_code": 8,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 6130
+      "duration_ms": 7008
     },
-    "timestamp": "2026-02-02T10:10:12.727992444Z",
+    "timestamp": "2026-02-02T12:29:40.885680944Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -294,7 +294,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906632148b03b9",
+    "id": "000000000000000018906dce9886a687",
     "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_cpu_safetensors_0000000000000006",
@@ -314,18 +314,18 @@
       "oracle_type": "arithmetic"
     },
     "outcome": "Falsified",
-    "reason": "Command failed (exit 8): \n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
+    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.1.attn_q.weight\", \"blk.10.attn_v.weight\", \"blk.10.attn_k.weight\", \"blk.12.ffn_gate.weight\", \"blk.11.attn_k.bias\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.10.attn_q.bias\", \"blk.1.attn_norm.weight\", \"blk.11.ffn_down.weight\", \"blk.12.ffn_norm.weight\", \"blk.10.attn_norm.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
     "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors",
-    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
+    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.1.attn_q.weight\", \"blk.10.attn_v.weight\", \"blk.10.attn_k.weight\", \"blk.12.ffn_gate.weight\", \"blk.11.attn_k.bias\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.10.attn_q.bias\", \"blk.1.attn_norm.weight\", \"blk.11.ffn_down.weight\", \"blk.12.ffn_norm.weight\", \"blk.10.attn_norm.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
     "exit_code": 8,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 6107
+      "duration_ms": 6760
     },
-    "timestamp": "2026-02-02T10:10:18.835659139Z",
+    "timestamp": "2026-02-02T12:29:47.646258348Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -336,7 +336,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890663381def902",
+    "id": "000000000000000018906dd025fd52b0",
     "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_cpu_safetensors_0000000000000007",
@@ -356,18 +356,18 @@
       "oracle_type": "arithmetic"
     },
     "outcome": "Falsified",
-    "reason": "Command failed (exit 8): \n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
+    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.12.ffn_norm.weight\", \"blk.11.ffn_up.weight\", \"blk.0.attn_k.weight\", \"blk.12.attn_k.bias\", \"blk.12.attn_q.bias\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.1.attn_q.weight\", \"blk.1.attn_k.weight\", \"blk.0.attn_output.weight\", \"blk.12.ffn_norm.weight\", \"blk.11.attn_k.bias\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
     "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors",
-    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
+    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.12.ffn_norm.weight\", \"blk.11.ffn_up.weight\", \"blk.0.attn_k.weight\", \"blk.12.attn_k.bias\", \"blk.12.attn_q.bias\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.1.attn_q.weight\", \"blk.1.attn_k.weight\", \"blk.0.attn_output.weight\", \"blk.12.ffn_norm.weight\", \"blk.11.attn_k.bias\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
     "exit_code": 8,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 6129
+      "duration_ms": 6668
     },
-    "timestamp": "2026-02-02T10:10:24.964844920Z",
+    "timestamp": "2026-02-02T12:29:54.314590260Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -378,7 +378,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906634edb7f3f4",
+    "id": "000000000000000018906dd1ac511c1a",
     "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_cpu_safetensors_0000000000000008",
@@ -398,18 +398,18 @@
       "oracle_type": "arithmetic"
     },
     "outcome": "Falsified",
-    "reason": "Command failed (exit 8): \n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
+    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.10.attn_q.weight\", \"blk.11.attn_q.weight\", \"blk.11.ffn_gate.weight\", \"blk.0.attn_k.weight\", \"blk.0.attn_norm.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.0.attn_v.weight\", \"blk.10.attn_norm.weight\", \"blk.1.attn_v.weight\", \"blk.1.attn_v.bias\", \"blk.10.attn_q.bias\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
     "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors",
-    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
+    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.10.attn_q.weight\", \"blk.11.attn_q.weight\", \"blk.11.ffn_gate.weight\", \"blk.0.attn_k.weight\", \"blk.0.attn_norm.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.0.attn_v.weight\", \"blk.10.attn_norm.weight\", \"blk.1.attn_v.weight\", \"blk.1.attn_v.bias\", \"blk.10.attn_q.bias\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
     "exit_code": 8,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 6104
+      "duration_ms": 6548
     },
-    "timestamp": "2026-02-02T10:10:31.069194857Z",
+    "timestamp": "2026-02-02T12:30:00.863195581Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -420,7 +420,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189066365c79ca4d",
+    "id": "000000000000000018906dd332dafa96",
     "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_cpu_safetensors_0000000000000009",
@@ -440,18 +440,18 @@
       "oracle_type": "arithmetic"
     },
     "outcome": "Falsified",
-    "reason": "Command failed (exit 8): \n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
+    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.10.attn_q.weight\", \"blk.0.attn_output.weight\", \"blk.0.ffn_norm.weight\", \"blk.11.attn_output.weight\", \"blk.10.attn_v.bias\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.12.attn_k.bias\", \"blk.10.ffn_gate.weight\", \"blk.1.attn_q.weight\", \"blk.1.ffn_gate.weight\", \"blk.12.attn_v.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
     "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors",
-    "stderr": "\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\n\n[PMAT-172] ERROR: No tokenizer found for /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors.\n           Expected sibling file: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\nerror: Inference failed: Inference failed: Format error: config.json missing num_attention_heads\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
+    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.10.attn_q.weight\", \"blk.0.attn_output.weight\", \"blk.0.ffn_norm.weight\", \"blk.11.attn_output.weight\", \"blk.10.attn_v.bias\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.12.attn_k.bias\", \"blk.10.ffn_gate.weight\", \"blk.1.attn_q.weight\", \"blk.1.ffn_gate.weight\", \"blk.12.attn_v.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-14b-instruct/safetensors/model.safetensors\n",
     "exit_code": 8,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 6153
+      "duration_ms": 6552
     },
-    "timestamp": "2026-02-02T10:10:37.222358793Z",
+    "timestamp": "2026-02-02T12:30:07.415345408Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -462,7 +462,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189066365cab54aa",
+    "id": "000000000000000018906dd3330c78dc",
     "gate_id": "F-CONV-G-A",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_cpu_apr_0000000000000000",
@@ -493,7 +493,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T10:10:37.225605097Z",
+    "timestamp": "2026-02-02T12:30:07.418588207Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -504,7 +504,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189066365cda7b65",
+    "id": "000000000000000018906dd3333cac3d",
     "gate_id": "F-CONV-G-A",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_gpu_apr_0000000000000000",
@@ -535,7 +535,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T10:10:37.228695134Z",
+    "timestamp": "2026-02-02T12:30:07.421747078Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -546,7 +546,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189066365d049793",
+    "id": "000000000000000018906dd3336e0938",
     "gate_id": "F-CONV-A-G",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_cpu_gguf_0000000000000000",
@@ -577,7 +577,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T10:10:37.231454830Z",
+    "timestamp": "2026-02-02T12:30:07.424981945Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -588,7 +588,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189066365d330773",
+    "id": "000000000000000018906dd333963c95",
     "gate_id": "F-CONV-A-G",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_gpu_gguf_0000000000000000",
@@ -619,7 +619,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T10:10:37.234497986Z",
+    "timestamp": "2026-02-02T12:30:07.427616564Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -630,7 +630,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189066365d5be66e",
+    "id": "000000000000000018906dd333bea99c",
     "gate_id": "F-CONV-G-S",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -661,7 +661,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T10:10:37.237176579Z",
+    "timestamp": "2026-02-02T12:30:07.430265935Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -672,7 +672,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189066365d8cd2d1",
+    "id": "000000000000000018906dd333e489ce",
     "gate_id": "F-CONV-G-S",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_gpu_safetensors_0000000000000000",
@@ -703,7 +703,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T10:10:37.240382492Z",
+    "timestamp": "2026-02-02T12:30:07.432748001Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -714,7 +714,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189066365db66753",
+    "id": "000000000000000018906dd3340d5334",
     "gate_id": "F-CONV-S-G",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_cpu_gguf_0000000000000000",
@@ -745,7 +745,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T10:10:37.243107665Z",
+    "timestamp": "2026-02-02T12:30:07.435420768Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -756,7 +756,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189066365de6636d",
+    "id": "000000000000000018906dd3343e5499",
     "gate_id": "F-CONV-S-G",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_gpu_gguf_0000000000000000",
@@ -787,7 +787,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T10:10:37.246252806Z",
+    "timestamp": "2026-02-02T12:30:07.438632910Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -798,7 +798,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189066365e12d68f",
+    "id": "000000000000000018906dd3346cc5fe",
     "gate_id": "F-CONV-A-S",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -829,7 +829,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T10:10:37.249165744Z",
+    "timestamp": "2026-02-02T12:30:07.441676314Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -840,7 +840,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189066365e39c50b",
+    "id": "000000000000000018906dd33494da2c",
     "gate_id": "F-CONV-A-S",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_gpu_safetensors_0000000000000000",
@@ -871,7 +871,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T10:10:37.251716874Z",
+    "timestamp": "2026-02-02T12:30:07.444302901Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -882,7 +882,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189066365e5f8289",
+    "id": "000000000000000018906dd334b99331",
     "gate_id": "F-CONV-S-A",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_cpu_apr_0000000000000000",
@@ -913,7 +913,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T10:10:37.254190166Z",
+    "timestamp": "2026-02-02T12:30:07.446709341Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -924,7 +924,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189066365e901917",
+    "id": "000000000000000018906dd334dfee09",
     "gate_id": "F-CONV-S-A",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_gpu_apr_0000000000000000",
@@ -955,7 +955,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T10:10:37.257374566Z",
+    "timestamp": "2026-02-02T12:30:07.449223095Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -966,7 +966,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189066365ee61a5a",
+    "id": "000000000000000018906dd33534a14f",
     "gate_id": "F-CONV-RT-001",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_cpu_gguf_0000000000000000",
@@ -997,7 +997,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T10:10:37.263011005Z",
+    "timestamp": "2026-02-02T12:30:07.454774374Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1008,7 +1008,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189066365f351a96",
+    "id": "000000000000000018906dd3358ad727",
     "gate_id": "F-CONV-RT-001",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_gpu_gguf_0000000000000000",
@@ -1039,7 +1039,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T10:10:37.268188158Z",
+    "timestamp": "2026-02-02T12:30:07.460424024Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1050,7 +1050,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189066365f8cf019",
+    "id": "000000000000000018906dd335dfa0b1",
     "gate_id": "F-CONV-RT-002",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -1081,7 +1081,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T10:10:37.273945060Z",
+    "timestamp": "2026-02-02T12:30:07.465980641Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1092,7 +1092,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189066365fe2a288",
+    "id": "000000000000000018906dd3362fe3bc",
     "gate_id": "F-CONV-RT-002",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_gpu_safetensors_0000000000000000",
@@ -1123,7 +1123,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T10:10:37.279561319Z",
+    "timestamp": "2026-02-02T12:30:07.471241136Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1134,7 +1134,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890663660355f40",
+    "id": "000000000000000018906dd3367ef171",
     "gate_id": "F-CONV-RT-003",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -1165,7 +1165,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T10:10:37.284983414Z",
+    "timestamp": "2026-02-02T12:30:07.476421628Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1176,7 +1176,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906636607fd717",
+    "id": "000000000000000018906dd336cc76fc",
     "gate_id": "F-CONV-RT-003",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_gpu_safetensors_0000000000000000",
@@ -1207,7 +1207,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T10:10:37.289863486Z",
+    "timestamp": "2026-02-02T12:30:07.481502097Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1218,7 +1218,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890663660ab1a86",
+    "id": "000000000000000018906dd336f03a65",
     "gate_id": "F-CONV-IDEM-001",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_cpu_apr_0000000000000000",
@@ -1249,7 +1249,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T10:10:37.292698987Z",
+    "timestamp": "2026-02-02T12:30:07.483845631Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1260,7 +1260,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890663660d0c030",
+    "id": "000000000000000018906dd3371f4da2",
     "gate_id": "F-CONV-IDEM-001",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_gpu_apr_0000000000000000",
@@ -1291,7 +1291,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T10:10:37.295166249Z",
+    "timestamp": "2026-02-02T12:30:07.486931190Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1302,7 +1302,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890663660fd314a",
+    "id": "000000000000000018906dd33741a191",
     "gate_id": "F-CONV-COM-001",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_cpu_apr_0000000000000000",
@@ -1333,7 +1333,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T10:10:37.298078797Z",
+    "timestamp": "2026-02-02T12:30:07.489180429Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1344,7 +1344,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189066366125d261",
+    "id": "000000000000000018906dd3376ae4b6",
     "gate_id": "F-CONV-COM-001",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_gpu_apr_0000000000000000",
@@ -1375,7 +1375,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T10:10:37.300741316Z",
+    "timestamp": "2026-02-02T12:30:07.491884585Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1386,7 +1386,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890663661538017",
+    "id": "000000000000000018906dd3378eb2b8",
     "gate_id": "F-GOLDEN-RULE-001",
     "scenario": {
       "id": "Qwen2.5-Coder-14B-Instruct_run_cpu_apr_0000000000000000",
@@ -1417,7 +1417,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T10:10:37.303735477Z",
+    "timestamp": "2026-02-02T12:30:07.494231363Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
