@@ -1,5 +1,5 @@
 # Qwen2.5-Coder-0.5B Quick Qualification
-# Reduced test matrix for faster execution
+# SafeTensors on CPU — fast smoke test
 
 name: qwen2.5-coder-0.5b-quick
 version: "1.0.0"
@@ -7,9 +7,7 @@ version: "1.0.0"
 model:
   hf_repo: "Qwen/Qwen2.5-Coder-0.5B-Instruct"
   formats:
-    - gguf
-  quantizations:
-    - q4_k_m
+    - safetensors
 
 test_matrix:
   modalities:

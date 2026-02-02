@@ -1,7 +1,7 @@
 # Quick Check Template
 #
 # Fast smoke test for rapid feedback during development.
-# Tests only CPU + GGUF with minimal scenarios.
+# Tests SafeTensors on CPU with minimal scenarios.
 #
 # Expected test count: 1 × 1 × 1 × 10 = 10 tests
 
@@ -11,9 +11,7 @@ version: "1.0.0"
 model:
   hf_repo: "${HF_REPO}"
   formats:
-    - gguf
-  quantizations:
-    - q4_k_m
+    - safetensors
 
 test_matrix:
   modalities:

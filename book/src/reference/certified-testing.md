@@ -30,7 +30,7 @@ and CI-Pipeline are for development and continuous integration feedback.
 
 ### Quick-Check (Dev Feedback)
 
-Single format, single backend, single modality — 10 scenarios. Use during
+SafeTensors on CPU, single modality (run) — 10 scenarios. Use during
 development for fast iteration. No certification output.
 
 ```bash
