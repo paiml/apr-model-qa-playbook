@@ -3824,19 +3824,44 @@ exit 1"#,
     // Mock binary tests for check_cardinality and check_tensor_names
     // =========================================================================
 
+    /// Create a mock binary with explicit fd sync/close to avoid ETXTBSY (os error 26)
+    /// when parallel tests execute mock scripts concurrently.
     fn create_mock_inspect_binary(
         dir: &std::path::Path,
         name: &str,
         json_output: &str,
     ) -> std::path::PathBuf {
+        create_mock_script(dir, name, &format!("#!/bin/bash\necho '{json_output}'"))
+    }
+
+    /// Create a conditional mock binary (if/else on model arg).
+    fn create_conditional_mock_binary(
+        dir: &std::path::Path,
+        name: &str,
+        script: &str,
+    ) -> std::path::PathBuf {
+        create_mock_script(dir, name, script)
+    }
+
+    /// Write a mock script with explicit open→write→sync→close to ensure the
+    /// write fd is fully released before any execve() can hit ETXTBSY.
+    fn create_mock_script(dir: &std::path::Path, name: &str, content: &str) -> std::path::PathBuf {
         let path = dir.join(name);
-        std::fs::write(&path, format!("#!/bin/bash\necho '{json_output}'")).expect("write mock");
+        {
+            use std::io::Write;
+            let mut f = std::fs::File::create(&path).expect("create mock");
+            f.write_all(content.as_bytes()).expect("write mock");
+            f.sync_all().expect("sync mock");
+            drop(f);
+        }
         #[cfg(unix)]
         {
             use std::os::unix::fs::PermissionsExt;
             std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755))
                 .expect("set permissions");
         }
+        // Yield to let the OS fully release the write reference on the inode
+        std::thread::yield_now();
         path
     }
 
@@ -3849,18 +3874,11 @@ exit 1"#,
         std::fs::write(&target_model, b"target").expect("write target");
 
         // Mock binary that returns different tensor counts based on the model arg
-        let mock = dir.path().join("apr_card");
-        std::fs::write(
-            &mock,
+        let mock = create_conditional_mock_binary(
+            dir.path(),
+            "apr_card",
             "#!/bin/bash\nif echo \"$3\" | grep -q source; then\n  echo '{\"tensor_count\": 338, \"tensor_names\": []}'\nelse\n  echo '{\"tensor_count\": 227, \"tensor_names\": []}'\nfi",
-        )
-        .expect("write mock");
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::PermissionsExt;
-            std::fs::set_permissions(&mock, std::fs::Permissions::from_mode(0o755))
-                .expect("set permissions");
-        }
+        );
 
         let result = check_cardinality(&source_model, &target_model, mock.to_str().expect("path"));
         let (gate_id, reason) = result
@@ -3898,23 +3916,11 @@ exit 1"#,
         std::fs::write(&target_model, b"target").expect("write target");
 
         // Source has q_proj, k_proj, v_proj; target has qkv_proj (fusion)
-        let mock = dir.path().join("apr_names");
-        std::fs::write(
-            &mock,
-            r#"#!/bin/bash
-if echo "$3" | grep -q source; then
-  echo '{"tensor_count": 3, "tensor_names": ["layer.0.q_proj", "layer.0.k_proj", "layer.0.v_proj"]}'
-else
-  echo '{"tensor_count": 1, "tensor_names": ["layer.0.qkv_proj"]}'
-fi"#,
-        )
-        .expect("write mock");
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::PermissionsExt;
-            std::fs::set_permissions(&mock, std::fs::Permissions::from_mode(0o755))
-                .expect("set permissions");
-        }
+        let mock = create_conditional_mock_binary(
+            dir.path(),
+            "apr_names",
+            "#!/bin/bash\nif echo \"$3\" | grep -q source; then\n  echo '{\"tensor_count\": 3, \"tensor_names\": [\"layer.0.q_proj\", \"layer.0.k_proj\", \"layer.0.v_proj\"]}'\nelse\n  echo '{\"tensor_count\": 1, \"tensor_names\": [\"layer.0.qkv_proj\"]}'\nfi",
+        );
 
         let result = check_tensor_names(&source_model, &target_model, mock.to_str().expect("path"));
         let (gate_id, detail) = result
@@ -3934,23 +3940,11 @@ fi"#,
         std::fs::write(&target_model, b"target").expect("write target");
 
         // Source has "embed.weight"; target renamed it to "embedding.weight"
-        let mock = dir.path().join("apr_names2");
-        std::fs::write(
-            &mock,
-            r#"#!/bin/bash
-if echo "$3" | grep -q source; then
-  echo '{"tensor_count": 2, "tensor_names": ["embed.weight", "lm_head.weight"]}'
-else
-  echo '{"tensor_count": 2, "tensor_names": ["embedding.weight", "lm_head.weight"]}'
-fi"#,
-        )
-        .expect("write mock");
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::PermissionsExt;
-            std::fs::set_permissions(&mock, std::fs::Permissions::from_mode(0o755))
-                .expect("set permissions");
-        }
+        let mock = create_conditional_mock_binary(
+            dir.path(),
+            "apr_names2",
+            "#!/bin/bash\nif echo \"$3\" | grep -q source; then\n  echo '{\"tensor_count\": 2, \"tensor_names\": [\"embed.weight\", \"lm_head.weight\"]}'\nelse\n  echo '{\"tensor_count\": 2, \"tensor_names\": [\"embedding.weight\", \"lm_head.weight\"]}'\nfi",
+        );
 
         let result = check_tensor_names(&source_model, &target_model, mock.to_str().expect("path"));
         let (gate_id, detail) = result

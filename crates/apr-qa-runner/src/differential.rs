@@ -53,16 +53,32 @@ pub struct InspectResult {
 ///
 /// Returns an error if the apr command fails to execute.
 pub fn run_inspect(model_path: &Path, apr_binary: &str) -> Result<InspectResult> {
-    let output = Command::new(apr_binary)
-        .arg("rosetta")
-        .arg("inspect")
-        .arg(model_path)
-        .arg("--json")
-        .output()
-        .map_err(|e| Error::ExecutionFailed {
-            command: "apr rosetta inspect --json".to_string(),
-            reason: e.to_string(),
-        })?;
+    // Retry on ETXTBSY (os error 26): a transient condition on Linux where
+    // fork() inherits write fds from other threads, causing execve() to fail.
+    let output = {
+        let mut attempts = 0;
+        loop {
+            match Command::new(apr_binary)
+                .arg("rosetta")
+                .arg("inspect")
+                .arg(model_path)
+                .arg("--json")
+                .output()
+            {
+                Ok(output) => break output,
+                Err(e) if e.raw_os_error() == Some(26) && attempts < 3 => {
+                    attempts += 1;
+                    std::thread::sleep(std::time::Duration::from_millis(10));
+                }
+                Err(e) => {
+                    return Err(Error::ExecutionFailed {
+                        command: "apr rosetta inspect --json".to_string(),
+                        reason: e.to_string(),
+                    });
+                }
+            }
+        }
+    };
 
     let stdout = String::from_utf8_lossy(&output.stdout);
 
@@ -583,19 +599,34 @@ pub fn run_diff_benchmark(
     model_b: &Path,
     regression_threshold: f64,
 ) -> Result<DiffBenchmarkResult> {
-    let output = Command::new(apr_binary)
-        .arg("profile")
-        .arg(model_a)
-        .arg(model_b)
-        .arg("--diff-benchmark")
-        .arg("--regression-threshold")
-        .arg(regression_threshold.to_string())
-        .arg("--json")
-        .output()
-        .map_err(|e| Error::ExecutionFailed {
-            command: "apr profile --diff-benchmark".to_string(),
-            reason: e.to_string(),
-        })?;
+    // Retry on ETXTBSY (os error 26) — transient fork/exec race on Linux
+    let output = {
+        let mut attempts = 0;
+        loop {
+            match Command::new(apr_binary)
+                .arg("profile")
+                .arg(model_a)
+                .arg(model_b)
+                .arg("--diff-benchmark")
+                .arg("--regression-threshold")
+                .arg(regression_threshold.to_string())
+                .arg("--json")
+                .output()
+            {
+                Ok(output) => break output,
+                Err(e) if e.raw_os_error() == Some(26) && attempts < 3 => {
+                    attempts += 1;
+                    std::thread::sleep(std::time::Duration::from_millis(10));
+                }
+                Err(e) => {
+                    return Err(Error::ExecutionFailed {
+                        command: "apr profile --diff-benchmark".to_string(),
+                        reason: e.to_string(),
+                    });
+                }
+            }
+        }
+    };
 
     let stdout = String::from_utf8_lossy(&output.stdout);
 
@@ -3316,14 +3347,24 @@ mod tests {
     // =========================================================================
 
     /// Create a mock bash script that acts as a fake apr binary
+    /// Create a mock binary with explicit fd sync/close to avoid ETXTBSY (os error 26)
+    /// when parallel tests execute mock scripts concurrently.
     fn create_mock_binary(dir: &std::path::Path, name: &str, script: &str) -> std::path::PathBuf {
         let path = dir.join(name);
-        std::fs::write(&path, format!("#!/bin/bash\n{script}")).unwrap();
+        {
+            use std::io::Write;
+            let mut f = std::fs::File::create(&path).unwrap();
+            f.write_all(format!("#!/bin/bash\n{script}").as_bytes())
+                .unwrap();
+            f.sync_all().unwrap();
+            drop(f);
+        }
         #[cfg(unix)]
         {
             use std::os::unix::fs::PermissionsExt;
             std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755)).unwrap();
         }
+        std::thread::yield_now();
         path
     }
 

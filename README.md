@@ -122,12 +122,14 @@ cargo run --bin apr-qa -- certify --family qwen-coder --tier mvp
 cargo run --bin apr-qa -- run playbooks/models/qwen2.5-coder-1.5b-mvp.playbook.yaml
 ```
 
-### Two-Tier Certification
+### Testing Tiers
 
-| Tier | Time Limit | Grade on Pass | Status |
-|------|------------|---------------|--------|
-| **MVP** | ≤10 min | **B** | PROVISIONAL |
-| **Full** | ≤1 hour | **A+** | CERTIFIED |
+| Tier | Scenarios | Formula | Time Limit | Pass → Grade / Status |
+|------|-----------|---------|------------|----------------------|
+| **Quick-Check** | 10 | 1×1×1×10 | ~1 min | Dev feedback only |
+| **MVP** | 18 | 3×2×3×1 | ≤10 min | ≥90% → B / PROVISIONAL |
+| **CI-Pipeline** | 150 | 2×1×3×25 | ~15 min | CI gate |
+| **Full** | 1,800 | 3×2×3×100 | ≤1 hour | ≥95% → A+ / CERTIFIED |
 
 ```bash
 # MVP certification (quick surface coverage)
