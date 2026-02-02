@@ -39,9 +39,7 @@ pub struct ExecutionConfig {
     pub max_workers: usize,
     /// Dry run (don't actually execute commands)
     pub dry_run: bool,
-    /// Use subprocess mode (run actual apr commands)
-    pub subprocess_mode: bool,
-    /// Path to the model file for subprocess mode
+    /// Path to the model file
     pub model_path: Option<String>,
     /// Disable GPU acceleration
     pub no_gpu: bool,
@@ -68,7 +66,6 @@ impl Default for ExecutionConfig {
             default_timeout_ms: 60_000,
             max_workers: 4,
             dry_run: false,
-            subprocess_mode: false,
             model_path: None,
             no_gpu: false,
             run_conversion_tests: true, // P0 CRITICAL: Always run by default
@@ -155,16 +152,11 @@ impl Executor {
 
         // G0: Model integrity check for SafeTensors models (pre-flight)
         // This catches corrupted config.json before inference even starts
-        let mut integrity_passed = 0;
-        let mut integrity_failed = 0;
-        if self.config.subprocess_mode {
-            if let Some(model_path) = self.config.model_path.clone() {
+        let (integrity_passed, integrity_failed) =
+            self.config.model_path.clone().map_or((0, 0), |model_path| {
                 let model_id = playbook.model_id();
-                let (ip, if_) = self.run_g0_integrity_check(Path::new(&model_path), &model_id);
-                integrity_passed = ip;
-                integrity_failed = if_;
-            }
-        }
+                self.run_g0_integrity_check(Path::new(&model_path), &model_id)
+            });
 
         let mut passed = 0;
         let mut failed = 0;
@@ -212,7 +204,7 @@ impl Executor {
         // P0 CRITICAL: Run format conversion tests
         let mut conversion_passed = 0;
         let mut conversion_failed = 0;
-        if self.config.run_conversion_tests && self.config.subprocess_mode {
+        if self.config.run_conversion_tests {
             if let Some(model_path) = self.config.model_path.clone() {
                 let model_id = playbook.model_id();
                 let (cp, cf) = self.run_conversion_tests(Path::new(&model_path), &model_id);
@@ -225,7 +217,7 @@ impl Executor {
         // This single test catches ALL conversion bugs (Five Whys: GH-190)
         let mut golden_passed = 0;
         let mut golden_failed = 0;
-        if self.config.run_golden_rule_test && self.config.subprocess_mode {
+        if self.config.run_golden_rule_test {
             if let Some(model_path) = self.config.model_path.clone() {
                 let model_id = playbook.model_id();
                 let (gp, gf) = self.run_golden_rule_test(Path::new(&model_path), &model_id);
@@ -560,11 +552,7 @@ impl Executor {
     fn execute_scenario(&self, scenario: &QaScenario) -> Evidence {
         let start = Instant::now();
 
-        let (output, stderr, exit_code, tps, skipped) = if self.config.subprocess_mode {
-            self.subprocess_execution(scenario)
-        } else {
-            (self.simulate_execution(scenario), None, 0, None, false)
-        };
+        let (output, stderr, exit_code, tps, skipped) = self.subprocess_execution(scenario);
 
         if skipped {
             let gate_id = format!("F-{}-001", scenario.mqs_category());
@@ -637,23 +625,6 @@ impl Executor {
                 }
                 evidence
             }
-        }
-    }
-
-    /// Simulate command execution (for testing)
-    fn simulate_execution(&self, scenario: &QaScenario) -> String {
-        // Simulate successful output for arithmetic prompts
-        if scenario.prompt.contains("2+2") {
-            "The answer is 4.".to_string()
-        } else if scenario.prompt.starts_with("def ") || scenario.prompt.starts_with("fn ") {
-            // Code completion
-            "    return result".to_string()
-        } else if scenario.prompt.is_empty() {
-            // Empty prompt - should fail
-            String::new()
-        } else {
-            // Generic response
-            "Hello! I'm an AI assistant.".to_string()
         }
     }
 
@@ -1675,18 +1646,6 @@ test_matrix:
     }
 
     #[test]
-    fn test_executor_simulate() {
-        let mut executor = Executor::new();
-        let playbook = test_playbook();
-
-        let result = executor.execute(&playbook).expect("Execution failed");
-
-        // All scenarios should pass (they use "2+2" prompts)
-        assert_eq!(result.total_scenarios, 5);
-        assert!(result.passed > 0);
-    }
-
-    #[test]
     fn test_execution_result_pass_rate() {
         let result = ExecutionResult {
             playbook_name: "test".to_string(),
@@ -1847,55 +1806,6 @@ test_matrix:
     }
 
     #[test]
-    fn test_simulate_execution_code_completion() {
-        let executor = Executor::new();
-        let mut scenario = test_scenario();
-        scenario.prompt = "def fibonacci(n):".to_string();
-
-        let output = executor.simulate_execution(&scenario);
-        assert!(output.contains("return"));
-    }
-
-    #[test]
-    fn test_simulate_execution_fn_code() {
-        let executor = Executor::new();
-        let mut scenario = test_scenario();
-        scenario.prompt = "fn main() {".to_string();
-
-        let output = executor.simulate_execution(&scenario);
-        assert!(output.contains("return"));
-    }
-
-    #[test]
-    fn test_simulate_execution_empty_prompt() {
-        let executor = Executor::new();
-        let mut scenario = test_scenario();
-        scenario.prompt = String::new();
-
-        let output = executor.simulate_execution(&scenario);
-        assert!(output.is_empty());
-    }
-
-    #[test]
-    fn test_simulate_execution_generic_prompt() {
-        let executor = Executor::new();
-        let mut scenario = test_scenario();
-        scenario.prompt = "Hello, how are you?".to_string();
-
-        let output = executor.simulate_execution(&scenario);
-        assert!(output.contains("AI assistant"));
-    }
-
-    #[test]
-    fn test_execute_scenario() {
-        let executor = Executor::new();
-        let scenario = test_scenario();
-
-        let evidence = executor.execute_scenario(&scenario);
-        assert!(evidence.outcome.is_pass());
-    }
-
-    #[test]
     fn test_check_gateways() {
         let executor = Executor::new();
         let playbook = test_playbook();
@@ -1945,68 +1855,6 @@ test_matrix:
         let policy = FailurePolicy::StopOnP0;
         let cloned = policy;
         assert_eq!(policy, cloned);
-    }
-
-    #[test]
-    fn test_execute_scenario_failing() {
-        let executor = Executor::new();
-        let mut scenario = test_scenario();
-        scenario.prompt = String::new(); // Empty prompt fails
-
-        let evidence = executor.execute_scenario(&scenario);
-        // Empty prompt should fail garbage oracle
-        assert!(evidence.output.is_empty() || evidence.outcome.is_fail());
-    }
-
-    #[test]
-    fn test_execute_with_failures() {
-        let mut executor = Executor::with_config(ExecutionConfig {
-            failure_policy: FailurePolicy::CollectAll,
-            ..Default::default()
-        });
-
-        let yaml = r#"
-name: test-playbook
-version: "1.0.0"
-model:
-  hf_repo: "test/model"
-  formats: [gguf]
-test_matrix:
-  modalities: [run]
-  backends: [cpu]
-  scenario_count: 2
-"#;
-        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
-        let result = executor.execute(&playbook).expect("Execution failed");
-
-        // Should collect all results
-        assert_eq!(result.total_scenarios, 2);
-    }
-
-    #[test]
-    fn test_execute_with_stop_on_first() {
-        let config = ExecutionConfig {
-            failure_policy: FailurePolicy::StopOnFirst,
-            ..Default::default()
-        };
-        let mut executor = Executor::with_config(config);
-
-        let yaml = r#"
-name: test-playbook
-version: "1.0.0"
-model:
-  hf_repo: "test/model"
-  formats: [gguf]
-test_matrix:
-  modalities: [run]
-  backends: [cpu]
-  scenario_count: 3
-"#;
-        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
-        let result = executor.execute(&playbook).expect("Execution failed");
-
-        // Should have executed scenarios
-        assert!(result.total_scenarios > 0);
     }
 
     #[test]
@@ -2115,17 +1963,6 @@ test_matrix:
             ..Default::default()
         };
         assert!(config.no_gpu);
-    }
-
-    #[test]
-    fn test_execution_config_subprocess_mode() {
-        let config = ExecutionConfig {
-            subprocess_mode: true,
-            model_path: Some("/path/model.gguf".to_string()),
-            ..Default::default()
-        };
-        assert!(config.subprocess_mode);
-        assert!(config.model_path.is_some());
     }
 
     #[test]
@@ -2349,32 +2186,6 @@ test_matrix:
     }
 
     #[test]
-    fn test_execute_with_p0_stop() {
-        let config = ExecutionConfig {
-            failure_policy: FailurePolicy::StopOnP0,
-            ..Default::default()
-        };
-        let mut executor = Executor::with_config(config);
-
-        let yaml = r#"
-name: test-playbook
-version: "1.0.0"
-model:
-  hf_repo: "test/model"
-  formats: [gguf]
-test_matrix:
-  modalities: [run]
-  backends: [cpu]
-  scenario_count: 3
-"#;
-        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
-        let result = executor.execute(&playbook).expect("Execution failed");
-
-        // With default prompts (2+2), all should pass
-        assert!(result.total_scenarios > 0);
-    }
-
-    #[test]
     fn test_tool_executor_fields() {
         let executor = ToolExecutor::new("/path/model.gguf".to_string(), true, 30_000);
         assert_eq!(executor.model_path, "/path/model.gguf");
@@ -2400,57 +2211,6 @@ test_matrix:
             gate_id: "F-CUSTOM-001".to_string(),
         };
         assert_eq!(result.gate_id, "F-CUSTOM-001");
-    }
-
-    #[test]
-    fn test_execute_scenario_with_falsified_output() {
-        let executor = Executor::new();
-        // Create scenario that will produce output but fail oracle
-        let scenario = QaScenario::new(
-            ModelId::new("test", "model"),
-            Modality::Run,
-            Backend::Cpu,
-            Format::Gguf,
-            "What is 5+5?".to_string(), // Won't match simulated "2+2" response
-            42,
-        );
-
-        let evidence = executor.execute_scenario(&scenario);
-        // Simulated execution returns "Hello! I'm an AI assistant." which doesn't contain "10"
-        // The oracle should return a result (corroborated for generic prompts)
-        // Verify evidence was created with valid fields
-        assert!(!evidence.id.is_empty());
-        assert!(!evidence.gate_id.is_empty());
-    }
-
-    #[test]
-    fn test_simulate_execution_arithmetic_2plus2() {
-        let executor = Executor::new();
-        let scenario = QaScenario::new(
-            ModelId::new("test", "model"),
-            Modality::Run,
-            Backend::Cpu,
-            Format::Gguf,
-            "What is 2+2?".to_string(),
-            0,
-        );
-        let output = executor.simulate_execution(&scenario);
-        assert!(output.contains("4"));
-    }
-
-    #[test]
-    fn test_simulate_execution_def_code() {
-        let executor = Executor::new();
-        let scenario = QaScenario::new(
-            ModelId::new("test", "model"),
-            Modality::Run,
-            Backend::Cpu,
-            Format::Gguf,
-            "def hello():".to_string(),
-            0,
-        );
-        let output = executor.simulate_execution(&scenario);
-        assert!(output.contains("return"));
     }
 
     #[test]
@@ -2523,22 +2283,6 @@ test_matrix:
     }
 
     #[test]
-    fn test_simulate_execution_multiplication() {
-        let executor = Executor::new();
-        let scenario = QaScenario::new(
-            ModelId::new("test", "model"),
-            Modality::Run,
-            Backend::Cpu,
-            Format::Gguf,
-            "Calculate 3*3".to_string(),
-            0,
-        );
-        // Not matching 2+2, so returns generic response
-        let output = executor.simulate_execution(&scenario);
-        assert!(output.contains("AI assistant"));
-    }
-
-    #[test]
     fn test_execution_result_with_gateway_failure() {
         let result = ExecutionResult {
             playbook_name: "test".to_string(),
@@ -2562,7 +2306,6 @@ test_matrix:
             default_timeout_ms: 30_000,
             max_workers: 2,
             dry_run: true,
-            subprocess_mode: true,
             model_path: Some("/path/to/model.gguf".to_string()),
             no_gpu: true,
             run_conversion_tests: false,
@@ -2574,7 +2317,6 @@ test_matrix:
         };
         assert_eq!(config.failure_policy, FailurePolicy::CollectAll);
         assert!(config.dry_run);
-        assert!(config.subprocess_mode);
         assert!(config.no_gpu);
         assert!(!config.run_conversion_tests);
         assert!(!config.run_differential_tests);
@@ -2597,52 +2339,6 @@ test_matrix:
         assert_eq!(result.exit_code, 127);
         assert!(!result.stdout.is_empty());
         assert!(!result.stderr.is_empty());
-    }
-
-    #[test]
-    fn test_execute_scenario_corroborated() {
-        let executor = Executor::new();
-        let scenario = QaScenario::new(
-            ModelId::new("test", "model"),
-            Modality::Run,
-            Backend::Cpu,
-            Format::Gguf,
-            "2+2=".to_string(),
-            1,
-        );
-        let evidence = executor.execute_scenario(&scenario);
-        assert!(evidence.outcome.is_pass());
-    }
-
-    #[test]
-    fn test_execute_scenario_with_chat_modality() {
-        let executor = Executor::new();
-        let scenario = QaScenario::new(
-            ModelId::new("test", "model"),
-            Modality::Chat,
-            Backend::Cpu,
-            Format::Gguf,
-            "Hello".to_string(),
-            2,
-        );
-        let evidence = executor.execute_scenario(&scenario);
-        // Chat with "Hello" should get generic response
-        assert!(!evidence.id.is_empty());
-    }
-
-    #[test]
-    fn test_execute_scenario_with_serve_modality() {
-        let executor = Executor::new();
-        let scenario = QaScenario::new(
-            ModelId::new("test", "model"),
-            Modality::Serve,
-            Backend::Gpu,
-            Format::Apr,
-            "Test prompt".to_string(),
-            3,
-        );
-        let evidence = executor.execute_scenario(&scenario);
-        assert!(!evidence.gate_id.is_empty());
     }
 
     #[test]
@@ -2700,55 +2396,6 @@ test_matrix:
     }
 
     #[test]
-    fn test_simulate_execution_rust_fn() {
-        let executor = Executor::new();
-        let scenario = QaScenario::new(
-            ModelId::new("test", "model"),
-            Modality::Run,
-            Backend::Cpu,
-            Format::Gguf,
-            "fn fibonacci(n: u32) -> u32 {".to_string(),
-            0,
-        );
-        let output = executor.simulate_execution(&scenario);
-        assert!(output.contains("return"));
-    }
-
-    #[test]
-    fn test_simulate_execution_python_def() {
-        let executor = Executor::new();
-        let scenario = QaScenario::new(
-            ModelId::new("test", "model"),
-            Modality::Run,
-            Backend::Cpu,
-            Format::Gguf,
-            "def add(a, b):".to_string(),
-            0,
-        );
-        let output = executor.simulate_execution(&scenario);
-        assert!(output.contains("return"));
-    }
-
-    #[test]
-    fn test_executor_execute_multiple_scenarios() {
-        let mut executor = Executor::new();
-        let yaml = r#"
-name: multi-scenario
-version: "1.0.0"
-model:
-  hf_repo: "test/model"
-  formats: [gguf]
-test_matrix:
-  modalities: [run]
-  backends: [cpu]
-  scenario_count: 10
-"#;
-        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
-        let result = executor.execute(&playbook).expect("Execution failed");
-        assert_eq!(result.total_scenarios, 10);
-    }
-
-    #[test]
     fn test_tool_test_result_with_zero_duration() {
         let result = ToolTestResult {
             tool: "fast-test".to_string(),
@@ -2784,7 +2431,6 @@ test_matrix:
             .with_inference_response("The answer is 4.");
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             ..Default::default()
         };
@@ -2815,7 +2461,6 @@ test_matrix:
         let mock_runner = MockCommandRunner::new().with_inference_failure();
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             ..Default::default()
         };
@@ -2844,7 +2489,6 @@ test_matrix:
             .with_inference_response("The answer is 4.");
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             ..Default::default()
         };
@@ -2874,7 +2518,6 @@ test_matrix:
             .with_inference_response("Output:\nThe answer is 4\nCompleted in 1s");
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             run_golden_rule_test: true,
             run_conversion_tests: false, // Disable other tests
@@ -2899,7 +2542,6 @@ test_matrix:
             .with_inference_response("Output:\nThe answer is 4\nCompleted in 1s");
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             ..Default::default()
         };
@@ -2923,7 +2565,6 @@ test_matrix:
         let mock_runner = MockCommandRunner::new().with_inference_failure();
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             ..Default::default()
         };
@@ -3122,7 +2763,6 @@ test_matrix:
     fn test_executor_subprocess_execution_no_gpu() {
         let mock_runner = MockCommandRunner::new();
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             no_gpu: true,
             ..Default::default()
@@ -3150,7 +2790,6 @@ test_matrix:
             .with_inference_response("The answer is 4.");
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             run_conversion_tests: false,
             run_differential_tests: false,
@@ -3263,7 +2902,6 @@ test_matrix:
         let mock_runner = MockCommandRunner::new().with_crash();
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             ..Default::default()
         };
@@ -3290,7 +2928,6 @@ test_matrix:
     fn test_executor_run_conversion_tests_success() {
         let mock_runner = MockCommandRunner::new();
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             run_conversion_tests: true,
             no_gpu: true,
@@ -3313,7 +2950,6 @@ test_matrix:
             MockCommandRunner::new().with_inference_response_and_stderr("Output: 4", "Warning");
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             ..Default::default()
         };
@@ -3341,7 +2977,6 @@ test_matrix:
             .with_inference_response("Output:\nThe answer is 4\nCompleted in 1s");
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             run_conversion_tests: true,
             run_golden_rule_test: true,
@@ -3394,7 +3029,6 @@ test_matrix:
         let mock_runner = MockCommandRunner::new().with_tps(42.5);
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             ..Default::default()
         };
@@ -3456,7 +3090,6 @@ test_matrix:
             .with_inference_response("The answer is 4.");
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             ..Default::default()
         };
@@ -3493,22 +3126,6 @@ test_matrix:
         let tps = Executor::parse_tps_from_output(output);
         assert!(tps.is_some());
         assert!((tps.unwrap() - 88.8).abs() < f64::EPSILON);
-    }
-
-    #[test]
-    fn test_executor_with_runner_simulated_mode() {
-        let mock_runner = MockCommandRunner::new();
-        let config = ExecutionConfig {
-            subprocess_mode: false, // Not subprocess mode
-            ..Default::default()
-        };
-
-        let executor = Executor::with_runner(config, Arc::new(mock_runner));
-        let scenario = test_scenario();
-
-        // Should use simulate_execution, not subprocess_execution
-        let evidence = executor.execute_scenario(&scenario);
-        assert!(!evidence.id.is_empty());
     }
 
     #[test]
@@ -3549,7 +3166,6 @@ test_matrix:
         let mock_runner = MockCommandRunner::new().with_inference_response("The answer is 4.");
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             run_conversion_tests: false,
             run_golden_rule_test: false,
@@ -3808,7 +3424,6 @@ test_matrix:
     #[test]
     fn test_resolve_model_path_gguf() {
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/cache".to_string()),
             ..Default::default()
         };
@@ -3830,7 +3445,6 @@ test_matrix:
     #[test]
     fn test_resolve_model_path_apr() {
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/cache".to_string()),
             ..Default::default()
         };
@@ -3852,7 +3466,6 @@ test_matrix:
     #[test]
     fn test_resolve_model_path_safetensors() {
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/cache".to_string()),
             ..Default::default()
         };
@@ -3874,7 +3487,6 @@ test_matrix:
     #[test]
     fn test_resolve_model_path_no_cache() {
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: None, // No cache directory
             ..Default::default()
         };
@@ -3898,7 +3510,6 @@ test_matrix:
     fn test_executor_execute_dry_run() {
         let config = ExecutionConfig {
             dry_run: true,
-            subprocess_mode: false,
             ..Default::default()
         };
         let mut executor = Executor::with_config(config);
@@ -3928,7 +3539,6 @@ test_matrix:
         let mock_runner = MockCommandRunner::new().with_inference_failure();
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             failure_policy: FailurePolicy::StopOnFirst,
             run_conversion_tests: false,
@@ -3961,7 +3571,6 @@ test_matrix:
         let mock_runner = MockCommandRunner::new().with_inference_failure();
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             failure_policy: FailurePolicy::CollectAll,
             run_conversion_tests: false,
@@ -4125,7 +3734,6 @@ test_matrix:
         let mock_runner = MockCommandRunner::new().with_inference_failure();
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             ..Default::default()
         };
@@ -4151,7 +3759,6 @@ test_matrix:
     #[test]
     fn test_resolve_model_path_apr_format() {
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/cache".to_string()),
             ..Default::default()
         };
@@ -4171,7 +3778,6 @@ test_matrix:
     #[test]
     fn test_resolve_model_path_safetensors_format() {
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/cache".to_string()),
             ..Default::default()
         };
@@ -4191,7 +3797,6 @@ test_matrix:
     #[test]
     fn test_resolve_model_path_gguf_format() {
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/cache".to_string()),
             ..Default::default()
         };
@@ -4211,7 +3816,6 @@ test_matrix:
     #[test]
     fn test_resolve_model_path_no_model_path() {
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: None,
             ..Default::default()
         };
@@ -4234,7 +3838,6 @@ test_matrix:
         let mock_runner = MockCommandRunner::new().with_inference_response("The answer is 4.");
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/cache".to_string()),
             ..Default::default()
         };
@@ -4259,7 +3862,6 @@ test_matrix:
         let mock_runner = MockCommandRunner::new().with_inference_response("The answer is 4.");
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/cache".to_string()),
             ..Default::default()
         };
@@ -4283,7 +3885,6 @@ test_matrix:
         let mock_runner = MockCommandRunner::new().with_exit_code(5);
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             ..Default::default()
         };
@@ -4308,29 +3909,11 @@ test_matrix:
     }
 
     #[test]
-    fn test_execute_scenario_simulate_for_non_subprocess() {
-        let executor = Executor::new();
-
-        let scenario = QaScenario::new(
-            ModelId::new("test", "model"),
-            Modality::Run,
-            Backend::Gpu,
-            Format::SafeTensors,
-            "What is 2+2?".to_string(),
-            0,
-        );
-
-        let evidence = executor.execute_scenario(&scenario);
-        assert!(!evidence.id.is_empty());
-    }
-
-    #[test]
     fn test_execute_scenario_with_stderr_corroborated() {
         let mock_runner = MockCommandRunner::new()
             .with_inference_response_and_stderr("The answer is 4.", "Some warning");
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             ..Default::default()
         };
@@ -4355,7 +3938,6 @@ test_matrix:
     fn test_executor_run_conversion_tests_no_gpu() {
         let mock_runner = MockCommandRunner::new();
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             run_conversion_tests: true,
             no_gpu: true,
@@ -4378,7 +3960,6 @@ test_matrix:
         let mock_runner = MockCommandRunner::new().with_inference_failure();
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             failure_policy: FailurePolicy::StopOnFirst,
             run_conversion_tests: false,
@@ -4414,7 +3995,6 @@ test_matrix:
         let mock_runner = MockCommandRunner::new().with_inference_failure();
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             failure_policy: FailurePolicy::CollectAll,
             run_conversion_tests: false,
@@ -4455,7 +4035,6 @@ test_matrix:
             .with_exit_code(1);
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             failure_policy: FailurePolicy::StopOnP0,
             run_conversion_tests: false,
@@ -4491,7 +4070,6 @@ test_matrix:
     fn test_executor_run_conversion_tests_default_config() {
         let mock_runner = MockCommandRunner::new();
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             run_conversion_tests: true,
             run_golden_rule_test: false,
@@ -4623,7 +4201,6 @@ test_matrix:
         }
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             run_conversion_tests: false,
             run_golden_rule_test: true,
@@ -4751,7 +4328,6 @@ test_matrix:
         }
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             run_conversion_tests: false,
             run_golden_rule_test: true,
@@ -4875,7 +4451,6 @@ test_matrix:
         }
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             run_conversion_tests: false,
             run_golden_rule_test: false,
@@ -5070,7 +4645,6 @@ test_matrix:
         let mock_runner = MockCommandRunner::new().with_inference_response("The answer is 4.");
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some(model_file.to_string_lossy().to_string()),
             ..Default::default()
         };
@@ -5117,7 +4691,6 @@ test_matrix:
         let mock_runner = MockCommandRunner::new().with_inference_response("The answer is 4.");
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some(model_file.to_string_lossy().to_string()),
             ..Default::default()
         };
@@ -5158,7 +4731,6 @@ test_matrix:
             .with_inference_response_and_stderr("The answer is 4.", "Warning: some benign warning");
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             run_conversion_tests: false,
             run_golden_rule_test: false,
@@ -5200,7 +4772,6 @@ test_matrix:
             .with_exit_code(1);
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             run_conversion_tests: false,
             run_golden_rule_test: false,
@@ -5472,7 +5043,6 @@ test_matrix:
         }
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/nonexistent/model.gguf".to_string()),
             run_conversion_tests: true,
             run_golden_rule_test: false,
@@ -5820,7 +5390,6 @@ test_matrix:
             .with_exit_code(1);
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             failure_policy: FailurePolicy::StopOnP0,
             run_conversion_tests: false,
@@ -5858,7 +5427,6 @@ test_matrix:
             .with_inference_response_and_stderr("correct", "warning: low memory");
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some("/test/model.gguf".to_string()),
             run_conversion_tests: false,
             run_golden_rule_test: false,
@@ -5902,7 +5470,6 @@ test_matrix:
         std::fs::write(&model_path, b"fake model").expect("write model");
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some(model_path.to_string_lossy().to_string()),
             run_conversion_tests: true,
             ..Default::default()
@@ -5923,7 +5490,6 @@ test_matrix:
         std::fs::write(&model_path, b"fake model").expect("write model");
 
         let config = ExecutionConfig {
-            subprocess_mode: true,
             model_path: Some(model_path.to_string_lossy().to_string()),
             run_golden_rule_test: true,
             ..Default::default()

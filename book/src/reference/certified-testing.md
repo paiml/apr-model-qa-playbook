@@ -161,17 +161,15 @@ These metrics are tracked in `models.csv` and displayed in the README certificat
 
 ### Running Real Profiling
 
-To get actual tok/s measurements, use subprocess mode:
+To get actual tok/s measurements, run certification with the apr binary:
 
 ```bash
 # Run certification with real profiling (cache auto-populated)
 apr-qa certify --family qwen-coder --tier mvp \
-  --subprocess \
   --apr-binary apr
 
 # Or with an explicit cache directory
 apr-qa certify --family qwen-coder --tier mvp \
-  --subprocess \
   --model-cache ~/.cache/apr-models \
   --apr-binary apr
 ```
@@ -203,7 +201,7 @@ If the cache directory already contains a `.gguf` file, auto-population is skipp
     └── ...
 ```
 
-The `--subprocess` flag tells the certifier to:
+The certifier will:
 1. Auto-populate the model cache (if needed)
 2. Find model files in the cache directory
 3. Run `apr profile --ci --json` for each format

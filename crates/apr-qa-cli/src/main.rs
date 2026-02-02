@@ -65,10 +65,6 @@ enum Commands {
         /// Path to apr binary for real inference
         #[arg(long, default_value = "apr")]
         apr_binary: String,
-
-        /// Enable real subprocess execution (auto-resolves cache if omitted)
-        #[arg(long)]
-        subprocess: bool,
     },
 
     /// Run a playbook
@@ -93,11 +89,7 @@ enum Commands {
         #[arg(long, default_value = "4")]
         workers: usize,
 
-        /// Enable subprocess mode (run actual apr commands)
-        #[arg(long)]
-        subprocess: bool,
-
-        /// Path to model file (required for subprocess mode)
+        /// Path to model file
         #[arg(long)]
         model_path: Option<String>,
 
@@ -257,7 +249,6 @@ fn main() {
             dry_run,
             model_cache,
             apr_binary,
-            subprocess,
         } => {
             run_certification(
                 all,
@@ -268,7 +259,6 @@ fn main() {
                 dry_run,
                 model_cache,
                 &apr_binary,
-                subprocess,
             );
         }
         Commands::Run {
@@ -277,7 +267,6 @@ fn main() {
             failure_policy,
             dry_run,
             workers,
-            subprocess,
             model_path,
             timeout,
             no_gpu,
@@ -293,7 +282,6 @@ fn main() {
                 &failure_policy,
                 dry_run,
                 workers,
-                subprocess,
                 model_path,
                 timeout,
                 no_gpu,
@@ -358,7 +346,6 @@ fn run_playbook(
     failure_policy: &str,
     dry_run: bool,
     workers: usize,
-    subprocess: bool,
     model_path: Option<String>,
     timeout: u64,
     no_gpu: bool,
@@ -384,16 +371,9 @@ fn run_playbook(
         std::process::exit(1);
     }
 
-    // Validate subprocess mode requirements
-    if subprocess && model_path.is_none() {
-        eprintln!("Error: --model-path is required when using --subprocess mode");
-        std::process::exit(1);
-    }
-
     println!("Running playbook: {}", playbook.name);
     println!("  Total tests: {}", playbook.total_tests());
     println!("  Dry run: {dry_run}");
-    println!("  Subprocess mode: {subprocess}");
     if let Some(ref path) = model_path {
         println!("  Model path: {path}");
     }
@@ -404,7 +384,6 @@ fn run_playbook(
         failure_policy: failure_policy.to_string(),
         dry_run,
         workers,
-        subprocess,
         model_path: model_path.clone(),
         timeout,
         no_gpu,
@@ -424,19 +403,14 @@ fn run_playbook(
     };
 
     // Print conversion test status (P0 CRITICAL)
-    if !skip_conversion_tests && subprocess {
+    if !skip_conversion_tests && model_path.is_some() {
         println!("  Conversion tests: ENABLED (P0 CRITICAL)");
     } else if skip_conversion_tests {
         println!("  Conversion tests: DISABLED (WARNING: P0 tests skipped)");
     }
 
-    // Print tool test status
-    if run_tool_tests_flag && subprocess {
-        println!("  Tool tests: ENABLED");
-    }
-
     // Run tool tests if enabled
-    if run_tool_tests_flag && subprocess {
+    if run_tool_tests_flag {
         if let Some(ref mp) = model_path {
             println!("\n=== Running APR Tool Tests ===");
             let tool_executor = ToolExecutor::new(mp.clone(), no_gpu, timeout);
@@ -804,7 +778,6 @@ fn run_tool_tests(
 }
 
 #[allow(clippy::too_many_lines)]
-#[allow(clippy::fn_params_excessive_bools)]
 fn run_certification(
     all: bool,
     family: Option<String>,
@@ -814,7 +787,6 @@ fn run_certification(
     dry_run: bool,
     model_cache: Option<PathBuf>,
     apr_binary: &str,
-    subprocess: bool,
 ) {
     use apr_qa_certify::{
         CertificationStatus, CertificationTier, grade_from_tier, parse_csv, score_from_tier,
@@ -831,8 +803,8 @@ fn run_certification(
         }
     };
 
-    // Default model_cache to ~/.cache/apr-models when --subprocess is set
-    let model_cache: Option<PathBuf> = if subprocess && model_cache.is_none() {
+    // Default model_cache to ~/.cache/apr-models when not provided
+    let model_cache: Option<PathBuf> = if model_cache.is_none() {
         let home = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
         let default_cache = PathBuf::from(home).join(".cache/apr-models");
         println!("Auto-resolving model cache: {}", default_cache.display());
@@ -844,7 +816,6 @@ fn run_certification(
     println!("=== APR Model Certification ===\n");
     println!("Tier: {tier_str}");
     println!("Dry run: {dry_run}");
-    println!("Subprocess mode: {subprocess}");
     if let Some(ref cache) = model_cache {
         println!("Model cache: {}", cache.display());
     }
@@ -914,11 +885,9 @@ fn run_certification(
         println!("  Playbook: {playbook_name}");
 
         // Auto-populate model cache before execution
-        if subprocess {
-            if let Some(ref cache) = model_cache {
-                let model_dir = cache.join(short.to_lowercase().replace('.', "-"));
-                auto_populate_model_cache(model_id, &model_dir, apr_binary);
-            }
+        if let Some(ref cache) = model_cache {
+            let model_dir = cache.join(short.to_lowercase().replace('.', "-"));
+            auto_populate_model_cache(model_id, &model_dir, apr_binary);
         }
 
         let playbook_path = std::path::Path::new(&playbook_name);
@@ -937,19 +906,15 @@ fn run_certification(
             }
         };
 
-        // Configure execution using library function (ensures subprocess_mode is correct)
-        let model_cache_path = if subprocess {
-            model_cache.as_ref().map(|cache| {
-                cache
-                    .join(short.to_lowercase().replace('.', "-"))
-                    .to_string_lossy()
-                    .to_string()
-            })
-        } else {
-            None
-        };
+        // Configure execution
+        let model_cache_path = model_cache.as_ref().map(|cache| {
+            cache
+                .join(short.to_lowercase().replace('.', "-"))
+                .to_string_lossy()
+                .to_string()
+        });
 
-        let config = build_certification_config(tier, subprocess, model_cache_path);
+        let config = build_certification_config(tier, model_cache_path);
 
         match execute_playbook(&playbook, config) {
             Ok(result) => {
@@ -990,102 +955,100 @@ fn run_certification(
                 println!("  Grade: {grade}");
                 println!("  Status: {status}");
 
-                // Run 6-column profiling if subprocess mode enabled
+                // Run 6-column profiling
                 let mut profile = apr_qa_runner::SixColumnProfile::default();
 
-                if subprocess {
-                    if let Some(ref cache) = model_cache {
-                        // Model cache structure: <cache>/<model-short-name>/<format>/<file>
-                        let model_dir = cache.join(short.to_lowercase().replace('.', "-"));
+                if let Some(ref cache) = model_cache {
+                    // Model cache structure: <cache>/<model-short-name>/<format>/<file>
+                    let model_dir = cache.join(short.to_lowercase().replace('.', "-"));
 
-                        if model_dir.exists() {
-                            println!("  Running 6-column profiling...");
-                            match apr_qa_runner::run_six_column_profile(
-                                apr_binary, &model_dir, 1, // warmup
-                                2, // iterations
-                            ) {
-                                Ok(p) => {
-                                    profile = p;
-                                    // Print conversion results
-                                    for conv in &profile.conversions {
-                                        let status = if conv.cached {
-                                            "cached"
-                                        } else if conv.success {
-                                            "ok"
-                                        } else {
-                                            "FAILED"
-                                        };
-                                        println!(
-                                            "    {} → {}: {} ({}ms)",
-                                            conv.source_format,
-                                            conv.target_format,
-                                            status,
-                                            conv.duration_ms
-                                        );
-                                        if let Some(ref err) = conv.error {
-                                            // Print first line of error
-                                            if let Some(line) = err.lines().last() {
-                                                println!("      {line}");
-                                            }
-                                        }
-                                    }
-                                    // Print throughput results
-                                    println!("    Throughput (tok/s):");
-                                    if let Some(tps) = profile.tps_gguf_cpu {
-                                        println!("      GGUF CPU: {tps:.1}");
-                                    }
-                                    if let Some(tps) = profile.tps_gguf_gpu {
-                                        println!("      GGUF GPU: {tps:.1}");
-                                    }
-                                    if let Some(tps) = profile.tps_apr_cpu {
-                                        println!("      APR CPU:  {tps:.1}");
-                                    }
-                                    if let Some(tps) = profile.tps_apr_gpu {
-                                        println!("      APR GPU:  {tps:.1}");
-                                    }
-                                    if let Some(tps) = profile.tps_st_cpu {
-                                        println!("      ST CPU:   {tps:.1}");
-                                    }
-                                    if let Some(tps) = profile.tps_st_gpu {
-                                        println!("      ST GPU:   {tps:.1}");
-                                    }
+                    if model_dir.exists() {
+                        println!("  Running 6-column profiling...");
+                        match apr_qa_runner::run_six_column_profile(
+                            apr_binary, &model_dir, 1, // warmup
+                            2, // iterations
+                        ) {
+                            Ok(p) => {
+                                profile = p;
+                                // Print conversion results
+                                for conv in &profile.conversions {
+                                    let status = if conv.cached {
+                                        "cached"
+                                    } else if conv.success {
+                                        "ok"
+                                    } else {
+                                        "FAILED"
+                                    };
                                     println!(
-                                        "    Total profiling time: {}ms",
-                                        profile.total_duration_ms
+                                        "    {} → {}: {} ({}ms)",
+                                        conv.source_format,
+                                        conv.target_format,
+                                        status,
+                                        conv.duration_ms
                                     );
-
-                                    // Check assertions from playbook
-                                    if let Some(ref profile_ci) = playbook.profile_ci {
-                                        let cpu_threshold = profile_ci
-                                            .assertions
-                                            .min_throughput_cpu
-                                            .or(profile_ci.assertions.min_throughput)
-                                            .unwrap_or(5.0);
-                                        let gpu_threshold = profile_ci
-                                            .assertions
-                                            .min_throughput_gpu
-                                            .or(profile_ci.assertions.min_throughput)
-                                            .unwrap_or(50.0);
-
-                                        profile.check_assertions(cpu_threshold, gpu_threshold);
-
-                                        if !profile.failed_assertions.is_empty() {
-                                            println!("    ⚠️  Assertion failures:");
-                                            for fail in &profile.failed_assertions {
-                                                println!(
-                                                    "      {} {}: {:.1} tok/s < {:.1} min",
-                                                    fail.format.to_uppercase(),
-                                                    fail.backend.to_uppercase(),
-                                                    fail.actual_tps,
-                                                    fail.min_threshold
-                                                );
-                                            }
+                                    if let Some(ref err) = conv.error {
+                                        // Print first line of error
+                                        if let Some(line) = err.lines().last() {
+                                            println!("      {line}");
                                         }
                                     }
                                 }
-                                Err(e) => {
-                                    eprintln!("  Profiling failed: {e}");
+                                // Print throughput results
+                                println!("    Throughput (tok/s):");
+                                if let Some(tps) = profile.tps_gguf_cpu {
+                                    println!("      GGUF CPU: {tps:.1}");
                                 }
+                                if let Some(tps) = profile.tps_gguf_gpu {
+                                    println!("      GGUF GPU: {tps:.1}");
+                                }
+                                if let Some(tps) = profile.tps_apr_cpu {
+                                    println!("      APR CPU:  {tps:.1}");
+                                }
+                                if let Some(tps) = profile.tps_apr_gpu {
+                                    println!("      APR GPU:  {tps:.1}");
+                                }
+                                if let Some(tps) = profile.tps_st_cpu {
+                                    println!("      ST CPU:   {tps:.1}");
+                                }
+                                if let Some(tps) = profile.tps_st_gpu {
+                                    println!("      ST GPU:   {tps:.1}");
+                                }
+                                println!(
+                                    "    Total profiling time: {}ms",
+                                    profile.total_duration_ms
+                                );
+
+                                // Check assertions from playbook
+                                if let Some(ref profile_ci) = playbook.profile_ci {
+                                    let cpu_threshold = profile_ci
+                                        .assertions
+                                        .min_throughput_cpu
+                                        .or(profile_ci.assertions.min_throughput)
+                                        .unwrap_or(5.0);
+                                    let gpu_threshold = profile_ci
+                                        .assertions
+                                        .min_throughput_gpu
+                                        .or(profile_ci.assertions.min_throughput)
+                                        .unwrap_or(50.0);
+
+                                    profile.check_assertions(cpu_threshold, gpu_threshold);
+
+                                    if !profile.failed_assertions.is_empty() {
+                                        println!("    ⚠️  Assertion failures:");
+                                        for fail in &profile.failed_assertions {
+                                            println!(
+                                                "      {} {}: {:.1} tok/s < {:.1} min",
+                                                fail.format.to_uppercase(),
+                                                fail.backend.to_uppercase(),
+                                                fail.actual_tps,
+                                                fail.min_threshold
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+                            Err(e) => {
+                                eprintln!("  Profiling failed: {e}");
                             }
                         }
                     }

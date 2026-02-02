@@ -59,9 +59,7 @@ pub struct PlaybookRunConfig {
     pub dry_run: bool,
     /// Maximum parallel workers
     pub workers: usize,
-    /// Enable subprocess mode for real command execution
-    pub subprocess: bool,
-    /// Path to model file (required for subprocess mode)
+    /// Path to model file
     pub model_path: Option<String>,
     /// Timeout per test in milliseconds
     pub timeout: u64,
@@ -85,7 +83,6 @@ impl Default for PlaybookRunConfig {
             failure_policy: "stop-on-p0".to_string(),
             dry_run: false,
             workers: 4,
-            subprocess: false,
             model_path: None,
             timeout: 60000,
             no_gpu: false,
@@ -271,7 +268,6 @@ pub fn build_execution_config(config: &PlaybookRunConfig) -> Result<ExecutionCon
         failure_policy: policy,
         dry_run: config.dry_run,
         max_workers: config.workers,
-        subprocess_mode: config.subprocess,
         model_path: config.model_path.clone(),
         default_timeout_ms: config.timeout,
         no_gpu: config.no_gpu,
@@ -279,7 +275,7 @@ pub fn build_execution_config(config: &PlaybookRunConfig) -> Result<ExecutionCon
         run_differential_tests: config.run_differential_tests,
         run_profile_ci: config.run_profile_ci,
         run_trace_payload: config.run_trace_payload,
-        run_golden_rule_test: config.subprocess, // Auto-enable when subprocess mode
+        run_golden_rule_test: true,
         golden_reference_path: None,
     })
 }
@@ -350,8 +346,6 @@ pub struct CertificationConfig {
     pub model_cache: Option<std::path::PathBuf>,
     /// Path to apr binary
     pub apr_binary: String,
-    /// Enable subprocess mode
-    pub subprocess: bool,
     /// Output directory for artifacts
     pub output_dir: std::path::PathBuf,
     /// Dry run mode
@@ -364,7 +358,6 @@ impl Default for CertificationConfig {
             tier: CertTier::Quick,
             model_cache: None,
             apr_binary: "apr".to_string(),
-            subprocess: false,
             output_dir: std::path::PathBuf::from("certifications"),
             dry_run: false,
         }
@@ -392,26 +385,23 @@ pub struct ModelCertificationResult {
 
 /// Build an ExecutionConfig for certification
 ///
-/// This is the canonical way to build an ExecutionConfig for certification,
-/// ensuring subprocess mode and other settings are propagated correctly.
+/// This is the canonical way to build an ExecutionConfig for certification.
 pub fn build_certification_config(
     tier: CertTier,
-    subprocess: bool,
     model_cache_path: Option<String>,
 ) -> ExecutionConfig {
     ExecutionConfig {
         failure_policy: FailurePolicy::CollectAll,
         dry_run: false,
         max_workers: 4,
-        subprocess_mode: subprocess,
         model_path: model_cache_path,
         default_timeout_ms: 60000,
         no_gpu: false,
-        run_conversion_tests: subprocess,
+        run_conversion_tests: true,
         run_differential_tests: false,
         run_profile_ci: matches!(tier, CertTier::Standard | CertTier::Deep),
         run_trace_payload: false,
-        run_golden_rule_test: subprocess,
+        run_golden_rule_test: true,
         golden_reference_path: None,
     }
 }
@@ -466,18 +456,14 @@ pub fn certify_model(model_id: &str, config: &CertificationConfig) -> ModelCerti
 
     // Build model cache path
     let short = model_id.split('/').next_back().unwrap_or(model_id);
-    let model_cache_path = if config.subprocess {
-        config.model_cache.as_ref().map(|cache| {
-            cache
-                .join(short.to_lowercase().replace('.', "-"))
-                .to_string_lossy()
-                .to_string()
-        })
-    } else {
-        None
-    };
+    let model_cache_path = config.model_cache.as_ref().map(|cache| {
+        cache
+            .join(short.to_lowercase().replace('.', "-"))
+            .to_string_lossy()
+            .to_string()
+    });
 
-    let exec_config = build_certification_config(config.tier, config.subprocess, model_cache_path);
+    let exec_config = build_certification_config(config.tier, model_cache_path);
 
     match execute_playbook(&playbook, exec_config) {
         Ok(result) => {
@@ -564,7 +550,6 @@ mod tests {
         assert_eq!(config.failure_policy, "stop-on-p0");
         assert!(!config.dry_run);
         assert_eq!(config.workers, 4);
-        assert!(!config.subprocess);
         assert!(config.model_path.is_none());
         assert_eq!(config.timeout, 60000);
         assert!(!config.no_gpu);
@@ -750,7 +735,6 @@ mod tests {
         let config = PlaybookRunConfig {
             dry_run: true,
             workers: 8,
-            subprocess: true,
             model_path: Some("/path/to/model".to_string()),
             no_gpu: true,
             skip_conversion_tests: true,
@@ -759,7 +743,6 @@ mod tests {
         let exec_config = build_execution_config(&config).unwrap();
         assert!(exec_config.dry_run);
         assert_eq!(exec_config.max_workers, 8);
-        assert!(exec_config.subprocess_mode);
         assert_eq!(exec_config.model_path, Some("/path/to/model".to_string()));
         assert!(exec_config.no_gpu);
         assert!(!exec_config.run_conversion_tests);
@@ -844,25 +827,21 @@ mod tests {
         assert_eq!(config.tier, CertTier::Quick);
         assert!(config.model_cache.is_none());
         assert_eq!(config.apr_binary, "apr");
-        assert!(!config.subprocess);
         assert!(!config.dry_run);
     }
 
     #[test]
-    fn test_build_certification_config_mock_mode() {
-        // In mock mode, subprocess tests should be disabled
-        let config = build_certification_config(CertTier::Mvp, false, None);
-        assert!(!config.subprocess_mode);
-        assert!(!config.run_conversion_tests);
-        assert!(!config.run_golden_rule_test);
+    fn test_build_certification_config_no_model() {
+        // Without model path, critical tests should still be enabled
+        let config = build_certification_config(CertTier::Mvp, None);
+        assert!(config.run_conversion_tests);
+        assert!(config.run_golden_rule_test);
     }
 
     #[test]
-    fn test_build_certification_config_subprocess_mode() {
-        // In subprocess mode, all critical tests should be enabled
-        let config =
-            build_certification_config(CertTier::Mvp, true, Some("/path/to/model".to_string()));
-        assert!(config.subprocess_mode);
+    fn test_build_certification_config_with_model() {
+        // With model path, all critical tests should be enabled
+        let config = build_certification_config(CertTier::Mvp, Some("/path/to/model".to_string()));
         assert!(config.run_conversion_tests);
         assert!(config.run_golden_rule_test);
         assert_eq!(config.model_path, Some("/path/to/model".to_string()));
@@ -871,14 +850,14 @@ mod tests {
     #[test]
     fn test_build_certification_config_profile_ci() {
         // Standard/Deep tiers should enable profile CI
-        let standard = build_certification_config(CertTier::Standard, false, None);
+        let standard = build_certification_config(CertTier::Standard, None);
         assert!(standard.run_profile_ci);
 
-        let deep = build_certification_config(CertTier::Deep, false, None);
+        let deep = build_certification_config(CertTier::Deep, None);
         assert!(deep.run_profile_ci);
 
         // Other tiers should not
-        let mvp = build_certification_config(CertTier::Mvp, false, None);
+        let mvp = build_certification_config(CertTier::Mvp, None);
         assert!(!mvp.run_profile_ci);
     }
 
@@ -901,7 +880,6 @@ mod tests {
     fn test_certify_model_nonexistent_playbook() {
         let config = CertificationConfig {
             tier: CertTier::Mvp,
-            subprocess: false,
             ..Default::default()
         };
         let result = certify_model("nonexistent/model", &config);
@@ -947,13 +925,11 @@ mod tests {
             tier: CertTier::Deep,
             model_cache: Some(std::path::PathBuf::from("/test/cache")),
             apr_binary: "custom-apr".to_string(),
-            subprocess: true,
             output_dir: std::path::PathBuf::from("/output"),
             dry_run: true,
         };
         assert_eq!(config.tier, CertTier::Deep);
         assert!(config.model_cache.is_some());
-        assert!(config.subprocess);
         assert!(config.dry_run);
     }
 
@@ -987,7 +963,6 @@ mod tests {
             failure_policy: "collect-all".to_string(),
             dry_run: true,
             workers: 16,
-            subprocess: true,
             model_path: Some("/path/to/model".to_string()),
             timeout: 120_000,
             no_gpu: true,
@@ -1029,7 +1004,7 @@ mod tests {
         ];
 
         for tier in tiers {
-            let config = build_certification_config(tier, false, None);
+            let config = build_certification_config(tier, None);
             // All tiers should return valid config
             assert_eq!(config.failure_policy, FailurePolicy::CollectAll);
         }
@@ -1110,7 +1085,7 @@ mod tests {
         let config = CertificationConfig::default();
         let cloned = config.clone();
         assert_eq!(config.tier, cloned.tier);
-        assert_eq!(config.subprocess, cloned.subprocess);
+        assert_eq!(config.apr_binary, cloned.apr_binary);
     }
 
     #[test]
@@ -1160,10 +1135,9 @@ mod tests {
     }
 
     #[test]
-    fn test_certify_model_with_subprocess_mode_no_cache() {
+    fn test_certify_model_no_cache() {
         let config = CertificationConfig {
             tier: CertTier::Mvp,
-            subprocess: true, // Subprocess mode but no cache
             model_cache: None,
             apr_binary: "apr".to_string(),
             output_dir: std::path::PathBuf::from("/tmp"),
@@ -1177,10 +1151,9 @@ mod tests {
     }
 
     #[test]
-    fn test_certify_model_with_subprocess_mode_and_cache() {
+    fn test_certify_model_with_cache() {
         let config = CertificationConfig {
             tier: CertTier::Mvp,
-            subprocess: true,
             model_cache: Some(std::path::PathBuf::from("/nonexistent/cache")),
             apr_binary: "apr".to_string(),
             output_dir: std::path::PathBuf::from("/tmp"),
@@ -1221,7 +1194,7 @@ gates:
   g4_not_garbage: true
 "#;
         let playbook = Playbook::from_yaml(yaml).expect("valid yaml");
-        let config = build_certification_config(CertTier::Mvp, false, None);
+        let config = build_certification_config(CertTier::Mvp, None);
         let result = execute_playbook(&playbook, config);
         assert!(result.is_ok());
         let exec_result = result.unwrap();
@@ -1256,7 +1229,7 @@ gates:
   g4_not_garbage: true
 "#;
         let playbook = Playbook::from_yaml(yaml).expect("valid yaml");
-        let mut config = build_certification_config(CertTier::Mvp, false, None);
+        let mut config = build_certification_config(CertTier::Mvp, None);
         config.dry_run = true;
         let result = execute_playbook(&playbook, config);
         assert!(result.is_ok());
@@ -1280,7 +1253,6 @@ gates:
         // Test that all ModelCertificationResult fields are properly set
         let config = CertificationConfig {
             tier: CertTier::Quick,
-            subprocess: false,
             ..Default::default()
         };
         let result = certify_model("nonexistent/test-model", &config);
@@ -1295,7 +1267,6 @@ gates:
     fn test_certify_model_smoke_tier() {
         let config = CertificationConfig {
             tier: CertTier::Smoke,
-            subprocess: false,
             ..Default::default()
         };
         // Non-existent model
@@ -1308,7 +1279,6 @@ gates:
     fn test_certify_model_standard_tier() {
         let config = CertificationConfig {
             tier: CertTier::Standard,
-            subprocess: false,
             ..Default::default()
         };
         let result = certify_model("test/model-standard", &config);
@@ -1340,8 +1310,7 @@ gates:
     #[test]
     fn test_build_certification_config_with_model_path() {
         let config =
-            build_certification_config(CertTier::Deep, true, Some("/path/to/models".to_string()));
-        assert!(config.subprocess_mode);
+            build_certification_config(CertTier::Deep, Some("/path/to/models".to_string()));
         assert_eq!(config.model_path, Some("/path/to/models".to_string()));
         assert!(config.run_profile_ci); // Deep tier enables profile CI
     }
@@ -1352,14 +1321,12 @@ gates:
             tier: CertTier::Deep,
             model_cache: Some(std::path::PathBuf::from("/cache")),
             apr_binary: "/usr/bin/apr".to_string(),
-            subprocess: true,
             output_dir: std::path::PathBuf::from("/output"),
             dry_run: true,
         };
         assert_eq!(config.tier, CertTier::Deep);
         assert!(config.model_cache.is_some());
         assert_eq!(config.apr_binary, "/usr/bin/apr");
-        assert!(config.subprocess);
         assert!(config.dry_run);
     }
 
@@ -1403,12 +1370,10 @@ gates:
     #[test]
     fn test_build_execution_config_with_model_path() {
         let config = PlaybookRunConfig {
-            subprocess: true,
             model_path: Some("/models/test.gguf".to_string()),
             ..Default::default()
         };
         let exec = build_execution_config(&config).unwrap();
-        assert!(exec.subprocess_mode);
         assert_eq!(exec.model_path, Some("/models/test.gguf".to_string()));
     }
 
@@ -1481,17 +1446,16 @@ gates:
   g4_not_garbage: true
 "#;
         let playbook = Playbook::from_yaml(yaml).expect("valid yaml");
-        let config = build_certification_config(CertTier::Smoke, false, None);
+        let config = build_certification_config(CertTier::Smoke, None);
         let result = execute_playbook(&playbook, config);
         // Should succeed in mock mode
         assert!(result.is_ok());
     }
 
     #[test]
-    fn test_certify_model_with_subprocess() {
+    fn test_certify_model_with_cache_smoke() {
         let config = CertificationConfig {
             tier: CertTier::Smoke,
-            subprocess: true,
             model_cache: Some(std::path::PathBuf::from("/tmp/test")),
             ..Default::default()
         };
@@ -1536,11 +1500,10 @@ gates:
     }
 
     #[test]
-    fn test_certify_model_subprocess_with_cache_path_construction() {
+    fn test_certify_model_cache_path_construction() {
         // Exercise the model cache path construction code
         let config = CertificationConfig {
             tier: CertTier::Mvp,
-            subprocess: true,
             model_cache: Some(std::path::PathBuf::from("/test/cache")),
             ..Default::default()
         };
@@ -1559,10 +1522,9 @@ gates:
     }
 
     #[test]
-    fn test_certify_model_subprocess_without_cache() {
+    fn test_certify_model_without_cache() {
         let config = CertificationConfig {
             tier: CertTier::Smoke,
-            subprocess: true,
             model_cache: None,
             ..Default::default()
         };
@@ -1572,10 +1534,9 @@ gates:
     }
 
     #[test]
-    fn test_certify_model_non_subprocess() {
+    fn test_certify_model_with_cache_another() {
         let config = CertificationConfig {
             tier: CertTier::Smoke,
-            subprocess: false,
             model_cache: Some(std::path::PathBuf::from("/test/cache")),
             ..Default::default()
         };

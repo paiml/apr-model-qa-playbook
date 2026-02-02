@@ -67,7 +67,7 @@ pub use integrity::{
     ConfigValues, IntegrityResult, TensorDerivedValues, check_safetensors_integrity,
     gate_ids as integrity_gate_ids,
 };
-pub use parallel::{ExecutionMode, ParallelConfig, ParallelExecutor, ParallelResult};
+pub use parallel::{ParallelConfig, ParallelExecutor, ParallelResult};
 pub use patterns::{
     ApiComplianceChecker, ApiComplianceResult, BugPattern, CompanionCheckResult, DosCheckResult,
     DosProtectionConfig, DosViolation, IntegrityCheckResult, IntegrityChecker,

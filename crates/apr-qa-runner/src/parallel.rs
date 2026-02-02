@@ -10,16 +10,6 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::time::Instant;
 
-/// Execution mode
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum ExecutionMode {
-    /// Simulate execution (for testing)
-    #[default]
-    Simulate,
-    /// Real subprocess execution
-    Subprocess,
-}
-
 /// Parallel executor configuration
 #[derive(Debug, Clone)]
 pub struct ParallelConfig {
@@ -27,8 +17,6 @@ pub struct ParallelConfig {
     pub num_workers: usize,
     /// Timeout per scenario in milliseconds
     pub timeout_ms: u64,
-    /// Execution mode
-    pub mode: ExecutionMode,
     /// Path to model file
     pub model_path: String,
     /// Stop on first failure
@@ -40,7 +28,6 @@ impl Default for ParallelConfig {
         Self {
             num_workers: num_cpus::get().min(4),
             timeout_ms: 60_000,
-            mode: ExecutionMode::Simulate,
             model_path: "model.gguf".to_string(),
             stop_on_failure: false,
         }
@@ -128,10 +115,7 @@ impl ParallelExecutor {
     fn execute_single(&self, scenario: &QaScenario) -> Evidence {
         let start = Instant::now();
 
-        let (output, exit_code, stderr) = match self.config.mode {
-            ExecutionMode::Simulate => (self.simulate_execution(scenario), 0, None),
-            ExecutionMode::Subprocess => self.subprocess_execution(scenario),
-        };
+        let (output, exit_code, stderr) = self.subprocess_execution(scenario);
 
         let duration = start.elapsed().as_millis() as u64;
         let gate_id = format!("F-{}-001", scenario.mqs_category());
@@ -170,28 +154,6 @@ impl ParallelExecutor {
                 reason,
                 evidence: _,
             } => Evidence::falsified(&gate_id, scenario.clone(), reason, &output, duration),
-        }
-    }
-
-    /// Simulate execution for testing
-    fn simulate_execution(&self, scenario: &QaScenario) -> String {
-        // Simulate based on prompt content
-        if scenario.prompt.contains("2+2") || scenario.prompt.contains("2 + 2") {
-            "The answer is 4.".to_string()
-        } else if scenario.prompt.contains('+')
-            || scenario.prompt.contains('-')
-            || scenario.prompt.contains('*')
-        {
-            // Other arithmetic - simulate correct answer
-            "42".to_string()
-        } else if scenario.prompt.starts_with("def ") || scenario.prompt.starts_with("fn ") {
-            "    return result\n".to_string()
-        } else if scenario.prompt.starts_with("class ") || scenario.prompt.starts_with("struct ") {
-            "    pass\n".to_string()
-        } else if scenario.prompt.is_empty() || scenario.prompt.trim().is_empty() {
-            String::new()
-        } else {
-            "Hello! I'm an AI assistant. How can I help you today?".to_string()
         }
     }
 
@@ -296,7 +258,6 @@ mod tests {
         let config = ParallelConfig::default();
         assert!(config.num_workers > 0);
         assert_eq!(config.timeout_ms, 60_000);
-        assert_eq!(config.mode, ExecutionMode::Simulate);
     }
 
     #[test]
@@ -305,7 +266,8 @@ mod tests {
         let scenario = test_scenario();
 
         let evidence = executor.execute_single(&scenario);
-        assert!(evidence.outcome.is_pass());
+        // Without a real apr binary, subprocess execution fails
+        assert!(evidence.outcome.is_fail());
     }
 
     #[test]
@@ -353,57 +315,10 @@ mod tests {
     }
 
     #[test]
-    fn test_simulate_execution_arithmetic() {
-        let executor = ParallelExecutor::default();
-        let scenario = test_scenario();
-
-        let output = executor.simulate_execution(&scenario);
-        assert!(output.contains("4"));
-    }
-
-    #[test]
-    fn test_simulate_execution_code() {
-        let executor = ParallelExecutor::default();
-        let scenario = QaScenario::new(
-            ModelId::new("test", "model"),
-            Modality::Run,
-            Backend::Cpu,
-            Format::Gguf,
-            "def fibonacci(n):".to_string(),
-            42,
-        );
-
-        let output = executor.simulate_execution(&scenario);
-        assert!(output.contains("return"));
-    }
-
-    #[test]
-    fn test_simulate_execution_empty() {
-        let executor = ParallelExecutor::default();
-        let scenario = QaScenario::new(
-            ModelId::new("test", "model"),
-            Modality::Run,
-            Backend::Cpu,
-            Format::Gguf,
-            String::new(),
-            42,
-        );
-
-        let output = executor.simulate_execution(&scenario);
-        assert!(output.is_empty());
-    }
-
-    #[test]
     fn test_estimate_tokens() {
         assert_eq!(estimate_tokens(""), 1);
         assert_eq!(estimate_tokens("test"), 1);
         assert_eq!(estimate_tokens("hello world this is a test"), 6);
-    }
-
-    #[test]
-    fn test_execution_mode_default() {
-        let mode = ExecutionMode::default();
-        assert_eq!(mode, ExecutionMode::Simulate);
     }
 
     #[test]
@@ -448,86 +363,6 @@ mod tests {
     }
 
     #[test]
-    fn test_simulate_execution_class() {
-        let executor = ParallelExecutor::default();
-        let scenario = QaScenario::new(
-            ModelId::new("test", "model"),
-            Modality::Run,
-            Backend::Cpu,
-            Format::Gguf,
-            "class MyClass:".to_string(),
-            42,
-        );
-
-        let output = executor.simulate_execution(&scenario);
-        assert!(output.contains("pass"));
-    }
-
-    #[test]
-    fn test_simulate_execution_struct() {
-        let executor = ParallelExecutor::default();
-        let scenario = QaScenario::new(
-            ModelId::new("test", "model"),
-            Modality::Run,
-            Backend::Cpu,
-            Format::Gguf,
-            "struct Config {".to_string(),
-            42,
-        );
-
-        let output = executor.simulate_execution(&scenario);
-        assert!(output.contains("pass"));
-    }
-
-    #[test]
-    fn test_simulate_execution_generic() {
-        let executor = ParallelExecutor::default();
-        let scenario = QaScenario::new(
-            ModelId::new("test", "model"),
-            Modality::Run,
-            Backend::Cpu,
-            Format::Gguf,
-            "Hello, how are you?".to_string(),
-            42,
-        );
-
-        let output = executor.simulate_execution(&scenario);
-        assert!(output.contains("assistant"));
-    }
-
-    #[test]
-    fn test_simulate_execution_whitespace() {
-        let executor = ParallelExecutor::default();
-        let scenario = QaScenario::new(
-            ModelId::new("test", "model"),
-            Modality::Run,
-            Backend::Cpu,
-            Format::Gguf,
-            "   ".to_string(),
-            42,
-        );
-
-        let output = executor.simulate_execution(&scenario);
-        assert!(output.is_empty());
-    }
-
-    #[test]
-    fn test_simulate_execution_other_arithmetic() {
-        let executor = ParallelExecutor::default();
-        let scenario = QaScenario::new(
-            ModelId::new("test", "model"),
-            Modality::Run,
-            Backend::Cpu,
-            Format::Gguf,
-            "What is 5*6?".to_string(),
-            42,
-        );
-
-        let output = executor.simulate_execution(&scenario);
-        assert!(output.contains("42"));
-    }
-
-    #[test]
     fn test_parallel_config_clone() {
         let config = ParallelConfig::default();
         let cloned = config.clone();
@@ -540,19 +375,6 @@ mod tests {
         let config = ParallelConfig::default();
         let debug_str = format!("{config:?}");
         assert!(debug_str.contains("ParallelConfig"));
-    }
-
-    #[test]
-    fn test_execution_mode_eq() {
-        assert_eq!(ExecutionMode::Simulate, ExecutionMode::Simulate);
-        assert_ne!(ExecutionMode::Simulate, ExecutionMode::Subprocess);
-    }
-
-    #[test]
-    fn test_execution_mode_clone() {
-        let mode = ExecutionMode::Subprocess;
-        let cloned = mode;
-        assert_eq!(mode, cloned);
     }
 
     #[test]
@@ -631,39 +453,7 @@ mod tests {
     }
 
     #[test]
-    fn test_simulate_execution_subtraction() {
-        let executor = ParallelExecutor::default();
-        let scenario = QaScenario::new(
-            ModelId::new("test", "model"),
-            Modality::Run,
-            Backend::Cpu,
-            Format::Gguf,
-            "What is 10-3?".to_string(),
-            42,
-        );
-
-        let output = executor.simulate_execution(&scenario);
-        assert!(output.contains("42"));
-    }
-
-    #[test]
-    fn test_simulate_execution_fn_rust() {
-        let executor = ParallelExecutor::default();
-        let scenario = QaScenario::new(
-            ModelId::new("test", "model"),
-            Modality::Run,
-            Backend::Cpu,
-            Format::Gguf,
-            "fn process() {".to_string(),
-            42,
-        );
-
-        let output = executor.simulate_execution(&scenario);
-        assert!(output.contains("return"));
-    }
-
-    #[test]
-    fn test_execute_single_corroborated() {
+    fn test_execute_single_without_binary() {
         let executor = ParallelExecutor::default();
         let scenario = QaScenario::new(
             ModelId::new("test", "model"),
@@ -675,8 +465,8 @@ mod tests {
         );
 
         let evidence = executor.execute_single(&scenario);
-        assert!(evidence.outcome.is_pass());
-        assert!(!evidence.output.is_empty());
+        // Without a real apr binary, subprocess execution fails
+        assert!(evidence.outcome.is_fail());
     }
 
     #[test]
@@ -697,7 +487,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parallel_batch_all_pass() {
+    fn test_parallel_batch_without_binary() {
         let executor = ParallelExecutor::default();
         let scenarios: Vec<_> = (0..5)
             .map(|i| {
@@ -714,7 +504,8 @@ mod tests {
 
         let result = executor.execute(&scenarios);
         assert_eq!(result.evidence.len(), 5);
-        assert!(result.passed > 0);
+        // Without a real apr binary, all executions fail
+        assert_eq!(result.failed, 5);
     }
 
     #[test]
@@ -741,29 +532,6 @@ mod tests {
 
         let result = executor.execute(&scenarios);
         assert_eq!(result.evidence.len(), 2);
-    }
-
-    #[test]
-    fn test_execution_mode_copy() {
-        let mode = ExecutionMode::Simulate;
-        let copied: ExecutionMode = mode;
-        assert_eq!(copied, ExecutionMode::Simulate);
-    }
-
-    #[test]
-    fn test_execution_mode_debug() {
-        let mode = ExecutionMode::Subprocess;
-        let debug_str = format!("{mode:?}");
-        assert!(debug_str.contains("Subprocess"));
-    }
-
-    #[test]
-    fn test_parallel_config_with_subprocess_mode() {
-        let config = ParallelConfig {
-            mode: ExecutionMode::Subprocess,
-            ..Default::default()
-        };
-        assert_eq!(config.mode, ExecutionMode::Subprocess);
     }
 
     #[test]
@@ -810,39 +578,6 @@ mod tests {
     }
 
     #[test]
-    fn test_simulate_execution_addition_with_space() {
-        let executor = ParallelExecutor::default();
-        let scenario = QaScenario::new(
-            ModelId::new("test", "model"),
-            Modality::Run,
-            Backend::Cpu,
-            Format::Gguf,
-            "What is 2 + 2?".to_string(),
-            42,
-        );
-
-        let output = executor.simulate_execution(&scenario);
-        assert!(output.contains("4"));
-    }
-
-    #[test]
-    fn test_simulate_execution_division() {
-        let executor = ParallelExecutor::default();
-        let scenario = QaScenario::new(
-            ModelId::new("test", "model"),
-            Modality::Run,
-            Backend::Cpu,
-            Format::Gguf,
-            "Calculate 100/4".to_string(),
-            42,
-        );
-
-        let output = executor.simulate_execution(&scenario);
-        // Generic response for non-matched prompts
-        assert!(output.contains("42") || output.contains("assistant"));
-    }
-
-    #[test]
     fn test_estimate_tokens_longer_text() {
         // 24 characters should be ~6 tokens
         let tokens = estimate_tokens("This is a longer string.");
@@ -880,7 +615,6 @@ mod tests {
         let config = ParallelConfig {
             num_workers: 8,
             timeout_ms: 30_000,
-            mode: ExecutionMode::Simulate,
             model_path: "/custom/path/model.gguf".to_string(),
             stop_on_failure: true,
         };
@@ -940,27 +674,21 @@ mod tests {
     fn test_timeout_config_enforcement() {
         // Very short timeout (should normally fail on real process)
         let config = ParallelConfig {
-            timeout_ms: 1,                 // 1ms timeout
-            mode: ExecutionMode::Simulate, // Simulate won't actually timeout
+            timeout_ms: 1, // 1ms timeout
             ..Default::default()
         };
 
         let executor = ParallelExecutor::new(config);
         assert_eq!(executor.config.timeout_ms, 1);
 
-        // In simulation mode, we can't actually timeout
-        // But we verify the config is correctly set for real mode
+        // Verify the config is correctly set
         let evidence = Evidence::timeout("F-INT-002", test_scenario(), 61_000);
         assert!(!evidence.outcome.is_pass());
     }
 
     #[test]
     fn test_subprocess_execution_empty_command() {
-        let config = ParallelConfig {
-            mode: ExecutionMode::Subprocess,
-            ..Default::default()
-        };
-        let executor = ParallelExecutor::new(config);
+        let executor = ParallelExecutor::new(ParallelConfig::default());
 
         // Create a scenario that generates an empty command
         let scenario = QaScenario::new(
@@ -976,23 +704,6 @@ mod tests {
         let (_, exit_code, stderr) = executor.subprocess_execution(&scenario);
         // With a fake model path, this will fail
         assert!(exit_code != 0 || stderr.is_some());
-    }
-
-    #[test]
-    fn test_parallel_config_subprocess_mode() {
-        let config = ParallelConfig {
-            mode: ExecutionMode::Subprocess,
-            model_path: "/nonexistent/model.gguf".to_string(),
-            ..Default::default()
-        };
-        assert_eq!(config.mode, ExecutionMode::Subprocess);
-    }
-
-    #[test]
-    fn test_execution_mode_subprocess_debug() {
-        let mode = ExecutionMode::Subprocess;
-        let debug_str = format!("{mode:?}");
-        assert!(debug_str.contains("Subprocess"));
     }
 
     #[test]
@@ -1023,10 +734,9 @@ mod tests {
 
     #[test]
     fn test_parallel_executor_execute_with_subprocess_mode() {
-        // This test verifies subprocess mode configuration is accepted
+        // This test verifies subprocess configuration is accepted
         let config = ParallelConfig {
             num_workers: 1,
-            mode: ExecutionMode::Subprocess,
             model_path: "/nonexistent/path.gguf".to_string(),
             stop_on_failure: true,
             ..Default::default()

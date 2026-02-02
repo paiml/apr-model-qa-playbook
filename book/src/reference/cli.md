@@ -22,7 +22,6 @@ Options:
 - `--tier <TIER>` - Certification tier: `smoke`, `quick` (default), `standard`, `deep`
 - `--output <DIR>` - Output directory for certification artifacts
 - `--dry-run` - Preview what would be certified
-- `--subprocess` - Enable real subprocess execution (auto-resolves cache if omitted)
 - `--model-cache <DIR>` - Model cache directory (defaults to `~/.cache/apr-models`)
 - `--apr-binary <PATH>` - Path to apr binary for inference (default: `apr`)
 
@@ -32,21 +31,20 @@ Examples:
 apr-qa certify --family qwen-coder --tier mvp
 
 # Real profiling with auto-resolved cache
-apr-qa certify --family qwen-coder --tier mvp --subprocess --apr-binary apr
+apr-qa certify --family qwen-coder --tier mvp --apr-binary apr
 
 # Full certification for production release
 apr-qa certify --family qwen-coder --tier full
 
-# Certify specific model with subprocess
-apr-qa certify Qwen/Qwen2.5-Coder-1.5B-Instruct --tier mvp \
-  --subprocess --apr-binary apr
+# Certify specific model
+apr-qa certify Qwen/Qwen2.5-Coder-1.5B-Instruct --tier mvp --apr-binary apr
 
 # Dry run to preview plan
 apr-qa certify --family qwen-coder --dry-run
 
 # Explicit cache directory
 apr-qa certify --family qwen-coder --tier mvp \
-  --subprocess --model-cache /custom/cache --apr-binary apr
+  --model-cache /custom/cache --apr-binary apr
 ```
 
 #### run
@@ -58,7 +56,6 @@ apr-qa run <playbook.yaml> [OPTIONS]
 ```
 
 Options:
-- `--mode <simulate|subprocess>` - Execution mode
 - `--workers <N>` - Number of parallel workers
 - `--timeout <MS>` - Per-test timeout in milliseconds
 - `--evidence-dir <DIR>` - Output directory for evidence

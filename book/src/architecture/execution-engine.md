@@ -16,20 +16,10 @@ let executor = ParallelExecutor::new(config);
 let result = executor.execute(&scenarios);
 ```
 
-## Execution Modes
+## Execution
 
-### Simulate Mode
-
-Fast execution without actual inference. Returns simulated outcomes based on scenario properties.
-
-### Subprocess Mode
-
-Spawns actual inference processes:
-
-```rust
-let executor = ParallelExecutor::new(config)
-    .with_mode(ExecutionMode::Subprocess);
-```
+All scenarios execute via real subprocess calls to the `apr` binary. The executor
+spawns inference processes and collects evidence from their output.
 
 ## Evidence Collection
 

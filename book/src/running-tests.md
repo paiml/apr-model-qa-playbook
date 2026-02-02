@@ -13,18 +13,12 @@ cargo run --bin apr-qa -- report <model-id>
 cargo run --bin apr-qa -- validate <playbook.yaml>
 ```
 
-## Execution Modes
+## Execution
 
-### Simulate Mode (Default)
-
-Fast execution without actual model inference. Useful for testing playbook structure.
-
-### Subprocess Mode
-
-Actual model inference via subprocess execution:
+All tests run via real subprocess execution against the `apr` binary:
 
 ```bash
-cargo run --bin apr-qa -- run playbook.yaml --mode subprocess
+cargo run --bin apr-qa -- run playbook.yaml --model-path /path/to/model
 ```
 
 ## Parallel Execution
