@@ -12,18 +12,34 @@ earns certification by **surviving** these refutation attempts.
 
 > "Certified" means we tried very hard to break it in specific ways, and failed.
 
-## Two-Tier Certification Model
+## Testing Tiers
 
-The framework uses a **two-tier** certification model aligned with real-world QA workflows:
+The framework provides four testing tiers mapped to playbook templates.
+All tiers build on the same base grid of **3 formats × 2 backends × 3
+modalities = 18 combinations**, scaled by a per-combination scenario count.
 
-| Tier | Time Limit | Grade on Pass | Status | Use Case |
-|------|------------|---------------|--------|----------|
-| **MVP** | ≤10 min | **B** | PROVISIONAL | 80% of models - surface coverage |
-| **Full** | ≤1 hour | **A+** | CERTIFIED | Production qualification |
+| Tier | Scenarios | Formula | Time Limit | Pass → Grade / Status |
+|------|-----------|---------|------------|----------------------|
+| **Quick-Check** | 10 | 1×1×1×10 | ~1 min | Dev feedback only |
+| **MVP** | 18 | 3×2×3×1 | ≤10 min | ≥90% → B / PROVISIONAL |
+| **CI-Pipeline** | 150 | 2×1×3×25 | ~15 min | CI gate |
+| **Full** | 1,800 | 3×2×3×100 | ≤1 hour | ≥95% → A+ / CERTIFIED |
+
+Only **MVP** and **Full** produce formal certification results. Quick-Check
+and CI-Pipeline are for development and continuous integration feedback.
+
+### Quick-Check (Dev Feedback)
+
+Single format, single backend, single modality — 10 scenarios. Use during
+development for fast iteration. No certification output.
+
+```bash
+cargo run --bin apr-qa -- run playbooks/templates/quick-check.yaml
+```
 
 ### MVP Tier (Minimum Viable Product)
 
-Tests 18 combinations: 3 formats (GGUF, APR, SafeTensors) × 2 backends (CPU, GPU) × 3 modalities (run, chat, serve).
+Tests all 18 format×backend×modality combinations with 1 scenario each.
 
 **Pass Criteria:**
 - ≥90% pass rate across all 18 combinations
@@ -32,13 +48,22 @@ Tests 18 combinations: 3 formats (GGUF, APR, SafeTensors) × 2 backends (CPU, GP
 **On Pass:** MQS Score = 800, Grade = **B**, Status = **PROVISIONAL**
 
 ```bash
-# Run MVP certification (recommended for most models)
 apr-qa certify --family qwen-coder --tier mvp
+```
+
+### CI-Pipeline (Continuous Integration)
+
+2 formats × 1 backend × 3 modalities × 25 scenarios = 150 tests. Designed
+to run in CI on every merge. Not a formal certification tier.
+
+```bash
+cargo run --bin apr-qa -- run playbooks/templates/ci-pipeline.yaml
 ```
 
 ### Full Tier (Production Qualification)
 
-Runs the complete 170-point Verification Matrix.
+Runs the complete 170-point Verification Matrix with 100 scenarios per
+combination (3×2×3×100 = 1,800 tests).
 
 **Pass Criteria:**
 - ≥95% pass rate on verification matrix
@@ -47,7 +72,6 @@ Runs the complete 170-point Verification Matrix.
 **On Pass:** MQS Score = 950+, Grade = **A+**, Status = **CERTIFIED**
 
 ```bash
-# Run Full certification (for production release)
 apr-qa certify --family qwen-coder --tier full
 ```
 
@@ -58,6 +82,9 @@ apr-qa certify --family qwen-coder --tier full
 | **CERTIFIED** | Full tier pass (≥95% AND zero P0 failures) |
 | **PROVISIONAL** | MVP tier pass (≥90% AND zero P0 failures) |
 | **BLOCKED** | Pass rate < 90% OR any P0 failure |
+
+A P0 gateway failure always results in BLOCKED, regardless of tier or
+overall pass rate.
 
 ## The Verification Matrix (170 Points)
 
