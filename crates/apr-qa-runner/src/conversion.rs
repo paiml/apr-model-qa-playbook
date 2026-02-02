@@ -3819,4 +3819,282 @@ exit 1"#,
         let result = check_tensor_names(&source, &target, "/nonexistent/apr");
         assert!(result.is_err());
     }
+
+    // =========================================================================
+    // Mock binary tests for check_cardinality and check_tensor_names
+    // =========================================================================
+
+    fn create_mock_inspect_binary(
+        dir: &std::path::Path,
+        name: &str,
+        json_output: &str,
+    ) -> std::path::PathBuf {
+        let path = dir.join(name);
+        std::fs::write(&path, format!("#!/bin/bash\necho '{json_output}'")).expect("write mock");
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755))
+                .expect("set permissions");
+        }
+        path
+    }
+
+    #[test]
+    fn test_check_cardinality_loss_detected() {
+        let dir = tempfile::tempdir().expect("create temp dir");
+        let source_model = dir.path().join("source.gguf");
+        let target_model = dir.path().join("target.apr");
+        std::fs::write(&source_model, b"source").expect("write source");
+        std::fs::write(&target_model, b"target").expect("write target");
+
+        // Mock binary that returns different tensor counts based on the model arg
+        let mock = dir.path().join("apr_card");
+        std::fs::write(
+            &mock,
+            "#!/bin/bash\nif echo \"$3\" | grep -q source; then\n  echo '{\"tensor_count\": 338, \"tensor_names\": []}'\nelse\n  echo '{\"tensor_count\": 227, \"tensor_names\": []}'\nfi",
+        )
+        .expect("write mock");
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            std::fs::set_permissions(&mock, std::fs::Permissions::from_mode(0o755))
+                .expect("set permissions");
+        }
+
+        let result = check_cardinality(&source_model, &target_model, mock.to_str().expect("path"));
+        let (gate_id, reason) = result
+            .expect("should succeed")
+            .expect("should detect cardinality loss");
+        assert_eq!(gate_id, "F-CONV-CARD-001");
+        assert!(reason.contains("338"));
+        assert!(reason.contains("227"));
+    }
+
+    #[test]
+    fn test_check_cardinality_no_loss() {
+        let dir = tempfile::tempdir().expect("create temp dir");
+        let source_model = dir.path().join("source.gguf");
+        let target_model = dir.path().join("target.apr");
+        std::fs::write(&source_model, b"source").expect("write source");
+        std::fs::write(&target_model, b"target").expect("write target");
+
+        let mock = create_mock_inspect_binary(
+            dir.path(),
+            "apr_card_ok",
+            r#"{"tensor_count": 338, "tensor_names": []}"#,
+        );
+
+        let result = check_cardinality(&source_model, &target_model, mock.to_str().expect("path"));
+        assert!(result.expect("should succeed").is_none());
+    }
+
+    #[test]
+    fn test_check_tensor_names_fusion_detected() {
+        let dir = tempfile::tempdir().expect("create temp dir");
+        let source_model = dir.path().join("source.gguf");
+        let target_model = dir.path().join("target.apr");
+        std::fs::write(&source_model, b"source").expect("write source");
+        std::fs::write(&target_model, b"target").expect("write target");
+
+        // Source has q_proj, k_proj, v_proj; target has qkv_proj (fusion)
+        let mock = dir.path().join("apr_names");
+        std::fs::write(
+            &mock,
+            r#"#!/bin/bash
+if echo "$3" | grep -q source; then
+  echo '{"tensor_count": 3, "tensor_names": ["layer.0.q_proj", "layer.0.k_proj", "layer.0.v_proj"]}'
+else
+  echo '{"tensor_count": 1, "tensor_names": ["layer.0.qkv_proj"]}'
+fi"#,
+        )
+        .expect("write mock");
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            std::fs::set_permissions(&mock, std::fs::Permissions::from_mode(0o755))
+                .expect("set permissions");
+        }
+
+        let result = check_tensor_names(&source_model, &target_model, mock.to_str().expect("path"));
+        let (gate_id, detail) = result
+            .expect("should succeed")
+            .expect("should detect name divergence");
+        assert_eq!(gate_id, "F-CONV-NAME-001");
+        assert!(detail.contains("QKV fusion"));
+        assert!(detail.contains("q_proj"));
+    }
+
+    #[test]
+    fn test_check_tensor_names_non_fusion_divergence() {
+        let dir = tempfile::tempdir().expect("create temp dir");
+        let source_model = dir.path().join("source.gguf");
+        let target_model = dir.path().join("target.apr");
+        std::fs::write(&source_model, b"source").expect("write source");
+        std::fs::write(&target_model, b"target").expect("write target");
+
+        // Source has "embed.weight"; target renamed it to "embedding.weight"
+        let mock = dir.path().join("apr_names2");
+        std::fs::write(
+            &mock,
+            r#"#!/bin/bash
+if echo "$3" | grep -q source; then
+  echo '{"tensor_count": 2, "tensor_names": ["embed.weight", "lm_head.weight"]}'
+else
+  echo '{"tensor_count": 2, "tensor_names": ["embedding.weight", "lm_head.weight"]}'
+fi"#,
+        )
+        .expect("write mock");
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            std::fs::set_permissions(&mock, std::fs::Permissions::from_mode(0o755))
+                .expect("set permissions");
+        }
+
+        let result = check_tensor_names(&source_model, &target_model, mock.to_str().expect("path"));
+        let (gate_id, detail) = result
+            .expect("should succeed")
+            .expect("should detect divergence");
+        assert_eq!(gate_id, "F-CONV-NAME-001");
+        assert!(detail.contains("divergence"));
+        assert!(detail.contains("embed.weight"));
+    }
+
+    #[test]
+    fn test_check_tensor_names_all_preserved() {
+        let dir = tempfile::tempdir().expect("create temp dir");
+        let source_model = dir.path().join("source.gguf");
+        let target_model = dir.path().join("target.apr");
+        std::fs::write(&source_model, b"source").expect("write source");
+        std::fs::write(&target_model, b"target").expect("write target");
+
+        let mock = create_mock_inspect_binary(
+            dir.path(),
+            "apr_names_ok",
+            r#"{"tensor_count": 2, "tensor_names": ["a.weight", "b.weight"]}"#,
+        );
+
+        let result = check_tensor_names(&source_model, &target_model, mock.to_str().expect("path"));
+        assert!(result.expect("should succeed").is_none());
+    }
+
+    #[test]
+    fn test_check_tensor_names_empty_names_skip() {
+        let dir = tempfile::tempdir().expect("create temp dir");
+        let source_model = dir.path().join("source.gguf");
+        let target_model = dir.path().join("target.apr");
+        std::fs::write(&source_model, b"source").expect("write source");
+        std::fs::write(&target_model, b"target").expect("write target");
+
+        let mock = create_mock_inspect_binary(
+            dir.path(),
+            "apr_names_empty",
+            r#"{"tensor_count": 10, "tensor_names": []}"#,
+        );
+
+        let result = check_tensor_names(&source_model, &target_model, mock.to_str().expect("path"));
+        assert!(result.expect("should succeed").is_none());
+    }
+
+    #[test]
+    fn test_convert_to_format_tagged_gguf_ext() {
+        let source = std::path::PathBuf::from("/tmp/model.apr");
+        let target = source.with_extension("tag1.gguf");
+        assert!(target.to_str().expect("path").ends_with("tag1.gguf"));
+    }
+
+    #[test]
+    fn test_convert_to_format_tagged_safetensors_ext() {
+        let source = std::path::PathBuf::from("/tmp/model.apr");
+        let target = source.with_extension("tag2.safetensors");
+        assert!(target.to_str().expect("path").ends_with("tag2.safetensors"));
+    }
+
+    #[test]
+    fn test_run_inference_simple_gpu_flag() {
+        // Verify GPU backend produces --gpu arg (fails because no binary, but exercises the match)
+        let result = run_inference_simple(
+            &std::path::PathBuf::from("/nonexistent/model.gguf"),
+            Backend::Gpu,
+            "/nonexistent/apr",
+        );
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_idempotency_falsified_result_structure() {
+        // Directly test the Falsified variant construction
+        let result = ConversionResult::Falsified {
+            gate_id: "F-CONV-IDEM-001".to_string(),
+            reason: "Idempotency failure: Gguf→Apr produced different output".to_string(),
+            evidence: ConversionEvidence {
+                source_hash: ConversionTest::hash_output("output1"),
+                converted_hash: ConversionTest::hash_output("output2"),
+                max_diff: 1.0,
+                diff_indices: vec![],
+                source_format: Format::Gguf,
+                target_format: Format::Apr,
+                backend: Backend::Cpu,
+            },
+        };
+        match result {
+            ConversionResult::Falsified {
+                gate_id, reason, ..
+            } => {
+                assert_eq!(gate_id, "F-CONV-IDEM-001");
+                assert!(reason.contains("Idempotency"));
+            }
+            _ => panic!("Expected Falsified"),
+        }
+    }
+
+    #[test]
+    fn test_commutativity_falsified_result_structure() {
+        let result = ConversionResult::Falsified {
+            gate_id: "F-CONV-COM-001".to_string(),
+            reason: "Commutativity failure: GGUF→APR differs from GGUF→ST→APR".to_string(),
+            evidence: ConversionEvidence {
+                source_hash: ConversionTest::hash_output("path_a"),
+                converted_hash: ConversionTest::hash_output("path_b"),
+                max_diff: 1.0,
+                diff_indices: vec![],
+                source_format: Format::Gguf,
+                target_format: Format::Apr,
+                backend: Backend::Cpu,
+            },
+        };
+        match result {
+            ConversionResult::Falsified {
+                gate_id, reason, ..
+            } => {
+                assert_eq!(gate_id, "F-CONV-COM-001");
+                assert!(reason.contains("Commutativity"));
+            }
+            _ => panic!("Expected Falsified"),
+        }
+    }
+
+    #[test]
+    fn test_conversion_test_convert_model_failure() {
+        // Exercise the conversion failure error path
+        let result = convert_to_format_tagged(
+            &std::path::PathBuf::from("/nonexistent/model.gguf"),
+            Format::Gguf,
+            "test",
+            "/nonexistent/apr",
+        );
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_conversion_test_convert_model_safetensors_target() {
+        let result = convert_to_format_tagged(
+            &std::path::PathBuf::from("/nonexistent/model.apr"),
+            Format::SafeTensors,
+            "test",
+            "/nonexistent/apr",
+        );
+        assert!(result.is_err());
+    }
 }

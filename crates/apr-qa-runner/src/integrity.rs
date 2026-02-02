@@ -676,4 +676,151 @@ mod tests {
         assert_eq!(cloned.passed, result.passed);
         assert_eq!(cloned.errors.len(), result.errors.len());
     }
+
+    // =========================================================================
+    // Additional coverage tests for uncovered paths
+    // =========================================================================
+
+    #[test]
+    fn test_read_safetensors_corrupted_file() {
+        let dir = TempDir::new().expect("create temp dir");
+        // Write a file that's too short to contain a valid header
+        let path = dir.path().join("corrupt.safetensors");
+        std::fs::write(&path, b"short").expect("write corrupt");
+        let result = read_safetensors_metadata(&path);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_read_safetensors_oversized_header() {
+        let dir = TempDir::new().expect("create temp dir");
+        let path = dir.path().join("oversize.safetensors");
+        let mut file = std::fs::File::create(&path).expect("create file");
+        // Header length of 200MB (exceeds MAX_HEADER_SIZE)
+        let huge: u64 = 200_000_000;
+        file.write_all(&huge.to_le_bytes()).expect("write len");
+        drop(file);
+        let result = read_safetensors_metadata(&path);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("exceeds maximum"));
+    }
+
+    #[test]
+    fn test_read_safetensors_with_metadata_key() {
+        let dir = TempDir::new().expect("create temp dir");
+        // Create safetensors header that includes __metadata__ key
+        let mut header_obj = serde_json::Map::new();
+
+        // Add __metadata__ key (should be skipped)
+        header_obj.insert(
+            "__metadata__".to_string(),
+            serde_json::json!({"format": "pt"}),
+        );
+
+        // Add a real tensor
+        let mut tensor_info = serde_json::Map::new();
+        tensor_info.insert("shape".to_string(), serde_json::json!([100, 50]));
+        tensor_info.insert(
+            "dtype".to_string(),
+            serde_json::Value::String("F32".to_string()),
+        );
+        tensor_info.insert("data_offsets".to_string(), serde_json::json!([0, 20000]));
+        header_obj.insert(
+            "model.weight".to_string(),
+            serde_json::Value::Object(tensor_info),
+        );
+
+        let header_json = serde_json::to_string(&header_obj).expect("serialize header");
+        let header_bytes = header_json.as_bytes();
+        let header_len = header_bytes.len() as u64;
+
+        let path = dir.path().join("model.safetensors");
+        let mut file = std::fs::File::create(&path).expect("create file");
+        file.write_all(&header_len.to_le_bytes())
+            .expect("write len");
+        file.write_all(header_bytes).expect("write header");
+        file.write_all(&[0u8; 128]).expect("write data padding");
+        drop(file);
+
+        let tensors = read_safetensors_metadata(&path).expect("should parse");
+        // __metadata__ should NOT appear as a tensor
+        assert!(!tensors.contains_key("__metadata__"));
+        // But model.weight should
+        assert!(tensors.contains_key("model.weight"));
+        assert_eq!(tensors["model.weight"], vec![100, 50]);
+    }
+
+    #[test]
+    fn test_derive_values_from_lm_head_fallback() {
+        // No embed_tokens, only lm_head.weight — exercises the fallback path
+        let mut tensors = HashMap::new();
+        tensors.insert("lm_head.weight".to_string(), vec![32000, 4096]);
+        tensors.insert(
+            "model.layers.0.self_attn.q_proj.weight".to_string(),
+            vec![4096, 4096],
+        );
+        tensors.insert(
+            "model.layers.1.self_attn.q_proj.weight".to_string(),
+            vec![4096, 4096],
+        );
+
+        let values = derive_values_from_tensors(&tensors);
+        assert_eq!(values.vocab_size, Some(32000));
+        assert_eq!(values.hidden_size, Some(4096));
+        assert_eq!(values.layer_count, Some(2));
+    }
+
+    #[test]
+    fn test_derive_values_model_lm_head_fallback() {
+        // No embed_tokens, uses model.lm_head.weight
+        let mut tensors = HashMap::new();
+        tensors.insert("model.lm_head.weight".to_string(), vec![50_000, 768]);
+
+        let values = derive_values_from_tensors(&tensors);
+        assert_eq!(values.vocab_size, Some(50_000));
+        assert_eq!(values.hidden_size, Some(768));
+    }
+
+    #[test]
+    fn test_check_safetensors_integrity_read_error() {
+        let dir = TempDir::new().expect("create temp dir");
+        create_test_config(dir.path(), 12, 768, 30_000);
+
+        // Create a corrupt safetensors file (too short for header)
+        let path = dir.path().join("model.safetensors");
+        std::fs::write(&path, b"bad").expect("write corrupt");
+
+        let result = check_safetensors_integrity(dir.path());
+        assert!(!result.passed);
+        assert!(
+            result
+                .errors
+                .iter()
+                .any(|e| e.contains("G0-INTEGRITY-CONFIG"))
+        );
+    }
+
+    #[test]
+    fn test_check_safetensors_integrity_hidden_size_mismatch() {
+        let dir = TempDir::new().expect("create temp dir");
+        // Config says hidden_size=1024 but tensor has 768
+        create_test_config(dir.path(), 2, 1024, 30_000);
+        create_mock_safetensors(dir.path(), 2, 768, 30_000);
+
+        let result = check_safetensors_integrity(dir.path());
+        assert!(!result.passed);
+        assert!(result.errors.iter().any(|e| e.contains("HIDDEN")));
+    }
+
+    #[test]
+    fn test_check_safetensors_integrity_vocab_size_mismatch() {
+        let dir = TempDir::new().expect("create temp dir");
+        // Config says vocab=50000 but tensor has 30000
+        create_test_config(dir.path(), 2, 768, 50_000);
+        create_mock_safetensors(dir.path(), 2, 768, 30_000);
+
+        let result = check_safetensors_integrity(dir.path());
+        assert!(!result.passed);
+        assert!(result.errors.iter().any(|e| e.contains("VOCAB")));
+    }
 }

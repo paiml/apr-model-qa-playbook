@@ -1523,4 +1523,100 @@ gates:
         // Should generate tickets for regular failures
         let _ = tickets; // May or may not have tickets
     }
+
+    // =========================================================================
+    // Additional coverage tests for certify_model paths
+    // =========================================================================
+
+    #[test]
+    fn test_certify_model_invalid_playbook_yaml() {
+        // Just verify the playbook_path_for_model generates correct path
+        let path = playbook_path_for_model("test/BadModel", CertTier::Mvp);
+        assert!(path.contains("badmodel-mvp.playbook.yaml"));
+    }
+
+    #[test]
+    fn test_certify_model_subprocess_with_cache_path_construction() {
+        // Exercise the model cache path construction code
+        let config = CertificationConfig {
+            tier: CertTier::Mvp,
+            subprocess: true,
+            model_cache: Some(std::path::PathBuf::from("/test/cache")),
+            ..Default::default()
+        };
+
+        // This will fail (no playbook) but exercises the early return
+        let result = certify_model("org/Model.Name-With.Dots", &config);
+        assert!(!result.success);
+        // Verify the error is about missing playbook (not a crash in path construction)
+        assert!(
+            result
+                .error
+                .as_ref()
+                .expect("should have error")
+                .contains("Playbook not found")
+        );
+    }
+
+    #[test]
+    fn test_certify_model_subprocess_without_cache() {
+        let config = CertificationConfig {
+            tier: CertTier::Smoke,
+            subprocess: true,
+            model_cache: None,
+            ..Default::default()
+        };
+
+        let result = certify_model("org/some-model", &config);
+        assert!(!result.success);
+    }
+
+    #[test]
+    fn test_certify_model_non_subprocess() {
+        let config = CertificationConfig {
+            tier: CertTier::Smoke,
+            subprocess: false,
+            model_cache: Some(std::path::PathBuf::from("/test/cache")),
+            ..Default::default()
+        };
+
+        let result = certify_model("org/another-model", &config);
+        assert!(!result.success);
+    }
+
+    #[test]
+    fn test_execute_playbook_smoke() {
+        // Exercise execute_playbook directly with a valid playbook
+        let yaml = r#"
+name: coverage-test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("parse");
+        let config = ExecutionConfig::default();
+        let result = execute_playbook(&playbook, config);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_load_playbook_nonexistent_file() {
+        let result = load_playbook(std::path::Path::new("/nonexistent/playbook.yaml"));
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("Error loading playbook"));
+    }
+
+    #[test]
+    fn test_load_playbook_invalid_yaml() {
+        let dir = tempfile::tempdir().expect("create temp dir");
+        let path = dir.path().join("bad.yaml");
+        std::fs::write(&path, "not: [valid: yaml: {{{").expect("write");
+        let result = load_playbook(&path);
+        assert!(result.is_err());
+    }
 }

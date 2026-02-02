@@ -5739,4 +5739,201 @@ test_matrix:
         file.write_all(header_bytes).expect("write header");
         file.write_all(&[0u8; 1024]).expect("write data");
     }
+
+    // =========================================================================
+    // Additional coverage tests — uncovered paths
+    // =========================================================================
+
+    #[test]
+    fn test_execute_all_with_serve_true() {
+        let mock_runner = MockCommandRunner::new();
+        let executor = ToolExecutor::with_runner(
+            "test-model.gguf".to_string(),
+            true,
+            5000,
+            Arc::new(mock_runner),
+        );
+        let results = executor.execute_all_with_serve(true);
+        assert!(!results.is_empty());
+        // Should include serve-lifecycle when include_serve=true
+        assert!(results.iter().any(|r| r.tool == "serve-lifecycle"));
+    }
+
+    #[test]
+    fn test_run_g0_integrity_check_hidden_mismatch() {
+        use tempfile::TempDir;
+        let dir = TempDir::new().expect("create temp dir");
+
+        // Config says hidden_size=1024 but tensors have 896
+        create_test_config_for_executor(dir.path(), 24, 1024, 151_936);
+        create_mock_safetensors_for_test(dir.path(), 24, 896, 151_936);
+
+        let mut executor = Executor::new();
+        let model_id = ModelId::new("test", "model");
+        let (passed, failed) = executor.run_g0_integrity_check(dir.path(), &model_id);
+
+        assert_eq!(passed, 0);
+        assert!(failed > 0);
+
+        let evidence = executor.evidence();
+        assert!(evidence.all().iter().any(|e| e.gate_id.contains("HIDDEN")));
+    }
+
+    #[test]
+    fn test_run_g0_integrity_check_vocab_mismatch() {
+        use tempfile::TempDir;
+        let dir = TempDir::new().expect("create temp dir");
+
+        // Config says vocab=200_000 but tensors have 151_936
+        create_test_config_for_executor(dir.path(), 24, 896, 200_000);
+        create_mock_safetensors_for_test(dir.path(), 24, 896, 151_936);
+
+        let mut executor = Executor::new();
+        let model_id = ModelId::new("test", "model");
+        let (passed, failed) = executor.run_g0_integrity_check(dir.path(), &model_id);
+
+        assert_eq!(passed, 0);
+        assert!(failed > 0);
+
+        let evidence = executor.evidence();
+        assert!(evidence.all().iter().any(|e| e.gate_id.contains("VOCAB")));
+    }
+
+    #[test]
+    fn test_execute_inspect_verified_nonexistent_model() {
+        // run_inspect with "apr" binary + nonexistent model → fails → exercises Err path
+        let executor =
+            ToolExecutor::new("/nonexistent/path/to/model.gguf".to_string(), false, 5000);
+        let result = executor.execute_inspect_verified();
+        // apr binary exists but model doesn't → inspect fails → result is not passed
+        assert!(!result.passed);
+        assert_eq!(result.gate_id, "F-INSPECT-META-001");
+        // Either exit_code=-1 (Err path) or exit_code=1 (Ok path with tensor_count=0)
+        assert!(result.exit_code != 0);
+    }
+
+    #[test]
+    fn test_execute_scenario_stop_on_p0_gate() {
+        // Create scenarios where gate_id contains "-P0-"
+        let mock_runner = MockCommandRunner::new()
+            .with_inference_failure()
+            .with_exit_code(1);
+
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/model.gguf".to_string()),
+            failure_policy: FailurePolicy::StopOnP0,
+            run_conversion_tests: false,
+            run_golden_rule_test: false,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        // Create scenario whose gate_id will contain "-P0-" pattern
+        let yaml = r#"
+name: p0-stop
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 3
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let result = executor.execute(&playbook).expect("Execution failed");
+
+        // Should have failed scenarios (StopOnP0 only stops on P0 gates)
+        assert!(result.failed >= 1);
+    }
+
+    #[test]
+    fn test_execute_scenario_corroborated_with_stderr_via_playbook() {
+        // Use a mock that returns correct output ("The answer is 4.") with stderr
+        // The mock auto-responds "The answer is 4." for "2+2" prompts
+        // This exercises the Corroborated branch with stderr propagation (line 624-626)
+        let mock_runner = MockCommandRunner::new()
+            .with_inference_response_and_stderr("correct", "warning: low memory");
+
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some("/test/model.gguf".to_string()),
+            run_conversion_tests: false,
+            run_golden_rule_test: false,
+            failure_policy: FailurePolicy::CollectAll,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        let yaml = r#"
+name: corroborated-stderr
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let result = executor.execute(&playbook).expect("Execution failed");
+
+        // Should pass (mock responds "The answer is 4." for 2+2 prompts)
+        assert!(result.passed >= 1);
+
+        // The corroborated evidence should carry stderr
+        let evidence = executor.evidence().all();
+        let passed: Vec<_> = evidence.iter().filter(|e| e.outcome.is_pass()).collect();
+        assert!(!passed.is_empty());
+        // stderr is set on evidence when present
+        if let Some(ev) = passed.first() {
+            assert!(ev.stderr.is_some());
+        }
+    }
+
+    #[test]
+    fn test_run_conversion_tests_single_file_model() {
+        let dir = tempfile::tempdir().expect("create temp dir");
+        let model_path = dir.path().join("model.gguf");
+        std::fs::write(&model_path, b"fake model").expect("write model");
+
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some(model_path.to_string_lossy().to_string()),
+            run_conversion_tests: true,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_config(config);
+        let model_id = ModelId::new("test", "model");
+        // Single file model (not a directory) — should return (0, 0)
+        let (passed, failed) = executor.run_conversion_tests(&model_path, &model_id);
+        assert_eq!(passed, 0);
+        assert_eq!(failed, 0);
+    }
+
+    #[test]
+    fn test_run_golden_rule_single_file_model() {
+        let dir = tempfile::tempdir().expect("create temp dir");
+        let model_path = dir.path().join("model.gguf");
+        std::fs::write(&model_path, b"fake model").expect("write model");
+
+        let config = ExecutionConfig {
+            subprocess_mode: true,
+            model_path: Some(model_path.to_string_lossy().to_string()),
+            run_golden_rule_test: true,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_config(config);
+        let model_id = ModelId::new("test", "model");
+        // Single file model — golden rule returns (0, 0)
+        let (passed, failed) = executor.run_golden_rule_test(&model_path, &model_id);
+        assert_eq!(passed, 0);
+        assert_eq!(failed, 0);
+    }
 }
