@@ -661,6 +661,281 @@ impl RoundTripTest {
     }
 }
 
+/// Idempotency test (MR-IDEM): convert A→B twice from same source, compare outputs
+///
+/// Detects non-deterministic conversion bugs. If converting the same model twice
+/// produces different outputs, the converter has internal state leaks.
+#[derive(Debug, Clone)]
+pub struct IdempotencyTest {
+    /// First format in chain
+    pub format_a: Format,
+    /// Second format in chain
+    pub format_b: Format,
+    /// Backend to use
+    pub backend: Backend,
+    /// Model ID
+    pub model_id: ModelId,
+    /// Binary path for apr CLI
+    binary: String,
+}
+
+impl IdempotencyTest {
+    /// Create a new idempotency test
+    #[must_use]
+    pub fn new(format_a: Format, format_b: Format, backend: Backend, model_id: ModelId) -> Self {
+        Self {
+            format_a,
+            format_b,
+            backend,
+            model_id,
+            binary: default_binary(),
+        }
+    }
+
+    /// Execute idempotency test: convert A→B twice, compare
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if conversion or inference fails.
+    pub fn execute(&self, model_path: &Path) -> Result<ConversionResult> {
+        // Convert A→B (first time)
+        let converted_1 =
+            convert_to_format_tagged(model_path, self.format_b, "idem1", &self.binary)?;
+        let output_1 = run_inference_simple(&converted_1, self.backend, &self.binary)?;
+
+        // Convert A→B (second time, from same source)
+        let converted_2 =
+            convert_to_format_tagged(model_path, self.format_b, "idem2", &self.binary)?;
+        let output_2 = run_inference_simple(&converted_2, self.backend, &self.binary)?;
+
+        if output_1 != output_2 {
+            Ok(ConversionResult::Falsified {
+                gate_id: "F-CONV-IDEM-001".to_string(),
+                reason: format!(
+                    "Idempotency failure: {:?}→{:?} produced different output on second conversion",
+                    self.format_a, self.format_b
+                ),
+                evidence: ConversionEvidence {
+                    source_hash: ConversionTest::hash_output(&output_1),
+                    converted_hash: ConversionTest::hash_output(&output_2),
+                    max_diff: 1.0,
+                    diff_indices: vec![],
+                    source_format: self.format_a,
+                    target_format: self.format_b,
+                    backend: self.backend,
+                },
+            })
+        } else {
+            Ok(ConversionResult::Corroborated {
+                source_format: self.format_a,
+                target_format: self.format_b,
+                backend: self.backend,
+                max_diff: 0.0,
+            })
+        }
+    }
+}
+
+/// Commutativity test (MR-COM): different conversion paths should yield equivalent inference
+///
+/// Tests that GGUF→APR produces the same inference as GGUF→ST→APR.
+/// Path-dependent conversion bugs are a major source of silent failures.
+#[derive(Debug, Clone)]
+pub struct CommutativityTest {
+    /// Backend to use
+    pub backend: Backend,
+    /// Model ID
+    pub model_id: ModelId,
+    /// Binary path for apr CLI
+    binary: String,
+}
+
+impl CommutativityTest {
+    /// Create a new commutativity test
+    #[must_use]
+    pub fn new(backend: Backend, model_id: ModelId) -> Self {
+        Self {
+            backend,
+            model_id,
+            binary: default_binary(),
+        }
+    }
+
+    /// Execute commutativity test: compare direct vs indirect conversion paths
+    ///
+    /// Path A: GGUF → APR (direct)
+    /// Path B: GGUF → SafeTensors → APR (indirect)
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if conversion or inference fails.
+    pub fn execute(&self, model_path: &Path) -> Result<ConversionResult> {
+        // Path A: GGUF → APR (direct)
+        let direct_apr =
+            convert_to_format_tagged(model_path, Format::Apr, "com_direct", &self.binary)?;
+        let output_a = run_inference_simple(&direct_apr, self.backend, &self.binary)?;
+
+        // Path B: GGUF → SafeTensors → APR (indirect)
+        let via_st =
+            convert_to_format_tagged(model_path, Format::SafeTensors, "com_via", &self.binary)?;
+        let indirect_apr =
+            convert_to_format_tagged(&via_st, Format::Apr, "com_indirect", &self.binary)?;
+        let output_b = run_inference_simple(&indirect_apr, self.backend, &self.binary)?;
+
+        if output_a != output_b {
+            Ok(ConversionResult::Falsified {
+                gate_id: "F-CONV-COM-001".to_string(),
+                reason: "Commutativity failure: GGUF→APR differs from GGUF→ST→APR".to_string(),
+                evidence: ConversionEvidence {
+                    source_hash: ConversionTest::hash_output(&output_a),
+                    converted_hash: ConversionTest::hash_output(&output_b),
+                    max_diff: 1.0,
+                    diff_indices: vec![],
+                    source_format: Format::Gguf,
+                    target_format: Format::Apr,
+                    backend: self.backend,
+                },
+            })
+        } else {
+            Ok(ConversionResult::Corroborated {
+                source_format: Format::Gguf,
+                target_format: Format::Apr,
+                backend: self.backend,
+                max_diff: 0.0,
+            })
+        }
+    }
+}
+
+/// Check tensor cardinality after conversion (MR-CARD)
+///
+/// Fires F-CONV-CARD-001 if `tensor_count(output) < tensor_count(input)`.
+/// This catches silent tensor fusion bugs like QKV fusion (338→227).
+///
+/// # Errors
+///
+/// Returns an error if `apr rosetta inspect` fails on either model.
+pub fn check_cardinality(
+    source_path: &Path,
+    converted_path: &Path,
+    binary: &str,
+) -> Result<Option<(String, String)>> {
+    let source_inspect = crate::differential::run_inspect(source_path, binary)?;
+    let target_inspect = crate::differential::run_inspect(converted_path, binary)?;
+
+    if target_inspect.tensor_count < source_inspect.tensor_count {
+        Ok(Some((
+            "F-CONV-CARD-001".to_string(),
+            format!(
+                "Tensor cardinality loss: {} → {}",
+                source_inspect.tensor_count, target_inspect.tensor_count
+            ),
+        )))
+    } else {
+        Ok(None)
+    }
+}
+
+/// Check tensor name preservation after conversion (T-QKV-02)
+///
+/// Fires F-CONV-NAME-001 if tensor names changed unexpectedly during conversion
+/// (e.g., q_proj+k_proj+v_proj → qkv_proj fusion).
+///
+/// # Errors
+///
+/// Returns an error if `apr rosetta inspect` fails on either model.
+pub fn check_tensor_names(
+    source_path: &Path,
+    converted_path: &Path,
+    binary: &str,
+) -> Result<Option<(String, String)>> {
+    let source_inspect = crate::differential::run_inspect(source_path, binary)?;
+    let target_inspect = crate::differential::run_inspect(converted_path, binary)?;
+
+    // Skip if either side has no tensor names (inspect may not support it)
+    if source_inspect.tensor_names.is_empty() || target_inspect.tensor_names.is_empty() {
+        return Ok(None);
+    }
+
+    let missing: Vec<_> = source_inspect
+        .tensor_names
+        .iter()
+        .filter(|n| !target_inspect.tensor_names.contains(n))
+        .collect();
+
+    if missing.is_empty() {
+        return Ok(None);
+    }
+
+    // Check for known fusion patterns (q_proj+k_proj+v_proj → qkv_proj)
+    let has_fusion = missing
+        .iter()
+        .any(|n| n.contains("q_proj") || n.contains("k_proj") || n.contains("v_proj"))
+        && target_inspect
+            .tensor_names
+            .iter()
+            .any(|n| n.contains("qkv_proj"));
+
+    let detail = if has_fusion {
+        format!(
+            "QKV fusion detected: {} source tensors missing (likely fused into qkv_proj). Missing: {}",
+            missing.len(),
+            missing
+                .iter()
+                .take(5)
+                .map(|s| s.as_str())
+                .collect::<Vec<_>>()
+                .join(", ")
+        )
+    } else {
+        format!(
+            "Tensor name divergence: {} source tensors not found in output. Missing: {}",
+            missing.len(),
+            missing
+                .iter()
+                .take(5)
+                .map(|s| s.as_str())
+                .collect::<Vec<_>>()
+                .join(", ")
+        )
+    };
+
+    Ok(Some(("F-CONV-NAME-001".to_string(), detail)))
+}
+
+/// Convert model to specified format with a tag suffix for disambiguation
+fn convert_to_format_tagged(
+    source_path: &Path,
+    target_format: Format,
+    tag: &str,
+    binary: &str,
+) -> Result<std::path::PathBuf> {
+    let target_ext = match target_format {
+        Format::Gguf => "gguf",
+        Format::SafeTensors => "safetensors",
+        Format::Apr => "apr",
+    };
+
+    let target_path = source_path.with_extension(format!("{tag}.{target_ext}"));
+
+    let output = Command::new(binary)
+        .arg("rosetta")
+        .arg("convert")
+        .arg(source_path)
+        .arg(&target_path)
+        .output()
+        .map_err(Error::Io)?;
+
+    if !output.status.success() {
+        return Err(Error::Execution(format!(
+            "Conversion failed: {}",
+            String::from_utf8_lossy(&output.stderr)
+        )));
+    }
+
+    Ok(target_path)
+}
+
 /// Simple inference helper
 fn run_inference_simple(model_path: &Path, backend: Backend, binary: &str) -> Result<String> {
     let backend_flag = match backend {
@@ -719,11 +994,22 @@ fn convert_to_format(
 
 /// Configuration for conversion executor
 #[derive(Debug, Clone)]
+#[allow(clippy::struct_excessive_bools)]
 pub struct ConversionConfig {
     /// Test all format pairs
     pub test_all_pairs: bool,
     /// Test round-trips
     pub test_round_trips: bool,
+    /// Test multi-hop conversion chains (T-QKV-04)
+    pub test_multi_hop: bool,
+    /// Test tensor cardinality after conversion (MR-CARD)
+    pub test_cardinality: bool,
+    /// Test tensor name preservation after conversion (T-QKV-02)
+    pub test_tensor_names: bool,
+    /// Test idempotency of double-conversion (MR-IDEM)
+    pub test_idempotency: bool,
+    /// Test commutativity of conversion paths (MR-COM)
+    pub test_commutativity: bool,
     /// Backends to test
     pub backends: Vec<Backend>,
     /// Use CPU only (no GPU)
@@ -735,6 +1021,11 @@ impl Default for ConversionConfig {
         Self {
             test_all_pairs: true,
             test_round_trips: true,
+            test_multi_hop: true,
+            test_cardinality: true,
+            test_tensor_names: true,
+            test_idempotency: true,
+            test_commutativity: true,
             backends: vec![Backend::Cpu, Backend::Gpu],
             no_gpu: false,
         }
@@ -748,6 +1039,11 @@ impl ConversionConfig {
         Self {
             test_all_pairs: true,
             test_round_trips: true,
+            test_multi_hop: true,
+            test_cardinality: true,
+            test_tensor_names: true,
+            test_idempotency: true,
+            test_commutativity: true,
             backends: vec![Backend::Cpu],
             no_gpu: true,
         }
@@ -848,7 +1144,7 @@ impl ConversionExecutor {
             }
         }
 
-        // Test round-trips (GGUF → APR → SafeTensors → GGUF)
+        // Test round-trips (GGUF → APR → SafeTensors → GGUF) - F-CONV-RT-001
         if self.config.test_round_trips {
             for backend in &backends {
                 let mut rt = RoundTripTest::new(
@@ -880,6 +1176,249 @@ impl ConversionExecutor {
                             0,
                         );
                         evidence.push(ev);
+                    }
+                }
+            }
+        }
+
+        // T-QKV-03: ST → APR → GGUF → ST round-trip (F-CONV-RT-002)
+        // T-QKV-04: ST → APR → GGUF → APR → ST multi-hop (F-CONV-RT-003)
+        if self.config.test_multi_hop {
+            let multi_hop_chains: Vec<(&str, Vec<Format>)> = vec![
+                (
+                    "F-CONV-RT-002",
+                    vec![
+                        Format::SafeTensors,
+                        Format::Apr,
+                        Format::Gguf,
+                        Format::SafeTensors,
+                    ],
+                ),
+                (
+                    "F-CONV-RT-003",
+                    vec![
+                        Format::SafeTensors,
+                        Format::Apr,
+                        Format::Gguf,
+                        Format::Apr,
+                        Format::SafeTensors,
+                    ],
+                ),
+            ];
+
+            for (gate_id, chain) in &multi_hop_chains {
+                for backend in &backends {
+                    let mut rt = RoundTripTest::new(chain.clone(), *backend, model_id.clone());
+                    rt.binary.clone_from(&self.binary);
+
+                    match rt.execute(model_path) {
+                        Ok(mut result) => {
+                            // Override the gate ID from the generic RT-001
+                            if let ConversionResult::Falsified {
+                                gate_id: ref mut gid,
+                                ..
+                            } = result
+                            {
+                                *gid = (*gate_id).to_string();
+                            }
+                            let ev: Evidence = result.clone().into();
+                            evidence.push(ev);
+                            results.push(result);
+                        }
+                        Err(e) => {
+                            let chain_desc: Vec<_> =
+                                chain.iter().map(|f| format!("{f:?}")).collect();
+                            let ev = Evidence::falsified(
+                                *gate_id,
+                                QaScenario::new(
+                                    model_id.clone(),
+                                    Modality::Run,
+                                    *backend,
+                                    Format::SafeTensors,
+                                    format!("Multi-hop: {}", chain_desc.join("→")),
+                                    0,
+                                ),
+                                format!("Multi-hop chain failed: {e}"),
+                                "N/A",
+                                0,
+                            );
+                            evidence.push(ev);
+                        }
+                    }
+                }
+            }
+        }
+
+        // MR-IDEM: Idempotency test — convert GGUF→APR twice, compare (F-CONV-IDEM-001)
+        if self.config.test_idempotency {
+            for backend in &backends {
+                let mut idem =
+                    IdempotencyTest::new(Format::Gguf, Format::Apr, *backend, model_id.clone());
+                idem.binary.clone_from(&self.binary);
+
+                match idem.execute(model_path) {
+                    Ok(result) => {
+                        let ev: Evidence = result.clone().into();
+                        evidence.push(ev);
+                        results.push(result);
+                    }
+                    Err(e) => {
+                        let ev = Evidence::falsified(
+                            "F-CONV-IDEM-001",
+                            QaScenario::new(
+                                model_id.clone(),
+                                Modality::Run,
+                                *backend,
+                                Format::Apr,
+                                "Idempotency: GGUF→APR twice".to_string(),
+                                0,
+                            ),
+                            format!("Idempotency test failed: {e}"),
+                            "N/A",
+                            0,
+                        );
+                        evidence.push(ev);
+                    }
+                }
+            }
+        }
+
+        // MR-COM: Commutativity test — GGUF→APR vs GGUF→ST→APR (F-CONV-COM-001)
+        if self.config.test_commutativity {
+            for backend in &backends {
+                let mut com = CommutativityTest::new(*backend, model_id.clone());
+                com.binary.clone_from(&self.binary);
+
+                match com.execute(model_path) {
+                    Ok(result) => {
+                        let ev: Evidence = result.clone().into();
+                        evidence.push(ev);
+                        results.push(result);
+                    }
+                    Err(e) => {
+                        let ev = Evidence::falsified(
+                            "F-CONV-COM-001",
+                            QaScenario::new(
+                                model_id.clone(),
+                                Modality::Run,
+                                *backend,
+                                Format::Apr,
+                                "Commutativity: GGUF→APR vs GGUF→ST→APR".to_string(),
+                                0,
+                            ),
+                            format!("Commutativity test failed: {e}"),
+                            "N/A",
+                            0,
+                        );
+                        evidence.push(ev);
+                    }
+                }
+            }
+        }
+
+        // MR-CARD: Cardinality gate — tensor_count(output) >= tensor_count(input) (F-CONV-CARD-001)
+        // T-QKV-02: Tensor name preservation (F-CONV-NAME-001)
+        // These run on any successful conversions that produced files
+        if self.config.test_cardinality || self.config.test_tensor_names {
+            for (source, target) in all_conversion_pairs() {
+                let target_ext = match target {
+                    Format::Gguf => "gguf",
+                    Format::SafeTensors => "safetensors",
+                    Format::Apr => "apr",
+                };
+                let converted_path = model_path.with_extension(format!("converted.{target_ext}"));
+                if !converted_path.exists() {
+                    continue;
+                }
+
+                if self.config.test_cardinality {
+                    match check_cardinality(model_path, &converted_path, &self.binary) {
+                        Ok(Some((gate_id, reason))) => {
+                            let ev = Evidence::falsified(
+                                &gate_id,
+                                QaScenario::new(
+                                    model_id.clone(),
+                                    Modality::Run,
+                                    Backend::Cpu,
+                                    target,
+                                    format!("Cardinality {source:?}→{target:?}"),
+                                    0,
+                                ),
+                                &reason,
+                                "N/A",
+                                0,
+                            );
+                            evidence.push(ev);
+                            results.push(ConversionResult::Falsified {
+                                gate_id: "F-CONV-CARD-001".to_string(),
+                                reason,
+                                evidence: ConversionEvidence {
+                                    source_hash: String::new(),
+                                    converted_hash: String::new(),
+                                    max_diff: 0.0,
+                                    diff_indices: vec![],
+                                    source_format: source,
+                                    target_format: target,
+                                    backend: Backend::Cpu,
+                                },
+                            });
+                        }
+                        Ok(None) => {
+                            let ev = Evidence::corroborated(
+                                "F-CONV-CARD-001",
+                                QaScenario::new(
+                                    model_id.clone(),
+                                    Modality::Run,
+                                    Backend::Cpu,
+                                    target,
+                                    format!("Cardinality {source:?}→{target:?}"),
+                                    0,
+                                ),
+                                "Tensor cardinality preserved",
+                                0,
+                            );
+                            evidence.push(ev);
+                        }
+                        Err(_) => {} // Inspect not available, skip gate
+                    }
+                }
+
+                if self.config.test_tensor_names {
+                    match check_tensor_names(model_path, &converted_path, &self.binary) {
+                        Ok(Some((gate_id, reason))) => {
+                            let ev = Evidence::falsified(
+                                &gate_id,
+                                QaScenario::new(
+                                    model_id.clone(),
+                                    Modality::Run,
+                                    Backend::Cpu,
+                                    target,
+                                    format!("Tensor names {source:?}→{target:?}"),
+                                    0,
+                                ),
+                                &reason,
+                                "N/A",
+                                0,
+                            );
+                            evidence.push(ev);
+                        }
+                        Ok(None) => {
+                            let ev = Evidence::corroborated(
+                                "F-CONV-NAME-001",
+                                QaScenario::new(
+                                    model_id.clone(),
+                                    Modality::Run,
+                                    Backend::Cpu,
+                                    target,
+                                    format!("Tensor names {source:?}→{target:?}"),
+                                    0,
+                                ),
+                                "Tensor names preserved",
+                                0,
+                            );
+                            evidence.push(ev);
+                        }
+                        Err(_) => {} // Inspect not available, skip gate
                     }
                 }
             }
@@ -1960,6 +2499,7 @@ mod tests {
             test_round_trips: false,
             backends: vec![Backend::Cpu],
             no_gpu: true,
+            ..Default::default()
         };
         assert!(!config.test_all_pairs);
         assert!(!config.test_round_trips);
@@ -2366,6 +2906,7 @@ mod tests {
             test_round_trips: false,
             backends: vec![Backend::Gpu],
             no_gpu: false,
+            ..Default::default()
         };
         assert_eq!(config.backends.len(), 1);
         assert_eq!(config.backends[0], Backend::Gpu);
@@ -2486,6 +3027,7 @@ mod tests {
             test_round_trips: true,
             backends: vec![Backend::Cpu],
             no_gpu: true,
+            ..Default::default()
         };
         let executor = ConversionExecutor::new(config);
         assert!(!executor.config.test_all_pairs);
@@ -3060,6 +3602,7 @@ exit 1"#,
             test_round_trips: true,
             backends: vec![Backend::Cpu],
             no_gpu: true,
+            ..Default::default()
         };
         let mut executor = ConversionExecutor::new(config);
         executor.binary = mock.to_string_lossy().to_string();
@@ -3095,6 +3638,7 @@ exit 1"#,
             test_round_trips: false,
             backends: vec![Backend::Cpu],
             no_gpu: true,
+            ..Default::default()
         };
         let mut executor = ConversionExecutor::new(config);
         executor.binary = mock.to_string_lossy().to_string();
@@ -3120,6 +3664,7 @@ exit 1"#,
             test_round_trips: true,
             backends: vec![Backend::Cpu],
             no_gpu: true,
+            ..Default::default()
         };
         let mut executor = ConversionExecutor::new(config);
         executor.binary = mock.to_string_lossy().to_string();
@@ -3157,5 +3702,121 @@ exit 1"#,
         {
             assert_eq!(target_format, Format::SafeTensors);
         }
+    }
+
+    // =========================================================================
+    // Rosetta-Testing Spec: New test type constructors (PMAT-ROSETTA-002/003)
+    // =========================================================================
+
+    #[test]
+    fn test_idempotency_test_new() {
+        let idem = IdempotencyTest::new(
+            Format::Gguf,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        assert_eq!(idem.format_a, Format::Gguf);
+        assert_eq!(idem.format_b, Format::Apr);
+        assert_eq!(idem.backend, Backend::Cpu);
+    }
+
+    #[test]
+    fn test_idempotency_test_debug() {
+        let idem = IdempotencyTest::new(
+            Format::Gguf,
+            Format::Apr,
+            Backend::Cpu,
+            ModelId::new("test", "model"),
+        );
+        let debug_str = format!("{idem:?}");
+        assert!(debug_str.contains("IdempotencyTest"));
+    }
+
+    #[test]
+    fn test_idempotency_test_clone() {
+        let idem = IdempotencyTest::new(
+            Format::SafeTensors,
+            Format::Gguf,
+            Backend::Gpu,
+            ModelId::new("test", "model"),
+        );
+        let cloned = idem.clone();
+        assert_eq!(cloned.format_a, Format::SafeTensors);
+        assert_eq!(cloned.format_b, Format::Gguf);
+    }
+
+    #[test]
+    fn test_commutativity_test_new() {
+        let com = CommutativityTest::new(Backend::Cpu, ModelId::new("test", "model"));
+        assert_eq!(com.backend, Backend::Cpu);
+    }
+
+    #[test]
+    fn test_commutativity_test_debug() {
+        let com = CommutativityTest::new(Backend::Cpu, ModelId::new("test", "model"));
+        let debug_str = format!("{com:?}");
+        assert!(debug_str.contains("CommutativityTest"));
+    }
+
+    #[test]
+    fn test_commutativity_test_clone() {
+        let com = CommutativityTest::new(Backend::Gpu, ModelId::new("test", "model"));
+        let cloned = com.clone();
+        assert_eq!(cloned.backend, Backend::Gpu);
+    }
+
+    #[test]
+    fn test_conversion_config_new_fields_default() {
+        let config = ConversionConfig::default();
+        assert!(config.test_multi_hop);
+        assert!(config.test_cardinality);
+        assert!(config.test_tensor_names);
+        assert!(config.test_idempotency);
+        assert!(config.test_commutativity);
+    }
+
+    #[test]
+    fn test_conversion_config_cpu_only_new_fields() {
+        let config = ConversionConfig::cpu_only();
+        assert!(config.test_multi_hop);
+        assert!(config.test_cardinality);
+        assert!(config.test_tensor_names);
+        assert!(config.test_idempotency);
+        assert!(config.test_commutativity);
+        assert!(config.no_gpu);
+    }
+
+    #[test]
+    fn test_conversion_config_selective_disable() {
+        let config = ConversionConfig {
+            test_multi_hop: false,
+            test_cardinality: false,
+            test_tensor_names: true,
+            test_idempotency: false,
+            test_commutativity: true,
+            ..Default::default()
+        };
+        assert!(!config.test_multi_hop);
+        assert!(!config.test_cardinality);
+        assert!(config.test_tensor_names);
+        assert!(!config.test_idempotency);
+        assert!(config.test_commutativity);
+    }
+
+    #[test]
+    fn test_check_cardinality_nonexistent_binary() {
+        let source = std::path::PathBuf::from("source.gguf");
+        let target = std::path::PathBuf::from("target.apr");
+        let result = check_cardinality(&source, &target, "/nonexistent/apr");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_check_tensor_names_nonexistent_binary() {
+        let source = std::path::PathBuf::from("source.gguf");
+        let target = std::path::PathBuf::from("target.apr");
+        let result = check_tensor_names(&source, &target, "/nonexistent/apr");
+        assert!(result.is_err());
     }
 }

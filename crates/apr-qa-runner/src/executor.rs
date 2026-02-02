@@ -888,6 +888,86 @@ impl ToolExecutor {
         self.build_result_from_output("inspect", output, start)
     }
 
+    /// Execute apr rosetta inspect with metadata verification (T-GH192-01)
+    ///
+    /// Parses `--json` output and validates that critical model metadata
+    /// fields are present and non-zero. This catches models with missing
+    /// or corrupted config (e.g., num_heads=0, hidden_size=0).
+    ///
+    /// Gate: `F-INSPECT-META-001`
+    #[must_use]
+    pub fn execute_inspect_verified(&self) -> ToolTestResult {
+        let start = std::time::Instant::now();
+
+        match crate::differential::run_inspect(Path::new(&self.model_path), "apr") {
+            Ok(inspect) => {
+                let duration_ms = start.elapsed().as_millis() as u64;
+                let mut issues = Vec::new();
+
+                // Verify tensor count is non-zero
+                if inspect.tensor_count == 0 {
+                    issues.push("tensor_count is 0".to_string());
+                }
+
+                // Verify critical metadata (if present, must be non-zero)
+                if let Some(heads) = inspect.num_attention_heads {
+                    if heads == 0 {
+                        issues.push("num_attention_heads is 0".to_string());
+                    }
+                }
+
+                if let Some(kv_heads) = inspect.num_key_value_heads {
+                    if kv_heads == 0 {
+                        issues.push("num_key_value_heads is 0".to_string());
+                    }
+                }
+
+                if let Some(hidden) = inspect.hidden_size {
+                    if hidden == 0 {
+                        issues.push("hidden_size is 0".to_string());
+                    }
+                }
+
+                let passed = issues.is_empty();
+                let stdout = format!(
+                    "tensor_count={}, num_attention_heads={:?}, num_key_value_heads={:?}, \
+                     hidden_size={:?}, architecture={:?}",
+                    inspect.tensor_count,
+                    inspect.num_attention_heads,
+                    inspect.num_key_value_heads,
+                    inspect.hidden_size,
+                    inspect.architecture,
+                );
+
+                ToolTestResult {
+                    tool: "inspect-verified".to_string(),
+                    passed,
+                    exit_code: i32::from(!passed),
+                    stdout,
+                    stderr: if passed {
+                        String::new()
+                    } else {
+                        format!("Metadata issues: {}", issues.join(", "))
+                    },
+                    duration_ms,
+                    gate_id: "F-INSPECT-META-001".to_string(),
+                }
+            }
+            Err(e) => {
+                let duration_ms = start.elapsed().as_millis() as u64;
+                ToolTestResult {
+                    tool: "inspect-verified".to_string(),
+                    passed: false,
+                    exit_code: -1,
+                    stdout: String::new(),
+                    stderr: format!("Failed to run inspect: {e}"),
+                    duration_ms,
+                    gate_id: "F-INSPECT-META-001".to_string(),
+                }
+            }
+        }
+    }
+
     /// Execute apr validate
     #[must_use]
     pub fn execute_validate(&self) -> ToolTestResult {
@@ -1418,6 +1498,7 @@ impl ToolExecutor {
         let mut results = vec![
             // Core tool tests
             self.execute_inspect(),
+            self.execute_inspect_verified(), // T-GH192-01: metadata verification
             self.execute_validate(),
             self.execute_check(),
             self.execute_bench(),

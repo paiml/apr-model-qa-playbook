@@ -9,6 +9,7 @@ These examples can be run with `cargo run --example <name> -p <crate>`.
 |---------|-------|---------|
 | `generate_scenarios` | apr-qa-gen | `cargo run --example generate_scenarios -p apr-qa-gen` |
 | `collect_evidence` | apr-qa-runner | `cargo run --example collect_evidence -p apr-qa-runner` |
+| `rosetta_testing` | apr-qa-runner | `cargo run --example rosetta_testing -p apr-qa-runner` |
 | `calculate_mqs` | apr-qa-report | `cargo run --example calculate_mqs -p apr-qa-report` |
 | `generate_certificate` | apr-qa-report | `cargo run --example generate_certificate -p apr-qa-report` |
 | `generate_rag_markdown` | apr-qa-report | `cargo run --example generate_rag_markdown -p apr-qa-report` |
@@ -316,6 +317,80 @@ batuta oracle --rag-index
 # Query for qualification information
 batuta oracle --rag "Popperian falsification scoring"
 batuta oracle --rag "MQS gateway checks"
+```
+
+## Rosetta Testing (Metamorphic Relations)
+
+The `rosetta_testing` example demonstrates the conversion testing gates
+added by the PMAT-ROSETTA-002/003 spec. These implement metamorphic relations
+that catch silent conversion bugs.
+
+```rust
+use apr_qa_gen::{Backend, Format, ModelId};
+use apr_qa_runner::{
+    CommutativityTest, ConversionConfig, IdempotencyTest,
+    InspectResult, RoundTripTest,
+};
+
+fn main() {
+    let model = ModelId::new("Qwen", "Qwen2.5-Coder-0.5B-Instruct");
+
+    // Parse inspect output to get tensor metadata
+    let inspect: InspectResult = serde_json::from_str(json).unwrap();
+    println!("Tensors: {}", inspect.tensor_count);
+
+    // Multi-hop chain: ST → APR → GGUF → APR → ST
+    let rt = RoundTripTest::new(
+        vec![Format::SafeTensors, Format::Apr, Format::Gguf,
+             Format::Apr, Format::SafeTensors],
+        Backend::Cpu,
+        model.clone(),
+    );
+
+    // Idempotency: convert twice, compare
+    let idem = IdempotencyTest::new(
+        Format::Gguf, Format::Apr, Backend::Cpu, model.clone(),
+    );
+
+    // Commutativity: GGUF→APR vs GGUF→ST→APR
+    let com = CommutativityTest::new(Backend::Cpu, model);
+
+    // All enabled by default in ConversionConfig
+    let config = ConversionConfig::default();
+    assert!(config.test_multi_hop);
+    assert!(config.test_cardinality);
+    assert!(config.test_idempotency);
+    assert!(config.test_commutativity);
+}
+```
+
+### Output
+
+```
+=== InspectResult (T-GH192-01) ===
+
+Tensor count:          338
+Attention heads:       Some(14)
+KV heads:              Some(2)
+Hidden size:           Some(896)
+Architecture:          Some("Qwen2ForCausalLM")
+
+=== Multi-Hop Round-Trip Chains ===
+
+F-CONV-RT-002: [SafeTensors, Apr, Gguf, SafeTensors] (3 hops)
+F-CONV-RT-003: [SafeTensors, Apr, Gguf, Apr, SafeTensors] (4 hops)
+
+=== New Gate IDs (PMAT-ROSETTA-002/003) ===
+
+| Gate ID            | Source   | Description                          |
+|--------------------+----------+--------------------------------------|
+| F-CONV-CARD-001    | MR-CARD  | Silent tensor loss (QKV fusion)      |
+| F-CONV-NAME-001    | T-QKV-02 | Unexpected tensor renaming           |
+| F-CONV-RT-002      | T-QKV-03 | ST→APR→GGUF→ST round-trip failure    |
+| F-CONV-RT-003      | T-QKV-04 | Multi-hop chain failure              |
+| F-CONV-IDEM-001    | MR-IDEM  | Double-convert instability           |
+| F-CONV-COM-001     | MR-COM   | Path-dependent conversion bugs       |
+| F-INSPECT-META-001 | T-GH192  | Missing/wrong model metadata         |
 ```
 
 ## Model Certification Workflow

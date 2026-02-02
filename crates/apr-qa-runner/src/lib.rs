@@ -45,17 +45,17 @@ pub mod test_fixtures;
 
 pub use command::{CommandOutput, CommandRunner, MockCommandRunner, RealCommandRunner};
 pub use conversion::{
-    ConversionBugType, ConversionConfig, ConversionEvidence, ConversionExecutionResult,
-    ConversionExecutor, ConversionResult, ConversionTest, EPSILON, RoundTripTest,
-    SemanticConversionTest, SemanticTestResult, all_backends, all_conversion_pairs,
-    generate_conversion_tests,
+    CommutativityTest, ConversionBugType, ConversionConfig, ConversionEvidence,
+    ConversionExecutionResult, ConversionExecutor, ConversionResult, ConversionTest, EPSILON,
+    IdempotencyTest, RoundTripTest, SemanticConversionTest, SemanticTestResult, all_backends,
+    all_conversion_pairs, check_cardinality, check_tensor_names, generate_conversion_tests,
 };
 pub use differential::{
     BenchResult, BenchmarkMetrics, CiAssertion, CiProfileResult, DiffBenchmarkResult, DiffConfig,
-    DifferentialExecutor, FormatConversionResult, InferenceComparisonResult,
+    DifferentialExecutor, FormatConversionResult, InferenceComparisonResult, InspectResult,
     ModelPreparationResult, ProfileAssertion, SixColumnProfile, TensorDiffResult, TensorMismatch,
     TensorMismatchType, TokenComparison, convert_format_cached, prepare_model_with_provenance,
-    run_bench_throughput, run_diff_benchmark, run_profile_ci, run_six_column_profile,
+    run_bench_throughput, run_diff_benchmark, run_inspect, run_profile_ci, run_six_column_profile,
     verify_comparison_provenance,
 };
 pub use error::{Error, Result};

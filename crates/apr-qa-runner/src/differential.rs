@@ -20,6 +20,126 @@ use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::process::Command;
 
+/// Result of `apr rosetta inspect --json` (T-GH192-01)
+///
+/// Parses model metadata including tensor count, tensor names,
+/// and architecture parameters needed for cardinality and name-set gates.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InspectResult {
+    /// Total number of tensors in the model
+    pub tensor_count: usize,
+    /// List of all tensor names
+    #[serde(default)]
+    pub tensor_names: Vec<String>,
+    /// Number of attention heads (from model config)
+    #[serde(default)]
+    pub num_attention_heads: Option<usize>,
+    /// Number of key-value heads (GQA/MQA config)
+    #[serde(default)]
+    pub num_key_value_heads: Option<usize>,
+    /// Hidden size / embedding dimension
+    #[serde(default)]
+    pub hidden_size: Option<usize>,
+    /// Model architecture name (e.g., "Qwen2ForCausalLM")
+    #[serde(default)]
+    pub architecture: Option<String>,
+}
+
+/// Run `apr rosetta inspect --json <model>` and parse the result
+///
+/// Falls back to text-mode parsing for tensor count if JSON is unavailable.
+///
+/// # Errors
+///
+/// Returns an error if the apr command fails to execute.
+pub fn run_inspect(model_path: &Path, apr_binary: &str) -> Result<InspectResult> {
+    let output = Command::new(apr_binary)
+        .arg("rosetta")
+        .arg("inspect")
+        .arg(model_path)
+        .arg("--json")
+        .output()
+        .map_err(|e| Error::ExecutionFailed {
+            command: "apr rosetta inspect --json".to_string(),
+            reason: e.to_string(),
+        })?;
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+
+    // Try JSON parsing first
+    if output.status.success() {
+        if let Ok(result) = serde_json::from_str::<InspectResult>(&stdout) {
+            return Ok(result);
+        }
+    }
+
+    // Fall back to text output parsing
+    parse_inspect_text(&stdout)
+}
+
+/// Parse text-mode output from `apr rosetta inspect`
+///
+/// Extracts tensor count and tensor names from human-readable output.
+fn parse_inspect_text(output: &str) -> Result<InspectResult> {
+    let mut tensor_count = 0;
+    let mut tensor_names = Vec::new();
+    let mut num_attention_heads = None;
+    let mut num_key_value_heads = None;
+    let mut hidden_size = None;
+    let mut architecture = None;
+
+    for line in output.lines() {
+        let line = line.trim();
+
+        // Parse "Tensors: 338" or "tensor_count: 338"
+        if let Some(count_str) = line
+            .strip_prefix("Tensors:")
+            .or_else(|| line.strip_prefix("tensor_count:"))
+        {
+            if let Ok(count) = count_str.trim().parse::<usize>() {
+                tensor_count = count;
+            }
+        }
+
+        // Parse tensor names from lines like "  model.layers.0.self_attn.q_proj.weight [4096, 4096]"
+        if line.contains('[') && line.contains(']') && !line.starts_with('{') {
+            if let Some(name) = line.split_whitespace().next() {
+                if name.contains('.') {
+                    tensor_names.push(name.to_string());
+                }
+            }
+        }
+
+        // Parse architecture metadata
+        if let Some(val) = line.strip_prefix("num_attention_heads:") {
+            num_attention_heads = val.trim().parse().ok();
+        }
+        if let Some(val) = line.strip_prefix("num_key_value_heads:") {
+            num_key_value_heads = val.trim().parse().ok();
+        }
+        if let Some(val) = line.strip_prefix("hidden_size:") {
+            hidden_size = val.trim().parse().ok();
+        }
+        if let Some(val) = line.strip_prefix("architecture:") {
+            architecture = Some(val.trim().to_string());
+        }
+    }
+
+    // If we found tensor names but no explicit count, use the name count
+    if tensor_count == 0 && !tensor_names.is_empty() {
+        tensor_count = tensor_names.len();
+    }
+
+    Ok(InspectResult {
+        tensor_count,
+        tensor_names,
+        num_attention_heads,
+        num_key_value_heads,
+        hidden_size,
+        architecture,
+    })
+}
+
 /// Result of tensor diff operation
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TensorDiffResult {
@@ -3998,5 +4118,141 @@ fi
         assert_eq!(cloned.backend, "cpu");
         let debug = format!("{result:?}");
         assert!(debug.contains("BenchResult"));
+    }
+
+    // =========================================================================
+    // InspectResult tests (T-GH192-01, MR-CARD)
+    // =========================================================================
+
+    #[test]
+    fn test_inspect_result_from_json() {
+        let json = r#"{
+            "tensor_count": 338,
+            "tensor_names": ["model.embed_tokens.weight", "model.layers.0.self_attn.q_proj.weight"],
+            "num_attention_heads": 14,
+            "num_key_value_heads": 2,
+            "hidden_size": 896,
+            "architecture": "Qwen2ForCausalLM"
+        }"#;
+        let result: InspectResult = serde_json::from_str(json).unwrap();
+        assert_eq!(result.tensor_count, 338);
+        assert_eq!(result.tensor_names.len(), 2);
+        assert_eq!(result.num_attention_heads, Some(14));
+        assert_eq!(result.num_key_value_heads, Some(2));
+        assert_eq!(result.hidden_size, Some(896));
+        assert_eq!(result.architecture.as_deref(), Some("Qwen2ForCausalLM"));
+    }
+
+    #[test]
+    fn test_inspect_result_minimal_json() {
+        let json = r#"{"tensor_count": 100}"#;
+        let result: InspectResult = serde_json::from_str(json).unwrap();
+        assert_eq!(result.tensor_count, 100);
+        assert!(result.tensor_names.is_empty());
+        assert!(result.num_attention_heads.is_none());
+        assert!(result.architecture.is_none());
+    }
+
+    #[test]
+    fn test_inspect_result_serialization_round_trip() {
+        let result = InspectResult {
+            tensor_count: 227,
+            tensor_names: vec![
+                "model.embed_tokens.weight".to_string(),
+                "lm_head.weight".to_string(),
+            ],
+            num_attention_heads: Some(32),
+            num_key_value_heads: Some(8),
+            hidden_size: Some(4096),
+            architecture: Some("LlamaForCausalLM".to_string()),
+        };
+        let json = serde_json::to_string(&result).unwrap();
+        let parsed: InspectResult = serde_json::from_str(&json).unwrap();
+        assert_eq!(parsed.tensor_count, 227);
+        assert_eq!(parsed.tensor_names.len(), 2);
+        assert_eq!(parsed.hidden_size, Some(4096));
+    }
+
+    #[test]
+    fn test_inspect_result_clone() {
+        let result = InspectResult {
+            tensor_count: 50,
+            tensor_names: vec!["test.weight".to_string()],
+            num_attention_heads: Some(12),
+            num_key_value_heads: None,
+            hidden_size: Some(768),
+            architecture: None,
+        };
+        let cloned = result.clone();
+        assert_eq!(cloned.tensor_count, result.tensor_count);
+        assert_eq!(cloned.tensor_names, result.tensor_names);
+    }
+
+    #[test]
+    fn test_inspect_result_debug() {
+        let result = InspectResult {
+            tensor_count: 100,
+            tensor_names: vec![],
+            num_attention_heads: None,
+            num_key_value_heads: None,
+            hidden_size: None,
+            architecture: None,
+        };
+        let debug_str = format!("{result:?}");
+        assert!(debug_str.contains("InspectResult"));
+    }
+
+    #[test]
+    fn test_parse_inspect_text_with_tensor_count() {
+        let output = "Tensors: 338\nmodel.embed_tokens.weight [151936, 896]\nmodel.layers.0.self_attn.q_proj.weight [896, 896]";
+        let result = parse_inspect_text(output).unwrap();
+        assert_eq!(result.tensor_count, 338);
+        assert_eq!(result.tensor_names.len(), 2);
+        assert!(
+            result
+                .tensor_names
+                .contains(&"model.embed_tokens.weight".to_string())
+        );
+    }
+
+    #[test]
+    fn test_parse_inspect_text_with_metadata() {
+        let output = "Tensors: 100\narchitecture: Qwen2ForCausalLM\nnum_attention_heads: 14\nnum_key_value_heads: 2\nhidden_size: 896";
+        let result = parse_inspect_text(output).unwrap();
+        assert_eq!(result.tensor_count, 100);
+        assert_eq!(result.architecture.as_deref(), Some("Qwen2ForCausalLM"));
+        assert_eq!(result.num_attention_heads, Some(14));
+        assert_eq!(result.num_key_value_heads, Some(2));
+        assert_eq!(result.hidden_size, Some(896));
+    }
+
+    #[test]
+    fn test_parse_inspect_text_empty() {
+        let output = "";
+        let result = parse_inspect_text(output).unwrap();
+        assert_eq!(result.tensor_count, 0);
+        assert!(result.tensor_names.is_empty());
+    }
+
+    #[test]
+    fn test_parse_inspect_text_tensor_count_from_names() {
+        let output = "model.layers.0.weight [768, 768]\nmodel.layers.1.weight [768, 768]";
+        let result = parse_inspect_text(output).unwrap();
+        assert_eq!(result.tensor_count, 2);
+        assert_eq!(result.tensor_names.len(), 2);
+    }
+
+    #[test]
+    fn test_parse_inspect_text_alternate_prefix() {
+        let output = "tensor_count: 42";
+        let result = parse_inspect_text(output).unwrap();
+        assert_eq!(result.tensor_count, 42);
+    }
+
+    #[test]
+    fn test_run_inspect_nonexistent_binary() {
+        let path = std::path::PathBuf::from("model.gguf");
+        let result = run_inspect(&path, "/nonexistent/apr/binary");
+        assert!(result.is_err());
     }
 }
