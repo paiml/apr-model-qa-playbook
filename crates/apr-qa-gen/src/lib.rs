@@ -25,12 +25,14 @@
 #![cfg_attr(test, allow(clippy::redundant_clone))]
 
 pub mod error;
+pub mod hf_parity;
 pub mod models;
 pub mod oracle;
 pub mod proptest_impl;
 pub mod scenario;
 
 pub use error::{Error, Result};
+pub use hf_parity::{GoldenOutput, HfParityOracle, TensorDiff, Tolerance, hash_prompt};
 pub use models::{ModelId, ModelRegistry, SizeCategory};
 pub use oracle::{Oracle, OracleResult};
 pub use scenario::{AprTool, Backend, Format, Modality, QaScenario, ScenarioGenerator, TraceLevel};

@@ -7,9 +7,9 @@ description: "Quick verification of model functionality across formats"
 model:
   hf_repo: "${MODEL_ID}"
   formats:
-    - gguf
-    - apr
-    - safetensors
+    - safetensors  # Ground truth (HuggingFace source)
+    - apr          # APR native format
+    - gguf         # Third-party format
   quantizations:
     - q4_k_m
   size_category: auto
@@ -38,10 +38,10 @@ oracles:
       max_repetition_ratio: 0.3
       min_unique_chars: 10
 
-# Key verification tests
+# Key verification tests (SafeTensors first as ground truth)
 verification_tests:
-  - name: "GGUF loads and runs"
-    format: gguf
+  - name: "SafeTensors loads and runs (ground truth)"
+    format: safetensors
     prompt: "What is 2+2?"
     expect: "4"
 
@@ -50,14 +50,14 @@ verification_tests:
     prompt: "What is 2+2?"
     expect: "4"
 
-  - name: "SafeTensors loads and runs"
-    format: safetensors
+  - name: "GGUF loads and runs"
+    format: gguf
     prompt: "What is 2+2?"
     expect: "4"
 
   - name: "Cross-format consistency"
     type: differential
-    formats: [gguf, apr]
+    formats: [safetensors, apr, gguf]  # Compare against safetensors ground truth
     prompt: "Write hello world in Python"
     tolerance: semantic  # Outputs should be semantically equivalent
 

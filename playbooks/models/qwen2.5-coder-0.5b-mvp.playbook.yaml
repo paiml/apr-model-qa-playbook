@@ -7,9 +7,9 @@ description: "MVP certification for Qwen2.5-Coder-0.5B-Instruct"
 model:
   hf_repo: "Qwen/Qwen2.5-Coder-0.5B-Instruct"
   formats:
-    - gguf
-    - apr
-    - safetensors
+    - safetensors  # Ground truth (HuggingFace source)
+    - apr          # APR native format
+    - gguf         # Third-party format
   quantizations:
     - q4_k_m
   size_category: tiny
@@ -48,7 +48,7 @@ profile_ci:
   enabled: true
   warmup: 1
   measure: 2
-  formats: [gguf, apr, safetensors]
+  formats: [safetensors, apr, gguf]  # safetensors = ground truth
   backends: [cpu, gpu]
   assertions:
     min_throughput_cpu: 5.0    # tok/s (CPU baseline)

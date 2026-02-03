@@ -1,6 +1,6 @@
 [
   {
-    "id": "000000000000000018906ce326656052",
+    "id": "00000000000000001890b2fda612872f",
     "gate_id": "G0-INTEGRITY-CONFIG",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -31,7 +31,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T12:12:56.414159681Z",
+    "timestamp": "2026-02-03T09:37:36.039309198Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -42,7 +42,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906ce6a1feb898",
+    "id": "00000000000000001890b301c658669c",
     "gate_id": "F-A1-001",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -63,17 +63,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 26\nlatency: 14944.09ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
-    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 32 tokens in 1511.7ms (21.2 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 1\nlatency: 17662.92ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
+    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 32 tokens in 1537.1ms (20.8 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 1.7,
+      "tokens_per_second": 0.1,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 14958
+      "duration_ms": 17721
     },
-    "timestamp": "2026-02-02T12:13:11.372710095Z",
+    "timestamp": "2026-02-03T09:37:53.760630538Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -84,10 +84,10 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906ce9de9da5a3",
+    "id": "00000000000000001890b3058c56eef3",
     "gate_id": "F-A1-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000001",
+      "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_apr_0000000000000001",
       "model": {
         "org": "Qwen",
         "name": "Qwen2.5-Coder-1.5B-Instruct",
@@ -95,7 +95,7 @@
       },
       "modality": "run",
       "backend": "cpu",
-      "format": "safetensors",
+      "format": "apr",
       "prompt": "What is 2+2?",
       "temperature": 0.0,
       "max_tokens": 32,
@@ -105,17 +105,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 26\nlatency: 13888.27ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
-    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 32 tokens in 1530.2ms (20.9 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\ntokens: 1\nlatency: 16146.56ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr",
+    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\n[AprV2ModelCuda] Built indexed weights for 28 layers\n[AprV2ModelCuda] Pre-cached 5596 MB of weights on GPU (28 layers, 197 quantized, 112 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 890 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\nGenerated 2 tokens in 6785.1ms (0.3 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 1.9,
+      "tokens_per_second": 0.1,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 13901
+      "duration_ms": 16206
     },
-    "timestamp": "2026-02-02T12:13:25.274660133Z",
+    "timestamp": "2026-02-03T09:38:09.967325947Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -126,10 +126,10 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906ced77ed7a75",
+    "id": "00000000000000001890b306928e7140",
     "gate_id": "F-A1-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000002",
+      "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_gguf_0000000000000002",
       "model": {
         "org": "Qwen",
         "name": "Qwen2.5-Coder-1.5B-Instruct",
@@ -137,7 +137,7 @@
       },
       "modality": "run",
       "backend": "cpu",
-      "format": "safetensors",
+      "format": "gguf",
       "prompt": "What is 2+2?",
       "temperature": 0.0,
       "max_tokens": 32,
@@ -147,17 +147,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 26\nlatency: 15446.05ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
-    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 32 tokens in 1557.9ms (20.5 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 4258.42ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 1664.8ms (19.2 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 1.7,
+      "tokens_per_second": 5.2,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 15457
+      "duration_ms": 4399
     },
-    "timestamp": "2026-02-02T12:13:40.731707866Z",
+    "timestamp": "2026-02-03T09:38:14.366593785Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -168,17 +168,17 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906cf2135c6a59",
-    "gate_id": "F-A1-001",
+    "id": "00000000000000001890b30a4664988d",
+    "gate_id": "F-A2-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000003",
+      "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_safetensors_0000000000000003",
       "model": {
         "org": "Qwen",
         "name": "Qwen2.5-Coder-1.5B-Instruct",
         "variant": null
       },
       "modality": "run",
-      "backend": "cpu",
+      "backend": "gpu",
       "format": "safetensors",
       "prompt": "What is 2+2?",
       "temperature": 0.0,
@@ -189,17 +189,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 26\nlatency: 19776.03ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
-    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 32 tokens in 1486.6ms (21.5 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 1\nlatency: 15840.17ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
+    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 32 tokens in 1574.3ms (20.3 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 1.3,
+      "tokens_per_second": 0.1,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 19787
+      "duration_ms": 15902
     },
-    "timestamp": "2026-02-02T12:14:00.519315582Z",
+    "timestamp": "2026-02-03T09:38:30.268652151Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -210,18 +210,18 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906cf535b4a53a",
-    "gate_id": "F-A1-001",
+    "id": "00000000000000001890b31083dc02e3",
+    "gate_id": "F-A2-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000004",
+      "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_apr_0000000000000004",
       "model": {
         "org": "Qwen",
         "name": "Qwen2.5-Coder-1.5B-Instruct",
         "variant": null
       },
       "modality": "run",
-      "backend": "cpu",
-      "format": "safetensors",
+      "backend": "gpu",
+      "format": "apr",
       "prompt": "What is 2+2?",
       "temperature": 0.0,
       "max_tokens": 32,
@@ -231,17 +231,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 26\nlatency: 13446.90ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
-    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 32 tokens in 1522.5ms (21.0 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\ntokens: 5\nlatency: 26684.34ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr",
+    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\n[AprV2ModelCuda] Built indexed weights for 28 layers\n[AprV2ModelCuda] Pre-cached 5596 MB of weights on GPU (28 layers, 197 quantized, 112 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 890 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\nGenerated 7 tokens in 17455.3ms (0.4 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 1.9,
+      "tokens_per_second": 0.2,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 13461
+      "duration_ms": 26801
     },
-    "timestamp": "2026-02-02T12:14:13.980424954Z",
+    "timestamp": "2026-02-03T09:38:57.069692110Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -252,18 +252,18 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906cf826ad2b44",
-    "gate_id": "F-A1-001",
+    "id": "00000000000000001890b3116fca5a53",
+    "gate_id": "F-A2-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000005",
+      "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_gguf_0000000000000005",
       "model": {
         "org": "Qwen",
         "name": "Qwen2.5-Coder-1.5B-Instruct",
         "variant": null
       },
       "modality": "run",
-      "backend": "cpu",
-      "format": "safetensors",
+      "backend": "gpu",
+      "format": "gguf",
       "prompt": "What is 2+2?",
       "temperature": 0.0,
       "max_tokens": 32,
@@ -273,17 +273,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 26\nlatency: 12621.27ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
-    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 32 tokens in 1502.4ms (21.3 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 3826.55ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 1595.5ms (20.1 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 2.1,
+      "tokens_per_second": 5.7,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 12632
+      "duration_ms": 3958
     },
-    "timestamp": "2026-02-02T12:14:26.613178828Z",
+    "timestamp": "2026-02-03T09:39:01.027958083Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -294,16 +294,16 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906cfb2bbc7f3a",
-    "gate_id": "F-A1-001",
+    "id": "00000000000000001890b3151799d022",
+    "gate_id": "F-A3-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000006",
+      "id": "Qwen2.5-Coder-1.5B-Instruct_chat_cpu_safetensors_0000000000000006",
       "model": {
         "org": "Qwen",
         "name": "Qwen2.5-Coder-1.5B-Instruct",
         "variant": null
       },
-      "modality": "run",
+      "modality": "chat",
       "backend": "cpu",
       "format": "safetensors",
       "prompt": "What is 2+2?",
@@ -315,17 +315,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 26\nlatency: 12952.54ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
-    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 32 tokens in 1490.8ms (21.5 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 1\nlatency: 15641.71ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
+    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 32 tokens in 2495.0ms (12.8 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 2.0,
+      "tokens_per_second": 0.1,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 12969
+      "duration_ms": 15700
     },
-    "timestamp": "2026-02-02T12:14:39.582971481Z",
+    "timestamp": "2026-02-03T09:39:16.728250953Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -336,18 +336,18 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906cfe2c46aa58",
-    "gate_id": "F-A1-001",
+    "id": "00000000000000001890b318c3e907a6",
+    "gate_id": "F-A3-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000007",
+      "id": "Qwen2.5-Coder-1.5B-Instruct_chat_cpu_apr_0000000000000007",
       "model": {
         "org": "Qwen",
         "name": "Qwen2.5-Coder-1.5B-Instruct",
         "variant": null
       },
-      "modality": "run",
+      "modality": "chat",
       "backend": "cpu",
-      "format": "safetensors",
+      "format": "apr",
       "prompt": "What is 2+2?",
       "temperature": 0.0,
       "max_tokens": 32,
@@ -357,17 +357,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 26\nlatency: 12880.11ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
-    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 32 tokens in 1505.8ms (21.3 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\ntokens: 1\nlatency: 15714.60ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr",
+    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\n[AprV2ModelCuda] Built indexed weights for 28 layers\n[AprV2ModelCuda] Pre-cached 5596 MB of weights on GPU (28 layers, 197 quantized, 112 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 890 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\nGenerated 2 tokens in 6609.7ms (0.3 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 2.0,
+      "tokens_per_second": 0.1,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 12893
+      "duration_ms": 15775
     },
-    "timestamp": "2026-02-02T12:14:52.476928234Z",
+    "timestamp": "2026-02-03T09:39:32.504024597Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -378,18 +378,18 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906d01fd60df5f",
-    "gate_id": "F-A1-001",
+    "id": "00000000000000001890b319b67d192d",
+    "gate_id": "F-A3-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000008",
+      "id": "Qwen2.5-Coder-1.5B-Instruct_chat_cpu_gguf_0000000000000008",
       "model": {
         "org": "Qwen",
         "name": "Qwen2.5-Coder-1.5B-Instruct",
         "variant": null
       },
-      "modality": "run",
+      "modality": "chat",
       "backend": "cpu",
-      "format": "safetensors",
+      "format": "gguf",
       "prompt": "What is 2+2?",
       "temperature": 0.0,
       "max_tokens": 32,
@@ -399,17 +399,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 26\nlatency: 16380.54ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
-    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 32 tokens in 1551.4ms (20.6 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 3922.68ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 1646.2ms (19.4 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 1.6,
+      "tokens_per_second": 5.6,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 16392
+      "duration_ms": 4069
     },
-    "timestamp": "2026-02-02T12:15:08.869986268Z",
+    "timestamp": "2026-02-03T09:39:36.573815205Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -420,17 +420,17 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906d05869dbc2d",
-    "gate_id": "F-A1-001",
+    "id": "00000000000000001890b31d1fb9b352",
+    "gate_id": "F-A4-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000009",
+      "id": "Qwen2.5-Coder-1.5B-Instruct_chat_gpu_safetensors_0000000000000009",
       "model": {
         "org": "Qwen",
         "name": "Qwen2.5-Coder-1.5B-Instruct",
         "variant": null
       },
-      "modality": "run",
-      "backend": "cpu",
+      "modality": "chat",
+      "backend": "gpu",
       "format": "safetensors",
       "prompt": "What is 2+2?",
       "temperature": 0.0,
@@ -441,17 +441,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 26\nlatency: 15173.31ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
-    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 32 tokens in 1513.4ms (21.1 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 1\nlatency: 14592.86ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
+    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 32 tokens in 1526.4ms (21.0 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 1.7,
+      "tokens_per_second": 0.1,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 15187
+      "duration_ms": 14650
     },
-    "timestamp": "2026-02-02T12:15:24.057355444Z",
+    "timestamp": "2026-02-03T09:39:51.224296184Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -462,7 +462,343 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906d05870306f5",
+    "id": "00000000000000001890b323c341b39e",
+    "gate_id": "F-A4-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-1.5B-Instruct_chat_gpu_apr_000000000000000a",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-1.5B-Instruct",
+        "variant": null
+      },
+      "modality": "chat",
+      "backend": "gpu",
+      "format": "apr",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 10,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\ntokens: 7\nlatency: 28452.17ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr",
+    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\n[AprV2ModelCuda] Built indexed weights for 28 layers\n[AprV2ModelCuda] Pre-cached 5596 MB of weights on GPU (28 layers, 197 quantized, 112 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 890 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\nGenerated 8 tokens in 19298.0ms (0.4 tok/s)\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": 0.2,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 28513
+    },
+    "timestamp": "2026-02-03T09:40:19.737699100Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890b324b4f9a02e",
+    "gate_id": "F-A4-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-1.5B-Instruct_chat_gpu_gguf_000000000000000b",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-1.5B-Instruct",
+        "variant": null
+      },
+      "modality": "chat",
+      "backend": "gpu",
+      "format": "gguf",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 11,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 3922.30ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 1688.9ms (18.9 tok/s)\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": 5.6,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 4055
+    },
+    "timestamp": "2026-02-03T09:40:23.793062485Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890b328216a931d",
+    "gate_id": "F-A5-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-1.5B-Instruct_serve_cpu_safetensors_000000000000000c",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-1.5B-Instruct",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 12,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 1\nlatency: 14646.22ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
+    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 32 tokens in 1457.0ms (22.0 tok/s)\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": 0.1,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 14704
+    },
+    "timestamp": "2026-02-03T09:40:38.497306074Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890b32e3840bc4d",
+    "gate_id": "F-A5-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-1.5B-Instruct_serve_cpu_apr_000000000000000d",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-1.5B-Instruct",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 13,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\ntokens: 5\nlatency: 26086.78ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr",
+    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\n[AprV2ModelCuda] Built indexed weights for 28 layers\n[AprV2ModelCuda] Pre-cached 5596 MB of weights on GPU (28 layers, 197 quantized, 112 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 890 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\nGenerated 7 tokens in 16968.2ms (0.4 tok/s)\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": 0.2,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 26152
+    },
+    "timestamp": "2026-02-03T09:41:04.650242889Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890b32f21c3dc2c",
+    "gate_id": "F-A5-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-1.5B-Instruct_serve_cpu_gguf_000000000000000e",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-1.5B-Instruct",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "cpu",
+      "format": "gguf",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 14,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 3785.31ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 1537.4ms (20.8 tok/s)\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": 5.8,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 3917
+    },
+    "timestamp": "2026-02-03T09:41:08.567928463Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890b332a149e8a5",
+    "gate_id": "F-A6-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-1.5B-Instruct_serve_gpu_safetensors_000000000000000f",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-1.5B-Instruct",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "gpu",
+      "format": "safetensors",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 15,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors\n\ntokens: 1\nlatency: 14961.66ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/model.safetensors",
+    "stderr": "[GH-189] Loaded tokenizer from /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/safetensors/tokenizer.json: 22 special tokens\nGenerated 32 tokens in 1460.1ms (21.9 tok/s)\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": 0.1,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 15024
+    },
+    "timestamp": "2026-02-03T09:41:23.592320909Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890b3364110c8da",
+    "gate_id": "F-A6-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-1.5B-Instruct_serve_gpu_apr_0000000000000010",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-1.5B-Instruct",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "gpu",
+      "format": "apr",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 16,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr\n\ntokens: 1\nlatency: 15499.84ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/apr/model.apr",
+    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\n[AprV2ModelCuda] Built indexed weights for 28 layers\n[AprV2ModelCuda] Pre-cached 5596 MB of weights on GPU (28 layers, 197 quantized, 112 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 890 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\nGenerated 2 tokens in 6405.0ms (0.3 tok/s)\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": 0.1,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 15565
+    },
+    "timestamp": "2026-02-03T09:41:39.157834347Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890b3372d5795b9",
+    "gate_id": "F-A6-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-1.5B-Instruct_serve_gpu_gguf_0000000000000011",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-1.5B-Instruct",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "gpu",
+      "format": "gguf",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 17,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/gguf/model.gguf\n\ntokens: 22\nlatency: 3858.83ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-1-5b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 1600.5ms (20.0 tok/s)\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": 5.7,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 3964
+    },
+    "timestamp": "2026-02-03T09:41:43.121897230Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001890b3372d8f3676",
     "gate_id": "F-CONV-G-A",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_apr_0000000000000000",
@@ -493,7 +829,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T12:15:24.063992232Z",
+    "timestamp": "2026-02-03T09:41:43.125542198Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -504,7 +840,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906d05873d4098",
+    "id": "00000000000000001890b3372dbc18c5",
     "gate_id": "F-CONV-G-A",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_apr_0000000000000000",
@@ -535,7 +871,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T12:15:24.067808246Z",
+    "timestamp": "2026-02-03T09:41:43.128481904Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -546,7 +882,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906d05877e106c",
+    "id": "00000000000000001890b3372de60459",
     "gate_id": "F-CONV-A-G",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_gguf_0000000000000000",
@@ -577,7 +913,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T12:15:24.072055833Z",
+    "timestamp": "2026-02-03T09:41:43.131230500Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -588,7 +924,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906d0587bbd28e",
+    "id": "00000000000000001890b3372e142d4a",
     "gate_id": "F-CONV-A-G",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_gguf_0000000000000000",
@@ -619,7 +955,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T12:15:24.076103317Z",
+    "timestamp": "2026-02-03T09:41:43.134256188Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -630,7 +966,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906d05880e3273",
+    "id": "00000000000000001890b3372e3a9d3d",
     "gate_id": "F-CONV-G-S",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -661,7 +997,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T12:15:24.081501638Z",
+    "timestamp": "2026-02-03T09:41:43.136772100Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -672,7 +1008,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906d0588554f76",
+    "id": "00000000000000001890b3372e65e063",
     "gate_id": "F-CONV-G-S",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_safetensors_0000000000000000",
@@ -703,7 +1039,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T12:15:24.086162091Z",
+    "timestamp": "2026-02-03T09:41:43.139609251Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -714,7 +1050,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906d05888ede0f",
+    "id": "00000000000000001890b3372e8f4e95",
     "gate_id": "F-CONV-S-G",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_gguf_0000000000000000",
@@ -745,7 +1081,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T12:15:24.089934278Z",
+    "timestamp": "2026-02-03T09:41:43.142323005Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -756,7 +1092,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906d0588d96228",
+    "id": "00000000000000001890b3372ebcee84",
     "gate_id": "F-CONV-S-G",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_gguf_0000000000000000",
@@ -787,7 +1123,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T12:15:24.094818100Z",
+    "timestamp": "2026-02-03T09:41:43.145315511Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -798,7 +1134,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906d0589255fc7",
+    "id": "00000000000000001890b3372eeb420f",
     "gate_id": "F-CONV-A-S",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -829,7 +1165,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T12:15:24.099797727Z",
+    "timestamp": "2026-02-03T09:41:43.148349281Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -840,7 +1176,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906d05897cc56a",
+    "id": "00000000000000001890b3372f15349a",
     "gate_id": "F-CONV-A-S",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_safetensors_0000000000000000",
@@ -871,7 +1207,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T12:15:24.105525417Z",
+    "timestamp": "2026-02-03T09:41:43.151098047Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -882,7 +1218,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906d0589c8ec31",
+    "id": "00000000000000001890b3372f3c1a81",
     "gate_id": "F-CONV-S-A",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_apr_0000000000000000",
@@ -913,7 +1249,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T12:15:24.110516161Z",
+    "timestamp": "2026-02-03T09:41:43.153647852Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -924,7 +1260,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906d058a07f3d2",
+    "id": "00000000000000001890b3372f665e62",
     "gate_id": "F-CONV-S-A",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_apr_0000000000000000",
@@ -955,7 +1291,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T12:15:24.114646851Z",
+    "timestamp": "2026-02-03T09:41:43.156417620Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -966,7 +1302,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906d058a810e32",
+    "id": "00000000000000001890b3372fb1f559",
     "gate_id": "F-CONV-RT-001",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_gguf_0000000000000000",
@@ -997,7 +1333,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T12:15:24.122583229Z",
+    "timestamp": "2026-02-03T09:41:43.161370736Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1008,7 +1344,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906d058aed560f",
+    "id": "00000000000000001890b3372ffd1f01",
     "gate_id": "F-CONV-RT-001",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_gguf_0000000000000000",
@@ -1039,7 +1375,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T12:15:24.129679474Z",
+    "timestamp": "2026-02-03T09:41:43.166296971Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1050,7 +1386,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906d058b535730",
+    "id": "00000000000000001890b33730459ada",
     "gate_id": "F-CONV-RT-002",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -1081,7 +1417,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T12:15:24.136364575Z",
+    "timestamp": "2026-02-03T09:41:43.171047208Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1092,7 +1428,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906d058bb269fd",
+    "id": "00000000000000001890b3373099a882",
     "gate_id": "F-CONV-RT-002",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_safetensors_0000000000000000",
@@ -1123,7 +1459,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T12:15:24.142596189Z",
+    "timestamp": "2026-02-03T09:41:43.176555548Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1134,7 +1470,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906d058c225fa1",
+    "id": "00000000000000001890b33730ecc0df",
     "gate_id": "F-CONV-RT-003",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -1165,7 +1501,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T12:15:24.149932928Z",
+    "timestamp": "2026-02-03T09:41:43.182003866Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1176,7 +1512,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906d058c82b3ef",
+    "id": "00000000000000001890b337313af55e",
     "gate_id": "F-CONV-RT-003",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_safetensors_0000000000000000",
@@ -1207,7 +1543,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T12:15:24.156245836Z",
+    "timestamp": "2026-02-03T09:41:43.187126760Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1218,7 +1554,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906d058ca93216",
+    "id": "00000000000000001890b337316d0b1d",
     "gate_id": "F-CONV-IDEM-001",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_apr_0000000000000000",
@@ -1249,7 +1585,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T12:15:24.158768118Z",
+    "timestamp": "2026-02-03T09:41:43.190411560Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1260,7 +1596,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906d058cd7e6af",
+    "id": "00000000000000001890b3373193d385",
     "gate_id": "F-CONV-IDEM-001",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_apr_0000000000000000",
@@ -1291,7 +1627,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T12:15:24.161829318Z",
+    "timestamp": "2026-02-03T09:41:43.192950869Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1302,7 +1638,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906d058d041557",
+    "id": "00000000000000001890b33731b6b592",
     "gate_id": "F-CONV-COM-001",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_apr_0000000000000000",
@@ -1333,7 +1669,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T12:15:24.164724826Z",
+    "timestamp": "2026-02-03T09:41:43.195236331Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1344,7 +1680,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906d058d324912",
+    "id": "00000000000000001890b33731e46e8b",
     "gate_id": "F-CONV-COM-001",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_gpu_apr_0000000000000000",
@@ -1375,7 +1711,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T12:15:24.167752354Z",
+    "timestamp": "2026-02-03T09:41:43.198235148Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1386,7 +1722,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018906d058d9148a9",
+    "id": "00000000000000001890b337321635f8",
     "gate_id": "F-GOLDEN-RULE-001",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_apr_0000000000000000",
@@ -1417,7 +1753,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-02T12:15:24.173978610Z",
+    "timestamp": "2026-02-03T09:41:43.201497074Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",

@@ -1,5 +1,7 @@
 # CLI Reference
 
+> **CRITICAL**: Always use `apr-qa` commands (this project's CLI) for model qualification. Never use manual `apr` commands (`apr qa`, `apr run`, `apr pull`) to bypass the playbook infrastructure. The playbook system ensures consistent testing, proper evidence collection, and SafeTensors ground truth validation.
+
 ## apr-qa
 
 ```
@@ -65,10 +67,40 @@ apr-qa run <playbook.yaml> [OPTIONS]
 ```
 
 Options:
-- `--workers <N>` - Number of parallel workers
-- `--timeout <MS>` - Per-test timeout in milliseconds
-- `--evidence-dir <DIR>` - Output directory for evidence
-- `--fail-fast` - Stop on first failure
+- `--workers <N>` - Number of parallel workers (default: 4)
+- `--timeout <MS>` - Per-test timeout in milliseconds (default: 60000)
+- `-o, --output <DIR>` - Output directory for evidence (default: `output`)
+- `--failure-policy <POLICY>` - Failure handling: `stop-on-first`, `stop-on-p0` (default), `collect-all`, `fail-fast`
+- `--fail-fast` - Stop on first failure with enhanced diagnostics (§12.5.3)
+- `--dry-run` - Preview execution without running tests
+- `--model-path <PATH>` - Path to model file
+- `--no-gpu` - Disable GPU acceleration
+- `--skip-conversion-tests` - Skip P0 format conversion tests (NOT RECOMMENDED)
+- `--run-tool-tests` - Run APR tool coverage tests
+- `--profile-ci` - Run profile CI assertions
+- `--no-differential` - Skip differential tests
+- `--no-trace-payload` - Skip trace payload tests
+- `--hf-parity` - Enable HuggingFace parity verification
+- `--hf-corpus-path <PATH>` - Path to HF golden corpus
+- `--hf-model-family <FAMILY>` - HF parity model family
+
+Examples:
+```bash
+# Basic playbook execution
+apr-qa run playbooks/models/qwen2.5-coder-1.5b-mvp.playbook.yaml
+
+# With model path for real inference
+apr-qa run playbook.yaml --model-path ~/.cache/apr-models/model/gguf/model.gguf
+
+# Fail-fast mode for debugging
+apr-qa run playbook.yaml --fail-fast
+
+# Full tracing for GitHub ticket creation
+RUST_LOG=debug apr-qa run playbook.yaml --fail-fast 2>&1 | tee failure.log
+
+# CI mode with all assertions
+apr-qa run playbook.yaml --profile-ci --run-tool-tests
+```
 
 #### report
 
@@ -137,6 +169,8 @@ Options:
 - `-V, --version` - Show version
 
 ## APR CLI Commands (Upstream)
+
+> **WARNING**: The commands below are upstream `apr` CLI commands that this QA framework **tests**. Do NOT use these commands directly for model qualification. Always use `apr-qa certify` or `apr-qa run` with a playbook instead.
 
 The following apr commands are tested by this QA framework:
 

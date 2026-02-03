@@ -1,15 +1,33 @@
 # APR Model QA Playbook Specification
 
-**Version:** 1.3.0
+**Version:** 1.4.0
 **Status:** DRAFT - Awaiting Peer Review
 **Author:** PAIML Engineering
-**Date:** 2026-01-30
+**Date:** 2026-02-03
 **PMAT Compliance:** Required (95% coverage, zero SATD)
 **Quality Philosophy:** Toyota Way + Popperian Falsification + Black Swan Theory
 
 ---
 
 ## Changelog
+
+### v1.4.0 (2026-02-03)
+- **feat(fail-fast):** Add `--fail-fast` mode with tracing-based diagnostics (§12.5.3)
+  - Stops on ANY failure (not just P0)
+  - Leverages `tracing` crate infrastructure for comprehensive diagnostics
+  - Instrumentation points: gate execution, file operations, environment
+  - Trace levels: ERROR/WARN/INFO/DEBUG/TRACE with recommended usage
+  - File operation tracing catches bugs like src/lib.rs overwrites
+  - Exit codes: 0=pass, 1=fail, 2=config error, 3=env error, 130=SIGINT
+  - GitHub ticket creation workflow from trace logs
+- **feat(policy):** Add `FailurePolicy::FailFast` variant
+  - `emit_diagnostic()` method for policy introspection
+- **feat(tracing):** Add environment span on startup
+  - OS, arch, Rust version, apr-qa version
+  - Git commit hash and dirty file detection
+- **fix(citl):** Fix test that overwrote src/lib.rs on every test run
+  - `test_compile_cargo_check_invalid_manifest_path` used relative path
+  - Changed to use temp directory, preventing source file corruption
 
 ### v1.3.0 (2026-01-30)
 - **feat(differential):** Add Rosetta differential testing (GH-188, PMAT-114)
@@ -431,6 +449,88 @@ This section defines the rigorous falsification protocol for model format intero
 | **Why 5** | Why must this be P0? | Because a single bit flip in tensor conversion can invalidate millions of inferences, making the entire system untrustworthy. |
 
 **Root Cause:** Without bi-directional conversion testing across all format pairs and backends, we have no guarantee that `apr convert` preserves model semantics.
+
+### 4.1.1 LAYOUT-002: Row-Major Mandate (P0 CRITICAL)
+
+> **This is one of the most important checks in the entire qualification framework.**
+
+The Sovereign AI Stack has **ONE tensor layout**: **row-major**. This is a permanent architectural decision that eliminates an entire class of conversion bugs.
+
+#### Stack Layout Specification
+
+| Component | Layout | Notes |
+|-----------|--------|-------|
+| **trueno** | Row-major | Native SIMD kernels, all quant types |
+| **aprender** | Row-major | Transposes GGUF at import time |
+| **realizar** | Row-major | ONE kernel set, no layout aliases |
+| **entrenar** | Row-major | Follows stack convention |
+
+#### Why This Matters
+
+GGUF (GGML format) uses **column-major** layout. The original converter naively swapped shape metadata without transposing the actual tensor data. This caused realizar's row-major kernels to misinterpret column-major data, producing garbage output like:
+
+```
+"olumbia+lsi nunca/localENTS" (instead of coherent text)
+```
+
+#### The Permanent Fix
+
+Aprender's converter now **transposes quantized tensors** during GGUF→APR import:
+
+```
+GGUF (column-major) → dequantize → transpose → re-quantize → APR (row-major)
+```
+
+This is implemented in:
+- `aprender/src/format/converter/write.rs` - Calls transpose for Q4K/Q5K/Q6K
+- `aprender/src/format/converter/mod.rs` - `transpose_q4k_for_matmul()`, etc.
+
+#### Kernel API (Final)
+
+The kernel API is now canonical—no more layout-specific function variants:
+
+```rust
+// Q4K - ONE function family
+fused_q4k_parallel_matvec(...)
+fused_q4k_parallel_matvec_into(...)
+fused_q4k_tiled_matvec(...)
+
+// Q5K - ONE function family
+fused_q5k_parallel_matvec(...)
+fused_q5k_parallel_matvec_into(...)
+
+// Q6K - ONE function family
+fused_q6k_parallel_matvec(...)
+fused_q6k_parallel_matvec_into(...)
+```
+
+**Deleted functions** (technical debt eliminated):
+- ~~`fused_q6k_colmajor_matvec`~~
+- ~~`fused_q4k_auto_matvec_into`~~
+- All `*_colmajor_*` and `*_auto_*` variants
+
+#### Verification Results
+
+| Project | Test Suite | Status |
+|---------|------------|--------|
+| realizar | 2209 quantize tests | ✅ PASS |
+| aprender | 399 converter tests | ✅ PASS |
+
+#### Falsification Gate
+
+| Gate ID | Assertion | Severity |
+|---------|-----------|----------|
+| **F-LAYOUT-002** | All tensors in row-major layout after conversion | P0 |
+
+**Detection:** Gateway G4 (GarbageOracle) catches LAYOUT-002 violations. If output contains non-ASCII gibberish after conversion, the test is `Falsified` and the model fails qualification.
+
+#### Cross-Reference
+
+- `aprender/CLAUDE.md` → LAYOUT-002 section
+- `realizar/CLAUDE.md` → LAYOUT-002 section
+- `trueno/CLAUDE.md` → LAYOUT-002 section
+- `batuta/CLAUDE.md` → LAYOUT-002 section
+- GH-190: GGUF→APR Conversion Garbage Output (original bug)
 
 ### 4.2 Format Conversion Matrix (MANDATORY)
 
@@ -3003,7 +3103,7 @@ name: qwen2.5-coder-1.5b-qualification
 version: "1.0.0"
 model:
   hf_repo: "Qwen/Qwen2.5-Coder-1.5B-Instruct"
-  formats: [gguf, safetensors, apr]
+  formats: [safetensors, apr, gguf]  # safetensors = ground truth
   quantizations: [q4_k_m, q8_0]
 
 test_matrix:
@@ -3782,12 +3882,23 @@ pub enum FailurePolicy {
 
     /// Collect all failures, report at end
     CollectAll,
+
+    /// Stop on first failure AND emit extreme diagnostic blob (§12.5.3)
+    /// Designed for debugging and GitHub ticket creation.
+    FailFast,
 }
 
 impl Default for FailurePolicy {
     fn default() -> Self {
         // Default: Toyota Way - stop on P0
         Self::StopOnP0
+    }
+}
+
+impl FailurePolicy {
+    /// Returns true if this policy should emit extreme diagnostics on failure.
+    pub fn emit_diagnostic(&self) -> bool {
+        matches!(self, Self::FailFast)
     }
 }
 ```
@@ -4031,9 +4142,192 @@ apr-qa run playbook.yaml --no-trace-payload
 
 # Minimal run (gates only)
 apr-qa run playbook.yaml --no-differential --no-trace-payload
+
+# Fail-fast mode: stop immediately on ANY failure with extreme diagnostics
+apr-qa run playbook.yaml --fail-fast
+
+# Fail-fast with output file for GitHub ticket
+apr-qa run playbook.yaml --fail-fast --diagnostic-output failure.md
 ```
 
-#### 12.5.3 Phase Dependencies
+#### 12.5.3 Fail-Fast Mode (`--fail-fast`)
+
+**Purpose:** Stop immediately on the first failure. Combined with tracing, this provides comprehensive diagnostic output suitable for creating GitHub issues.
+
+**Behavior:**
+1. Stops execution on ANY failure (equivalent to `--failure-policy stop-on-first`)
+2. Leverages `tracing` infrastructure - all diagnostic info is in the trace logs
+3. Exit code 1 on failure
+
+**Use Cases:**
+- Debugging a specific test failure
+- Bisecting a regression
+- Creating a GitHub issue (capture trace output)
+- CI pipelines that need immediate failure notification
+
+##### 12.5.3.1 Tracing-Based Diagnostics
+
+Instead of a separate diagnostic system, `--fail-fast` relies on comprehensive tracing. The trace logs contain all information needed for debugging and ticket creation.
+
+**Trace Levels:**
+
+| Level | Content | Use Case |
+|-------|---------|----------|
+| `ERROR` | Gate failures, panics, critical errors | Always visible |
+| `WARN` | Degraded performance, fallback paths taken | Production monitoring |
+| `INFO` | Test start/end, model loading, phase transitions | Normal operation |
+| `DEBUG` | File paths, tensor shapes, intermediate values | Debugging |
+| `TRACE` | Function entry/exit, loop iterations, byte-level data | Deep debugging |
+
+**Recommended Invocation:**
+
+```bash
+# Fail-fast with full trace capture for GitHub ticket
+RUST_LOG=trace apr-qa run playbook.yaml --fail-fast 2>&1 | tee failure.log
+
+# Structured JSON traces for programmatic analysis
+RUST_LOG=trace apr-qa run playbook.yaml --fail-fast --log-format json 2>&1 | tee failure.jsonl
+```
+
+##### 12.5.3.2 Instrumentation Points
+
+Every critical operation is instrumented with `tracing` spans:
+
+```rust
+use tracing::{instrument, info, debug, error, warn, trace, Span};
+
+#[instrument(
+    level = "info",
+    skip(model_data),
+    fields(
+        gate_id = %gate_id,
+        model_id = %model_id,
+        format = %format,
+        backend = %backend,
+    )
+)]
+pub fn execute_gate(
+    gate_id: &str,
+    model_id: &str,
+    model_data: &[u8],
+    format: Format,
+    backend: Backend,
+) -> Result<Evidence, Error> {
+    debug!(model_size = model_data.len(), "Loading model");
+
+    let model = load_model(model_data, format)?;
+    trace!(layers = model.layers.len(), "Model structure loaded");
+
+    let result = run_inference(&model, backend)?;
+
+    if !verify_output(&result) {
+        error!(
+            output_len = result.len(),
+            expected = "valid tokens",
+            actual = ?&result[..result.len().min(100)],
+            "Gate FALSIFIED: output verification failed"
+        );
+        return Ok(Evidence::falsified(gate_id));
+    }
+
+    info!("Gate CORROBORATED");
+    Ok(Evidence::corroborated(gate_id))
+}
+```
+
+##### 12.5.3.3 Environment Span
+
+On startup, emit a span with full environment context:
+
+```rust
+#[instrument(level = "info", name = "environment")]
+fn log_environment() {
+    info!(
+        os = %std::env::consts::OS,
+        arch = %std::env::consts::ARCH,
+        rust_version = %env!("CARGO_PKG_RUST_VERSION"),
+        apr_qa_version = %env!("CARGO_PKG_VERSION"),
+        "Environment snapshot"
+    );
+
+    if let Ok(output) = std::process::Command::new("git")
+        .args(["rev-parse", "HEAD"])
+        .output()
+    {
+        let commit = String::from_utf8_lossy(&output.stdout);
+        info!(git_commit = %commit.trim(), "Git context");
+    }
+
+    if let Ok(output) = std::process::Command::new("git")
+        .args(["status", "--porcelain"])
+        .output()
+    {
+        let dirty_files: Vec<_> = String::from_utf8_lossy(&output.stdout)
+            .lines()
+            .collect();
+        if !dirty_files.is_empty() {
+            warn!(dirty_count = dirty_files.len(), "Uncommitted changes");
+            for f in &dirty_files {
+                debug!(file = %f, "Dirty file");
+            }
+        }
+    }
+}
+```
+
+##### 12.5.3.4 File Operation Tracing
+
+Critical for catching bugs like the lib.rs overwrite:
+
+```rust
+#[instrument(level = "debug", fields(path = %path.display()))]
+fn write_file(path: &Path, content: &[u8]) -> io::Result<()> {
+    trace!(content_len = content.len(), "Writing file");
+
+    // Log if we're writing to a source file (potential bug!)
+    if path.extension().map_or(false, |e| e == "rs") {
+        warn!(
+            path = %path.display(),
+            "Writing to Rust source file - verify this is intentional"
+        );
+    }
+
+    std::fs::write(path, content)?;
+    debug!("File written successfully");
+    Ok(())
+}
+```
+
+##### 12.5.3.5 Exit Codes
+
+| Code | Meaning |
+|------|---------|
+| 0 | All tests passed |
+| 1 | Test failure (check trace logs) |
+| 2 | Configuration error (invalid playbook, missing model) |
+| 3 | Environment error (missing dependencies, permissions) |
+| 130 | SIGINT (Ctrl+C) with Jidoka cleanup |
+
+##### 12.5.3.6 Creating GitHub Tickets from Traces
+
+```bash
+# Capture failure with full context
+RUST_LOG=debug apr-qa run playbook.yaml --fail-fast 2>&1 | tee /tmp/failure.log
+
+# Extract key info for ticket
+echo "## Failure Log" > /tmp/ticket.md
+echo '```' >> /tmp/ticket.md
+grep -E "ERROR|WARN|gate_id|model_id" /tmp/failure.log >> /tmp/ticket.md
+echo '```' >> /tmp/ticket.md
+
+# Create issue
+gh issue create --repo paiml/aprender \
+  --title "Gate failure: $(grep 'Gate FALSIFIED' /tmp/failure.log | head -1)" \
+  --body-file /tmp/ticket.md \
+  --label bug,P0
+```
+
+#### 12.5.4 Phase Dependencies
 
 | Phase | Depends On | Gates Verified |
 |-------|------------|----------------|
@@ -4041,7 +4335,7 @@ apr-qa run playbook.yaml --no-differential --no-trace-payload
 | Profile CI | Basic inference passing | F-PROFILE-CI-001, F-PROFILE-CI-002 |
 | Trace Payload | Model loaded | F-TRACE-PAYLOAD-001, F-TRACE-PAYLOAD-002 |
 
-#### 12.5.4 Recommended Configurations
+#### 12.5.5 Recommended Configurations
 
 | Context | Config | Rationale |
 |---------|--------|-----------|
@@ -4049,6 +4343,9 @@ apr-qa run playbook.yaml --no-differential --no-trace-payload
 | PR validation | `--profile-ci` | Full verification before merge |
 | Model qualification | All enabled | Complete falsification testing |
 | Bisection/debugging | `--no-profile-ci` | Fast iteration, skip expensive assertions |
+| **Bug investigation** | `--fail-fast` | **Stop immediately, emit extreme diagnostics** |
+| **GitHub ticket creation** | `--fail-fast --diagnostic-output` | **Generate ticket-ready report** |
+| Regression bisection | `--fail-fast` | Binary search for breaking commit |
 
 ### 12.6 Cross-Project Bug Pattern Detection
 

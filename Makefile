@@ -2,7 +2,8 @@
 # Toyota Way + Popperian Falsification Testing Framework
 
 .PHONY: all build test lint coverage clean check fmt doc \
-       update-certifications certify-smoke certify-mvp certify-quick certify-standard certify-deep certify-qwen
+       update-certifications certify-smoke certify-mvp certify-quick certify-standard certify-deep certify-qwen \
+       parity-check parity-list golden-generate
 
 # Default target
 all: check
@@ -173,4 +174,59 @@ help:
 	@echo "  certify-deep           Tier 5: ~8-24 hr per model (production)"
 	@echo "  certify-qwen           Full certification for Qwen Coder (priority)"
 	@echo ""
+	@echo "HF Parity Oracle targets (cross-implementation validation):"
+	@echo "  parity-check           Self-check all golden corpora"
+	@echo "  parity-list            List available golden outputs"
+	@echo "  golden-generate        Generate golden outputs (requires GPU + HuggingFace)"
+	@echo ""
 	@echo "  help                   Show this help"
+
+# ============================================================================
+# HF Parity Oracle Targets (see docs/specifications/hf-parity-oracle.md)
+# ============================================================================
+
+# Default golden corpus path
+HF_CORPUS ?= ../hf-ground-truth-corpus/oracle
+
+# Self-check all available model families in the golden corpus
+# Implements Popperian self-consistency: golden outputs must match themselves
+# Corpus structure: $(HF_CORPUS)/<model>/<version>/manifest.json
+parity-check:
+	@echo "=== HF Parity Self-Check (all model families) ==="
+	@found=0; \
+	for manifest in $$(find $(HF_CORPUS) -name "manifest.json" -type f 2>/dev/null); do \
+		version_dir=$$(dirname $$manifest); \
+		model_version=$$(echo $$version_dir | sed 's|$(HF_CORPUS)/||'); \
+		echo "Checking: $$model_version"; \
+		cargo run --bin apr-qa -- parity -m $$model_version -c $(HF_CORPUS) --self-check || exit 1; \
+		echo ""; \
+		found=1; \
+	done; \
+	if [ $$found -eq 0 ]; then echo "No golden corpora found in $(HF_CORPUS)"; exit 1; fi
+	@echo "All parity self-checks passed!"
+
+# List available golden outputs for all model families
+# Corpus structure: $(HF_CORPUS)/<model>/<version>/manifest.json
+parity-list:
+	@echo "=== Available Golden Outputs ==="
+	@for manifest in $$(find $(HF_CORPUS) -name "manifest.json" -type f 2>/dev/null); do \
+		version_dir=$$(dirname $$manifest); \
+		model_version=$$(echo $$version_dir | sed 's|$(HF_CORPUS)/||'); \
+		echo ""; \
+		echo "--- $$model_version ---"; \
+		cargo run --bin apr-qa -- parity -m $$model_version -c $(HF_CORPUS) --list 2>/dev/null || true; \
+	done
+
+# Generate golden outputs using HuggingFace transformers
+# Requires: uv, GPU with CUDA, HuggingFace model access
+# Usage: make golden-generate MODEL=Qwen/Qwen2.5-Coder-1.5B-Instruct VERSION=v1
+golden-generate:
+	@echo "=== Generating Golden Outputs ==="
+	@test -n "$(MODEL)" || (echo "Usage: make golden-generate MODEL=Qwen/Qwen2.5-Coder-1.5B-Instruct VERSION=v1"; exit 1)
+	@test -n "$(VERSION)" || (echo "Usage: make golden-generate MODEL=Qwen/Qwen2.5-Coder-1.5B-Instruct VERSION=v1"; exit 1)
+	@MODEL_SHORT=$$(echo $(MODEL) | sed 's|.*/||' | tr '[:upper:]' '[:lower:]'); \
+	OUTPUT_DIR=$(HF_CORPUS)/$$MODEL_SHORT/$(VERSION); \
+	echo "Model: $(MODEL)"; \
+	echo "Output: $$OUTPUT_DIR"; \
+	mkdir -p $$OUTPUT_DIR && \
+	uv run scripts/generate_golden.py --model $(MODEL) --output $$OUTPUT_DIR --prompts prompts/code_bench.txt

@@ -1,10 +1,10 @@
 model_id,family,parameters,size_category,status,mqs_score,grade,certified_tier,last_certified,g1,g2,g3,g4,tps_gguf_cpu,tps_gguf_gpu,tps_apr_cpu,tps_apr_gpu,tps_st_cpu,tps_st_gpu,provenance_verified
-Qwen/Qwen2.5-Coder-0.5B-Instruct,qwen-coder,0.5B,tiny,BLOCKED,320,F,quick,2026-02-02T12:12:56.410028740+00:00,true,true,true,true,2.9,272.4,7.6,0.8,,,false
-Qwen/Qwen2.5-Coder-1.5B-Instruct,qwen-coder,1.5B,small,BLOCKED,320,F,quick,2026-02-02T12:20:11.234925531+00:00,true,true,true,true,6.7,119.2,2.1,0.4,,,false
-Qwen/Qwen2.5-Coder-3B-Instruct,qwen-coder,3B,small,BLOCKED,29,F,quick,2026-02-02T12:25:34.401411483+00:00,true,true,false,true,8.5,66.5,10.7,0.4,0.0,0.0,false
-Qwen/Qwen2.5-Coder-7B-Instruct,qwen-coder,7B,medium,BLOCKED,29,F,quick,2026-02-02T12:28:58.597581380+00:00,true,true,false,true,8.2,33.3,8.1,0.0,0.0,0.0,false
-Qwen/Qwen2.5-Coder-14B-Instruct,qwen-coder,14B,large,BLOCKED,29,F,quick,2026-02-02T12:34:59.434918741+00:00,true,true,false,true,3.7,15.1,2.3,0.0,0.0,0.0,false
-Qwen/Qwen2.5-Coder-32B-Instruct,qwen-coder,32B,xlarge,BLOCKED,0,F,quick,2026-02-02T12:35:00.085699122+00:00,true,true,false,true,,,,,,,false
+Qwen/Qwen2.5-Coder-0.5B-Instruct,qwen-coder,0.5B,tiny,BLOCKED,415,-,none,2026-02-02T15:15:44.997550877+00:00,true,true,true,true,3.0,281.2,7.4,0.7,10.1,43.3,false
+Qwen/Qwen2.5-Coder-1.5B-Instruct,qwen-coder,1.5B,small,BLOCKED,415,-,none,2026-02-02T15:24:54.166316613+00:00,true,true,true,true,16.3,117.4,2.2,0.5,2.8,22.0,false
+Qwen/Qwen2.5-Coder-3B-Instruct,qwen-coder,3B,small,BLOCKED,283,-,none,2026-02-02T15:43:46.224914897+00:00,true,true,false,true,10.5,67.2,10.3,0.4,0.0,0.0,false
+Qwen/Qwen2.5-Coder-7B-Instruct,qwen-coder,7B,medium,BLOCKED,152,-,none,2026-02-02T15:58:06.075935007+00:00,true,true,false,true,8.7,36.8,6.8,0.0,0.0,0.0,false
+Qwen/Qwen2.5-Coder-14B-Instruct,qwen-coder,14B,large,BLOCKED,152,-,none,2026-02-02T16:26:54.218241791+00:00,true,true,false,true,4.7,16.9,2.5,0.0,0.0,0.0,false
+Qwen/Qwen2.5-Coder-32B-Instruct,qwen-coder,32B,xlarge,BLOCKED,0,F,mvp,2026-02-02T16:26:54.661826202+00:00,true,true,false,true,,,,,,,false
 meta-llama/Llama-3.2-1B-Instruct,llama,1B,small,PENDING,0,-,none,2026-01-31T00:00:00+00:00,false,false,false,false,,,,,,,false
 meta-llama/Llama-3.2-3B-Instruct,llama,3B,small,PENDING,0,-,none,2026-01-31T00:00:00+00:00,false,false,false,false,,,,,,,false
 mistralai/Mistral-7B-Instruct-v0.3,mistral,7B,medium,PENDING,0,-,none,2026-01-31T00:00:00+00:00,false,false,false,false,,,,,,,false

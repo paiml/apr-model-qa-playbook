@@ -184,8 +184,10 @@ The framework tests models across multiple dimensions:
 |-----------|---------|
 | **Modality** | `run`, `chat`, `serve` |
 | **Backend** | `cpu`, `gpu` |
-| **Format** | `gguf`, `safetensors`, `apr` |
+| **Format** | `safetensors` (ground truth), `apr`, `gguf` |
 | **Quantization** | `q4_k_m`, `q5_k_m`, `q8_0`, `f16`, `f32` |
+
+> **Ground Truth**: SafeTensors is the source of truth for model weights (native HuggingFace format). APR is our optimized native format. GGUF is a supported third-party format.
 
 With 100 scenarios per combination across 100 HuggingFace models:
 - 3 modalities × 2 backends × 3 formats × 100 models × 100 scenarios = **1,800,000 tests**
@@ -236,7 +238,7 @@ model:
 test_matrix:
   modalities: [run, chat]
   backends: [cpu, gpu]
-  formats: [gguf, safetensors]
+  formats: [safetensors, apr, gguf]  # safetensors is ground truth
 
 scenarios:
   - name: "arithmetic_basic"

@@ -16,6 +16,9 @@ thiserror = { workspace = true }
 anyhow = { workspace = true }
 proptest = { workspace = true }
 chrono = { workspace = true }
+safetensors = { workspace = true }
+sha2 = "0.10"
+hex = "0.4"
 
 [dev-dependencies]
 proptest = { workspace = true }

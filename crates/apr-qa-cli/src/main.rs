@@ -90,9 +90,15 @@ enum Commands {
         #[arg(short, long, default_value = "output")]
         output: PathBuf,
 
-        /// Failure policy (stop-on-first, stop-on-p0, collect-all)
+        /// Failure policy (stop-on-first, stop-on-p0, collect-all, fail-fast)
         #[arg(long, default_value = "stop-on-p0")]
         failure_policy: String,
+
+        /// Stop on first failure with enhanced diagnostics (§12.5.3)
+        /// Equivalent to --failure-policy fail-fast
+        /// Emits comprehensive trace output for debugging and GitHub ticket creation
+        #[arg(long)]
+        fail_fast: bool,
 
         /// Dry run (don't execute, just show what would be done)
         #[arg(long)]
@@ -133,6 +139,18 @@ enum Commands {
         /// Skip trace payload tests (forward pass, garbage detection)
         #[arg(long)]
         no_trace_payload: bool,
+
+        /// Enable HF parity verification against golden corpus
+        #[arg(long)]
+        hf_parity: bool,
+
+        /// Path to HF golden corpus directory
+        #[arg(long, default_value = "../hf-ground-truth-corpus/oracle")]
+        hf_corpus_path: String,
+
+        /// HF parity model family (e.g., "qwen2.5-coder-1.5b/v1")
+        #[arg(long)]
+        hf_model_family: Option<String>,
     },
 
     /// Run APR tool coverage tests
@@ -241,6 +259,40 @@ enum Commands {
         #[arg(long, default_value = "create")]
         ticket_mode: String,
     },
+
+    /// Verify model output parity against HuggingFace golden corpus
+    ///
+    /// Implements Popperian falsification: any divergence beyond tolerance
+    /// falsifies the hypothesis that the implementation is equivalent to HuggingFace.
+    Parity {
+        /// Model family (e.g., "qwen2.5-coder-1.5b")
+        #[arg(short, long)]
+        model_family: String,
+
+        /// Path to golden corpus directory
+        #[arg(short, long, default_value = "../hf-ground-truth-corpus/oracle")]
+        corpus_path: PathBuf,
+
+        /// SafeTensors file containing logits to verify
+        #[arg(short, long)]
+        logits_file: Option<PathBuf>,
+
+        /// Prompt used to generate the logits
+        #[arg(short, long)]
+        prompt: Option<String>,
+
+        /// Tolerance level (fp32, fp16, int8, int4)
+        #[arg(short, long, default_value = "fp32")]
+        tolerance: String,
+
+        /// List available golden outputs for the model
+        #[arg(long)]
+        list: bool,
+
+        /// Verify all golden outputs against themselves (sanity check)
+        #[arg(long)]
+        self_check: bool,
+    },
 }
 
 /// Setup SIGINT handler for Jidoka cleanup
@@ -295,6 +347,7 @@ fn main() {
             playbook,
             output,
             failure_policy,
+            fail_fast,
             dry_run,
             workers,
             model_path,
@@ -305,11 +358,20 @@ fn main() {
             profile_ci,
             no_differential,
             no_trace_payload,
+            hf_parity,
+            hf_corpus_path,
+            hf_model_family,
         } => {
+            // --fail-fast flag overrides --failure-policy
+            let effective_policy = if fail_fast {
+                "fail-fast".to_string()
+            } else {
+                failure_policy
+            };
             run_playbook(
                 &playbook,
                 &output,
-                &failure_policy,
+                &effective_policy,
                 dry_run,
                 workers,
                 model_path,
@@ -320,6 +382,9 @@ fn main() {
                 profile_ci,
                 no_differential,
                 no_trace_payload,
+                hf_parity,
+                &hf_corpus_path,
+                hf_model_family,
             );
         }
         Commands::Tools {
@@ -373,10 +438,30 @@ fn main() {
                 &ticket_mode,
             );
         }
+        Commands::Parity {
+            model_family,
+            corpus_path,
+            logits_file,
+            prompt,
+            tolerance,
+            list,
+            self_check,
+        } => {
+            run_parity_check(
+                &model_family,
+                &corpus_path,
+                logits_file.as_deref(),
+                prompt.as_deref(),
+                &tolerance,
+                list,
+                self_check,
+            );
+        }
     }
 }
 
 #[allow(clippy::fn_params_excessive_bools)]
+#[allow(clippy::too_many_lines)]
 fn run_playbook(
     playbook_path: &PathBuf,
     output_dir: &PathBuf,
@@ -391,7 +476,15 @@ fn run_playbook(
     profile_ci: bool,
     no_differential: bool,
     no_trace_payload: bool,
+    hf_parity: bool,
+    hf_corpus_path: &str,
+    hf_model_family: Option<String>,
 ) {
+    // Log environment for fail-fast mode (§12.5.3)
+    if failure_policy == "fail-fast" {
+        log_environment();
+    }
+
     println!("Loading playbook: {}", playbook_path.display());
 
     let playbook = match load_playbook(playbook_path) {
@@ -429,6 +522,13 @@ fn run_playbook(
         run_differential_tests: !no_differential,
         run_profile_ci: profile_ci,
         run_trace_payload: !no_trace_payload,
+        run_hf_parity: hf_parity,
+        hf_parity_corpus_path: if hf_parity {
+            Some(hf_corpus_path.to_string())
+        } else {
+            None
+        },
+        hf_parity_model_family: hf_model_family.clone(),
     };
 
     let config = match build_execution_config(&run_config) {
@@ -444,6 +544,17 @@ fn run_playbook(
         println!("  Conversion tests: ENABLED (P0 CRITICAL)");
     } else if skip_conversion_tests {
         println!("  Conversion tests: DISABLED (WARNING: P0 tests skipped)");
+    }
+
+    // Print HF parity status
+    if hf_parity {
+        println!("  HF parity: ENABLED");
+        println!("    Corpus: {hf_corpus_path}");
+        if let Some(ref family) = hf_model_family {
+            println!("    Model family: {family}");
+        } else {
+            println!("    Model family: NOT SET (required for parity tests)");
+        }
     }
 
     // Run tool tests if enabled
@@ -496,6 +607,76 @@ fn run_playbook(
             std::process::exit(1);
         }
     }
+}
+
+/// Log environment information for fail-fast diagnostics (§12.5.3)
+fn log_environment() {
+    eprintln!("\n[ENVIRONMENT] === Diagnostic Context ===");
+    eprintln!(
+        "[ENVIRONMENT] OS: {} {}",
+        std::env::consts::OS,
+        std::env::consts::ARCH
+    );
+    eprintln!(
+        "[ENVIRONMENT] apr-qa version: {}",
+        env!("CARGO_PKG_VERSION")
+    );
+
+    // Git context
+    if let Ok(output) = std::process::Command::new("git")
+        .args(["rev-parse", "--short", "HEAD"])
+        .output()
+    {
+        if output.status.success() {
+            let commit = String::from_utf8_lossy(&output.stdout);
+            eprintln!("[ENVIRONMENT] Git commit: {}", commit.trim());
+        }
+    }
+
+    if let Ok(output) = std::process::Command::new("git")
+        .args(["branch", "--show-current"])
+        .output()
+    {
+        if output.status.success() {
+            let branch = String::from_utf8_lossy(&output.stdout);
+            eprintln!("[ENVIRONMENT] Git branch: {}", branch.trim());
+        }
+    }
+
+    // Check for dirty files
+    if let Ok(output) = std::process::Command::new("git")
+        .args(["status", "--porcelain"])
+        .output()
+    {
+        if output.status.success() {
+            let status = String::from_utf8_lossy(&output.stdout);
+            let dirty_count = status.lines().count();
+            if dirty_count > 0 {
+                eprintln!("[ENVIRONMENT] Git dirty: {dirty_count} file(s) modified");
+            }
+        }
+    }
+
+    // apr CLI version
+    if let Ok(output) = std::process::Command::new("apr").arg("--version").output() {
+        if output.status.success() {
+            let version = String::from_utf8_lossy(&output.stdout);
+            eprintln!("[ENVIRONMENT] apr-cli: {}", version.trim());
+        }
+    }
+
+    // Rust version
+    if let Ok(output) = std::process::Command::new("rustc")
+        .arg("--version")
+        .output()
+    {
+        if output.status.success() {
+            let version = String::from_utf8_lossy(&output.stdout);
+            eprintln!("[ENVIRONMENT] {}", version.trim());
+        }
+    }
+
+    eprintln!("[ENVIRONMENT] ===========================\n");
 }
 
 fn generate_scenarios(model_id: &str, count: usize, format: &str) {
@@ -732,6 +913,258 @@ fn generate_tickets(
             println!();
             println!("gh command:");
             println!("  {}\n", ticket.to_gh_command(repo));
+        }
+    }
+}
+
+/// Run HF Parity Oracle verification
+///
+/// Implements Popperian falsification: any divergence beyond tolerance
+/// falsifies the hypothesis that the implementation is equivalent to HuggingFace.
+#[allow(clippy::fn_params_excessive_bools)]
+#[allow(clippy::too_many_lines)]
+fn run_parity_check(
+    model_family: &str,
+    corpus_path: &std::path::Path,
+    logits_file: Option<&std::path::Path>,
+    prompt: Option<&str>,
+    tolerance_str: &str,
+    list: bool,
+    self_check: bool,
+) {
+    use apr_qa_gen::{HfParityOracle, Tolerance, hash_prompt};
+
+    println!("=== HuggingFace Parity Oracle ===\n");
+    println!("Model family: {model_family}");
+    println!("Corpus path: {}", corpus_path.display());
+
+    // Parse tolerance
+    let tolerance = match tolerance_str.to_lowercase().as_str() {
+        "fp32" => Tolerance::fp32(),
+        "fp16" => Tolerance::fp16(),
+        "int8" => Tolerance::int8(),
+        "int4" => Tolerance::int4(),
+        _ => {
+            eprintln!("Unknown tolerance level: {tolerance_str}");
+            eprintln!("Valid options: fp32, fp16, int8, int4");
+            std::process::exit(1);
+        }
+    };
+    println!("Tolerance: {tolerance_str}");
+
+    // Create oracle
+    let oracle = HfParityOracle::new(corpus_path, model_family).with_tolerance(tolerance);
+
+    // Check corpus exists
+    let corpus_dir = corpus_path.join(model_family);
+    if !corpus_dir.exists() {
+        eprintln!(
+            "\nError: Corpus directory not found: {}",
+            corpus_dir.display()
+        );
+        eprintln!("Available models:");
+        if let Ok(entries) = std::fs::read_dir(corpus_path) {
+            for entry in entries.flatten() {
+                if entry.path().is_dir() {
+                    println!("  - {}", entry.file_name().to_string_lossy());
+                }
+            }
+        }
+        std::process::exit(1);
+    }
+
+    // List mode: show available golden outputs
+    if list {
+        println!("\n=== Available Golden Outputs ===\n");
+        let manifest_path = corpus_dir.join("manifest.json");
+        if manifest_path.exists() {
+            if let Ok(content) = std::fs::read_to_string(&manifest_path) {
+                if let Ok(manifest) = serde_json::from_str::<serde_json::Value>(&content) {
+                    if let Some(prompts) = manifest.get("prompts").and_then(|p| p.as_array()) {
+                        println!("Found {} golden outputs:\n", prompts.len());
+                        // List the JSON files to get the prompts
+                        for entry in std::fs::read_dir(&corpus_dir)
+                            .into_iter()
+                            .flatten()
+                            .flatten()
+                        {
+                            let path = entry.path();
+                            if path.extension().is_some_and(|e| e == "json")
+                                && path.file_stem().is_some_and(|s| s != "manifest")
+                            {
+                                if let Ok(json) = std::fs::read_to_string(&path) {
+                                    if let Ok(meta) =
+                                        serde_json::from_str::<serde_json::Value>(&json)
+                                    {
+                                        if let Some(prompt_str) =
+                                            meta.get("prompt").and_then(|p| p.as_str())
+                                        {
+                                            let hash = path
+                                                .file_stem()
+                                                .map(|s| s.to_string_lossy())
+                                                .unwrap_or_default();
+                                            let truncated = if prompt_str.len() > 50 {
+                                                format!("{}...", &prompt_str[..50])
+                                            } else {
+                                                prompt_str.to_string()
+                                            };
+                                            println!("  [{hash}] {truncated}");
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return;
+    }
+
+    // Self-check mode: verify golden outputs against themselves
+    if self_check {
+        println!("\n=== Self-Check Mode ===");
+        println!("Verifying golden outputs match themselves (sanity check)...\n");
+
+        let mut passed = 0;
+        let mut failed = 0;
+
+        for entry in std::fs::read_dir(&corpus_dir)
+            .into_iter()
+            .flatten()
+            .flatten()
+        {
+            let path = entry.path();
+            if path.extension().is_some_and(|e| e == "json")
+                && path.file_stem().is_some_and(|s| s != "manifest")
+            {
+                if let Ok(json) = std::fs::read_to_string(&path) {
+                    if let Ok(meta) = serde_json::from_str::<serde_json::Value>(&json) {
+                        if let Some(prompt_str) = meta.get("prompt").and_then(|p| p.as_str()) {
+                            match oracle.load_golden(prompt_str) {
+                                Ok(golden) => {
+                                    // Verify against itself
+                                    match oracle.tensors_close(&golden.logits, &golden.logits) {
+                                        Ok(()) => {
+                                            passed += 1;
+                                            let short_prompt = if prompt_str.len() > 40 {
+                                                format!("{}...", &prompt_str[..40])
+                                            } else {
+                                                prompt_str.to_string()
+                                            };
+                                            println!("  ✓ {short_prompt}");
+                                        }
+                                        Err(diff) => {
+                                            failed += 1;
+                                            eprintln!("  ✗ {prompt_str}: {diff}");
+                                        }
+                                    }
+                                }
+                                Err(e) => {
+                                    failed += 1;
+                                    eprintln!("  ✗ Failed to load {prompt_str}: {e}");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        println!("\n=== Self-Check Results ===");
+        println!("Passed: {passed}");
+        println!("Failed: {failed}");
+
+        if failed > 0 {
+            std::process::exit(1);
+        }
+        return;
+    }
+
+    // Verification mode: compare logits file against golden
+    let Some(logits_path) = logits_file else {
+        eprintln!("\nError: --logits-file is required for verification");
+        eprintln!("Use --list to see available golden outputs");
+        eprintln!("Use --self-check to verify corpus integrity");
+        std::process::exit(1);
+    };
+
+    let Some(prompt_str) = prompt else {
+        eprintln!("\nError: --prompt is required for verification");
+        std::process::exit(1);
+    };
+
+    println!("\n=== Verification Mode ===");
+    println!("Prompt: {prompt_str}");
+    println!("Logits file: {}", logits_path.display());
+
+    // Load the logits to verify
+    let logits_data = match std::fs::read(logits_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("Error reading logits file: {e}");
+            std::process::exit(1);
+        }
+    };
+
+    let tensors = match safetensors::SafeTensors::deserialize(&logits_data) {
+        Ok(t) => t,
+        Err(e) => {
+            eprintln!("Error parsing SafeTensors: {e}");
+            std::process::exit(1);
+        }
+    };
+
+    let logits_view = match tensors.tensor("logits") {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("Error: 'logits' tensor not found: {e}");
+            std::process::exit(1);
+        }
+    };
+
+    let logits: Vec<f32> = logits_view
+        .data()
+        .chunks_exact(4)
+        .map(|b| f32::from_le_bytes([b[0], b[1], b[2], b[3]]))
+        .collect();
+
+    // Load golden and compare
+    match oracle.load_golden(prompt_str) {
+        Ok(golden) => {
+            println!("\nGolden output found:");
+            println!("  Model: {}", golden.model_id);
+            println!("  Transformers version: {}", golden.transformers_version);
+            println!("  Shape: {:?}", golden.shape);
+            println!("  Input hash: {}", hash_prompt(prompt_str));
+
+            println!(
+                "\nComparing logits ({} vs {} elements)...",
+                logits.len(),
+                golden.logits.len()
+            );
+
+            match oracle.tensors_close(&logits, &golden.logits) {
+                Ok(()) => {
+                    println!("\n✓ PARITY VERIFIED");
+                    println!("  Logits are within tolerance ({tolerance_str})");
+                    println!("  Hypothesis corroborated: implementation matches HuggingFace");
+                }
+                Err(diff) => {
+                    eprintln!("\n✗ PARITY FALSIFIED");
+                    eprintln!("  {diff}");
+                    eprintln!("\n  Interpretation (Popper, 1959):");
+                    eprintln!("  The hypothesis that this implementation produces");
+                    eprintln!("  equivalent outputs to HuggingFace has been falsified.");
+                    eprintln!("  Investigation required before certification can proceed.");
+                    std::process::exit(1);
+                }
+            }
+        }
+        Err(e) => {
+            eprintln!("Error loading golden output: {e}");
+            eprintln!("\nHint: Use --list to see available golden outputs");
+            std::process::exit(1);
         }
     }
 }

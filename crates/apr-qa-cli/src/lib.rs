@@ -75,6 +75,12 @@ pub struct PlaybookRunConfig {
     pub run_profile_ci: bool,
     /// Run trace payload tests (forward pass, garbage detection)
     pub run_trace_payload: bool,
+    /// Run HF parity verification against golden corpus
+    pub run_hf_parity: bool,
+    /// Path to HF golden corpus directory
+    pub hf_parity_corpus_path: Option<String>,
+    /// HF parity model family (e.g., "qwen2.5-coder-1.5b/v1")
+    pub hf_parity_model_family: Option<String>,
 }
 
 impl Default for PlaybookRunConfig {
@@ -91,6 +97,9 @@ impl Default for PlaybookRunConfig {
             run_differential_tests: true,
             run_profile_ci: false,
             run_trace_payload: true,
+            run_hf_parity: false,
+            hf_parity_corpus_path: None,
+            hf_parity_model_family: None,
         }
     }
 }
@@ -101,6 +110,7 @@ pub fn parse_failure_policy(policy: &str) -> Result<FailurePolicy, String> {
         "stop-on-first" => Ok(FailurePolicy::StopOnFirst),
         "stop-on-p0" => Ok(FailurePolicy::StopOnP0),
         "collect-all" => Ok(FailurePolicy::CollectAll),
+        "fail-fast" => Ok(FailurePolicy::FailFast),
         _ => Err(format!("Unknown failure policy: {policy}")),
     }
 }
@@ -280,6 +290,9 @@ pub fn build_execution_config(config: &PlaybookRunConfig) -> Result<ExecutionCon
         lock_file_path: None,
         check_integrity: false,
         warn_implicit_skips: false,
+        run_hf_parity: config.run_hf_parity,
+        hf_parity_corpus_path: config.hf_parity_corpus_path.clone(),
+        hf_parity_model_family: config.hf_parity_model_family.clone(),
     })
 }
 
@@ -409,6 +422,9 @@ pub fn build_certification_config(
         lock_file_path: None,
         check_integrity: false,
         warn_implicit_skips: false,
+        run_hf_parity: false,
+        hf_parity_corpus_path: None,
+        hf_parity_model_family: None,
     }
 }
 
@@ -643,6 +659,28 @@ mod tests {
         let result = parse_failure_policy("unknown");
         assert!(result.is_err());
         assert!(result.unwrap_err().contains("Unknown failure policy"));
+    }
+
+    #[test]
+    fn test_parse_failure_policy_fail_fast() {
+        let policy = parse_failure_policy("fail-fast").unwrap();
+        assert!(matches!(policy, FailurePolicy::FailFast));
+    }
+
+    #[test]
+    fn test_failure_policy_fail_fast_emit_diagnostic() {
+        assert!(FailurePolicy::FailFast.emit_diagnostic());
+        assert!(!FailurePolicy::StopOnFirst.emit_diagnostic());
+        assert!(!FailurePolicy::StopOnP0.emit_diagnostic());
+        assert!(!FailurePolicy::CollectAll.emit_diagnostic());
+    }
+
+    #[test]
+    fn test_failure_policy_stops_on_any_failure() {
+        assert!(FailurePolicy::FailFast.stops_on_any_failure());
+        assert!(FailurePolicy::StopOnFirst.stops_on_any_failure());
+        assert!(!FailurePolicy::StopOnP0.stops_on_any_failure());
+        assert!(!FailurePolicy::CollectAll.stops_on_any_failure());
     }
 
     #[test]
@@ -1034,6 +1072,9 @@ mod tests {
             run_differential_tests: true,
             run_profile_ci: true,
             run_trace_payload: false,
+            run_hf_parity: false,
+            hf_parity_corpus_path: None,
+            hf_parity_model_family: None,
         };
         assert!(config.dry_run);
         assert_eq!(config.workers, 16);

@@ -53,7 +53,9 @@ version: "1.0.0"
 model:
   hf_repo: "org/model-name"
   formats:
-    - gguf
+    - safetensors    # Ground truth (HuggingFace source)
+    - apr            # APR native format
+    - gguf           # Third-party format
   quantizations:
     - q4_k_m
 
@@ -71,11 +73,15 @@ gates:
   g4_output_quality: true
 ```
 
+> **Ground Truth**: SafeTensors is the ground truth format. It is the native HuggingFace format and source of truth for model weights. APR and GGUF formats are derived from SafeTensors.
+
 ## Running a Playbook
 
 ```bash
 cargo run --bin apr-qa -- run playbooks/models/my-model.playbook.yaml
 ```
+
+> **WARNING**: Never bypass the playbook infrastructure by running manual `apr` commands (`apr qa`, `apr run`, `apr pull`) for qualification. Always use `apr-qa certify` or `apr-qa run` with a playbook.
 
 ## Model Certification (Recommended)
 

@@ -518,3 +518,95 @@ See: [GH-191](GH-191-APR-QUANTIZATION-DATA-LOSS.md) for the dtype mapping root c
 ---
 
 **Toyota Way Principle:** STOP THE LINE. Do not ship models converted with current GGUF→APR pipeline until this is fixed.
+
+---
+
+## PERMANENT FIX: LAYOUT-002 Row-Major Mandate
+
+**Date:** 2026-02-03
+**Status:** IMPLEMENTED
+
+The root cause of garbage output has been identified and permanently fixed via **LAYOUT-002: Row-Major Mandate**.
+
+> **This is one of the most important architectural decisions in the entire Sovereign AI Stack.**
+
+### Stack Layout Specification
+
+The Stack now has **ONE layout**—row-major everywhere:
+
+| Component | Layout | Notes |
+|-----------|--------|-------|
+| **trueno** | Row-major | Native SIMD kernels, all quant types |
+| **aprender** | Row-major | Transposes GGUF at import time |
+| **realizar** | Row-major | ONE kernel set, no layout aliases |
+| **entrenar** | Row-major | Follows stack convention |
+
+### Root Cause
+
+GGUF uses **column-major** tensor layout (GGML convention). APR/realizar use **row-major** layout. The original converter only swapped shape metadata without actually transposing the data bytes, causing realizar's row-major kernels to misinterpret column-major data.
+
+### The Fix
+
+Aprender's converter now **transposes Q4K/Q5K/Q6K data** during GGUF→APR import:
+
+```
+GGUF (column-major) → dequantize → transpose → re-quantize → APR (row-major)
+```
+
+**Implementation:**
+- `aprender/src/format/converter/write.rs` - Calls transpose functions for dtype 12 (Q4K), 13 (Q5K), and 14 (Q6K)
+- `aprender/src/format/converter/mod.rs` - `transpose_q4k_for_matmul()`, `transpose_q5k_for_matmul()`, `transpose_q6k_for_matmul()`
+
+### Kernel API (Final)
+
+The kernel API is now canonical—no more layout-specific function variants:
+
+```rust
+// Q4K - ONE function family
+fused_q4k_parallel_matvec(...)
+fused_q4k_parallel_matvec_into(...)
+fused_q4k_tiled_matvec(...)
+
+// Q5K - ONE function family
+fused_q5k_parallel_matvec(...)
+fused_q5k_parallel_matvec_into(...)
+
+// Q6K - ONE function family
+fused_q6k_parallel_matvec(...)
+fused_q6k_parallel_matvec_into(...)
+```
+
+**Deleted functions** (technical debt eliminated):
+- ~~`fused_q6k_colmajor_matvec`~~ (deleted)
+- ~~`fused_q4k_auto_matvec_into`~~ (deleted)
+- All `*_colmajor_*` and `*_auto_*` variants
+
+### Test Results
+
+| Project | Test Suite | Status |
+|---------|------------|--------|
+| realizar | 2209 quantize tests | ✅ PASS |
+| aprender | 399 converter tests | ✅ PASS |
+
+The technical debt is eliminated. One layout, one way, no confusion.
+
+### Verification
+
+```bash
+# Convert GGUF with new transpose logic
+apr import model.gguf -o model.apr
+
+# Run inference - should produce coherent output
+apr run model.apr --prompt "What is 2+2?" --max-tokens 10
+# Expected: "4" or coherent math response
+# NOT: "olumbia+lsi nunca/localENTS" (garbage)
+```
+
+### Documentation References
+
+- `aprender/CLAUDE.md` → LAYOUT-002 section
+- `realizar/CLAUDE.md` → LAYOUT-002 section
+- `trueno/CLAUDE.md` → LAYOUT-002 section
+- `batuta/CLAUDE.md` → LAYOUT-002 section
+- `aprender/docs/specifications/qwen2.5-coder-showcase-demo.md` → Section 31.8
+- `apr-model-qa-playbook/docs/specifications/apr-playbook-spec.md` → Section 4.1.1
