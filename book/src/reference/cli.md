@@ -29,6 +29,7 @@ Options:
 - `--auto-ticket` - Auto-generate structured tickets from failures (groups by root cause)
 - `--ticket-repo <REPO>` - Repository for auto-ticket creation (default: `paiml/aprender`)
 - `--no-integrity-check` - Disable playbook integrity verification against lock file
+- `--fail-fast` - Stop certification on first model failure with enhanced diagnostics (§12.5.3)
 
 Examples:
 ```bash
@@ -53,6 +54,9 @@ apr-qa certify --family qwen-coder --tier mvp \
 
 # Auto-generate upstream tickets from failures
 apr-qa certify --family qwen-coder --tier mvp --auto-ticket
+
+# Fail-fast mode for debugging (stops after first model failure)
+apr-qa certify --family qwen-coder --tier mvp --fail-fast
 
 # Skip integrity checks (not recommended)
 apr-qa certify --family qwen-coder --tier mvp --no-integrity-check

@@ -8,7 +8,7 @@
 #![allow(clippy::ptr_arg)]
 
 use apr_qa_cli::{
-    CertTier, PlaybookRunConfig, build_certification_config, build_execution_config,
+    CertTier, PlaybookRunConfig, build_certification_config_with_policy, build_execution_config,
     calculate_mqs_score, calculate_popperian_score, collect_evidence, execute_auto_tickets,
     execute_playbook, filter_models_by_size, generate_html_report, generate_junit_report,
     generate_lock_file, generate_model_scenarios, generate_tickets_from_evidence, list_all_models,
@@ -78,6 +78,10 @@ enum Commands {
         /// Disable playbook integrity checks (§3.1)
         #[arg(long)]
         no_integrity_check: bool,
+
+        /// Stop on first failure with enhanced diagnostics (§12.5.3)
+        #[arg(long)]
+        fail_fast: bool,
     },
 
     /// Run a playbook
@@ -328,6 +332,7 @@ fn main() {
             auto_ticket,
             ticket_repo,
             no_integrity_check,
+            fail_fast,
         } => {
             run_certification(
                 all,
@@ -341,6 +346,7 @@ fn main() {
                 auto_ticket,
                 &ticket_repo,
                 no_integrity_check,
+                fail_fast,
             );
         }
         Commands::Run {
@@ -1261,6 +1267,7 @@ fn run_certification(
     auto_ticket: bool,
     ticket_repo: &str,
     no_integrity_check: bool,
+    fail_fast: bool,
 ) {
     use apr_qa_certify::{
         CertificationStatus, CertificationTier, grade_from_tier, parse_csv, score_from_tier,
@@ -1287,9 +1294,15 @@ fn run_certification(
         model_cache
     };
 
+    // Log environment for fail-fast mode (§12.5.3)
+    if fail_fast {
+        log_environment();
+    }
+
     println!("=== APR Model Certification ===\n");
     println!("Tier: {tier_str}");
     println!("Dry run: {dry_run}");
+    println!("Fail-fast: {fail_fast}");
     if let Some(ref cache) = model_cache {
         println!("Model cache: {}", cache.display());
     }
@@ -1388,7 +1401,7 @@ fn run_certification(
                 .to_string()
         });
 
-        let config = build_certification_config(tier, model_cache_path);
+        let config = build_certification_config_with_policy(tier, model_cache_path, fail_fast);
 
         match execute_playbook(&playbook, config) {
             Ok(result) => {
@@ -1429,10 +1442,15 @@ fn run_certification(
                 println!("  Grade: {grade}");
                 println!("  Status: {status}");
 
-                // Run 6-column profiling
+                // §12.5.3: Skip profiling in fail-fast mode when there are failures
+                // Goal: stop instantly, generate trace for GitHub ticket
+                let has_failures = result.failed > 0 || result.gateway_failed.is_some();
                 let mut profile = apr_qa_runner::SixColumnProfile::default();
 
-                if let Some(ref cache) = model_cache {
+                if fail_fast && has_failures {
+                    eprintln!("\n[FAIL-FAST] Skipping profiling - failures detected");
+                    eprintln!("[FAIL-FAST] Use evidence above for GitHub ticket\n");
+                } else if let Some(ref cache) = model_cache {
                     // Model cache structure: <cache>/<model-short-name>/<format>/<file>
                     let model_dir = cache.join(short.to_lowercase().replace('.', "-"));
 
@@ -1578,10 +1596,24 @@ fn run_certification(
 
                 certified_count += 1;
                 println!();
+
+                // §12.5.3: Stop certification loop on fail-fast with any failure
+                if fail_fast && (result.failed > 0 || result.gateway_failed.is_some()) {
+                    eprintln!("[FAIL-FAST] Stopping certification after {model_id} (had failures)");
+                    break;
+                }
             }
             Err(e) => {
                 eprintln!("  Execution failed: {e}");
                 failed_count += 1;
+
+                // §12.5.3: Stop certification loop on fail-fast with execution error
+                if fail_fast {
+                    eprintln!(
+                        "[FAIL-FAST] Stopping certification after {model_id} (execution error)"
+                    );
+                    break;
+                }
             }
         }
     }

@@ -406,8 +406,22 @@ pub fn build_certification_config(
     tier: CertTier,
     model_cache_path: Option<String>,
 ) -> ExecutionConfig {
+    build_certification_config_with_policy(tier, model_cache_path, false)
+}
+
+/// Build an ExecutionConfig for certification with fail-fast option
+pub fn build_certification_config_with_policy(
+    tier: CertTier,
+    model_cache_path: Option<String>,
+    fail_fast: bool,
+) -> ExecutionConfig {
+    let failure_policy = if fail_fast {
+        FailurePolicy::FailFast
+    } else {
+        FailurePolicy::CollectAll
+    };
     ExecutionConfig {
-        failure_policy: FailurePolicy::CollectAll,
+        failure_policy,
         dry_run: false,
         max_workers: 4,
         model_path: model_cache_path,
