@@ -123,6 +123,63 @@ output/fail-fast-report/
 - Creating GitHub issues with full context (copy summary.md)
 - CI pipelines needing immediate failure notification
 
+## Playbook Integrity Lock (§3.1)
+
+The playbook lock system prevents accidental or malicious modification of test specifications. When enabled (default), the runner verifies that playbook files haven't been modified since they were last locked.
+
+### Generating the Lock File
+
+```bash
+# Lock all playbooks in the models directory
+apr-qa lock-playbooks playbooks/models -o playbooks/playbook.lock.yaml
+
+# Output: Locked 27 playbook(s) → playbooks/playbook.lock.yaml
+```
+
+The lock file contains SHA-256 hashes for each playbook:
+
+```yaml
+entries:
+  qwen2.5-coder-1.5b-mvp:
+    sha256: 8dbb1f48ca93a0948a560fb32a6febc37e2569040fc2aac2581dd5668cd3d7d2
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+```
+
+### Integrity Verification
+
+When running or certifying:
+
+```bash
+# Passes integrity check
+apr-qa run playbook.yaml
+# Output: Integrity check: PASSED
+
+# If playbook was modified:
+# [INTEGRITY] Playbook hash does not match lock file.
+# [INTEGRITY] Either:
+#   1. Run `apr-qa lock-playbooks` to regenerate the lock file
+#   2. Use --no-integrity-check to bypass (NOT RECOMMENDED)
+```
+
+### When to Regenerate the Lock
+
+Regenerate the lock file after intentional playbook changes:
+
+```bash
+# After modifying playbook specifications
+apr-qa lock-playbooks playbooks/models
+
+# Then commit both the playbook and lock file
+git add playbooks/models/*.yaml playbooks/playbook.lock.yaml
+git commit -m "feat(playbook): update test matrix"
+```
+
+**Why this matters:** The integrity lock implements Poka-Yoke (mistake-proofing) from the Toyota Production System. It prevents operators from silently weakening test specifications to make failures "go away."
+
 ## Evidence Collection
 
 Test results are collected as `Evidence`:

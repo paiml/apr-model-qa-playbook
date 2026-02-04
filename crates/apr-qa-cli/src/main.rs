@@ -160,6 +160,10 @@ enum Commands {
         /// HF parity model family (e.g., "qwen2.5-coder-1.5b/v1")
         #[arg(long)]
         hf_model_family: Option<String>,
+
+        /// Disable playbook integrity checks (§3.1)
+        #[arg(long)]
+        no_integrity_check: bool,
     },
 
     /// Run APR tool coverage tests
@@ -374,6 +378,7 @@ fn main() {
             hf_parity,
             hf_corpus_path,
             hf_model_family,
+            no_integrity_check,
         } => {
             // --fail-fast flag overrides --failure-policy
             let effective_policy = if fail_fast {
@@ -398,6 +403,7 @@ fn main() {
                 hf_parity,
                 &hf_corpus_path,
                 hf_model_family,
+                no_integrity_check,
             );
         }
         Commands::Tools {
@@ -475,6 +481,7 @@ fn main() {
 
 #[allow(clippy::fn_params_excessive_bools)]
 #[allow(clippy::too_many_lines)]
+#[allow(clippy::too_many_arguments)]
 fn run_playbook(
     playbook_path: &PathBuf,
     output_dir: &PathBuf,
@@ -492,6 +499,7 @@ fn run_playbook(
     hf_parity: bool,
     hf_corpus_path: &str,
     hf_model_family: Option<String>,
+    no_integrity_check: bool,
 ) {
     // Log environment for fail-fast mode (§12.5.3)
     if failure_policy == "fail-fast" {
@@ -507,6 +515,37 @@ fn run_playbook(
             std::process::exit(1);
         }
     };
+
+    // §3.1: Playbook integrity verification
+    if !no_integrity_check {
+        let lock_path = std::path::Path::new("playbooks/playbook.lock.yaml");
+        if lock_path.exists() {
+            match apr_qa_runner::load_lock_file(lock_path) {
+                Ok(lock_file) => {
+                    if let Err(e) = apr_qa_runner::verify_playbook_integrity(
+                        playbook_path,
+                        &lock_file,
+                        &playbook.name,
+                    ) {
+                        eprintln!("[INTEGRITY] {e}");
+                        eprintln!("[INTEGRITY] Playbook hash does not match lock file.");
+                        eprintln!("[INTEGRITY] Either:");
+                        eprintln!("  1. Run `apr-qa lock-playbooks` to regenerate the lock file");
+                        eprintln!("  2. Use --no-integrity-check to bypass (NOT RECOMMENDED)");
+                        std::process::exit(1);
+                    }
+                    println!("  Integrity check: PASSED");
+                }
+                Err(e) => {
+                    eprintln!("[WARN] Could not load lock file: {e}");
+                }
+            }
+        } else {
+            eprintln!(
+                "[WARN] No playbook lock file found. Run `apr-qa lock-playbooks` to generate one."
+            );
+        }
+    }
 
     // Auto-resolve model path from playbook's hf_repo if not provided (HF-CACHE-001)
     let model_path = match model_path {
@@ -1419,6 +1458,36 @@ fn run_certification(
                 continue;
             }
         };
+
+        // §3.1: Playbook integrity verification
+        if !no_integrity_check {
+            let lock_path = std::path::Path::new("playbooks/playbook.lock.yaml");
+            if lock_path.exists() {
+                match apr_qa_runner::load_lock_file(lock_path) {
+                    Ok(lock_file) => {
+                        if let Err(e) = apr_qa_runner::verify_playbook_integrity(
+                            playbook_path,
+                            &lock_file,
+                            &playbook.name,
+                        ) {
+                            eprintln!("  [INTEGRITY] {e}");
+                            eprintln!(
+                                "  [INTEGRITY] CERTIFICATION BLOCKED: Playbook modified without updating lock file."
+                            );
+                            eprintln!(
+                                "  [INTEGRITY] Run `apr-qa lock-playbooks` first or use --no-integrity-check"
+                            );
+                            failed_count += 1;
+                            continue;
+                        }
+                        println!("  Integrity check: PASSED");
+                    }
+                    Err(e) => {
+                        eprintln!("  [WARN] Could not load lock file: {e}");
+                    }
+                }
+            }
+        }
 
         // Configure execution
         let model_cache_path = model_cache.as_ref().map(|cache| {

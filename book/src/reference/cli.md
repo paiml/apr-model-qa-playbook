@@ -87,6 +87,7 @@ Options:
 - `--hf-parity` - Enable HuggingFace parity verification
 - `--hf-corpus-path <PATH>` - Path to HF golden corpus
 - `--hf-model-family <FAMILY>` - HF parity model family
+- `--no-integrity-check` - Disable playbook integrity verification against lock file (§3.1)
 
 Examples:
 ```bash
@@ -104,6 +105,9 @@ RUST_LOG=debug apr-qa run playbook.yaml --fail-fast 2>&1 | tee failure.log
 
 # CI mode with all assertions
 apr-qa run playbook.yaml --profile-ci --run-tool-tests
+
+# Skip integrity check (not recommended)
+apr-qa run playbook.yaml --no-integrity-check
 ```
 
 **Model Auto-Resolution (HF-CACHE-001):** When `--model-path` is omitted, the runner automatically resolves `playbook.model.hf_repo` from your local cache. It searches HuggingFace cache first (`~/.cache/huggingface/hub/`), then APR cache (`~/.cache/apr-models/`). Environment variables `HUGGINGFACE_HUB_CACHE` and `HF_HOME` are respected per HuggingFace convention.
