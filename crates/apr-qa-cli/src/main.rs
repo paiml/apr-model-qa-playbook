@@ -508,6 +508,25 @@ fn run_playbook(
         }
     };
 
+    // Auto-resolve model path from playbook's hf_repo if not provided (HF-CACHE-001)
+    let model_path = match model_path {
+        Some(p) => Some(p),
+        None => match apr_qa_runner::resolve_hf_repo_to_cache(&playbook.model.hf_repo) {
+            Ok(path) => {
+                println!("  Auto-resolved model: {}", path.display());
+                Some(path.to_string_lossy().to_string())
+            }
+            Err(e) => {
+                eprintln!("Warning: {e}");
+                eprintln!(
+                    "Hint: Download model with `huggingface-cli download {}` or use --model-path",
+                    playbook.model.hf_repo
+                );
+                None
+            }
+        },
+    };
+
     // Validate failure policy
     if parse_failure_policy(failure_policy).is_err() {
         eprintln!("Unknown failure policy: {failure_policy}");

@@ -23,7 +23,38 @@ cargo run --bin apr-qa -- validate <playbook.yaml>
 The playbook runner internally invokes the `apr` binary for inference. This is managed by the playbook infrastructure—do not call `apr` directly:
 
 ```bash
+# Zero-setup: model auto-resolved from HuggingFace cache (HF-CACHE-001)
+cargo run --bin apr-qa -- run playbook.yaml
+
+# Or with explicit model path
 cargo run --bin apr-qa -- run playbook.yaml --model-path /path/to/model
+```
+
+### HuggingFace Cache Resolution
+
+When `--model-path` is not provided, the runner automatically resolves `playbook.model.hf_repo` to your local cache:
+
+1. **HuggingFace cache** (checked first):
+   - `$HUGGINGFACE_HUB_CACHE` or `$HF_HOME/hub` or `~/.cache/huggingface/hub`
+   - Looks for `models--{org}--{repo}/snapshots/*/model.safetensors`
+
+2. **APR cache** (fallback):
+   - `~/.cache/apr-models/{org}/{repo}/`
+
+Example output:
+```
+Loading playbook: playbooks/models/qwen2.5-coder-0.5b-mvp.playbook.yaml
+  Auto-resolved model: /home/user/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-0.5B-Instruct/snapshots/abc123
+Running playbook: qwen2.5-coder-0.5b-mvp
+```
+
+If the model is not found, you'll see searched paths and a hint:
+```
+Warning: Model not found in cache: Qwen/Qwen2.5-Coder-0.5B-Instruct
+Searched:
+  - /home/user/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-0.5B-Instruct/snapshots
+  - /home/user/.cache/apr-models/Qwen/Qwen2.5-Coder-0.5B-Instruct
+Hint: Download model with `huggingface-cli download Qwen/Qwen2.5-Coder-0.5B-Instruct` or use --model-path
 ```
 
 ## Parallel Execution

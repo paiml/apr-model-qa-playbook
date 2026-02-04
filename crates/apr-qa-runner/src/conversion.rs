@@ -1857,6 +1857,146 @@ impl From<ConversionResult> for Evidence {
     }
 }
 
+// ============================================================================
+// HuggingFace Cache Resolution (HF-CACHE-001, HF-CACHE-002)
+// ============================================================================
+
+/// Get the HuggingFace cache directory respecting environment variables.
+///
+/// Priority (per HuggingFace convention):
+/// 1. `$HUGGINGFACE_HUB_CACHE` (highest priority)
+/// 2. `$HF_HOME/hub`
+/// 3. `~/.cache/huggingface/hub` (default)
+///
+/// # Specification
+///
+/// Implements HF-CACHE-002: Environment Variable Support.
+#[must_use]
+pub fn get_hf_cache_dir() -> std::path::PathBuf {
+    use std::path::PathBuf;
+
+    if let Ok(cache) = std::env::var("HUGGINGFACE_HUB_CACHE") {
+        return PathBuf::from(cache);
+    }
+    if let Ok(home) = std::env::var("HF_HOME") {
+        return PathBuf::from(home).join("hub");
+    }
+    let home = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
+    PathBuf::from(home).join(".cache/huggingface/hub")
+}
+
+/// Split a HuggingFace repo ID into (org, repo).
+///
+/// # Examples
+///
+/// ```
+/// use apr_qa_runner::split_hf_repo;
+///
+/// assert_eq!(split_hf_repo("Qwen/Qwen2.5-Coder-0.5B"), ("Qwen", "Qwen2.5-Coder-0.5B"));
+/// assert_eq!(split_hf_repo("model-only"), ("unknown", "model-only"));
+/// ```
+#[must_use]
+pub fn split_hf_repo(hf_repo: &str) -> (&str, &str) {
+    hf_repo.split_once('/').unwrap_or(("unknown", hf_repo))
+}
+
+/// Find a snapshot containing `model.safetensors` in the HuggingFace cache.
+///
+/// Internal helper that searches for model files within a given cache directory.
+fn find_hf_snapshot(
+    hf_cache: &std::path::Path,
+    org: &str,
+    repo: &str,
+) -> Option<std::path::PathBuf> {
+    let hf_model_dir = hf_cache
+        .join(format!("models--{org}--{repo}"))
+        .join("snapshots");
+
+    if !hf_model_dir.exists() {
+        return None;
+    }
+
+    let entries = std::fs::read_dir(&hf_model_dir).ok()?;
+    for entry in entries.flatten() {
+        let snapshot = entry.path();
+        if snapshot.is_dir() && snapshot.join("model.safetensors").exists() {
+            return Some(snapshot);
+        }
+    }
+    None
+}
+
+/// Find a model in the APR cache directory.
+///
+/// Internal helper that checks if a model exists in the APR cache.
+fn find_apr_cache(home: &std::path::Path, org: &str, repo: &str) -> Option<std::path::PathBuf> {
+    let apr_cache = home.join(".cache/apr-models").join(org).join(repo);
+    if apr_cache.exists() {
+        Some(apr_cache)
+    } else {
+        None
+    }
+}
+
+/// Resolve HuggingFace repo to cache with explicit cache directories.
+///
+/// Internal helper for testing that doesn't depend on environment variables.
+fn resolve_hf_repo_with_dirs(
+    hf_repo: &str,
+    hf_cache: &std::path::Path,
+    home: &std::path::Path,
+) -> Result<std::path::PathBuf> {
+    let (org, repo) = split_hf_repo(hf_repo);
+
+    // Try HuggingFace cache first
+    if let Some(snapshot) = find_hf_snapshot(hf_cache, org, repo) {
+        return Ok(snapshot);
+    }
+
+    // Try APR cache
+    if let Some(apr_path) = find_apr_cache(home, org, repo) {
+        return Ok(apr_path);
+    }
+
+    let hf_model_dir = hf_cache
+        .join(format!("models--{org}--{repo}"))
+        .join("snapshots");
+    let apr_cache = home.join(".cache/apr-models").join(org).join(repo);
+
+    Err(Error::Execution(format!(
+        "Model not found in cache: {hf_repo}\nSearched:\n  - {}\n  - {}",
+        hf_model_dir.display(),
+        apr_cache.display()
+    )))
+}
+
+/// Resolve a HuggingFace repo ID to a local cache directory.
+///
+/// Searches for the model in the following locations (in order):
+/// 1. HuggingFace cache: `$HUGGINGFACE_HUB_CACHE` or `$HF_HOME/hub` or `~/.cache/huggingface/hub`
+/// 2. APR cache: `~/.cache/apr-models/{org}/{repo}/`
+///
+/// Returns the snapshot directory containing `model.safetensors` (for HF cache)
+/// or the APR cache directory.
+///
+/// # Specification
+///
+/// Implements HF-CACHE-001: Automatic HuggingFace Cache Resolution.
+///
+/// # Errors
+///
+/// Returns an error if the model is not found in any cache location.
+/// The error message lists all searched paths for debugging.
+pub fn resolve_hf_repo_to_cache(hf_repo: &str) -> Result<std::path::PathBuf> {
+    use std::path::PathBuf;
+
+    let hf_cache = get_hf_cache_dir();
+    let home = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
+    let home = PathBuf::from(home);
+
+    resolve_hf_repo_with_dirs(hf_repo, &hf_cache, &home)
+}
+
 #[cfg(test)]
 #[allow(clippy::panic)]
 #[allow(clippy::float_cmp)]
@@ -4810,5 +4950,226 @@ exit 1"#,
         assert!(types.contains(&QuantType::Q6K));
         assert!(types.contains(&QuantType::Q4_0));
         assert!(types.contains(&QuantType::Q8_0));
+    }
+
+    // =========================================================================
+    // HuggingFace Cache Resolution Tests (HF-CACHE-001, HF-CACHE-002)
+    // =========================================================================
+
+    #[test]
+    fn test_split_hf_repo_with_org() {
+        assert_eq!(
+            split_hf_repo("Qwen/Qwen2.5-Coder-0.5B"),
+            ("Qwen", "Qwen2.5-Coder-0.5B")
+        );
+        assert_eq!(
+            split_hf_repo("meta-llama/Llama-2-7b"),
+            ("meta-llama", "Llama-2-7b")
+        );
+    }
+
+    #[test]
+    fn test_split_hf_repo_without_org() {
+        assert_eq!(split_hf_repo("model-only"), ("unknown", "model-only"));
+        assert_eq!(split_hf_repo("gpt2"), ("unknown", "gpt2"));
+    }
+
+    #[test]
+    fn test_split_hf_repo_multiple_slashes() {
+        // Only splits on first slash
+        assert_eq!(split_hf_repo("org/repo/extra"), ("org", "repo/extra"));
+    }
+
+    #[test]
+    fn test_split_hf_repo_empty_string() {
+        assert_eq!(split_hf_repo(""), ("unknown", ""));
+    }
+
+    #[test]
+    fn test_find_hf_snapshot_found() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        let snapshot = tmp
+            .path()
+            .join("models--Test--Model")
+            .join("snapshots")
+            .join("abc123");
+        std::fs::create_dir_all(&snapshot).unwrap();
+        std::fs::write(snapshot.join("model.safetensors"), b"fake").unwrap();
+
+        let result = find_hf_snapshot(tmp.path(), "Test", "Model");
+        assert!(result.is_some());
+        assert_eq!(result.unwrap(), snapshot);
+    }
+
+    #[test]
+    fn test_find_hf_snapshot_not_found_no_dir() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        let result = find_hf_snapshot(tmp.path(), "Missing", "Model");
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_find_hf_snapshot_not_found_no_safetensors() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        let snapshot = tmp
+            .path()
+            .join("models--Test--NoFile")
+            .join("snapshots")
+            .join("abc123");
+        std::fs::create_dir_all(&snapshot).unwrap();
+        // No model.safetensors file
+
+        let result = find_hf_snapshot(tmp.path(), "Test", "NoFile");
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_find_apr_cache_found() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        let apr_cache = tmp.path().join(".cache/apr-models/TestOrg/TestRepo");
+        std::fs::create_dir_all(&apr_cache).unwrap();
+
+        let result = find_apr_cache(tmp.path(), "TestOrg", "TestRepo");
+        assert!(result.is_some());
+        assert_eq!(result.unwrap(), apr_cache);
+    }
+
+    #[test]
+    fn test_find_apr_cache_not_found() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        let result = find_apr_cache(tmp.path(), "Missing", "Model");
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_resolve_hf_repo_with_dirs_found_in_hf_cache() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        let snapshot = tmp
+            .path()
+            .join("models--Test--Model")
+            .join("snapshots")
+            .join("abc123");
+        std::fs::create_dir_all(&snapshot).unwrap();
+        std::fs::write(snapshot.join("model.safetensors"), b"fake").unwrap();
+
+        // Use the temp dir as both HF cache and home
+        let result = resolve_hf_repo_with_dirs("Test/Model", tmp.path(), tmp.path());
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), snapshot);
+    }
+
+    #[test]
+    fn test_resolve_hf_repo_with_dirs_found_in_apr_cache() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        let apr_cache = tmp.path().join(".cache/apr-models/TestOrg/TestRepo");
+        std::fs::create_dir_all(&apr_cache).unwrap();
+
+        // HF cache is empty, APR cache has the model
+        let hf_cache = tmp.path().join("hf_empty");
+        std::fs::create_dir_all(&hf_cache).unwrap();
+
+        let result = resolve_hf_repo_with_dirs("TestOrg/TestRepo", &hf_cache, tmp.path());
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), apr_cache);
+    }
+
+    #[test]
+    fn test_resolve_hf_repo_with_dirs_not_found() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        let hf_cache = tmp.path().join("hf_empty");
+        let home = tmp.path().join("home_empty");
+        std::fs::create_dir_all(&hf_cache).unwrap();
+        std::fs::create_dir_all(&home).unwrap();
+
+        let result = resolve_hf_repo_with_dirs("Missing/Model", &hf_cache, &home);
+        assert!(result.is_err());
+        let err_msg = result.unwrap_err().to_string();
+        assert!(err_msg.contains("not found in cache"));
+        assert!(err_msg.contains("Missing/Model"));
+    }
+
+    #[test]
+    fn test_resolve_hf_repo_with_dirs_snapshot_without_safetensors() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        let snapshot = tmp
+            .path()
+            .join("models--Test--NoSafetensors")
+            .join("snapshots")
+            .join("abc123");
+        std::fs::create_dir_all(&snapshot).unwrap();
+        // No model.safetensors
+
+        let home = tmp.path().join("home_empty");
+        std::fs::create_dir_all(&home).unwrap();
+
+        let result = resolve_hf_repo_with_dirs("Test/NoSafetensors", tmp.path(), &home);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_resolve_hf_repo_with_dirs_multiple_snapshots() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        let snapshots_dir = tmp.path().join("models--Test--Multi").join("snapshots");
+
+        // Create two snapshots, only second has model.safetensors
+        let snap1 = snapshots_dir.join("aaa111");
+        let snap2 = snapshots_dir.join("bbb222");
+        std::fs::create_dir_all(&snap1).unwrap();
+        std::fs::create_dir_all(&snap2).unwrap();
+        std::fs::write(snap2.join("model.safetensors"), b"fake").unwrap();
+
+        let result = resolve_hf_repo_with_dirs("Test/Multi", tmp.path(), tmp.path());
+        assert!(result.is_ok());
+        assert!(result.unwrap().join("model.safetensors").exists());
+    }
+
+    #[test]
+    fn test_resolve_hf_repo_with_dirs_hf_cache_priority() {
+        let tmp = tempfile::TempDir::new().unwrap();
+
+        // Create both HF and APR cache entries
+        let hf_snapshot = tmp
+            .path()
+            .join("models--Test--Both")
+            .join("snapshots")
+            .join("hf123");
+        std::fs::create_dir_all(&hf_snapshot).unwrap();
+        std::fs::write(hf_snapshot.join("model.safetensors"), b"hf").unwrap();
+
+        let apr_cache = tmp.path().join(".cache/apr-models/Test/Both");
+        std::fs::create_dir_all(&apr_cache).unwrap();
+
+        // HF cache should take priority
+        let result = resolve_hf_repo_with_dirs("Test/Both", tmp.path(), tmp.path());
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), hf_snapshot);
+    }
+
+    #[test]
+    fn test_get_hf_cache_dir_returns_path() {
+        // Just verify it returns a PathBuf without errors
+        // The actual value depends on environment, so we just check it doesn't panic
+        let dir = get_hf_cache_dir();
+        assert!(!dir.as_os_str().is_empty());
+    }
+
+    #[test]
+    fn test_resolve_hf_repo_to_cache_error_message_format() {
+        // Test with nonexistent paths - this tests the error message format
+        let tmp = tempfile::TempDir::new().unwrap();
+        let hf_cache = tmp.path().join("hf_empty");
+        let home = tmp.path().join("home_empty");
+        std::fs::create_dir_all(&hf_cache).unwrap();
+        std::fs::create_dir_all(&home).unwrap();
+
+        let result = resolve_hf_repo_with_dirs("Org/Repo", &hf_cache, &home);
+        assert!(result.is_err());
+
+        let err_msg = result.unwrap_err().to_string();
+        // Check error message contains useful debugging info
+        assert!(err_msg.contains("Org/Repo"));
+        assert!(err_msg.contains("Searched:"));
+        assert!(err_msg.contains("models--Org--Repo"));
+        assert!(err_msg.contains("apr-models"));
     }
 }
