@@ -78,9 +78,9 @@ mode = "rayon"
 | `collect_all` | Run all tests, collect all failures |
 | `fail-fast` | Stop on first failure with enhanced diagnostics |
 
-### Fail-Fast Mode (§12.5.3)
+### Fail-Fast Mode (§12.5.3, FF-REPORT-001)
 
-The `--fail-fast` flag is designed for debugging and GitHub ticket creation. It stops on the first failure and emits comprehensive diagnostic output:
+The `--fail-fast` flag is designed for debugging and GitHub ticket creation. It stops on the first failure and generates a comprehensive diagnostic report using apr's rich tooling.
 
 ```bash
 # Basic fail-fast
@@ -88,19 +88,39 @@ apr-qa run playbook.yaml --fail-fast
 
 # With full tracing for GitHub ticket
 RUST_LOG=debug apr-qa run playbook.yaml --fail-fast 2>&1 | tee failure.log
+
+# View generated report
+cat output/fail-fast-report/summary.md
 ```
 
-**Output includes:**
-- Gate ID and failure reason
-- Model ID, format, and backend
-- Full stderr capture
-- Exit code
-- Environment context (OS, versions, git commit)
+**On failure, generates `output/fail-fast-report/`:**
+
+```
+output/fail-fast-report/
+├── summary.md           # GitHub-ready markdown
+├── diagnostics.json     # Full machine-readable report
+├── check.json           # apr check output (pipeline integrity)
+├── inspect.json         # apr inspect output (model metadata)
+├── trace.json           # apr trace output (layer analysis, .apr only)
+├── tensors.json         # apr tensors output (tensor inventory)
+├── environment.json     # OS, versions, git state
+└── stderr.log           # Raw stderr capture
+```
+
+**Diagnostic commands run (with timeouts):**
+
+| Stage | Command | Timeout | Purpose |
+|-------|---------|---------|---------|
+| 1 | `apr check <model> --json` | 30s | 10-stage pipeline integrity |
+| 2 | `apr inspect <model> --json` | 10s | Metadata, vocab, structure |
+| 3 | `apr trace <model> --payload --json` | 60s | Layer-by-layer analysis |
+| 4 | `apr tensors <model> --json` | 10s | Tensor names and shapes |
+| 5 | `apr explain <error-code>` | 5s | Human-readable explanation |
 
 **Use cases:**
 - Debugging a specific test failure
 - Bisecting a regression
-- Creating GitHub issues with full context
+- Creating GitHub issues with full context (copy summary.md)
 - CI pipelines needing immediate failure notification
 
 ## Evidence Collection

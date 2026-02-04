@@ -532,6 +532,103 @@ let idempotency_path = output_dir.idempotency_dir();
 output_dir.cleanup().expect("cleanup failed");
 ```
 
+## Fail-Fast Diagnostic Reports (FF-REPORT-001)
+
+The `fail_fast_demo` example demonstrates the diagnostic report generation
+when --fail-fast mode detects a test failure:
+
+```rust
+use apr_qa_runner::{
+    DiagnosticResult, DiagnosticsBundle, EnvironmentContext,
+    FailFastReport, FailFastReporter, FailureDetails, FailurePolicy,
+    ReproductionInfo,
+};
+use std::path::Path;
+
+fn main() {
+    // Create reporter pointing to output directory
+    let reporter = FailFastReporter::new(Path::new("output"));
+
+    // When a test fails, the executor calls:
+    // reporter.generate_report(&evidence, model_path, Some("playbook.yaml"))
+    //
+    // This generates:
+    //   output/fail-fast-report/
+    //   ├── summary.md           # GitHub-ready markdown
+    //   ├── diagnostics.json     # Full report
+    //   ├── check.json           # apr check output
+    //   ├── inspect.json         # apr inspect output
+    //   ├── trace.json           # apr trace output
+    //   ├── tensors.json         # apr tensors output
+    //   ├── environment.json     # System context
+    //   └── stderr.log           # Raw stderr
+
+    // FailurePolicy::FailFast enables diagnostic generation
+    let policy = FailurePolicy::FailFast;
+    assert!(policy.emit_diagnostic());      // true
+    assert!(policy.stops_on_any_failure()); // true
+}
+```
+
+### Output
+
+```
+[FAIL-FAST] Gate G3-STABLE FALSIFIED
+[FAIL-FAST] Model: Qwen/Qwen2.5-Coder-0.5B-Instruct
+[FAIL-FAST] Format: Apr
+[FAIL-FAST] Backend: Cpu
+[FAIL-FAST] Outcome: Crashed
+[FAIL-FAST] Reason: Process crashed with exit code -1
+[FAIL-FAST] Generating diagnostic report...
+[FAIL-FAST] Running apr check... done (2.3s)
+[FAIL-FAST] Running apr inspect... done (0.4s)
+[FAIL-FAST] Running apr trace... done (5.1s)
+[FAIL-FAST] Running apr tensors... done (0.3s)
+[FAIL-FAST] Report saved to: output/fail-fast-report/
+[FAIL-FAST] Summary: output/fail-fast-report/summary.md
+[FAIL-FAST] GitHub issue body ready for paste
+```
+
+The generated `summary.md` is formatted for direct paste into GitHub issues:
+
+```markdown
+# Fail-Fast Report: G3-STABLE
+
+## Failure Summary
+
+| Field | Value |
+|-------|-------|
+| Gate | `G3-STABLE` |
+| Model | `Qwen/Qwen2.5-Coder-0.5B-Instruct` |
+| Format | Apr |
+| Backend | Cpu |
+| Outcome | Crashed |
+| Exit Code | -1 |
+| Duration | 52740ms |
+
+## Environment
+
+| Field | Value |
+|-------|-------|
+| OS | linux x86_64 |
+| apr-qa | 0.1.0 |
+| apr-cli | 0.2.12 |
+| Git | abc123 (main) |
+| Rust | 1.93.0 |
+
+## Reproduction
+
+```bash
+# Reproduce this failure
+apr-qa run playbook.yaml --fail-fast
+
+# Run diagnostics manually
+apr check /path/to/model.apr
+apr trace /path/to/model.apr --payload -v
+apr explain G3-STABLE
+```
+```
+
 ## YAML Playbook Examples
 
 The `playbooks/` directory contains YAML playbooks:
