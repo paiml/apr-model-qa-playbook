@@ -1,15 +1,30 @@
 # APR Model QA Playbook Specification
 
-**Version:** 1.4.0
+**Version:** 1.5.0
 **Status:** DRAFT - Awaiting Peer Review
 **Author:** PAIML Engineering
-**Date:** 2026-02-03
+**Date:** 2026-02-04
 **PMAT Compliance:** Required (95% coverage, zero SATD)
 **Quality Philosophy:** Toyota Way + Popperian Falsification + Black Swan Theory
 
 ---
 
 ## Changelog
+
+### v1.5.0 (2026-02-04)
+- **feat(oracle):** Add Batuta Oracle enhancement for failure analysis (§12.1.1)
+  - Auto-query RAG index on failure to retrieve historical context
+  - Generate Popperian falsification checklists from failure evidence
+  - Enrich GitHub tickets with cross-project documentation
+  - Cross-reference related issues, LAYOUT-002 patterns, and known bugs
+- **feat(metrics):** Add oracle-enriched metrics collection
+  - `--oracle-enhance` flag for failure enhancement
+  - Structured `OracleContext` in evidence JSON
+  - Automatic hypothesis ranking from RAG results
+- **feat(ticket):** Enhanced ticket generation with oracle context (§6.4)
+  - Falsification checklists embedded in tickets
+  - Investigation commands auto-generated
+  - Cross-references to spec sections and prior art
 
 ### v1.4.0 (2026-02-03)
 - **feat(fail-fast):** Add `--fail-fast` mode with tracing-based diagnostics (§12.5.3)
@@ -89,12 +104,17 @@ The framework embodies two complementary philosophies:
 4. [Format Conversion Testing (P0 CRITICAL)](#4-format-conversion-testing-p0-critical)
 5. [APR Tool Coverage](#5-apr-tool-coverage)
 6. [Upstream Ticket Protocol](#6-upstream-ticket-protocol)
+   - 6.4 [Automated Ticket Creation](#64-automated-ticket-creation)
+   - 6.4.1 [Oracle-Enhanced Ticket Template (v1.5.0)](#641-oracle-enhanced-ticket-template-v150)
+   - 6.4.2 [Failure Report Association](#642-failure-report-association)
 7. [Upstream Spec Requirements](#7-upstream-spec-requirements)
 8. [Model Qualification Score (MQS)](#8-model-qualification-score-mqs)
 9. [Playbook Schema](#9-playbook-schema)
 10. [Property Test Generation](#10-property-test-generation)
 11. [Falsification Protocol](#11-falsification-protocol)
 12. [Orchestration Pipeline](#12-orchestration-pipeline)
+    - 12.1 [Batuta Integration](#121-batuta-integration)
+    - 12.1.1 [Batuta Oracle Enhancement (v1.5.0)](#1211-batuta-oracle-enhancement-v150)
 13. [Coverage Requirements](#13-coverage-requirements)
 14. [Peer-Reviewed Citations](#14-peer-reviewed-citations)
 15. [Falsification Checklist](#15-falsification-checklist)
@@ -1382,7 +1402,7 @@ bashrs playbook playbooks/verify/TICKET-{NUMBER}.yaml
 
 ### 6.4 Automated Ticket Creation
 
-The `apr-qa-report` crate includes ticket generation:
+The `apr-qa-report` crate includes ticket generation with optional oracle enhancement (v1.5.0).
 
 ```rust
 // crates/apr-qa-report/src/ticket.rs
@@ -1390,6 +1410,7 @@ The `apr-qa-report` crate includes ticket generation:
 pub struct TicketGenerator {
     aprender_path: PathBuf,
     ticket_counter: AtomicU32,
+    oracle_enhancer: Option<OracleEnhancer>,
 }
 
 impl TicketGenerator {
@@ -1400,6 +1421,11 @@ impl TicketGenerator {
             return Ok(PathBuf::new());
         }
 
+        // Enhance with oracle if available (v1.5.0)
+        let oracle_context = self.oracle_enhancer
+            .as_ref()
+            .map(|o| o.enhance_failure(evidence));
+
         let ticket_num = self.next_ticket_number()?;
         let slug = self.generate_slug(evidence);
         let filename = format!("TICKET-{:04}-{}.md", ticket_num, slug);
@@ -1407,7 +1433,7 @@ impl TicketGenerator {
             .join("docs/tickets")
             .join(&filename);
 
-        let content = self.render_ticket_template(ticket_num, evidence)?;
+        let content = self.render_ticket_template(ticket_num, evidence, oracle_context.as_ref())?;
         std::fs::write(&path, content)?;
 
         // Also create verification playbook
@@ -1429,6 +1455,117 @@ impl TicketGenerator {
         evidence.has_backend_divergence()
     }
 }
+```
+
+#### 6.4.1 Oracle-Enhanced Ticket Template (v1.5.0)
+
+When oracle enhancement is enabled, tickets include a **Popperian Falsification Checklist** section:
+
+```markdown
+## Summary
+
+{failure_summary}
+
+## Popperian Falsification Checklist
+
+| Gate ID | Hypothesis | Falsified If | Status | Confidence |
+|---------|------------|--------------|--------|------------|
+{{#each oracle_context.checklist}}
+| {{gate_id}} | {{hypothesis}} | {{falsified_if}} | {{status}} | {{confidence}} |
+{{/each}}
+
+## Root Cause Hypotheses (Ranked)
+
+{{#each oracle_context.hypotheses}}
+### {{id}}: {{description}} ({{confidence}})
+
+**Evidence For:**
+{{#each evidence_for}}
+- {{this}}
+{{/each}}
+
+**Evidence Against:**
+{{#each evidence_against}}
+- {{this}}
+{{/each}}
+
+{{/each}}
+
+## Investigation Commands
+
+```bash
+{{#each oracle_context.investigation_commands}}
+{{this}}
+{{/each}}
+```
+
+## Cross-References
+
+{{#each oracle_context.cross_references}}
+- `{{source}}` § {{section}} (relevance: {{relevance}})
+{{/each}}
+
+## Evidence
+
+- **Evidence File:** `{evidence_path}`
+- **Oracle Query Latency:** {{oracle_context.query_latency_ms}}ms
+```
+
+#### 6.4.2 Failure Report Association
+
+The falsification checklist is **always associated** with the failure report:
+
+```
+certifications/
+└── qwen2-5-coder-0-5b-instruct/
+    ├── evidence.json              # Raw evidence with oracle_context
+    ├── checklist.md               # Human-readable falsification checklist
+    └── report.html                # Full qualification report
+```
+
+**checklist.md** is auto-generated from `evidence.json`:
+
+```markdown
+# Falsification Checklist: Qwen2.5-Coder-0.5B-Instruct
+
+**Generated:** 2026-02-04T10:36:43Z
+**MQS Score:** 320/1000 (Grade F, BLOCKED)
+**Failures:** 13/24 scenarios
+
+---
+
+## Checklist Items
+
+- [ ] **F-LAYOUT-002**: Verify row-major layout after conversion
+  - *Hypothesis:* All tensors are in row-major layout
+  - *Falsified if:* Garbage output or diff > 1e-6
+  - *Status:* FALSIFIED (58-90% diff observed)
+  - *Confidence:* HIGH
+
+- [ ] **F-PATH-EXT**: Verify file path resolution
+  - *Hypothesis:* ConversionTest receives file path, not directory
+  - *Falsified if:* "Invalid model format: No file extension found"
+  - *Status:* FALSIFIED (error message confirms)
+  - *Confidence:* HIGH
+
+---
+
+## Investigation Commands
+
+\`\`\`bash
+# 1. Verify layout flag in APR header
+apr inspect ~/.cache/apr-models/qwen2-5-coder-0-5b-instruct/apr/model.apr | grep layout
+
+# 2. Check if converter is transposing Q4K tensors
+grep -n "transpose_q4k" ../aprender/src/format/converter/*.rs
+
+# 3. Verify GGUF→SafeTensors baseline
+apr rosetta ~/.cache/apr-models/.../gguf/model.gguf -o /tmp/test.safetensors --verify
+\`\`\`
+
+---
+
+*Generated by apr-qa with --oracle-enhance*
 ```
 
 ### 6.5 Verification Playbooks
@@ -3832,6 +3969,258 @@ description = "Generate Popperian report"
 command = "apr-qa-report generate --input evidence/ --output report/"
 depends_on = ["parity"]
 parallel = false
+```
+
+#### 12.1.1 Batuta Oracle Enhancement (v1.5.0)
+
+When failures occur, the qualification runner can leverage `batuta oracle --rag` to enhance failure reports with historical context, generate falsification checklists, and enrich metrics.
+
+##### 12.1.1.1 Oracle Enhancement Flow
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                     ORACLE-ENHANCED FAILURE ANALYSIS                         │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  1. FAILURE DETECTED                                                         │
+│     ┌─────────────────────────────────────────────────────────────────┐     │
+│     │  Gate: F-CONV-G-A  |  Outcome: Falsified  |  Diff: 7.61e-1     │     │
+│     │  Reason: "Conversion GGUF → APR produced different output"      │     │
+│     └─────────────────────────────────────────────────────────────────┘     │
+│                                      │                                       │
+│                                      ▼                                       │
+│  2. ORACLE QUERY (if batuta available)                                       │
+│     ┌─────────────────────────────────────────────────────────────────┐     │
+│     │  batuta oracle --rag "Generate falsification checklist for      │     │
+│     │  F-CONV-G-A failure: GGUF→APR diff 7.61e-1, tolerance 1e-6.    │     │
+│     │  Check LAYOUT-002, tensor transpose, file extension handling."  │     │
+│     └─────────────────────────────────────────────────────────────────┘     │
+│                                      │                                       │
+│                                      ▼                                       │
+│  3. FALSIFICATION CHECKLIST GENERATED                                        │
+│     ┌─────────────────────────────────────────────────────────────────┐     │
+│     │  - [ ] F-LAYOUT-002: Verify row-major layout after conversion   │     │
+│     │  - [ ] F-CONV-TRANSPOSE: Check Q4K tensor transpose applied     │     │
+│     │  - [ ] F-PATH-EXT: Verify file extension handling               │     │
+│     │  - [ ] Cross-ref: GH-190, GH-202, aprender/CLAUDE.md            │     │
+│     └─────────────────────────────────────────────────────────────────┘     │
+│                                      │                                       │
+│                                      ▼                                       │
+│  4. ENRICHED FAILURE REPORT                                                  │
+│     ┌─────────────────────────────────────────────────────────────────┐     │
+│     │  evidence.json + oracle_context + falsification_checklist       │     │
+│     └─────────────────────────────────────────────────────────────────┘     │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+##### 12.1.1.2 Falsification Checklist Generation
+
+The oracle generates a **Popperian Falsification Checklist** for each failure. This checklist is:
+1. **Associated with the failure report** in `evidence.json`
+2. **Embedded in auto-generated GitHub tickets**
+3. **Used to guide investigation** with hypothesis ranking
+
+**Checklist Structure:**
+
+```rust
+// crates/apr-qa-runner/src/oracle.rs
+
+/// A falsification checklist item generated by batuta oracle
+#[derive(Debug, Serialize, Deserialize)]
+pub struct FalsificationCheckItem {
+    /// Gate ID this check relates to (e.g., "F-LAYOUT-002")
+    pub gate_id: String,
+
+    /// Hypothesis to falsify
+    pub hypothesis: String,
+
+    /// Test procedure to falsify the hypothesis
+    pub test_procedure: String,
+
+    /// What outcome would falsify the hypothesis
+    pub falsified_if: String,
+
+    /// Current status based on evidence
+    pub status: CheckStatus,
+
+    /// Confidence level (HIGH/MEDIUM/LOW)
+    pub confidence: Confidence,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub enum CheckStatus {
+    /// Not yet tested
+    Pending,
+    /// Evidence suggests hypothesis is false
+    Falsified { reason: String },
+    /// Hypothesis survived refutation attempt
+    Corroborated,
+}
+
+/// Oracle-generated context for a failure
+#[derive(Debug, Serialize, Deserialize)]
+pub struct OracleContext {
+    /// Generated falsification checklist
+    pub checklist: Vec<FalsificationCheckItem>,
+
+    /// Ranked hypotheses for root cause
+    pub hypotheses: Vec<RankedHypothesis>,
+
+    /// Cross-references to related documentation
+    pub cross_references: Vec<CrossReference>,
+
+    /// Investigation commands to run
+    pub investigation_commands: Vec<String>,
+
+    /// Whether oracle was available
+    pub oracle_available: bool,
+
+    /// Query latency in milliseconds
+    pub query_latency_ms: u64,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RankedHypothesis {
+    pub id: String,
+    pub description: String,
+    pub confidence: Confidence,
+    pub evidence_for: Vec<String>,
+    pub evidence_against: Vec<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CrossReference {
+    pub source: String,  // e.g., "aprender/CLAUDE.md"
+    pub section: String, // e.g., "LAYOUT-002"
+    pub relevance: f32,  // 0.0 - 1.0
+}
+```
+
+##### 12.1.1.3 CLI Integration
+
+```bash
+# Enable oracle enhancement (requires batuta in PATH)
+apr-qa certify --model qwen2.5-coder-0.5b --oracle-enhance
+
+# Fail-fast with oracle enhancement
+apr-qa certify --model qwen2.5-coder-0.5b --fail-fast --oracle-enhance
+
+# Generate ticket with oracle context
+apr-qa certify --model qwen2.5-coder-0.5b --fail-fast --oracle-enhance --auto-ticket
+```
+
+**Environment Variables:**
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `APR_QA_ORACLE_ENABLE` | `false` | Enable oracle enhancement |
+| `APR_QA_ORACLE_TIMEOUT_MS` | `30000` | Oracle query timeout |
+| `APR_QA_ORACLE_MIN_RELEVANCE` | `0.5` | Minimum relevance for cross-references |
+
+##### 12.1.1.4 Evidence JSON Schema Extension
+
+When oracle enhancement is enabled, `evidence.json` includes:
+
+```json
+{
+  "id": "00000000000000001890dacf35fc4eac",
+  "gate_id": "F-CONV-G-A",
+  "outcome": "Falsified",
+  "reason": "Conversion Gguf → Apr produced different output (diff: 7.61e-1, ε: 1.00e-6)",
+  "oracle_context": {
+    "oracle_available": true,
+    "query_latency_ms": 2340,
+    "checklist": [
+      {
+        "gate_id": "F-LAYOUT-002",
+        "hypothesis": "All tensors are in row-major layout after conversion",
+        "test_procedure": "Run inference on converted model, check for gibberish output",
+        "falsified_if": "Output contains garbage like 'olumbia+lsi nunca/localENTS'",
+        "status": { "Falsified": { "reason": "58-90% diff suggests layout violation" } },
+        "confidence": "HIGH"
+      },
+      {
+        "gate_id": "F-PATH-EXT",
+        "hypothesis": "ConversionTest receives file path, not directory",
+        "test_procedure": "assert!(path.extension().is_some()) before conversion",
+        "falsified_if": "Invalid model format: No file extension found",
+        "status": "Falsified",
+        "confidence": "HIGH"
+      }
+    ],
+    "hypotheses": [
+      {
+        "id": "H1",
+        "description": "Path resolution bug - directory passed instead of file",
+        "confidence": "HIGH",
+        "evidence_for": ["Error message confirms: 'No file extension found'"],
+        "evidence_against": []
+      },
+      {
+        "id": "H2",
+        "description": "LAYOUT-002 violation - transpose not applied",
+        "confidence": "MEDIUM",
+        "evidence_for": ["58-90% diff across all conversions"],
+        "evidence_against": ["SafeTensors arithmetic tests pass"]
+      }
+    ],
+    "cross_references": [
+      { "source": "apr-playbook-spec.md", "section": "§4.1.1 LAYOUT-002", "relevance": 0.95 },
+      { "source": "aprender/CLAUDE.md", "section": "LAYOUT-002", "relevance": 0.92 },
+      { "source": "GH-190", "section": "GGUF→APR Garbage Output", "relevance": 0.88 }
+    ],
+    "investigation_commands": [
+      "apr inspect ~/.cache/apr-models/MODEL/apr/model.apr | grep layout",
+      "grep -n 'transpose_q4k' ../aprender/src/format/converter/*.rs",
+      "apr rosetta MODEL.gguf -o /tmp/test.safetensors --verify"
+    ]
+  }
+}
+```
+
+##### 12.1.1.5 Graceful Degradation
+
+If `batuta` is not available or the oracle query fails:
+
+```rust
+impl OracleEnhancer {
+    pub fn enhance_failure(&self, evidence: &Evidence) -> OracleContext {
+        match self.query_oracle(evidence) {
+            Ok(context) => context,
+            Err(e) => {
+                tracing::warn!(error = %e, "Oracle unavailable, using fallback");
+                OracleContext {
+                    oracle_available: false,
+                    checklist: self.generate_static_checklist(evidence),
+                    hypotheses: vec![],
+                    cross_references: vec![],
+                    investigation_commands: self.generate_static_commands(evidence),
+                    query_latency_ms: 0,
+                }
+            }
+        }
+    }
+
+    /// Generate basic checklist without oracle (fallback)
+    fn generate_static_checklist(&self, evidence: &Evidence) -> Vec<FalsificationCheckItem> {
+        let mut items = vec![];
+
+        // Always check LAYOUT-002 for conversion failures
+        if evidence.gate_id.starts_with("F-CONV") {
+            items.push(FalsificationCheckItem {
+                gate_id: "F-LAYOUT-002".to_string(),
+                hypothesis: "Tensors in row-major layout".to_string(),
+                test_procedure: "Check APR header layout flag".to_string(),
+                falsified_if: "Garbage output or high diff".to_string(),
+                status: CheckStatus::Pending,
+                confidence: Confidence::Medium,
+            });
+        }
+
+        items
+    }
+}
 ```
 
 ### 12.2 Parallel Execution Strategy
