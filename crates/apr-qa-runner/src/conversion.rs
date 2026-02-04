@@ -35,11 +35,10 @@ use std::process::Command;
 
 /// Resolve a model directory path to an actual model file for a specific format.
 ///
-/// Handles both:
+/// Handles multiple directory structures:
 /// - **File mode**: If `base_path` is already a file, validates extension matches format
-/// - **Directory mode**: Looks for format-specific subdirectory with model file
-///
-/// Cache structure: `{base_path}/{format}/model.{ext}` (e.g., `model_cache/gguf/model.gguf`)
+/// - **APR cache**: `{base_path}/{format}/model.{ext}` (e.g., `model_cache/gguf/model.gguf`)
+/// - **HuggingFace cache**: `{base_path}/model.{ext}` (flat structure in snapshot directory)
 ///
 /// # Errors
 ///
@@ -68,13 +67,19 @@ pub fn resolve_model_path(base_path: &Path, format: Format) -> Result<std::path:
         Format::SafeTensors => ("safetensors", "safetensors"),
     };
 
-    // Try model.<ext> first
+    // Try APR cache structure: {base}/{format}/model.{ext}
     let resolved = base_path.join(subdir).join(format!("model.{extension}"));
     if resolved.exists() {
         return Ok(resolved);
     }
 
-    // Fall back to finding any file with the extension
+    // Try HuggingFace cache structure: {base}/model.{ext} (flat)
+    let flat_resolved = base_path.join(format!("model.{extension}"));
+    if flat_resolved.exists() {
+        return Ok(flat_resolved);
+    }
+
+    // Fall back to finding any file with the extension in format subdir
     let format_dir = base_path.join(subdir);
     if let Ok(entries) = std::fs::read_dir(&format_dir) {
         for entry in entries.flatten() {
@@ -85,10 +90,20 @@ pub fn resolve_model_path(base_path: &Path, format: Format) -> Result<std::path:
         }
     }
 
+    // Fall back to finding any file with the extension in base dir (HF cache)
+    if let Ok(entries) = std::fs::read_dir(base_path) {
+        for entry in entries.flatten() {
+            let ep = entry.path();
+            if ep.extension().is_some_and(|e| e == extension) {
+                return Ok(ep);
+            }
+        }
+    }
+
     Err(Error::Execution(format!(
-        "No {extension} file found in {} or {}/model.{extension}",
-        format_dir.display(),
-        format_dir.display()
+        "No {extension} file found in {}/{subdir}/ or {}/",
+        base_path.display(),
+        base_path.display()
     )))
 }
 
@@ -4938,6 +4953,101 @@ exit 1"#,
     #[test]
     fn test_default_tolerances_count() {
         assert_eq!(DEFAULT_TOLERANCES.len(), 7);
+    }
+
+    // =========================================================================
+    // Model Path Resolution Tests
+    // =========================================================================
+
+    #[test]
+    fn test_resolve_model_path_apr_cache_structure() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        let safetensors_dir = tmp.path().join("safetensors");
+        std::fs::create_dir_all(&safetensors_dir).unwrap();
+        let model_file = safetensors_dir.join("model.safetensors");
+        std::fs::write(&model_file, b"fake").unwrap();
+
+        let result = resolve_model_path(tmp.path(), Format::SafeTensors);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), model_file);
+    }
+
+    #[test]
+    fn test_resolve_model_path_hf_cache_flat_structure() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        // HF cache has model.safetensors directly in snapshot dir (flat)
+        let model_file = tmp.path().join("model.safetensors");
+        std::fs::write(&model_file, b"fake").unwrap();
+
+        let result = resolve_model_path(tmp.path(), Format::SafeTensors);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), model_file);
+    }
+
+    #[test]
+    fn test_resolve_model_path_file_mode() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        let model_file = tmp.path().join("model.gguf");
+        std::fs::write(&model_file, b"fake").unwrap();
+
+        let result = resolve_model_path(&model_file, Format::Gguf);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), model_file);
+    }
+
+    #[test]
+    fn test_resolve_model_path_file_mode_extension_mismatch() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        let model_file = tmp.path().join("model.gguf");
+        std::fs::write(&model_file, b"fake").unwrap();
+
+        let result = resolve_model_path(&model_file, Format::SafeTensors);
+        assert!(result.is_err());
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("extension mismatch")
+        );
+    }
+
+    #[test]
+    fn test_resolve_model_path_not_found() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        let result = resolve_model_path(tmp.path(), Format::Apr);
+        assert!(result.is_err());
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("No apr file found")
+        );
+    }
+
+    #[test]
+    fn test_resolve_model_path_any_extension_in_subdir() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        let gguf_dir = tmp.path().join("gguf");
+        std::fs::create_dir_all(&gguf_dir).unwrap();
+        // Not model.gguf but something.gguf
+        let model_file = gguf_dir.join("qwen-0.5b-q4.gguf");
+        std::fs::write(&model_file, b"fake").unwrap();
+
+        let result = resolve_model_path(tmp.path(), Format::Gguf);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), model_file);
+    }
+
+    #[test]
+    fn test_resolve_model_path_any_extension_in_base_dir() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        // HF cache might have different names
+        let model_file = tmp.path().join("qwen2.5-coder-0.5b.safetensors");
+        std::fs::write(&model_file, b"fake").unwrap();
+
+        let result = resolve_model_path(tmp.path(), Format::SafeTensors);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), model_file);
     }
 
     #[test]
