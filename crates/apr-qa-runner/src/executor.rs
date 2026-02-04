@@ -5,7 +5,7 @@
 #![allow(clippy::cast_possible_truncation)]
 
 use crate::command::{CommandRunner, RealCommandRunner};
-use crate::conversion::{ConversionConfig, ConversionExecutor};
+use crate::conversion::{ConversionConfig, ConversionExecutor, resolve_model_path};
 use crate::error::Result;
 use crate::evidence::{Evidence, EvidenceCollector, Outcome, PerformanceMetrics};
 use crate::integrity;
@@ -411,14 +411,48 @@ impl Executor {
     /// Would have caught: GH-186, GH-189, GH-190 (all 3 P0 conversion bugs).
     /// See: docs/five-whys/GH-190-systemic-conversion-failures.md
     fn run_golden_rule_test(&mut self, model_path: &Path, model_id: &ModelId) -> (usize, usize) {
+        // Skip for actual single-file models (not applicable - no conversion to test)
         if model_path.is_file() {
-            return (0, 0); // not applicable for single-file models
+            return (0, 0);
         }
 
+        // For mock testing: if path has model extension but doesn't exist, run with path directly
+        let has_model_extension = model_path
+            .extension()
+            .is_some_and(|e| ["gguf", "safetensors", "apr"].contains(&e.to_str().unwrap_or("")));
+        if has_model_extension {
+            return self.run_golden_rule_with_path(model_path, model_id);
+        }
+
+        // Resolve directory to SafeTensors model file (ground truth)
+        let resolved_path = match resolve_model_path(model_path, apr_qa_gen::Format::SafeTensors) {
+            Ok(p) => p,
+            Err(e) => {
+                let ev = Evidence::falsified(
+                    "F-GOLDEN-RULE-001",
+                    Self::golden_scenario(model_id),
+                    format!("Golden Rule: failed to resolve model path: {e}"),
+                    "N/A",
+                    0,
+                );
+                self.collector.add(ev);
+                return (0, 1);
+            }
+        };
+
+        self.run_golden_rule_with_path(&resolved_path, model_id)
+    }
+
+    /// Internal helper for golden rule test with resolved path
+    fn run_golden_rule_with_path(
+        &mut self,
+        model_path: &Path,
+        model_id: &ModelId,
+    ) -> (usize, usize) {
         let prompt = "What is 2+2?";
         let max_tokens = 10;
 
-        // Step 1: Run inference on original model
+        // Step 1: Run inference on original model (SafeTensors ground truth)
         let original_result =
             self.command_runner
                 .run_inference(model_path, prompt, max_tokens, false, &[]);

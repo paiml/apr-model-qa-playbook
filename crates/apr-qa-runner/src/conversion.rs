@@ -33,6 +33,65 @@ use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::process::Command;
 
+/// Resolve a model directory path to an actual model file for a specific format.
+///
+/// Handles both:
+/// - **File mode**: If `base_path` is already a file, validates extension matches format
+/// - **Directory mode**: Looks for format-specific subdirectory with model file
+///
+/// Cache structure: `{base_path}/{format}/model.{ext}` (e.g., `model_cache/gguf/model.gguf`)
+///
+/// # Errors
+///
+/// Returns an error if the path cannot be resolved to a valid model file.
+pub fn resolve_model_path(base_path: &Path, format: Format) -> Result<std::path::PathBuf> {
+    // If base_path is a file, use it directly (format must match)
+    if base_path.is_file() {
+        let ext = base_path.extension().and_then(|e| e.to_str()).unwrap_or("");
+        let expected_ext = match format {
+            Format::Gguf => "gguf",
+            Format::SafeTensors => "safetensors",
+            Format::Apr => "apr",
+        };
+        if ext == expected_ext {
+            return Ok(base_path.to_path_buf());
+        }
+        return Err(Error::Execution(format!(
+            "File extension mismatch: expected .{expected_ext}, got .{ext}"
+        )));
+    }
+
+    // Directory mode: look for format-specific subdirectory
+    let (subdir, extension) = match format {
+        Format::Gguf => ("gguf", "gguf"),
+        Format::Apr => ("apr", "apr"),
+        Format::SafeTensors => ("safetensors", "safetensors"),
+    };
+
+    // Try model.<ext> first
+    let resolved = base_path.join(subdir).join(format!("model.{extension}"));
+    if resolved.exists() {
+        return Ok(resolved);
+    }
+
+    // Fall back to finding any file with the extension
+    let format_dir = base_path.join(subdir);
+    if let Ok(entries) = std::fs::read_dir(&format_dir) {
+        for entry in entries.flatten() {
+            let ep = entry.path();
+            if ep.extension().is_some_and(|e| e == extension) {
+                return Ok(ep);
+            }
+        }
+    }
+
+    Err(Error::Execution(format!(
+        "No {extension} file found in {} or {}/model.{extension}",
+        format_dir.display(),
+        format_dir.display()
+    )))
+}
+
 /// Tolerance for floating-point comparison
 pub const EPSILON: f64 = 1e-6;
 
@@ -436,53 +495,9 @@ impl ConversionTest {
 
     /// Resolve model path for a specific format
     ///
-    /// Handles both file mode (direct path) and directory mode (cache structure).
+    /// Delegates to standalone `resolve_model_path` function.
     fn resolve_format_path(&self, base_path: &Path, format: &Format) -> Result<std::path::PathBuf> {
-        // If base_path is a file, use it directly (format must match)
-        if base_path.is_file() {
-            let ext = base_path.extension().and_then(|e| e.to_str()).unwrap_or("");
-            let expected_ext = match format {
-                Format::Gguf => "gguf",
-                Format::SafeTensors => "safetensors",
-                Format::Apr => "apr",
-            };
-            if ext == expected_ext {
-                return Ok(base_path.to_path_buf());
-            }
-            return Err(Error::Execution(format!(
-                "File extension mismatch: expected .{expected_ext}, got .{ext}"
-            )));
-        }
-
-        // Directory mode: look for format-specific subdirectory
-        let (subdir, extension) = match format {
-            Format::Gguf => ("gguf", "gguf"),
-            Format::Apr => ("apr", "apr"),
-            Format::SafeTensors => ("safetensors", "safetensors"),
-        };
-
-        // Try model.<ext> first
-        let resolved = base_path.join(subdir).join(format!("model.{extension}"));
-        if resolved.exists() {
-            return Ok(resolved);
-        }
-
-        // Fall back to finding any file with the extension
-        let format_dir = base_path.join(subdir);
-        if let Ok(entries) = std::fs::read_dir(&format_dir) {
-            for entry in entries.flatten() {
-                let ep = entry.path();
-                if ep.extension().is_some_and(|e| e == extension) {
-                    return Ok(ep);
-                }
-            }
-        }
-
-        Err(Error::Execution(format!(
-            "No {extension} file found in {} or {}/model.{extension}",
-            format_dir.display(),
-            format_dir.display()
-        )))
+        resolve_model_path(base_path, *format)
     }
 
     /// Execute the conversion test
@@ -920,11 +935,14 @@ impl RoundTripTest {
     ///
     /// Returns an error if any conversion fails.
     pub fn execute(&self, model_path: &Path) -> Result<ConversionResult> {
+        // Resolve directory to actual model file for starting format
+        let resolved_path = resolve_model_path(model_path, self.formats[0])?;
+
         // Get original output
-        let original_output = run_inference_simple(model_path, self.backend, &self.binary)?;
+        let original_output = run_inference_simple(&resolved_path, self.backend, &self.binary)?;
 
         // Convert through chain
-        let mut current_path = model_path.to_path_buf();
+        let mut current_path = resolved_path;
         for i in 0..self.formats.len() {
             let next_format = self.formats[(i + 1) % self.formats.len()];
             current_path = convert_to_format(&current_path, next_format, &self.binary)?;
@@ -998,14 +1016,17 @@ impl IdempotencyTest {
     ///
     /// Returns an error if conversion or inference fails.
     pub fn execute(&self, model_path: &Path) -> Result<ConversionResult> {
+        // Resolve directory to actual model file for source format
+        let resolved_path = resolve_model_path(model_path, self.format_a)?;
+
         // Convert A→B (first time)
         let converted_1 =
-            convert_to_format_tagged(model_path, self.format_b, "idem1", &self.binary)?;
+            convert_to_format_tagged(&resolved_path, self.format_b, "idem1", &self.binary)?;
         let output_1 = run_inference_simple(&converted_1, self.backend, &self.binary)?;
 
         // Convert A→B (second time, from same source)
         let converted_2 =
-            convert_to_format_tagged(model_path, self.format_b, "idem2", &self.binary)?;
+            convert_to_format_tagged(&resolved_path, self.format_b, "idem2", &self.binary)?;
         let output_2 = run_inference_simple(&converted_2, self.backend, &self.binary)?;
 
         if output_1 != output_2 {
@@ -1072,14 +1093,17 @@ impl CommutativityTest {
     ///
     /// Returns an error if conversion or inference fails.
     pub fn execute(&self, model_path: &Path) -> Result<ConversionResult> {
+        // Resolve directory to actual GGUF model file
+        let resolved_path = resolve_model_path(model_path, Format::Gguf)?;
+
         // Path A: GGUF → APR (direct)
         let direct_apr =
-            convert_to_format_tagged(model_path, Format::Apr, "com_direct", &self.binary)?;
+            convert_to_format_tagged(&resolved_path, Format::Apr, "com_direct", &self.binary)?;
         let output_a = run_inference_simple(&direct_apr, self.backend, &self.binary)?;
 
         // Path B: GGUF → SafeTensors → APR (indirect)
         let via_st =
-            convert_to_format_tagged(model_path, Format::SafeTensors, "com_via", &self.binary)?;
+            convert_to_format_tagged(&resolved_path, Format::SafeTensors, "com_via", &self.binary)?;
         let indirect_apr =
             convert_to_format_tagged(&via_st, Format::Apr, "com_indirect", &self.binary)?;
         let output_b = run_inference_simple(&indirect_apr, self.backend, &self.binary)?;

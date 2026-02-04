@@ -51,7 +51,7 @@ pub use conversion::{
     ConversionTest, ConversionTolerance, DEFAULT_TOLERANCES, EPSILON, IdempotencyTest, QuantType,
     RoundTripTest, SemanticConversionTest, SemanticTestResult, TensorNaming, all_backends,
     all_conversion_pairs, check_cardinality, check_tensor_names, classify_failure,
-    generate_conversion_tests, tolerance_for,
+    generate_conversion_tests, resolve_model_path, tolerance_for,
 };
 pub use differential::{
     BenchResult, BenchmarkMetrics, CiAssertion, CiProfileResult, DiffBenchmarkResult, DiffConfig,

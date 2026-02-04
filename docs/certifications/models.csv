@@ -1,5 +1,5 @@
 model_id,family,parameters,size_category,status,mqs_score,grade,certified_tier,last_certified,g1,g2,g3,g4,tps_gguf_cpu,tps_gguf_gpu,tps_apr_cpu,tps_apr_gpu,tps_st_cpu,tps_st_gpu,provenance_verified
-Qwen/Qwen2.5-Coder-0.5B-Instruct,qwen-coder,0.5B,tiny,BLOCKED,320,F,quick,2026-02-03T21:57:32.331092283+00:00,true,true,true,true,,,,,,,false
+Qwen/Qwen2.5-Coder-0.5B-Instruct,qwen-coder,0.5B,tiny,BLOCKED,246,F,quick,2026-02-04T13:28:18.663298968+00:00,true,true,true,true,,,,,,,false
 Qwen/Qwen2.5-Coder-1.5B-Instruct,qwen-coder,1.5B,small,BLOCKED,415,-,none,2026-02-03T15:50:04.803811188+00:00,true,true,true,true,17.9,129.8,16.2,0.6,2.9,23.8,false
 Qwen/Qwen2.5-Coder-3B-Instruct,qwen-coder,3B,small,BLOCKED,283,-,none,2026-02-03T16:06:46.851978146+00:00,true,true,false,true,11.2,66.2,10.7,0.4,0.0,0.0,false
 Qwen/Qwen2.5-Coder-7B-Instruct,qwen-coder,7B,medium,BLOCKED,152,-,none,2026-02-03T16:20:49.268254345+00:00,true,true,false,true,8.2,30.2,8.5,0.0,0.0,0.0,false

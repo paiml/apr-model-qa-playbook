@@ -1615,11 +1615,13 @@ fn run_certification(
 
                         // Calculate simple MQS approximation
                         let total = result.passed + result.failed;
+                        #[allow(clippy::cast_precision_loss)]
                         let pass_rate = if total > 0 {
                             (result.passed as f64 / total as f64) * 1000.0
                         } else {
                             0.0
                         };
+                        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
                         let mqs = pass_rate as u32;
                         let grade = if mqs >= 800 {
                             "A"
