@@ -1047,11 +1047,11 @@ impl Executor {
 
     /// Resolve the model path for a specific format.
     ///
-    /// Supports two modes:
+    /// Supports multiple modes:
     /// - **File mode**: `model_path` points to a single file (e.g. `<hash>.safetensors`).
     ///   Returns `Some` if the file extension matches the scenario format, `None` otherwise.
-    /// - **Directory mode**: `model_path` is a cache directory with `{format}/model.{ext}` layout.
-    ///   Falls back to finding any file with the matching extension in the format subdirectory.
+    /// - **APR cache**: `{base}/{format}/model.{ext}` layout.
+    /// - **HuggingFace cache**: `{base}/model.{ext}` (flat structure in snapshot directory).
     fn resolve_model_path(&self, scenario: &QaScenario) -> Option<String> {
         let model_path = self.config.model_path.as_deref().unwrap_or(".");
         let path = Path::new(model_path);
@@ -1071,22 +1071,38 @@ impl Executor {
             };
         }
 
-        // DIRECTORY MODE: existing subdirectory logic
+        // DIRECTORY MODE
         let (subdir, extension) = match scenario.format {
             Format::Gguf => ("gguf", "gguf"),
             Format::Apr => ("apr", "apr"),
             Format::SafeTensors => ("safetensors", "safetensors"),
         };
 
-        // Try model.<ext> first, then look for any matching file
+        // Try APR cache structure: {base}/{format}/model.{ext}
         let resolved = path.join(subdir).join(format!("model.{extension}"));
         if resolved.exists() {
             return Some(resolved.to_string_lossy().to_string());
         }
 
-        // Fall back to finding any file with the extension
+        // Try HuggingFace cache structure: {base}/model.{ext} (flat)
+        let flat_resolved = path.join(format!("model.{extension}"));
+        if flat_resolved.exists() {
+            return Some(flat_resolved.to_string_lossy().to_string());
+        }
+
+        // Fall back to finding any file with the extension in format subdir
         let format_dir = path.join(subdir);
         if let Ok(entries) = std::fs::read_dir(&format_dir) {
+            for entry in entries.flatten() {
+                let ep = entry.path();
+                if ep.extension().is_some_and(|e| e == extension) {
+                    return Some(ep.to_string_lossy().to_string());
+                }
+            }
+        }
+
+        // Fall back to finding any file with the extension in base dir (HF cache)
+        if let Ok(entries) = std::fs::read_dir(path) {
             for entry in entries.flatten() {
                 let ep = entry.path();
                 if ep.extension().is_some_and(|e| e == extension) {
