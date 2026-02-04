@@ -128,6 +128,23 @@ or corruption during conversion.
 |---------|------|-------------|
 | F-INSPECT-META-001 | T-GH192-01 | Model metadata (num\_heads, hidden\_size, etc.) must be present and non-zero |
 
+### Contract Invariant Gates (GH-190/191)
+
+These gates enforce the shared format contract between writer and reader.
+Defined in `apr_format_contract.yaml`, they are the corrective actions
+prescribed by the GH-190 and GH-191 Five-Whys analyses.
+
+| Gate ID | Invariant | Description |
+|---------|-----------|-------------|
+| F-CONTRACT-I1-001 | I-1 Round-trip Identity | `inference(convert(model)) == inference(model)` |
+| F-CONTRACT-I2-001 | I-2 Tensor Name Bijection | Writer tensor names must exactly match reader tensor names |
+| F-CONTRACT-I3-001 | I-3 No Silent Fallbacks | Unknown dtype/tensor must error, never silently default to F32 |
+| F-CONTRACT-I4-001 | I-4 Statistical Preservation | Tensor stats (mean, std, min, max) preserved within dtype tolerance |
+| F-CONTRACT-I5-001 | I-5 Tokenizer Roundtrip | `encode(decode(tokens)) == tokens` for the embedded tokenizer |
+
+I-1 runs as the Golden Rule Test (F-GOLDEN-RULE-001). I-2 through I-5
+run when `contract_tests` is enabled in the playbook.
+
 ### Legacy Conversion Gates
 
 | Gate ID | Description |

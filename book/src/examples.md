@@ -15,6 +15,7 @@ These examples can be run with `cargo run --example <name> -p <crate>`.
 | `generate_rag_markdown` | apr-qa-report | `cargo run --example generate_rag_markdown -p apr-qa-report` |
 | `fail_fast_demo` | apr-qa-cli | `cargo run --example fail_fast_demo -p apr-qa-cli` |
 | `integrity_lock_demo` | apr-qa-cli | `cargo run --example integrity_lock_demo -p apr-qa-cli` |
+| `contract_demo` | apr-qa-runner | `cargo run --example contract_demo -p apr-qa-runner` |
 
 ## Generating QA Scenarios
 
@@ -713,6 +714,133 @@ apr-qa run playbook.yaml
 
 # Bypass check if needed (not recommended)
 apr-qa run playbook.yaml --no-integrity-check
+```
+
+## Format Contract (GH-190/191)
+
+The `contract_demo` example demonstrates the shared format contract system.
+This contract defines behavioral invariants between the writer (aprender)
+and reader (realizar), preventing the class of conversion bugs identified
+in the GH-190 and GH-191 Five-Whys analyses.
+
+```bash
+cargo run --example contract_demo -p apr-qa-runner
+```
+
+### Contract Overview
+
+The contract is defined in `apr_format_contract.yaml` and embedded at
+compile time. It is the single source of truth for:
+
+- **Tensor naming** — GGUF-short convention with canonical/forbidden examples
+- **Dtype-byte mappings** — GGML type values that writer and reader must agree on
+- **Tolerances** — Per-dtype absolute and relative tolerance for statistical comparison
+- **Invariants** — Five behavioral invariants (I-1 through I-5)
+
+### Loading and Validating the Contract
+
+```rust
+use apr_qa_runner::{
+    load_format_contract, validate_dtype_bytes,
+    validate_tensor_name, lookup_tolerance,
+};
+
+fn main() {
+    let contract = load_format_contract().unwrap();
+
+    // Validate no duplicate GGML byte values
+    validate_dtype_bytes(&contract).unwrap();
+
+    // Check tensor names against the naming convention
+    assert!(validate_tensor_name("0.q_proj.weight", &contract));
+    assert!(validate_tensor_name("token_embd.weight", &contract));
+    assert!(!validate_tensor_name("model.layers.0.self_attn.q_proj.weight", &contract));
+
+    // Look up per-dtype tolerances
+    let (atol, rtol) = lookup_tolerance("Q4_K", &contract).unwrap();
+    println!("Q4_K tolerance: atol={atol}, rtol={rtol}");
+}
+```
+
+### Contract Invariants
+
+| ID  | Name                     | Description | Gate ID |
+|-----|--------------------------|-------------|---------|
+| I-1 | Round-trip Identity      | `inference(convert(model)) == inference(model)` | `F-CONTRACT-I1-001` |
+| I-2 | Tensor Name Bijection    | Writer tensor names == Reader tensor names | `F-CONTRACT-I2-001` |
+| I-3 | No Silent Fallbacks      | Unknown dtype/tensor must error, never default to F32 | `F-CONTRACT-I3-001` |
+| I-4 | Statistical Preservation | Tensor stats preserved within dtype tolerance | `F-CONTRACT-I4-001` |
+| I-5 | Tokenizer Roundtrip      | `encode(decode(tokens)) == tokens` | `F-CONTRACT-I5-001` |
+
+I-1 is implemented as the Golden Rule Test in `executor.rs`. I-2 through I-5
+are implemented in `contract.rs` and run during certification when enabled.
+
+### Enabling Contract Tests in Playbooks
+
+Add the `contract_tests` section to any playbook YAML:
+
+```yaml
+contract_tests:
+  invariants: ["I-2", "I-3", "I-4", "I-5"]
+```
+
+The executor runs these invariants after the Golden Rule Test and before
+HuggingFace parity checks. Each invariant produces `Evidence` with
+`Corroborated` or `Falsified` outcome, following the Popperian methodology.
+
+### Programmatic Configuration
+
+```rust
+use apr_qa_runner::{ContractTestConfig, InvariantId};
+
+// Default: all invariants enabled
+let config = ContractTestConfig::default();
+assert_eq!(config.invariants, vec!["I-2", "I-3", "I-4", "I-5"]);
+
+// Custom: only tensor name and fallback checks
+let config = ContractTestConfig {
+    invariants: vec!["I-2".to_string(), "I-3".to_string()],
+};
+
+// Type-safe invariant dispatch
+let id = InvariantId::from_label("I-2").unwrap();
+assert_eq!(id.gate_id(), "F-CONTRACT-I2-001");
+```
+
+### Output
+
+```
+=== Format Contract Demo (GH-190/191) ===
+
+=== Loading Contract ===
+
+Version:     1.0
+Invariants:  5
+Dtypes:      11
+Tolerances:  10
+
+=== Dtype-Byte Validation ===
+
+[PASS] No duplicate GGML byte values
+
+=== Tensor Naming Convention ===
+
+Convention: gguf-short
+
+Tensor name validation:
+  0.q_proj.weight                VALID
+  token_embd.weight              VALID
+  model.layers.0.self_attn.q_proj.weight INVALID
+
+=== Contract Invariants ===
+
+| ID    | Name                      | Status      | Gate ID            |
+|-------|---------------------------|-------------|--------------------|
+| I-1   | Round-trip Identity       | Implemented | F-CONTRACT-I1-001  |
+| I-2   | Tensor Name Bijection     | Contract    | F-CONTRACT-I2-001  |
+| I-3   | No Silent Fallbacks       | Contract    | F-CONTRACT-I3-001  |
+| I-4   | Statistical Preservation  | Contract    | F-CONTRACT-I4-001  |
+| I-5   | Tokenizer Roundtrip       | Contract    | F-CONTRACT-I5-001  |
 ```
 
 ## YAML Playbook Examples
