@@ -54,6 +54,10 @@ profile_ci:
     min_throughput_cpu: 5.0    # tok/s (CPU baseline)
     min_throughput_gpu: 50.0   # tok/s (GPU should be faster)
 
+# Format contract invariant tests (GH-190/191 Five-Whys)
+contract_tests:
+  invariants: ["I-2", "I-3", "I-4", "I-5"]
+
 metadata:
   author: "apr-qa-gen"
   tier: "mvp"

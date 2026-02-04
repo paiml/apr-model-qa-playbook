@@ -38,6 +38,9 @@ pub struct Playbook {
     /// Trace payload testing (APR-TRACE-001)
     #[serde(default)]
     pub trace_payload: Option<TracePayloadConfig>,
+    /// Contract invariant tests (GH-190/191 Five-Whys)
+    #[serde(default)]
+    pub contract_tests: Option<crate::contract::ContractTestConfig>,
 }
 
 impl Playbook {

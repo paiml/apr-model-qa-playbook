@@ -122,6 +122,12 @@ pub trait CommandRunner: Send + Sync {
 
     /// Execute apr run with --profile and --focus
     fn profile_with_focus(&self, model_path: &Path, focus: &str, no_gpu: bool) -> CommandOutput;
+
+    /// Execute apr rosetta fingerprint to capture tensor statistics
+    fn fingerprint_model(&self, model_path: &Path, json: bool) -> CommandOutput;
+
+    /// Execute apr rosetta validate-stats to compare tensor statistics
+    fn validate_stats(&self, fp_a: &Path, fp_b: &Path) -> CommandOutput;
 }
 
 /// Real command runner that executes actual subprocess commands
@@ -366,6 +372,21 @@ impl CommandRunner for RealCommandRunner {
 
         self.execute(&args)
     }
+
+    fn fingerprint_model(&self, model_path: &Path, json: bool) -> CommandOutput {
+        let path_str = model_path.display().to_string();
+        let mut args = vec!["rosetta", "fingerprint", &path_str];
+        if json {
+            args.push("--json");
+        }
+        self.execute(&args)
+    }
+
+    fn validate_stats(&self, fp_a: &Path, fp_b: &Path) -> CommandOutput {
+        let a_str = fp_a.display().to_string();
+        let b_str = fp_b.display().to_string();
+        self.execute(&["rosetta", "validate-stats", &a_str, &b_str])
+    }
 }
 
 /// Mock command runner for testing
@@ -411,6 +432,10 @@ pub struct MockCommandRunner {
     pub profile_flamegraph_success: bool,
     /// Whether profile_with_focus should fail
     pub profile_focus_success: bool,
+    /// Whether fingerprint_model should fail
+    pub fingerprint_success: bool,
+    /// Whether validate_stats should fail
+    pub validate_stats_success: bool,
 }
 
 impl Default for MockCommandRunner {
@@ -434,6 +459,8 @@ impl Default for MockCommandRunner {
             custom_exit_code: None,
             profile_flamegraph_success: true,
             profile_focus_success: true,
+            fingerprint_success: true,
+            validate_stats_success: true,
         }
     }
 }
@@ -573,6 +600,20 @@ impl MockCommandRunner {
     #[must_use]
     pub fn with_profile_focus_failure(mut self) -> Self {
         self.profile_focus_success = false;
+        self
+    }
+
+    /// Set whether fingerprint_model should fail
+    #[must_use]
+    pub fn with_fingerprint_failure(mut self) -> Self {
+        self.fingerprint_success = false;
+        self
+    }
+
+    /// Set whether validate_stats should fail
+    #[must_use]
+    pub fn with_validate_stats_failure(mut self) -> Self {
+        self.validate_stats_success = false;
         self
     }
 }
@@ -774,6 +815,30 @@ impl CommandRunner for MockCommandRunner {
             CommandOutput::success(output)
         } else {
             CommandOutput::failure(1, "Profile focus failed: invalid focus target")
+        }
+    }
+
+    fn fingerprint_model(&self, _model_path: &Path, json: bool) -> CommandOutput {
+        if self.fingerprint_success {
+            if json {
+                CommandOutput::success(
+                    r#"{"tensors":{"0.q_proj.weight":{"mean":0.001,"std":0.05,"min":-0.2,"max":0.2}}}"#,
+                )
+            } else {
+                CommandOutput::success("Fingerprint: 100 tensors captured")
+            }
+        } else {
+            CommandOutput::failure(1, "Fingerprint failed: model load error")
+        }
+    }
+
+    fn validate_stats(&self, _fp_a: &Path, _fp_b: &Path) -> CommandOutput {
+        if self.validate_stats_success {
+            CommandOutput::success(
+                r#"{"passed":true,"total_tensors":100,"failed_tensors":0,"details":[]}"#,
+            )
+        } else {
+            CommandOutput::failure(1, "Stats validation failed: 3 tensors exceed tolerance")
         }
     }
 }

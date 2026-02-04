@@ -92,6 +92,8 @@ pub struct ExecutionConfig {
     /// Output directory for conversion test artifacts (ISO-OUT-001)
     /// Defaults to "output/" - keeps test artifacts isolated from source models
     pub output_dir: Option<String>,
+    /// Run contract invariant tests I-2 through I-5 (GH-190/191 Five-Whys)
+    pub run_contract_tests: bool,
 }
 
 impl Default for ExecutionConfig {
@@ -116,6 +118,7 @@ impl Default for ExecutionConfig {
             hf_parity_corpus_path: None,
             hf_parity_model_family: None,
             output_dir: Some("output".to_string()), // ISO-OUT-001: Default to isolated output
+            run_contract_tests: true, // v1.4.0: Contract invariants (GH-190/191 Five-Whys)
         }
     }
 }
@@ -343,6 +346,16 @@ impl Executor {
             }
         }
 
+        // Contract invariant tests I-2 through I-5 (GH-190/191 Five-Whys)
+        let (contract_passed, contract_failed) = if self.config.run_contract_tests {
+            self.config.model_path.clone().map_or((0, 0), |model_path| {
+                let model_id = playbook.model_id();
+                self.run_contract_invariants(Path::new(&model_path), &model_id, playbook)
+            })
+        } else {
+            (0, 0)
+        };
+
         // HF Parity Test: Cross-implementation validation against HuggingFace golden corpus
         // Implements Popperian falsification methodology (Popper, 1959)
         let (hf_parity_passed, hf_parity_failed) = if self.config.run_hf_parity {
@@ -352,10 +365,18 @@ impl Executor {
             (0, 0)
         };
 
-        let total_passed =
-            passed + conversion_passed + golden_passed + integrity_passed + hf_parity_passed;
-        let total_failed =
-            failed + conversion_failed + golden_failed + integrity_failed + hf_parity_failed;
+        let total_passed = passed
+            + conversion_passed
+            + golden_passed
+            + integrity_passed
+            + hf_parity_passed
+            + contract_passed;
+        let total_failed = failed
+            + conversion_failed
+            + golden_failed
+            + integrity_failed
+            + hf_parity_failed
+            + contract_failed;
 
         Ok(ExecutionResult {
             playbook_name: playbook.name.clone(),
@@ -367,7 +388,9 @@ impl Executor {
                 + integrity_passed
                 + integrity_failed
                 + hf_parity_passed
-                + hf_parity_failed,
+                + hf_parity_failed
+                + contract_passed
+                + contract_failed,
             passed: total_passed,
             failed: total_failed,
             skipped,
@@ -627,6 +650,44 @@ impl Executor {
     ///
     /// (passed_count, failed_count) - evidence is added to collector
     ///
+    /// Run contract invariant tests I-2 through I-5.
+    ///
+    /// Uses the contract config from the playbook if present, otherwise
+    /// defaults to all invariants (I-2 through I-5).
+    fn run_contract_invariants(
+        &mut self,
+        model_path: &Path,
+        model_id: &ModelId,
+        playbook: &Playbook,
+    ) -> (usize, usize) {
+        // Skip for single-file models (not applicable)
+        if model_path.is_file() {
+            return (0, 0);
+        }
+
+        let config = playbook.contract_tests.clone().unwrap_or_default();
+
+        let evidence = crate::contract::run_contract_tests(
+            &self.command_runner,
+            model_path,
+            model_id,
+            &config,
+        );
+
+        let mut passed = 0;
+        let mut failed = 0;
+        for ev in evidence {
+            if ev.outcome.is_pass() {
+                passed += 1;
+            } else {
+                failed += 1;
+            }
+            self.collector.add(ev);
+        }
+
+        (passed, failed)
+    }
+
     /// # References
     ///
     /// - Popper, K. (1959). *The Logic of Scientific Discovery*. Routledge.
@@ -2783,6 +2844,7 @@ test_matrix:
             hf_parity_corpus_path: None,
             hf_parity_model_family: None,
             output_dir: Some("test_output".to_string()),
+            run_contract_tests: false,
         };
         assert_eq!(config.failure_policy, FailurePolicy::CollectAll);
         assert!(config.dry_run);
@@ -2790,6 +2852,7 @@ test_matrix:
         assert!(!config.run_conversion_tests);
         assert!(!config.run_differential_tests);
         assert!(config.run_profile_ci);
+        assert!(!config.run_contract_tests);
     }
 
     #[test]
@@ -3267,6 +3330,7 @@ test_matrix:
             run_golden_rule_test: false,
             run_trace_payload: false,
             run_profile_ci: false,
+            run_contract_tests: false,
             ..Default::default()
         };
 
@@ -4062,6 +4126,7 @@ test_matrix:
             failure_policy: FailurePolicy::CollectAll,
             run_conversion_tests: false,
             run_golden_rule_test: false,
+            run_contract_tests: false,
             ..Default::default()
         };
 
@@ -4505,6 +4570,7 @@ test_matrix:
             failure_policy: FailurePolicy::CollectAll,
             run_conversion_tests: false,
             run_golden_rule_test: false,
+            run_contract_tests: false,
             ..Default::default()
         };
 
@@ -4704,6 +4770,12 @@ test_matrix:
             ) -> CommandOutput {
                 CommandOutput::success("")
             }
+            fn fingerprint_model(&self, _path: &Path, _json: bool) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn validate_stats(&self, _a: &Path, _b: &Path) -> CommandOutput {
+                CommandOutput::success("")
+            }
         }
 
         let config = ExecutionConfig {
@@ -4831,6 +4903,12 @@ test_matrix:
             ) -> CommandOutput {
                 CommandOutput::success("")
             }
+            fn fingerprint_model(&self, _path: &Path, _json: bool) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn validate_stats(&self, _a: &Path, _b: &Path) -> CommandOutput {
+                CommandOutput::success("")
+            }
         }
 
         let config = ExecutionConfig {
@@ -4952,6 +5030,12 @@ test_matrix:
                 _focus: &str,
                 _no_gpu: bool,
             ) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn fingerprint_model(&self, _path: &Path, _json: bool) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn validate_stats(&self, _a: &Path, _b: &Path) -> CommandOutput {
                 CommandOutput::success("")
             }
         }
@@ -5546,6 +5630,12 @@ test_matrix:
             ) -> CommandOutput {
                 CommandOutput::success("")
             }
+            fn fingerprint_model(&self, _path: &Path, _json: bool) -> CommandOutput {
+                CommandOutput::success("")
+            }
+            fn validate_stats(&self, _a: &Path, _b: &Path) -> CommandOutput {
+                CommandOutput::success("")
+            }
         }
 
         let config = ExecutionConfig {
@@ -5586,6 +5676,8 @@ test_matrix:
         assert!(runner.compare_inference(p, p, "", 1, 0.0).success);
         assert!(runner.profile_with_flamegraph(p, p, false).success);
         assert!(runner.profile_with_focus(p, "", false).success);
+        assert!(runner.fingerprint_model(p, false).success);
+        assert!(runner.validate_stats(p, p).success);
     }
 
     // ========================================================================

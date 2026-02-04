@@ -144,6 +144,10 @@ trace_payload:
     - F-TRACE-PAYLOAD-002   # No garbage output
     - F-TRACE-PAYLOAD-003   # Layer outputs in range
 
+# Format contract invariant tests (GH-190/191 Five-Whys)
+contract_tests:
+  invariants: ["I-2", "I-3", "I-4", "I-5"]
+
 metadata:
   author: "apr-qa-gen"
   architecture: "qwen2"

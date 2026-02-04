@@ -23,6 +23,7 @@
 #![cfg_attr(test, allow(clippy::cast_sign_loss))]
 
 pub mod command;
+pub mod contract;
 pub mod conversion;
 pub mod diagnostics;
 pub mod differential;
@@ -46,6 +47,11 @@ pub use provenance::{
 pub mod test_fixtures;
 
 pub use command::{CommandOutput, CommandRunner, MockCommandRunner, RealCommandRunner};
+pub use contract::{
+    ContractTestConfig, DtypeByteEntry, DtypeByteSection, FormatContract, InvariantDef,
+    InvariantId, NamingExample, TensorNamingContract, ToleranceEntry, load_format_contract,
+    lookup_tolerance, run_contract_tests, validate_dtype_bytes, validate_tensor_name,
+};
 pub use conversion::{
     CommutativityTest, ConversionBugType, ConversionConfig, ConversionEvidence,
     ConversionExecutionResult, ConversionExecutor, ConversionFailureType, ConversionOutputDir,

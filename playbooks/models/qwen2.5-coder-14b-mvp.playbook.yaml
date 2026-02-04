@@ -52,6 +52,10 @@ profile_ci:
   assertions:
     min_throughput: 1.0
 
+# Format contract invariant tests (GH-190/191 Five-Whys)
+contract_tests:
+  invariants: ["I-2", "I-3", "I-4", "I-5"]
+
 metadata:
   author: "apr-qa-gen"
   tier: "mvp"

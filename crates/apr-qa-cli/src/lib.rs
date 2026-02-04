@@ -294,6 +294,7 @@ pub fn build_execution_config(config: &PlaybookRunConfig) -> Result<ExecutionCon
         hf_parity_corpus_path: config.hf_parity_corpus_path.clone(),
         hf_parity_model_family: config.hf_parity_model_family.clone(),
         output_dir: Some("output".to_string()), // ISO-OUT-001: Isolated output directory
+        run_contract_tests: true,
     })
 }
 
@@ -441,6 +442,7 @@ pub fn build_certification_config_with_policy(
         hf_parity_corpus_path: None,
         hf_parity_model_family: None,
         output_dir: Some("output".to_string()), // ISO-OUT-001: Isolated output directory
+        run_contract_tests: true,
     }
 }
 
