@@ -82,6 +82,11 @@ enum Commands {
         /// Stop on first failure with enhanced diagnostics (§12.5.3)
         #[arg(long)]
         fail_fast: bool,
+
+        /// Enhance failures with batuta oracle context (§12.1.1)
+        /// Generates falsification checklists and enriched metrics
+        #[arg(long)]
+        oracle_enhance: bool,
     },
 
     /// Run a playbook
@@ -333,6 +338,7 @@ fn main() {
             ticket_repo,
             no_integrity_check,
             fail_fast,
+            oracle_enhance,
         } => {
             run_certification(
                 all,
@@ -347,6 +353,7 @@ fn main() {
                 &ticket_repo,
                 no_integrity_check,
                 fail_fast,
+                oracle_enhance,
             );
         }
         Commands::Run {
@@ -1268,6 +1275,7 @@ fn run_certification(
     ticket_repo: &str,
     no_integrity_check: bool,
     fail_fast: bool,
+    oracle_enhance: bool,
 ) {
     use apr_qa_certify::{
         CertificationStatus, CertificationTier, grade_from_tier, parse_csv, score_from_tier,
@@ -1592,6 +1600,66 @@ fn run_certification(
                 if let Ok(json) = result.evidence.to_json() {
                     let _ = std::fs::write(&evidence_path, json);
                     println!("  Evidence: {}", evidence_path.display());
+                }
+
+                // §12.1.1: Oracle enhancement for failure analysis
+                if oracle_enhance && result.failed > 0 {
+                    use apr_qa_runner::{OracleEnhancer, generate_checklist_markdown};
+
+                    let enhancer = OracleEnhancer::new();
+                    let failed_evidence = result.evidence.failures();
+
+                    if !failed_evidence.is_empty() {
+                        // Enhance the first failure (most relevant)
+                        let context = enhancer.enhance_failure(failed_evidence[0]);
+
+                        // Calculate simple MQS approximation
+                        let total = result.passed + result.failed;
+                        let pass_rate = if total > 0 {
+                            (result.passed as f64 / total as f64) * 1000.0
+                        } else {
+                            0.0
+                        };
+                        let mqs = pass_rate as u32;
+                        let grade = if mqs >= 800 {
+                            "A"
+                        } else if mqs >= 600 {
+                            "B"
+                        } else if mqs >= 400 {
+                            "C"
+                        } else {
+                            "F"
+                        };
+
+                        // Generate checklist markdown
+                        let checklist_md = generate_checklist_markdown(
+                            model_id,
+                            mqs,
+                            grade,
+                            total,
+                            result.failed,
+                            &context,
+                        );
+
+                        // Save checklist.md
+                        let checklist_path = model_output.join("checklist.md");
+                        if let Err(e) = std::fs::write(&checklist_path, &checklist_md) {
+                            eprintln!("  Error writing checklist: {e}");
+                        } else {
+                            println!("  Checklist: {}", checklist_path.display());
+                        }
+
+                        if context.oracle_available {
+                            println!(
+                                "  Oracle: {} hypotheses, {} cross-refs ({}ms)",
+                                context.hypotheses.len(),
+                                context.cross_references.len(),
+                                context.query_latency_ms
+                            );
+                        } else {
+                            println!("  Oracle: unavailable (using static checklist)");
+                        }
+                    }
                 }
 
                 certified_count += 1;

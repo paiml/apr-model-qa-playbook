@@ -1,0 +1,675 @@
+{
+  "work_item_id": "PMAT-001",
+  "created_at": "2026-02-04T11:04:28.274517365Z",
+  "baseline_commit": "9dfedad09bdfe1240a7a446f8a941f2a46becba9",
+  "baseline_tdg": 0.0,
+  "baseline_coverage": 0.0,
+  "baseline_rust_score": 0.0,
+  "baseline_file_manifest": {
+    "files": {
+      "crates/apr-qa-runner/src/provenance.rs": {
+        "content_hash": "ff31b6ecfca1b4da05fb62ff6897802d6250dd2efaed3f62fca87200d7b32554",
+        "lines": 1384,
+        "functions": 58,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "book/book/elasticlunr.min.js": {
+        "content_hash": "ef4e11c157b1e2e89782d30bd726f2d5ff7834ea5e26ad02474325f8b1f126c9",
+        "lines": 10,
+        "functions": 1,
+        "max_complexity": 0,
+        "category": "TypeScriptSource"
+      },
+      "scripts/generate_golden.py": {
+        "content_hash": "2058f8c9d7cca8c351b60f1a747886385a0df13f2bd4c3d24e859a91d54ce101",
+        "lines": 274,
+        "functions": 5,
+        "max_complexity": 0,
+        "category": "PythonSource"
+      },
+      "crates/apr-qa-runner/src/command.rs": {
+        "content_hash": "daee60819687a63a42f8e48f89916449fd52e8d7a44b585b8b8c6a90a7e56111",
+        "lines": 1532,
+        "functions": 148,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "crates/apr-qa-certify/src/lib.rs": {
+        "content_hash": "3e4545f737dd504486f64d96680f6062b0c39bca3d53391000d033eff1682086",
+        "lines": 1294,
+        "functions": 58,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "book/book/toc.js": {
+        "content_hash": "3765f266fc21879cd2231fd5efc748c29948501b51e30b684b3932645e269e96",
+        "lines": 70,
+        "functions": 2,
+        "max_complexity": 0,
+        "category": "TypeScriptSource"
+      },
+      "crates/apr-qa-report/examples/generate_rag_markdown.rs": {
+        "content_hash": "ef8c55364c0f9adb348dc291228e37fceb8d6ad2dab0b13e6c535c2107852e6b",
+        "lines": 165,
+        "functions": 6,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "crates/apr-qa-runner/src/differential.rs": {
+        "content_hash": "fa5bfb8436c7b8266deeec00112bba4deabf8494760233f4c08b6a7bb0acc4b9",
+        "lines": 4299,
+        "functions": 204,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "tests/integration_tests.rs": {
+        "content_hash": "518fffd04383afef99ac177b8c43f6b433f41516e5c7f60e3ec88eec2af97528",
+        "lines": 340,
+        "functions": 0,
+        "max_complexity": 0,
+        "category": "TestCode"
+      },
+      "crates/apr-qa-gen/src/lib.rs": {
+        "content_hash": "8bf01a3013bed8b091e54b0d6cc985d7cbf2445bdf7e2a80f7ab5e459653b4bb",
+        "lines": 38,
+        "functions": 0,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "crates/apr-qa-cli/src/main.rs": {
+        "content_hash": "b81615465923d9ba2eacbab0191ed0bf0b479aac0dbc0f98ac3b17b4a77aa77b",
+        "lines": 1827,
+        "functions": 17,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "crates/apr-qa-runner/src/evidence.rs": {
+        "content_hash": "2f42cac85dbb1966d6fd5c9c1b655266b4d9ae01d195195d4eb1a1b658e4caea",
+        "lines": 566,
+        "functions": 41,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "crates/apr-qa-certify/src/main.rs": {
+        "content_hash": "ead034ea178237a5c45e6301a8156507498106679d531c12dbd1fb03b6d90864",
+        "lines": 124,
+        "functions": 3,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "crates/apr-qa-gen/src/hf_parity.rs": {
+        "content_hash": "dec82b60f6d2c80f4495a91f7ff21eac3749a388523819d9fcc960904b5fffc4",
+        "lines": 1302,
+        "functions": 83,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "book/book/searchindex.js": {
+        "content_hash": "63cb665c9fa001b6e96bb5bc4ac40ca48b09061fe57d0aedd1ab636a68b44f29",
+        "lines": 1,
+        "functions": 1,
+        "max_complexity": 0,
+        "category": "TypeScriptSource"
+      },
+      "book/book/book.js": {
+        "content_hash": "f0cc07d85c8323c5fd3192aa303947ce5c1ed532049fa33d207d314f32956048",
+        "lines": 690,
+        "functions": 67,
+        "max_complexity": 0,
+        "category": "TypeScriptSource"
+      },
+      "crates/apr-qa-gen/src/models.rs": {
+        "content_hash": "a6935a69645204db9de0737f9bbf6f9de090604046b9317120ab55787489afd7",
+        "lines": 561,
+        "functions": 45,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "book/book/clipboard.min.js": {
+        "content_hash": "1626706afc88d95ebe1173b553ec732c6dc82a576989315fdf5e7779af738a44",
+        "lines": 7,
+        "functions": 10,
+        "max_complexity": 0,
+        "category": "TypeScriptSource"
+      },
+      "crates/apr-qa-report/src/error.rs": {
+        "content_hash": "ad16dec47bf448cb42ef9447cc8b88ace4ac9f9d7cf49f7b72187e819ec8b737",
+        "lines": 56,
+        "functions": 2,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "crates/apr-qa-gen/src/error.rs": {
+        "content_hash": "5635df68d2f4dcdb20efc039e75eece1d90e0216bcc33a60b6cabbe0b6bd1f34",
+        "lines": 87,
+        "functions": 7,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "book/build/searcher.js": {
+        "content_hash": "9289822a2feee1c578b4593e918333147ad9f68dc3ffa75edc38b68d04e57807",
+        "lines": 483,
+        "functions": 20,
+        "max_complexity": 0,
+        "category": "TypeScriptSource"
+      },
+      "book/build/mark.min.js": {
+        "content_hash": "09e88c2cfaf23ea8a37b5681433eafea97033af632ecc948c8c1ee9944647743",
+        "lines": 7,
+        "functions": 6,
+        "max_complexity": 0,
+        "category": "TypeScriptSource"
+      },
+      "crates/apr-qa-gen/src/proptest_impl.rs": {
+        "content_hash": "ee93109918b1a95d6a61b6ad7d932d27721232aa075ac01fba59d62da87270a4",
+        "lines": 415,
+        "functions": 33,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "crates/apr-qa-report/src/markdown.rs": {
+        "content_hash": "f1757f3088b22bd3f419dd39975dde60442ab16b0d8a4b7ce2f8c83ee0241a72",
+        "lines": 774,
+        "functions": 35,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "crates/apr-qa-runner/src/executor.rs": {
+        "content_hash": "01e5803ebcf74bdd3ae75cc2e0d8e7473d42a407e1fc45989bd4f8a3293d452e",
+        "lines": 6102,
+        "functions": 315,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "crates/apr-qa-report/src/junit.rs": {
+        "content_hash": "c08c63750b6f97fea2b4fdbfc128b294830cf4988c36fdec1f693cfdc1cbbab5",
+        "lines": 515,
+        "functions": 27,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "crates/apr-qa-runner/src/test_fixtures.rs": {
+        "content_hash": "2513c09e54b41eef98503f9497bf589552ec29d4d7064f07dbafdc01add82fba",
+        "lines": 475,
+        "functions": 29,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "crates/apr-qa-runner/src/error.rs": {
+        "content_hash": "2981d6c6ddbedf99a5cd51a1be1ee899ad59bd09d68a3001dc3267297253ff62",
+        "lines": 105,
+        "functions": 2,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "crates/apr-qa-cli/examples/fail_fast_demo.rs": {
+        "content_hash": "2569fb3a8a8a6163236dd26d830355ac51b3ce02d30dfae37b73d14020413cbd",
+        "lines": 62,
+        "functions": 1,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "crates/apr-qa-report/examples/calculate_mqs.rs": {
+        "content_hash": "41d9d1e8e546428947c700d4c63867eeafa5ac601f437056d1ce3953b81164b6",
+        "lines": 173,
+        "functions": 5,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "crates/apr-qa-gen/src/scenario.rs": {
+        "content_hash": "5f2d1a0c6112f2646f9febf2939c2df705b47aa7bfc85d601598312b3de18a99",
+        "lines": 1294,
+        "functions": 98,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "book/build/clipboard.min.js": {
+        "content_hash": "1626706afc88d95ebe1173b553ec732c6dc82a576989315fdf5e7779af738a44",
+        "lines": 7,
+        "functions": 10,
+        "max_complexity": 0,
+        "category": "TypeScriptSource"
+      },
+      "crates/apr-qa-report/src/popperian.rs": {
+        "content_hash": "b61bf0e4cab37f4969467cd6cff69ae5c49ef9d63bb3620be2a3d462f5425e1b",
+        "lines": 639,
+        "functions": 32,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "crates/apr-qa-report/src/html.rs": {
+        "content_hash": "df0fe0809322250717b3eaf311f9e0754564dde54f2a77b9d2925b872a5e0431",
+        "lines": 698,
+        "functions": 33,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "crates/apr-qa-runner/src/patterns.rs": {
+        "content_hash": "81c16c7ef0b463bc32b98497ffcbd07be0a042842dd433b7f5596a749025c6bd",
+        "lines": 2464,
+        "functions": 138,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "crates/apr-qa-report/examples/generate_certificate.rs": {
+        "content_hash": "fe4619c5d197082c1466f7ea8e3fe84f4a97294eba1a37bb9a715f3f44b30c02",
+        "lines": 185,
+        "functions": 4,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "crates/apr-qa-cli/src/lib.rs": {
+        "content_hash": "4dde6ae13b0747f5ec1aec9215000898cb162942369966783f09962724204ce1",
+        "lines": 1791,
+        "functions": 137,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "crates/apr-qa-report/src/lib.rs": {
+        "content_hash": "8e919642f429cbc71364ef94cc1b38d7e35bb2e1bdc5b6ced9b6fd9f681e31f3",
+        "lines": 51,
+        "functions": 0,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "crates/apr-qa-runner/src/conversion.rs": {
+        "content_hash": "238bf174298ec7df2d306c135391c3a896e177079620c18d08c90b16737412c9",
+        "lines": 4790,
+        "functions": 252,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "book/build/searchindex.js": {
+        "content_hash": "575b0ddb003ae494a292cb70bcd589629f1dfd95dcfc5cf2a70dd3d0376400ee",
+        "lines": 1,
+        "functions": 0,
+        "max_complexity": 0,
+        "category": "TypeScriptSource"
+      },
+      "book/build/highlight.js": {
+        "content_hash": "abc7f01d0ce8c64e4ba9e131d651e48ae1a567b2a1254fea8aab03502288de58",
+        "lines": 54,
+        "functions": 49,
+        "max_complexity": 0,
+        "category": "TypeScriptSource"
+      },
+      "crates/apr-qa-runner/examples/collect_evidence.rs": {
+        "content_hash": "524ca1881608f639d07e06806363ed0199e9410c8dad54db6695cb933a2d5ba8",
+        "lines": 85,
+        "functions": 1,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "crates/apr-qa-runner/src/process.rs": {
+        "content_hash": "0306a551f6adc2f1d9a3476ca08235afb92d9d3a9b12c3ab3b1a3cd5790a537e",
+        "lines": 261,
+        "functions": 17,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "crates/apr-qa-report/src/mqs.rs": {
+        "content_hash": "f3fd9100dd4a6519f0a74413c682321d7ad17c313dd283bc480b4bd1f3fa2340",
+        "lines": 1309,
+        "functions": 71,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "crates/apr-qa-report/src/ticket.rs": {
+        "content_hash": "7f4102f3d29f96e2b7f7c5610a4800dba8eed39124cab9b02565695e78c7d780",
+        "lines": 1014,
+        "functions": 41,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "crates/apr-qa-runner/src/playbook.rs": {
+        "content_hash": "3fbf9d2f2b52c9d2a95593d6e9d2a64f5ea67a82a9ca212b64258ef68203176c",
+        "lines": 1539,
+        "functions": 85,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "book/build/toc.js": {
+        "content_hash": "58a6e1a2fa2c9a89881fb5c79926f32484d843b0999db44d735d9ed7bd63aefd",
+        "lines": 70,
+        "functions": 2,
+        "max_complexity": 0,
+        "category": "TypeScriptSource"
+      },
+      "book/book/highlight.js": {
+        "content_hash": "abc7f01d0ce8c64e4ba9e131d651e48ae1a567b2a1254fea8aab03502288de58",
+        "lines": 54,
+        "functions": 49,
+        "max_complexity": 0,
+        "category": "TypeScriptSource"
+      },
+      "crates/apr-qa-runner/examples/rosetta_testing.rs": {
+        "content_hash": "6e0cc986997c84bd27304ac137e7c67823f032a71144059c53257773835bcf54",
+        "lines": 132,
+        "functions": 1,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "book/book/mark.min.js": {
+        "content_hash": "09e88c2cfaf23ea8a37b5681433eafea97033af632ecc948c8c1ee9944647743",
+        "lines": 7,
+        "functions": 6,
+        "max_complexity": 0,
+        "category": "TypeScriptSource"
+      },
+      "crates/apr-qa-gen/examples/generate_scenarios.rs": {
+        "content_hash": "6c2f472afcb0f30098aea9994d3701444e159b79775751e34ad5e7e818451fc1",
+        "lines": 47,
+        "functions": 1,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "crates/apr-qa-runner/src/lib.rs": {
+        "content_hash": "84f81088c7982d62a7000ef32f195c0aaf80219e6bded403268ee7fecb0687fe",
+        "lines": 87,
+        "functions": 0,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "book/build/book.js": {
+        "content_hash": "f0cc07d85c8323c5fd3192aa303947ce5c1ed532049fa33d207d314f32956048",
+        "lines": 690,
+        "functions": 67,
+        "max_complexity": 0,
+        "category": "TypeScriptSource"
+      },
+      "crates/apr-qa-report/src/certificate.rs": {
+        "content_hash": "0b13dcfe80d621d29e610dc987feedece2496a2d96a3ed2229fc7a95a369f699",
+        "lines": 389,
+        "functions": 19,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "crates/apr-qa-gen/src/oracle.rs": {
+        "content_hash": "98781cef62248d8f7dcd3b62b9132997a2c1ec3601b860797406b7bff4aa6e4a",
+        "lines": 1012,
+        "functions": 104,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "crates/apr-qa-runner/src/integrity.rs": {
+        "content_hash": "375e77bd6f350f439e625c7e4e68f437695ff193b60a806c050af61b0b35dd8a",
+        "lines": 826,
+        "functions": 32,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "book/build/elasticlunr.min.js": {
+        "content_hash": "ef4e11c157b1e2e89782d30bd726f2d5ff7834ea5e26ad02474325f8b1f126c9",
+        "lines": 10,
+        "functions": 1,
+        "max_complexity": 0,
+        "category": "TypeScriptSource"
+      },
+      "crates/apr-qa-runner/src/parallel.rs": {
+        "content_hash": "02dc673cd29f636b4a1c369791fcb8511a78fcd1f8aabc6ba34131e336338c2b",
+        "lines": 750,
+        "functions": 47,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "crates/apr-qa-report/src/defect_map.rs": {
+        "content_hash": "a83c0660a3267050eba912bd5c46286f7b0e2dd09b4d803a8c4f19c7ace08018",
+        "lines": 172,
+        "functions": 11,
+        "max_complexity": 0,
+        "category": "RustSource"
+      },
+      "book/book/searcher.js": {
+        "content_hash": "9289822a2feee1c578b4593e918333147ad9f68dc3ffa75edc38b68d04e57807",
+        "lines": 483,
+        "functions": 20,
+        "max_complexity": 0,
+        "category": "TypeScriptSource"
+      }
+    },
+    "coverage_required": [
+      "crates/apr-qa-report/src/ticket.rs",
+      "crates/apr-qa-report/src/markdown.rs",
+      "crates/apr-qa-report/src/defect_map.rs",
+      "crates/apr-qa-report/src/html.rs",
+      "crates/apr-qa-report/src/certificate.rs",
+      "crates/apr-qa-report/src/junit.rs",
+      "crates/apr-qa-report/src/popperian.rs",
+      "crates/apr-qa-report/src/error.rs",
+      "crates/apr-qa-report/src/lib.rs",
+      "crates/apr-qa-report/src/mqs.rs",
+      "crates/apr-qa-report/examples/calculate_mqs.rs",
+      "crates/apr-qa-report/examples/generate_certificate.rs",
+      "crates/apr-qa-report/examples/generate_rag_markdown.rs",
+      "crates/apr-qa-cli/src/main.rs",
+      "crates/apr-qa-cli/src/lib.rs",
+      "crates/apr-qa-cli/examples/fail_fast_demo.rs",
+      "crates/apr-qa-gen/src/scenario.rs",
+      "crates/apr-qa-gen/src/hf_parity.rs",
+      "crates/apr-qa-gen/src/oracle.rs",
+      "crates/apr-qa-gen/src/error.rs",
+      "crates/apr-qa-gen/src/lib.rs",
+      "crates/apr-qa-gen/src/models.rs",
+      "crates/apr-qa-gen/src/proptest_impl.rs",
+      "crates/apr-qa-gen/examples/generate_scenarios.rs",
+      "crates/apr-qa-runner/src/integrity.rs",
+      "crates/apr-qa-runner/src/test_fixtures.rs",
+      "crates/apr-qa-runner/src/executor.rs",
+      "crates/apr-qa-runner/src/parallel.rs",
+      "crates/apr-qa-runner/src/command.rs",
+      "crates/apr-qa-runner/src/error.rs",
+      "crates/apr-qa-runner/src/playbook.rs",
+      "crates/apr-qa-runner/src/differential.rs",
+      "crates/apr-qa-runner/src/lib.rs",
+      "crates/apr-qa-runner/src/evidence.rs",
+      "crates/apr-qa-runner/src/provenance.rs",
+      "crates/apr-qa-runner/src/patterns.rs",
+      "crates/apr-qa-runner/src/conversion.rs",
+      "crates/apr-qa-runner/src/process.rs",
+      "crates/apr-qa-runner/examples/collect_evidence.rs",
+      "crates/apr-qa-runner/examples/rosetta_testing.rs",
+      "crates/apr-qa-certify/src/main.rs",
+      "crates/apr-qa-certify/src/lib.rs"
+    ],
+    "manifest_hash": "5e5123e9dfdbe0b79df31c43c5e66133b11d9bf11c90a1ede4c1b1c4d60becdf"
+  },
+  "thresholds": {
+    "min_coverage_pct": 95.0,
+    "min_per_file_coverage_pct": 95.0,
+    "max_tdg_regression": 0.0,
+    "max_function_complexity": 20,
+    "max_file_lines": 500,
+    "min_spec_score": 95,
+    "require_github_sync": true,
+    "require_spec_update": true,
+    "require_roadmap_update": true,
+    "block_on_new_satd": true,
+    "block_on_new_dead_code": true,
+    "require_lint_pass": true
+  },
+  "claims": [
+    {
+      "hypothesis": "All baseline files still exist",
+      "falsification_method": "ManifestIntegrity",
+      "evidence_required": {
+        "FileList": []
+      },
+      "result": null,
+      "override_info": null
+    },
+    {
+      "hypothesis": "The falsifier is active and detecting (Meta-Check)",
+      "falsification_method": "MetaFalsification",
+      "evidence_required": {
+        "CounterExample": {
+          "details": ""
+        }
+      },
+      "result": null,
+      "override_info": null
+    },
+    {
+      "hypothesis": "No coverage exclusion gaming",
+      "falsification_method": "CoverageGaming",
+      "evidence_required": {
+        "FileList": []
+      },
+      "result": null,
+      "override_info": null
+    },
+    {
+      "hypothesis": "All changed lines are covered",
+      "falsification_method": "DifferentialCoverage",
+      "evidence_required": {
+        "NumericComparison": {
+          "actual": 0.0,
+          "threshold": 100.0
+        }
+      },
+      "result": null,
+      "override_info": null
+    },
+    {
+      "hypothesis": "Total coverage >= 95%",
+      "falsification_method": "AbsoluteCoverage",
+      "evidence_required": {
+        "NumericComparison": {
+          "actual": 0.0,
+          "threshold": 95.0
+        }
+      },
+      "result": null,
+      "override_info": null
+    },
+    {
+      "hypothesis": "TDG score >= baseline",
+      "falsification_method": "TdgRegression",
+      "evidence_required": {
+        "NumericComparison": {
+          "actual": 0.0,
+          "threshold": 0.0
+        }
+      },
+      "result": null,
+      "override_info": null
+    },
+    {
+      "hypothesis": "No function exceeds complexity 20",
+      "falsification_method": "ComplexityRegression",
+      "evidence_required": {
+        "NumericComparison": {
+          "actual": 0.0,
+          "threshold": 20.0
+        }
+      },
+      "result": null,
+      "override_info": null
+    },
+    {
+      "hypothesis": "No vulnerable dependencies added",
+      "falsification_method": "SupplyChainIntegrity",
+      "evidence_required": {
+        "CounterExample": {
+          "details": ""
+        }
+      },
+      "result": null,
+      "override_info": null
+    },
+    {
+      "hypothesis": "No file exceeds 500 lines",
+      "falsification_method": "FileSizeRegression",
+      "evidence_required": {
+        "NumericComparison": {
+          "actual": 0.0,
+          "threshold": 500.0
+        }
+      },
+      "result": null,
+      "override_info": null
+    },
+    {
+      "hypothesis": "Spec & Roadmap Quality",
+      "falsification_method": "SpecQuality",
+      "evidence_required": {
+        "NumericComparison": {
+          "actual": 0.0,
+          "threshold": 95.0
+        }
+      },
+      "result": null,
+      "override_info": null
+    },
+    {
+      "hypothesis": "All changes pushed",
+      "falsification_method": "GitHubSync",
+      "evidence_required": {
+        "GitState": {
+          "unpushed_commits": 0,
+          "dirty_files": 0
+        }
+      },
+      "result": null,
+      "override_info": null
+    },
+    {
+      "hypothesis": "All examples compile and run",
+      "falsification_method": "ExamplesCompile",
+      "evidence_required": {
+        "CounterExample": {
+          "details": ""
+        }
+      },
+      "result": null,
+      "override_info": null
+    },
+    {
+      "hypothesis": "pmat-book validation passes",
+      "falsification_method": "BookValidation",
+      "evidence_required": {
+        "CounterExample": {
+          "details": ""
+        }
+      },
+      "result": null,
+      "override_info": null
+    },
+    {
+      "hypothesis": "No new SATD markers (TODO/FIXME/HACK)",
+      "falsification_method": "SatdDetection",
+      "evidence_required": {
+        "FileList": []
+      },
+      "result": null,
+      "override_info": null
+    },
+    {
+      "hypothesis": "No new dead code introduced",
+      "falsification_method": "DeadCodeDetection",
+      "evidence_required": {
+        "FileList": []
+      },
+      "result": null,
+      "override_info": null
+    },
+    {
+      "hypothesis": "All files have >= 95% coverage",
+      "falsification_method": "PerFileCoverage",
+      "evidence_required": {
+        "FileList": []
+      },
+      "result": null,
+      "override_info": null
+    },
+    {
+      "hypothesis": "make lint passes",
+      "falsification_method": "LintPass",
+      "evidence_required": {
+        "BooleanCheck": false
+      },
+      "result": null,
+      "override_info": null
+    }
+  ]
+}

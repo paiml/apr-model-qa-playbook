@@ -1,0 +1,41 @@
+# Code Benchmark Prompts for HF Parity Oracle
+# Each line is a prompt. Lines starting with # are comments.
+# Categories: completion, generation, explanation, math
+
+# === Function Completion ===
+def fibonacci(n):
+fn main() {
+async function fetchData(url) {
+impl Iterator for
+
+# === Code Generation ===
+Write a Python function to check if a number is prime:
+Write a Rust function to reverse a string:
+Write a JavaScript function to debounce:
+
+# === Short Completions ===
+print("Hello,
+let x =
+return
+
+# === Math/Logic ===
+2 + 2 =
+What is 15 * 7?
+Calculate the factorial of 5:
+
+# === Natural Language ===
+The capital of France is
+Explain what a binary search tree is:
+What is the time complexity of quicksort?
+
+# === Edge Cases ===
+# Empty-ish prompts
+x
+1
+
+# Unicode
+def 你好():
+# コメント
+
+# Long identifier
+def very_long_function_name_that_tests_tokenizer_handling():

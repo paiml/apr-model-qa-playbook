@@ -1,0 +1,24 @@
+roadmap_version: '1.0'
+github_enabled: true
+github_repo: paiml/apr-model-qa-playbook
+roadmap:
+- id: PMAT-001
+  github_issue: null
+  item_type: task
+  title: Implement batuta oracle enhancement for failure analysis
+  status: inprogress
+  priority: high
+  assigned_to: null
+  created: 2026-02-04T11:04:22Z
+  updated: 2026-02-04T11:04:28.272995379+00:00
+  spec: null
+  acceptance_criteria:
+  - 'Per spec §12.1.1 and §6.4: Add OracleEnhancer struct, FalsificationCheckItem, OracleContext types. Integrate with certify command via --oracle-enhance flag. Generate checklist.md alongside evidence.json.'
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - oracle
+  - enhancement
+  - v1.5.0
+  notes: null

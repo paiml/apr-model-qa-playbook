@@ -1,0 +1,42 @@
+{
+  "tree_hash": "14c9f22c361b6a2f79bf59326b6a62b4d32770e3",
+  "pmat_version": "2.215.0",
+  "timestamp": "2026-02-04T11:11:36.833428231Z",
+  "report": {
+    "files_with_dead_code": [
+      {
+        "file_path": "crates/apr-qa-gen/src/oracle.rs",
+        "dead_items": [
+          {
+            "name": "OracleWrapper",
+            "kind": "Suppressed",
+            "line": 289,
+            "column": 1,
+            "message": "struct `OracleWrapper` has #[allow(dead_code)] suppression (explicit dead code admission)"
+          }
+        ],
+        "file_dead_percentage": 0.3952569169960474
+      },
+      {
+        "file_path": "crates/apr-qa-runner/src/executor.rs",
+        "dead_items": [
+          {
+            "name": "ToolExecutor",
+            "kind": "Suppressed",
+            "line": 1128,
+            "column": 1,
+            "message": "struct `ToolExecutor` has #[allow(dead_code)] suppression (explicit dead code admission)"
+          }
+        ],
+        "file_dead_percentage": 0.06555227794165848
+      }
+    ],
+    "total_dead_items": 2,
+    "dead_code_percentage": 0.009394302355621316,
+    "total_lines": 42579,
+    "dead_lines": 4,
+    "dead_by_type": {
+      "suppressed": 2
+    }
+  }
+}

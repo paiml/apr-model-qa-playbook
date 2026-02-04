@@ -29,6 +29,7 @@ pub mod error;
 pub mod evidence;
 pub mod executor;
 pub mod integrity;
+pub mod oracle;
 pub mod parallel;
 pub mod patterns;
 pub mod playbook;
@@ -68,6 +69,10 @@ pub use executor::{
 pub use integrity::{
     ConfigValues, IntegrityResult, TensorDerivedValues, check_safetensors_integrity,
     gate_ids as integrity_gate_ids,
+};
+pub use oracle::{
+    CheckStatus, Confidence, CrossReference, FalsificationCheckItem, OracleContext, OracleEnhancer,
+    OracleError, RankedHypothesis, generate_checklist_markdown,
 };
 pub use parallel::{ParallelConfig, ParallelExecutor, ParallelResult};
 pub use patterns::{

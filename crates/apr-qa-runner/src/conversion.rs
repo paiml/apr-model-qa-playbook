@@ -434,17 +434,71 @@ impl ConversionTest {
         format!("F-CONV-{}-{}", &src[..1], &tgt[..1])
     }
 
+    /// Resolve model path for a specific format
+    ///
+    /// Handles both file mode (direct path) and directory mode (cache structure).
+    fn resolve_format_path(&self, base_path: &Path, format: &Format) -> Result<std::path::PathBuf> {
+        // If base_path is a file, use it directly (format must match)
+        if base_path.is_file() {
+            let ext = base_path.extension().and_then(|e| e.to_str()).unwrap_or("");
+            let expected_ext = match format {
+                Format::Gguf => "gguf",
+                Format::SafeTensors => "safetensors",
+                Format::Apr => "apr",
+            };
+            if ext == expected_ext {
+                return Ok(base_path.to_path_buf());
+            }
+            return Err(Error::Execution(format!(
+                "File extension mismatch: expected .{expected_ext}, got .{ext}"
+            )));
+        }
+
+        // Directory mode: look for format-specific subdirectory
+        let (subdir, extension) = match format {
+            Format::Gguf => ("gguf", "gguf"),
+            Format::Apr => ("apr", "apr"),
+            Format::SafeTensors => ("safetensors", "safetensors"),
+        };
+
+        // Try model.<ext> first
+        let resolved = base_path.join(subdir).join(format!("model.{extension}"));
+        if resolved.exists() {
+            return Ok(resolved);
+        }
+
+        // Fall back to finding any file with the extension
+        let format_dir = base_path.join(subdir);
+        if let Ok(entries) = std::fs::read_dir(&format_dir) {
+            for entry in entries.flatten() {
+                let ep = entry.path();
+                if ep.extension().is_some_and(|e| e == extension) {
+                    return Ok(ep);
+                }
+            }
+        }
+
+        Err(Error::Execution(format!(
+            "No {extension} file found in {} or {}/model.{extension}",
+            format_dir.display(),
+            format_dir.display()
+        )))
+    }
+
     /// Execute the conversion test
     ///
     /// # Errors
     ///
     /// Returns an error if the conversion or inference fails.
     pub fn execute(&self, model_path: &Path) -> Result<ConversionResult> {
-        // 1. Run inference on source format
-        let source_output = self.run_inference(model_path, &self.source_format)?;
+        // Resolve source model path based on format
+        let source_path = self.resolve_format_path(model_path, &self.source_format)?;
 
-        // 2. Convert to target format
-        let converted_path = self.convert_model(model_path)?;
+        // 1. Run inference on source format
+        let source_output = self.run_inference(&source_path, &self.source_format)?;
+
+        // 2. Convert to target format (use resolved source path)
+        let converted_path = self.convert_model(&source_path)?;
 
         // 3. Run inference on converted model
         let converted_output = self.run_inference(&converted_path, &self.target_format)?;

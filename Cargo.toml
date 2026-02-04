@@ -27,6 +27,9 @@ anyhow = "1.0"
 # Async
 tokio = { version = "1.43", features = ["full"] }
 
+# Logging/Tracing
+tracing = "0.1"
+
 # Testing
 proptest = "1.6"
 criterion = "0.5"
