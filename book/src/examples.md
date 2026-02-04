@@ -13,6 +13,7 @@ These examples can be run with `cargo run --example <name> -p <crate>`.
 | `calculate_mqs` | apr-qa-report | `cargo run --example calculate_mqs -p apr-qa-report` |
 | `generate_certificate` | apr-qa-report | `cargo run --example generate_certificate -p apr-qa-report` |
 | `generate_rag_markdown` | apr-qa-report | `cargo run --example generate_rag_markdown -p apr-qa-report` |
+| `fail_fast_demo` | apr-qa-cli | `cargo run --example fail_fast_demo -p apr-qa-cli` |
 
 ## Generating QA Scenarios
 
@@ -481,6 +482,54 @@ for ticket in &tickets {
         println!("  Fixture: {fixture}");
     }
 }
+```
+
+## Isolated Output Directories (ISO-OUT-001)
+
+Conversion test artifacts are written to an isolated directory to prevent
+pollution of the HuggingFace cache:
+
+```
+output/conversions/{org}/{repo}/{test_type}/model.{tag}.{ext}
+```
+
+Example structure after running tests:
+
+```
+output/
+├── evidence.json
+├── report.html
+└── conversions/
+    └── Qwen/
+        └── Qwen2.5-Coder-0.5B-Instruct/
+            ├── basic/
+            │   └── model.converted.apr
+            ├── semantic/
+            │   └── model.semantic_test.apr
+            └── idempotency/
+                ├── model.idem1.apr
+                └── model.idem2.apr
+```
+
+This keeps `~/.cache/huggingface/` clean and makes cleanup easy (`rm -rf output/`).
+
+### Programmatic Usage
+
+```rust
+use apr_qa_gen::ModelId;
+use apr_qa_runner::ConversionOutputDir;
+use std::path::Path;
+
+let model_id = ModelId::new("Qwen", "Qwen2.5-Coder-0.5B-Instruct");
+let output_dir = ConversionOutputDir::new(Path::new("output"), &model_id);
+
+// Get paths for different test types
+let basic_path = output_dir.basic_dir();
+let semantic_path = output_dir.semantic_dir();
+let idempotency_path = output_dir.idempotency_dir();
+
+// Clean up after testing
+output_dir.cleanup().expect("cleanup failed");
 ```
 
 ## YAML Playbook Examples

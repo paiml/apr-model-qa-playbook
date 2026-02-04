@@ -117,6 +117,24 @@ pub enum Outcome {
 }
 ```
 
+## Isolated Output Directories (ISO-OUT-001)
+
+Conversion test artifacts are written to `output/conversions/` instead of polluting the HuggingFace cache:
+
+```
+output/
+├── evidence.json          # Test results
+├── report.html            # Dashboard
+└── conversions/           # Conversion test artifacts
+    └── {org}/{repo}/
+        ├── basic/         # Basic conversion tests
+        ├── semantic/      # Semantic comparison tests
+        ├── idempotency/   # Double-convert stability
+        └── round-trip/    # Multi-hop chain tests
+```
+
+This keeps `~/.cache/huggingface/` clean. Clean up with `rm -rf output/`.
+
 ## Output Formats
 
 ### JUnit XML
