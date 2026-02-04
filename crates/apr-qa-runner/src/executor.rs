@@ -6,6 +6,7 @@
 
 use crate::command::{CommandRunner, RealCommandRunner};
 use crate::conversion::{ConversionConfig, ConversionExecutor, resolve_model_path};
+use crate::diagnostics::FailFastReporter;
 use crate::error::Result;
 use crate::evidence::{Evidence, EvidenceCollector, Outcome, PerformanceMetrics};
 use crate::integrity;
@@ -271,22 +272,36 @@ impl Executor {
                         break;
                     }
                     FailurePolicy::FailFast => {
-                        // Enhanced tracing mode: log comprehensive diagnostics
+                        // Enhanced tracing mode: generate comprehensive diagnostic report
                         eprintln!("\n[FAIL-FAST] Gate {} FALSIFIED", evidence.gate_id);
                         eprintln!("[FAIL-FAST] Model: {}", evidence.scenario.model.hf_repo());
                         eprintln!("[FAIL-FAST] Format: {:?}", evidence.scenario.format);
                         eprintln!("[FAIL-FAST] Backend: {:?}", evidence.scenario.backend);
                         eprintln!("[FAIL-FAST] Outcome: {:?}", evidence.outcome);
                         eprintln!("[FAIL-FAST] Reason: {}", evidence.reason);
-                        if let Some(ref stderr) = evidence.stderr {
-                            eprintln!("[FAIL-FAST] Stderr:\n{stderr}");
+
+                        // Generate diagnostic report using apr tooling (FF-REPORT-001)
+                        if let Some(ref model_path) = self.config.model_path {
+                            let output_dir = self.config.output_dir.as_deref().unwrap_or("output");
+                            let reporter = FailFastReporter::new(Path::new(output_dir));
+                            if let Err(e) = reporter.generate_report(
+                                &evidence,
+                                Path::new(model_path),
+                                Some(&playbook.name),
+                            ) {
+                                eprintln!("[FAIL-FAST] Warning: Failed to generate report: {e}");
+                            }
+                        } else {
+                            // Fallback to basic stderr output when no model path
+                            if let Some(ref stderr) = evidence.stderr {
+                                eprintln!("[FAIL-FAST] Stderr:\n{stderr}");
+                            }
+                            if let Some(exit_code) = evidence.exit_code {
+                                eprintln!("[FAIL-FAST] Exit code: {exit_code}");
+                            }
+                            eprintln!("[FAIL-FAST] No model path - full report not generated\n");
                         }
-                        if let Some(exit_code) = evidence.exit_code {
-                            eprintln!("[FAIL-FAST] Exit code: {exit_code}");
-                        }
-                        eprintln!(
-                            "[FAIL-FAST] Stopping execution - use RUST_LOG=debug for full trace\n"
-                        );
+
                         self.collector.add(evidence);
                         break;
                     }

@@ -24,6 +24,7 @@
 
 pub mod command;
 pub mod conversion;
+pub mod diagnostics;
 pub mod differential;
 pub mod error;
 pub mod evidence;
@@ -53,6 +54,10 @@ pub use conversion::{
     TensorNaming, all_backends, all_conversion_pairs, check_cardinality, check_tensor_names,
     classify_failure, generate_conversion_tests, get_hf_cache_dir, resolve_hf_repo_to_cache,
     resolve_model_path, split_hf_repo, tolerance_for,
+};
+pub use diagnostics::{
+    DiagnosticResult, DiagnosticsBundle, EnvironmentContext, FailFastReport, FailFastReporter,
+    FailureDetails, ReproductionInfo,
 };
 pub use differential::{
     BenchResult, BenchmarkMetrics, CiAssertion, CiProfileResult, DiffBenchmarkResult, DiffConfig,
