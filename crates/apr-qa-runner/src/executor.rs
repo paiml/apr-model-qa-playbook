@@ -88,6 +88,9 @@ pub struct ExecutionConfig {
     pub hf_parity_corpus_path: Option<String>,
     /// HF parity model family (e.g., "qwen2.5-coder-1.5b/v1")
     pub hf_parity_model_family: Option<String>,
+    /// Output directory for conversion test artifacts (ISO-OUT-001)
+    /// Defaults to "output/" - keeps test artifacts isolated from source models
+    pub output_dir: Option<String>,
 }
 
 impl Default for ExecutionConfig {
@@ -111,6 +114,7 @@ impl Default for ExecutionConfig {
             run_hf_parity: false,
             hf_parity_corpus_path: None,
             hf_parity_model_family: None,
+            output_dir: Some("output".to_string()), // ISO-OUT-001: Default to isolated output
         }
     }
 }
@@ -370,7 +374,12 @@ impl Executor {
             ConversionConfig::default()
         };
 
-        let executor = ConversionExecutor::new(config);
+        // ISO-OUT-001: Use isolated output directory for conversion artifacts
+        let executor = if let Some(ref output_dir) = self.config.output_dir {
+            ConversionExecutor::new(config).with_output_dir(std::path::PathBuf::from(output_dir))
+        } else {
+            ConversionExecutor::new(config)
+        };
 
         match executor.execute_all(model_path, model_id) {
             Ok(result) => {
@@ -2758,6 +2767,7 @@ test_matrix:
             run_hf_parity: false,
             hf_parity_corpus_path: None,
             hf_parity_model_family: None,
+            output_dir: Some("test_output".to_string()),
         };
         assert_eq!(config.failure_policy, FailurePolicy::CollectAll);
         assert!(config.dry_run);

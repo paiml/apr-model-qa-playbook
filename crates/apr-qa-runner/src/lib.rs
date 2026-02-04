@@ -47,12 +47,12 @@ pub mod test_fixtures;
 pub use command::{CommandOutput, CommandRunner, MockCommandRunner, RealCommandRunner};
 pub use conversion::{
     CommutativityTest, ConversionBugType, ConversionConfig, ConversionEvidence,
-    ConversionExecutionResult, ConversionExecutor, ConversionFailureType, ConversionResult,
-    ConversionTest, ConversionTolerance, DEFAULT_TOLERANCES, EPSILON, IdempotencyTest, QuantType,
-    RoundTripTest, SemanticConversionTest, SemanticTestResult, TensorNaming, all_backends,
-    all_conversion_pairs, check_cardinality, check_tensor_names, classify_failure,
-    generate_conversion_tests, get_hf_cache_dir, resolve_hf_repo_to_cache, resolve_model_path,
-    split_hf_repo, tolerance_for,
+    ConversionExecutionResult, ConversionExecutor, ConversionFailureType, ConversionOutputDir,
+    ConversionResult, ConversionTest, ConversionTolerance, DEFAULT_TOLERANCES, EPSILON,
+    IdempotencyTest, QuantType, RoundTripTest, SemanticConversionTest, SemanticTestResult,
+    TensorNaming, all_backends, all_conversion_pairs, check_cardinality, check_tensor_names,
+    classify_failure, generate_conversion_tests, get_hf_cache_dir, resolve_hf_repo_to_cache,
+    resolve_model_path, split_hf_repo, tolerance_for,
 };
 pub use differential::{
     BenchResult, BenchmarkMetrics, CiAssertion, CiProfileResult, DiffBenchmarkResult, DiffConfig,

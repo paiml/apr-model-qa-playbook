@@ -30,8 +30,131 @@ use crate::error::{Error, Result};
 use crate::evidence::Evidence;
 use apr_qa_gen::{Backend, Format, Modality, ModelId, QaScenario};
 use serde::{Deserialize, Serialize};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
+
+/// Isolated output directory for conversion test artifacts.
+///
+/// Implements ISO-OUT-001: All conversion test outputs are written to an isolated
+/// directory, never to the source model location.
+///
+/// # Directory Structure
+///
+/// ```text
+/// {base}/conversions/{org}/{repo}/{test_type}/
+/// ```
+///
+/// Where `test_type` is one of: `basic`, `semantic`, `idempotency`, `comparison`, `round-trip`
+#[derive(Debug, Clone)]
+pub struct ConversionOutputDir {
+    base: PathBuf,
+    org: String,
+    repo: String,
+}
+
+impl ConversionOutputDir {
+    /// Create a new conversion output directory for a model.
+    ///
+    /// # Arguments
+    ///
+    /// * `output_dir` - Base output directory (e.g., `output/`)
+    /// * `model_id` - Model identifier containing org/repo
+    #[must_use]
+    pub fn new(output_dir: &Path, model_id: &ModelId) -> Self {
+        Self {
+            base: output_dir.to_path_buf(),
+            org: model_id.org.clone(),
+            repo: model_id.name.clone(),
+        }
+    }
+
+    /// Get the base conversions directory for this model.
+    fn model_dir(&self) -> PathBuf {
+        self.base
+            .join("conversions")
+            .join(&self.org)
+            .join(&self.repo)
+    }
+
+    /// Get output directory for basic conversion tests.
+    #[must_use]
+    pub fn basic_dir(&self) -> PathBuf {
+        self.model_dir().join("basic")
+    }
+
+    /// Get output directory for semantic conversion tests.
+    #[must_use]
+    pub fn semantic_dir(&self) -> PathBuf {
+        self.model_dir().join("semantic")
+    }
+
+    /// Get output directory for idempotency tests.
+    #[must_use]
+    pub fn idempotency_dir(&self) -> PathBuf {
+        self.model_dir().join("idempotency")
+    }
+
+    /// Get output directory for comparison tests.
+    #[must_use]
+    pub fn comparison_dir(&self) -> PathBuf {
+        self.model_dir().join("comparison")
+    }
+
+    /// Get output directory for round-trip tests.
+    #[must_use]
+    pub fn round_trip_dir(&self) -> PathBuf {
+        self.model_dir().join("round-trip")
+    }
+
+    /// Generate an output path for a converted model file.
+    ///
+    /// # Arguments
+    ///
+    /// * `test_type` - Type of test (used as subdirectory)
+    /// * `source_name` - Original model filename (without extension)
+    /// * `tag` - Test-specific tag (e.g., "idem1", "direct")
+    /// * `target_format` - Target format for extension
+    #[must_use]
+    pub fn output_path(
+        &self,
+        test_type: &str,
+        source_name: &str,
+        tag: &str,
+        target_format: Format,
+    ) -> PathBuf {
+        let ext = match target_format {
+            Format::Gguf => "gguf",
+            Format::SafeTensors => "safetensors",
+            Format::Apr => "apr",
+        };
+        let dir = self.model_dir().join(test_type);
+        dir.join(format!("{source_name}.{tag}.{ext}"))
+    }
+
+    /// Ensure the output directory exists.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the directory cannot be created.
+    pub fn ensure_dir(&self, test_type: &str) -> std::io::Result<PathBuf> {
+        let dir = self.model_dir().join(test_type);
+        std::fs::create_dir_all(&dir)?;
+        Ok(dir)
+    }
+
+    /// Clean up all conversion artifacts for this model.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if cleanup fails.
+    pub fn cleanup(&self) -> std::io::Result<()> {
+        let dir = self.model_dir();
+        if dir.exists() {
+            std::fs::remove_dir_all(&dir)?;
+        }
+        Ok(())
+    }
+}
 
 /// Resolve a model directory path to an actual model file for a specific format.
 ///
@@ -418,6 +541,9 @@ pub struct ConversionTest {
     /// Quantization type for dtype-aware tolerance (§3.7)
     #[serde(default)]
     pub quant_type: Option<QuantType>,
+    /// Output directory for conversion artifacts (ISO-OUT-001)
+    #[serde(skip, default)]
+    pub output_dir: Option<ConversionOutputDir>,
 }
 
 fn default_epsilon() -> f64 {
@@ -490,7 +616,15 @@ impl ConversionTest {
             epsilon: EPSILON,
             binary: default_binary(),
             quant_type: None,
+            output_dir: None,
         }
+    }
+
+    /// Set the output directory for this test (ISO-OUT-001)
+    #[must_use]
+    pub fn with_output_dir(mut self, output_dir: ConversionOutputDir) -> Self {
+        self.output_dir = Some(output_dir);
+        self
     }
 
     /// Get the effective epsilon, using dtype-aware tolerance when quant_type is set
@@ -597,15 +731,29 @@ impl ConversionTest {
     }
 
     /// Convert model to target format using apr rosetta
-    fn convert_model(&self, source_path: &Path) -> Result<std::path::PathBuf> {
+    fn convert_model(&self, source_path: &Path) -> Result<PathBuf> {
         let target_ext = match self.target_format {
             Format::Gguf => "gguf",
             Format::SafeTensors => "safetensors",
             Format::Apr => "apr",
         };
 
-        // Create target path with new extension (format determined by extension)
-        let target_path = source_path.with_extension(format!("converted.{target_ext}"));
+        // ISO-OUT-001: Use isolated output directory if configured
+        let target_path = if let Some(ref output_dir) = self.output_dir {
+            // Ensure output directory exists
+            output_dir.ensure_dir("basic").map_err(Error::Io)?;
+
+            // Get source filename without extension
+            let source_name = source_path
+                .file_stem()
+                .and_then(|s| s.to_str())
+                .unwrap_or("model");
+
+            output_dir.output_path("basic", source_name, "converted", self.target_format)
+        } else {
+            // Legacy: write to source directory (for backward compatibility in tests)
+            source_path.with_extension(format!("converted.{target_ext}"))
+        };
 
         // Use apr rosetta convert: apr rosetta convert <SOURCE> <TARGET>
         // Format is inferred from output file extension
@@ -1398,6 +1546,8 @@ impl ConversionConfig {
 pub struct ConversionExecutor {
     config: ConversionConfig,
     binary: String,
+    /// Output directory for conversion artifacts (ISO-OUT-001)
+    output_dir: Option<PathBuf>,
 }
 
 impl ConversionExecutor {
@@ -1407,6 +1557,7 @@ impl ConversionExecutor {
         Self {
             config,
             binary: default_binary(),
+            output_dir: None,
         }
     }
 
@@ -1414,6 +1565,13 @@ impl ConversionExecutor {
     #[must_use]
     pub fn with_defaults() -> Self {
         Self::new(ConversionConfig::default())
+    }
+
+    /// Set the output directory for conversion artifacts (ISO-OUT-001)
+    #[must_use]
+    pub fn with_output_dir(mut self, output_dir: PathBuf) -> Self {
+        self.output_dir = Some(output_dir);
+        self
     }
 
     /// Execute all conversion tests for a model
@@ -1438,12 +1596,21 @@ impl ConversionExecutor {
             self.config.backends.clone()
         };
 
+        // Create output directory wrapper if configured (ISO-OUT-001)
+        let output_dir_wrapper = self
+            .output_dir
+            .as_ref()
+            .map(|dir| ConversionOutputDir::new(dir, model_id));
+
         // Test all format pairs
         if self.config.test_all_pairs {
             for (source, target) in all_conversion_pairs() {
                 for backend in &backends {
                     let mut test = ConversionTest::new(source, target, *backend, model_id.clone());
                     test.binary.clone_from(&self.binary);
+                    if let Some(ref out_dir) = output_dir_wrapper {
+                        test.output_dir = Some(out_dir.clone());
+                    }
 
                     match test.execute(model_path) {
                         Ok(result) => {
@@ -2448,6 +2615,7 @@ mod tests {
             epsilon: 1e-9,
             binary: default_binary(),
             quant_type: None,
+            output_dir: None,
         };
         assert!((test.epsilon - 1e-9).abs() < f64::EPSILON);
     }
@@ -3225,6 +3393,7 @@ mod tests {
             epsilon: 1e-7,
             binary: default_binary(),
             quant_type: None,
+            output_dir: None,
         };
         let json = serde_json::to_string(&test).unwrap();
         let parsed: ConversionTest = serde_json::from_str(&json).unwrap();
@@ -3632,6 +3801,7 @@ mod tests {
             epsilon: 1e-10,
             binary: default_binary(),
             quant_type: None,
+            output_dir: None,
         };
         assert!((test.epsilon - 1e-10).abs() < 1e-15);
     }
