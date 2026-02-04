@@ -14,6 +14,7 @@ These examples can be run with `cargo run --example <name> -p <crate>`.
 | `generate_certificate` | apr-qa-report | `cargo run --example generate_certificate -p apr-qa-report` |
 | `generate_rag_markdown` | apr-qa-report | `cargo run --example generate_rag_markdown -p apr-qa-report` |
 | `fail_fast_demo` | apr-qa-cli | `cargo run --example fail_fast_demo -p apr-qa-cli` |
+| `integrity_lock_demo` | apr-qa-cli | `cargo run --example integrity_lock_demo -p apr-qa-cli` |
 
 ## Generating QA Scenarios
 
@@ -627,6 +628,91 @@ apr check /path/to/model.apr
 apr trace /path/to/model.apr --payload -v
 apr explain G3-STABLE
 ```
+```
+
+## Playbook Integrity Lock (§3.1)
+
+The `integrity_lock_demo` example demonstrates the playbook integrity lock system
+that prevents unauthorized modification of test specifications:
+
+```bash
+cargo run --example integrity_lock_demo -p apr-qa-cli
+```
+
+### Key Concepts
+
+The integrity lock system uses SHA-256 hashes to detect playbook modifications:
+
+```rust
+use apr_qa_runner::{
+    PlaybookLockFile, compute_playbook_hash, generate_lock_entry,
+    verify_playbook_integrity,
+};
+
+fn main() {
+    // Compute hash of a playbook file
+    let hash = compute_playbook_hash("playbook.yaml").unwrap();
+    println!("SHA-256: {hash}"); // 64 hex characters
+
+    // Generate a lock entry
+    let (name, entry) = generate_lock_entry("playbook.yaml").unwrap();
+    println!("Locked fields: {:?}", entry.locked_fields);
+
+    // Verify integrity against lock file
+    let lock_file = PlaybookLockFile::default();
+    match verify_playbook_integrity("playbook.yaml", &lock_file, &name) {
+        Ok(()) => println!("Integrity: PASSED"),
+        Err(e) => println!("Integrity: BLOCKED - {e}"),
+    }
+}
+```
+
+### Lock File Structure
+
+```yaml
+# playbook.lock.yaml
+entries:
+  qwen2.5-coder-1.5b-mvp:
+    sha256: 8dbb1f48ca93a0948a560fb32a6febc37e2569040fc2aac2581dd5668cd3d7d2
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+```
+
+### Example Output
+
+```
+=== Playbook Integrity Lock Demo (§3.1) ===
+
+=== Hash Computation ===
+
+Playbook: demo-model-mvp.playbook.yaml
+SHA-256:  52ab204274e7f1170939a74bd48d73766425331b9c7daa2b22f4e6be400c9324
+
+=== Integrity Verification ===
+
+Case 1: Unmodified playbook
+  Result: PASSED ✓
+
+Case 2: Modified playbook
+  Result: BLOCKED ✗
+  Error: Integrity check failed for 'demo-model-mvp': expected 52ab20..., got 55b585...
+```
+
+### CLI Usage
+
+```bash
+# Generate lock file
+apr-qa lock-playbooks playbooks/models -o playbooks/playbook.lock.yaml
+
+# Run with integrity check (default)
+apr-qa run playbook.yaml
+# Output: Integrity check: PASSED
+
+# Bypass check if needed (not recommended)
+apr-qa run playbook.yaml --no-integrity-check
 ```
 
 ## YAML Playbook Examples
