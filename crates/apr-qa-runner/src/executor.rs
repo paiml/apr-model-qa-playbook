@@ -255,7 +255,10 @@ impl Executor {
             });
         }
 
-        // Use pulled path if model_path wasn't explicitly set
+        // Use pulled path if model_path wasn't explicitly set.
+        // When the CLI doesn't auto-resolve (HF-CACHE-001 removed in favour of
+        // G0-PULL), model_path is None and gets set from the authoritative
+        // apr pull result. User-provided --model-path is preserved.
         if let Some(ref path) = pulled_path {
             if self.config.model_path.is_none() {
                 self.config.model_path = Some(path.clone());
@@ -943,16 +946,22 @@ impl Executor {
     ///
     /// (passed_count, failed_count) - evidence is added to collector
     fn run_g0_integrity_check(&mut self, model_path: &Path, model_id: &ModelId) -> (usize, usize) {
-        // Check if the model directory contains SafeTensors files
-        let safetensors_dir = Self::find_safetensors_dir(model_path);
-
-        let Some(st_dir) = safetensors_dir else {
-            // No SafeTensors found - G0 check not applicable, auto-pass
-            return (0, 0);
-        };
-
-        // Run integrity check
-        let result = integrity::check_safetensors_integrity(&st_dir);
+        // File mode: when model_path is a specific .safetensors file (e.g., from
+        // apr pull in pacha cache), use file-specific integrity check that finds
+        // the associated config via hash prefix. This avoids scanning the shared
+        // parent directory which contains files from other models.
+        let result =
+            if model_path.is_file() && model_path.extension().is_some_and(|e| e == "safetensors") {
+                integrity::check_safetensors_file_integrity(model_path)
+            } else {
+                // Directory mode: scan for safetensors files
+                let safetensors_dir = Self::find_safetensors_dir(model_path);
+                let Some(st_dir) = safetensors_dir else {
+                    // No SafeTensors found - G0 check not applicable, auto-pass
+                    return (0, 0);
+                };
+                integrity::check_safetensors_integrity(&st_dir)
+            };
 
         if result.passed {
             // All integrity checks passed
@@ -1090,11 +1099,12 @@ impl Executor {
         let duration = start.elapsed().as_millis() as u64;
 
         if output.success {
-            // Parse "Path: <path>" from stdout
-            let pulled_path = output
-                .stdout
-                .lines()
-                .find_map(|line| line.strip_prefix("Path: ").map(|p| p.trim().to_string()));
+            // Parse "Path: <path>" from stdout (apr pull indents with spaces)
+            let pulled_path = output.stdout.lines().find_map(|line| {
+                line.trim()
+                    .strip_prefix("Path: ")
+                    .map(|p| p.trim().to_string())
+            });
 
             let ev = Evidence::corroborated(
                 "G0-PULL-001",

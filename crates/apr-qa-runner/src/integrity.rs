@@ -104,8 +104,14 @@ pub fn check_safetensors_integrity(model_dir: &Path) -> IntegrityResult {
         tensor_values: None,
     };
 
-    // Step 1: Check for config.json
+    // Step 1: Check for config.json (supports pacha cache naming: <hash>.config.json)
     let config_path = model_dir.join("config.json");
+    let config_path = if config_path.exists() {
+        config_path
+    } else {
+        // Fallback: pacha cache uses <hash>.config.json naming
+        find_config_json(model_dir).unwrap_or(config_path)
+    };
     let config = match read_config(&config_path) {
         Ok(cfg) => {
             result.config_found = true;
@@ -198,6 +204,145 @@ pub fn check_safetensors_integrity(model_dir: &Path) -> IntegrityResult {
     result
 }
 
+/// Check integrity of a single SafeTensors model file
+///
+/// For use when model_path points to a specific file (e.g., from `apr pull`).
+/// Finds the associated config.json using the file's hash prefix (pacha cache
+/// naming: `<hash>.safetensors` + `<hash>.config.json`), and validates only
+/// against this file's tensor metadata — not all files in the parent directory.
+///
+/// # Arguments
+///
+/// * `model_file` - Path to a specific `.safetensors` file
+///
+/// # Returns
+///
+/// `IntegrityResult` with pass/fail status and detailed error messages
+#[must_use]
+pub fn check_safetensors_file_integrity(model_file: &Path) -> IntegrityResult {
+    let mut result = IntegrityResult {
+        passed: true,
+        config_found: false,
+        layer_count_match: true,
+        hidden_size_match: true,
+        vocab_size_match: true,
+        errors: Vec::new(),
+        config_values: None,
+        tensor_values: None,
+    };
+
+    // Step 1: Find the associated config.json via hash prefix
+    let config_path = find_config_for_model_file(model_file);
+    let Some(config_path) = config_path else {
+        result.config_found = false;
+        result.passed = false;
+        result.errors.push(format!(
+            "G0-INTEGRITY-CONFIG: No config.json found for {}",
+            model_file.display()
+        ));
+        return result;
+    };
+
+    let config = match read_config(&config_path) {
+        Ok(cfg) => {
+            result.config_found = true;
+            result.config_values = Some(ConfigValues {
+                num_hidden_layers: cfg.num_hidden_layers,
+                hidden_size: cfg.hidden_size,
+                vocab_size: cfg.vocab_size,
+                num_attention_heads: cfg.num_attention_heads,
+            });
+            cfg
+        }
+        Err(e) => {
+            result.config_found = false;
+            result.passed = false;
+            result.errors.push(format!("G0-INTEGRITY-CONFIG: {e}"));
+            return result;
+        }
+    };
+
+    // Step 2: Read tensor metadata from THIS file only
+    let all_tensors = match read_safetensors_metadata(model_file) {
+        Ok(tensors) => tensors,
+        Err(e) => {
+            result.passed = false;
+            result.errors.push(format!(
+                "G0-INTEGRITY-CONFIG: Failed to read {}: {e}",
+                model_file.display()
+            ));
+            return result;
+        }
+    };
+
+    // Step 3: Derive and validate (same logic as directory version)
+    let tensor_values = derive_values_from_tensors(&all_tensors);
+    result.tensor_values = Some(tensor_values.clone());
+
+    if let (Some(config_layers), Some(tensor_layers)) =
+        (config.num_hidden_layers, tensor_values.layer_count)
+    {
+        if config_layers != tensor_layers {
+            result.layer_count_match = false;
+            result.passed = false;
+            result.errors.push(format!(
+                "G0-INTEGRITY-LAYERS: config says {config_layers} layers but tensors have {tensor_layers}"
+            ));
+        }
+    }
+
+    if let (Some(config_hidden), Some(tensor_hidden)) =
+        (config.hidden_size, tensor_values.hidden_size)
+    {
+        if config_hidden != tensor_hidden {
+            result.hidden_size_match = false;
+            result.passed = false;
+            result.errors.push(format!(
+                "G0-INTEGRITY-HIDDEN: config says hidden_size={config_hidden} but embedding has {tensor_hidden}"
+            ));
+        }
+    }
+
+    if let (Some(config_vocab), Some(tensor_vocab)) = (config.vocab_size, tensor_values.vocab_size)
+    {
+        if config_vocab != tensor_vocab {
+            result.vocab_size_match = false;
+            result.passed = false;
+            result.errors.push(format!(
+                "G0-INTEGRITY-VOCAB: config says vocab_size={config_vocab} but embedding has {tensor_vocab}"
+            ));
+        }
+    }
+
+    result
+}
+
+/// Find the config.json associated with a specific model file
+///
+/// Pacha cache naming: `<hash>.safetensors` + `<hash>.config.json`
+/// Falls back to `config.json` in the same directory.
+fn find_config_for_model_file(model_file: &Path) -> Option<std::path::PathBuf> {
+    let parent = model_file.parent()?;
+    let stem = model_file.file_name()?.to_str()?;
+
+    // Try hash-prefix match: foo.safetensors → foo.config.json
+    if let Some(hash_prefix) = stem.strip_suffix(".safetensors") {
+        let config_name = format!("{hash_prefix}.config.json");
+        let config_path = parent.join(&config_name);
+        if config_path.exists() {
+            return Some(config_path);
+        }
+    }
+
+    // Fallback: config.json in same directory
+    let config_path = parent.join("config.json");
+    if config_path.exists() {
+        return Some(config_path);
+    }
+
+    None
+}
+
 /// Read and parse config.json
 fn read_config(path: &Path) -> Result<HfConfig, String> {
     let file = File::open(path).map_err(|e| format!("config.json not found or unreadable: {e}"))?;
@@ -206,6 +351,22 @@ fn read_config(path: &Path) -> Result<HfConfig, String> {
 }
 
 /// Find all .safetensors files in a directory
+/// Find a `*.config.json` file in a directory (pacha cache naming convention)
+///
+/// Pacha cache uses `<hash>.config.json` instead of plain `config.json`.
+fn find_config_json(dir: &Path) -> Option<std::path::PathBuf> {
+    let entries = std::fs::read_dir(dir).ok()?;
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+            if name.ends_with(".config.json") {
+                return Some(path);
+            }
+        }
+    }
+    None
+}
+
 fn find_safetensors_files(dir: &Path) -> Vec<std::path::PathBuf> {
     let mut files = Vec::new();
     if let Ok(entries) = std::fs::read_dir(dir) {
@@ -254,79 +415,63 @@ fn read_safetensors_metadata(path: &Path) -> Result<HashMap<String, Vec<usize>>,
 
     let obj = header.as_object().ok_or("Header is not a JSON object")?;
 
-    let mut tensors = HashMap::new();
-    for (name, value) in obj {
-        // Skip __metadata__ key
-        if name == "__metadata__" {
-            continue;
-        }
-        if let Some(tensor_info) = value.as_object() {
-            if let Some(shape) = tensor_info.get("shape") {
-                if let Some(shape_arr) = shape.as_array() {
-                    let dims: Vec<usize> = shape_arr
-                        .iter()
-                        .filter_map(|v| v.as_u64().map(|n| n as usize))
-                        .collect();
-                    tensors.insert(name.clone(), dims);
-                }
-            }
-        }
-    }
+    let tensors = obj
+        .iter()
+        .filter(|(name, _)| *name != "__metadata__")
+        .filter_map(|(name, value)| {
+            let shape = value.as_object()?.get("shape")?.as_array()?;
+            let dims: Vec<usize> = shape
+                .iter()
+                .filter_map(|v| v.as_u64().map(|n| n as usize))
+                .collect();
+            Some((name.clone(), dims))
+        })
+        .collect();
 
     Ok(tensors)
 }
 
 /// Derive model configuration values from tensor metadata
 fn derive_values_from_tensors(tensors: &HashMap<String, Vec<usize>>) -> TensorDerivedValues {
-    let mut result = TensorDerivedValues {
-        layer_count: None,
-        hidden_size: None,
-        vocab_size: None,
-    };
+    let layer_count = derive_layer_count(tensors);
+    let (vocab_size, hidden_size) = find_embedding_shape(tensors);
 
-    // Find layer count from tensor names like "model.layers.N.*" or "layers.N.*"
-    let mut max_layer: Option<usize> = None;
-    for name in tensors.keys() {
-        if let Some(layer_num) = extract_layer_number(name) {
-            max_layer = Some(max_layer.map_or(layer_num, |m| m.max(layer_num)));
-        }
+    TensorDerivedValues {
+        layer_count,
+        hidden_size,
+        vocab_size,
     }
-    result.layer_count = max_layer.map(|n| n + 1); // Layer indices are 0-based
+}
 
-    // Find hidden_size and vocab_size from embedding tensor
-    // Common names: "model.embed_tokens.weight", "embed_tokens.weight", "lm_head.weight"
-    let embedding_names = [
+/// Count layers by finding the max layer index in tensor names (0-based → +1)
+fn derive_layer_count(tensors: &HashMap<String, Vec<usize>>) -> Option<usize> {
+    tensors
+        .keys()
+        .filter_map(|name| extract_layer_number(name))
+        .max()
+        .map(|n| n + 1)
+}
+
+/// Find (vocab_size, hidden_size) from embedding or lm_head tensors
+fn find_embedding_shape(tensors: &HashMap<String, Vec<usize>>) -> (Option<usize>, Option<usize>) {
+    let candidates = [
         "model.embed_tokens.weight",
         "embed_tokens.weight",
         "transformer.wte.weight",
         "wte.weight",
+        "lm_head.weight",
+        "model.lm_head.weight",
     ];
 
-    for name in embedding_names {
+    for name in candidates {
         if let Some(shape) = tensors.get(name) {
             if shape.len() >= 2 {
-                result.vocab_size = Some(shape[0]);
-                result.hidden_size = Some(shape[1]);
-                break;
+                return (Some(shape[0]), Some(shape[1]));
             }
         }
     }
 
-    // If no embed_tokens found, try lm_head (output projection)
-    if result.vocab_size.is_none() {
-        let lm_head_names = ["lm_head.weight", "model.lm_head.weight"];
-        for name in lm_head_names {
-            if let Some(shape) = tensors.get(name) {
-                if shape.len() >= 2 {
-                    result.vocab_size = Some(shape[0]);
-                    result.hidden_size = Some(shape[1]);
-                    break;
-                }
-            }
-        }
-    }
-
-    result
+    (None, None)
 }
 
 /// Extract layer number from tensor name
@@ -822,5 +967,190 @@ mod tests {
         let result = check_safetensors_integrity(dir.path());
         assert!(!result.passed);
         assert!(result.errors.iter().any(|e| e.contains("VOCAB")));
+    }
+
+    // =========================================================================
+    // File-mode integrity tests (pacha cache with hash-prefixed files)
+    // =========================================================================
+
+    /// Create a named config in the given directory (for hash-prefix testing)
+    fn create_named_config(dir: &Path, name: &str, layers: usize, hidden: usize, vocab: usize) {
+        let config = format!(
+            r#"{{
+                "num_hidden_layers": {layers},
+                "hidden_size": {hidden},
+                "vocab_size": {vocab},
+                "num_attention_heads": 12
+            }}"#
+        );
+        std::fs::write(dir.join(name), config).expect("write config");
+    }
+
+    /// Create a named safetensors file (for hash-prefix testing)
+    fn create_named_safetensors(
+        dir: &Path,
+        name: &str,
+        layers: usize,
+        hidden: usize,
+        vocab: usize,
+    ) {
+        let mut header_obj = serde_json::Map::new();
+
+        let mut embed_info = serde_json::Map::new();
+        embed_info.insert("shape".to_string(), serde_json::json!([vocab, hidden]));
+        embed_info.insert(
+            "dtype".to_string(),
+            serde_json::Value::String("F32".to_string()),
+        );
+        embed_info.insert(
+            "data_offsets".to_string(),
+            serde_json::json!([0, vocab * hidden * 4]),
+        );
+        header_obj.insert(
+            "model.embed_tokens.weight".to_string(),
+            serde_json::Value::Object(embed_info),
+        );
+
+        for i in 0..layers {
+            let mut layer_info = serde_json::Map::new();
+            layer_info.insert("shape".to_string(), serde_json::json!([hidden, hidden]));
+            layer_info.insert(
+                "dtype".to_string(),
+                serde_json::Value::String("F32".to_string()),
+            );
+            layer_info.insert("data_offsets".to_string(), serde_json::json!([0, 0]));
+            header_obj.insert(
+                format!("model.layers.{i}.self_attn.q_proj.weight"),
+                serde_json::Value::Object(layer_info),
+            );
+        }
+
+        let header_json = serde_json::to_string(&header_obj).expect("serialize header");
+        let header_bytes = header_json.as_bytes();
+        let header_len = header_bytes.len() as u64;
+
+        let path = dir.join(name);
+        let mut file = File::create(path).expect("create safetensors");
+        file.write_all(&header_len.to_le_bytes())
+            .expect("write len");
+        file.write_all(header_bytes).expect("write header");
+        file.write_all(&[0u8; 1024]).expect("write data");
+    }
+
+    #[test]
+    fn test_file_integrity_with_hash_prefix_config() {
+        let dir = TempDir::new().expect("create temp dir");
+        // Simulate pacha cache: <hash>.safetensors + <hash>.config.json
+        create_named_config(dir.path(), "abc123.config.json", 24, 896, 151_936);
+        create_named_safetensors(dir.path(), "abc123.safetensors", 24, 896, 151_936);
+
+        let model_file = dir.path().join("abc123.safetensors");
+        let result = check_safetensors_file_integrity(&model_file);
+        assert!(
+            result.passed,
+            "Should pass with hash-prefixed config: {:?}",
+            result.errors
+        );
+        assert!(result.config_found);
+        assert!(result.layer_count_match);
+    }
+
+    #[test]
+    fn test_file_integrity_ignores_other_models_in_shared_dir() {
+        let dir = TempDir::new().expect("create temp dir");
+        // Model A: 24 layers (the one we're checking)
+        create_named_config(dir.path(), "aaa111.config.json", 24, 896, 151_936);
+        create_named_safetensors(dir.path(), "aaa111.safetensors", 24, 896, 151_936);
+        // Model B: 28 layers (different model in same dir — must be ignored)
+        create_named_config(dir.path(), "bbb222.config.json", 28, 3584, 151_936);
+        create_named_safetensors(dir.path(), "bbb222.safetensors", 28, 3584, 151_936);
+
+        let model_file = dir.path().join("aaa111.safetensors");
+        let result = check_safetensors_file_integrity(&model_file);
+        assert!(
+            result.passed,
+            "Must use only aaa111's config and tensors, not bbb222's: {:?}",
+            result.errors
+        );
+        assert_eq!(
+            result.tensor_values.as_ref().unwrap().layer_count,
+            Some(24),
+            "Should see 24 layers from aaa111, not 28 from bbb222"
+        );
+    }
+
+    #[test]
+    fn test_file_integrity_no_config_found() {
+        let dir = TempDir::new().expect("create temp dir");
+        // Safetensors file with no matching config
+        create_named_safetensors(dir.path(), "orphan.safetensors", 12, 768, 30_000);
+
+        let model_file = dir.path().join("orphan.safetensors");
+        let result = check_safetensors_file_integrity(&model_file);
+        assert!(!result.passed);
+        assert!(!result.config_found);
+        assert!(
+            result
+                .errors
+                .iter()
+                .any(|e| e.contains("G0-INTEGRITY-CONFIG"))
+        );
+    }
+
+    #[test]
+    fn test_file_integrity_falls_back_to_plain_config() {
+        let dir = TempDir::new().expect("create temp dir");
+        // No hash-prefixed config, but plain config.json exists
+        create_test_config(dir.path(), 24, 896, 151_936);
+        create_named_safetensors(dir.path(), "model.safetensors", 24, 896, 151_936);
+
+        let model_file = dir.path().join("model.safetensors");
+        let result = check_safetensors_file_integrity(&model_file);
+        assert!(
+            result.passed,
+            "Should fall back to config.json: {:?}",
+            result.errors
+        );
+    }
+
+    #[test]
+    fn test_file_integrity_layer_mismatch() {
+        let dir = TempDir::new().expect("create temp dir");
+        create_named_config(dir.path(), "bad.config.json", 14, 896, 151_936);
+        create_named_safetensors(dir.path(), "bad.safetensors", 24, 896, 151_936);
+
+        let model_file = dir.path().join("bad.safetensors");
+        let result = check_safetensors_file_integrity(&model_file);
+        assert!(!result.passed);
+        assert!(!result.layer_count_match);
+        assert!(result.errors.iter().any(|e| e.contains("LAYERS")));
+    }
+
+    #[test]
+    fn test_find_config_for_model_file_hash_prefix() {
+        let dir = TempDir::new().expect("create temp dir");
+        create_named_config(dir.path(), "d71534cb.config.json", 24, 896, 151_936);
+        create_named_safetensors(dir.path(), "d71534cb.safetensors", 24, 896, 151_936);
+
+        let result = find_config_for_model_file(&dir.path().join("d71534cb.safetensors"));
+        assert!(result.is_some());
+        assert!(
+            result
+                .unwrap()
+                .file_name()
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .contains("d71534cb.config.json")
+        );
+    }
+
+    #[test]
+    fn test_find_config_for_model_file_no_match() {
+        let dir = TempDir::new().expect("create temp dir");
+        create_named_safetensors(dir.path(), "noconf.safetensors", 2, 768, 30_000);
+
+        let result = find_config_for_model_file(&dir.path().join("noconf.safetensors"));
+        assert!(result.is_none());
     }
 }

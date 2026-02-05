@@ -175,10 +175,25 @@ cargo run --bin apr-qa -- certify --model model.apr
 - This indicates a layout bug, not a model quality issue
 
 **Cross-References:**
+- **THE SOURCE OF TRUTH:** `aprender/docs/specifications/qwen2.5-coder-showcase-demo.md` → Section E.8 "Tensor Layout Contract"
 - `docs/specifications/apr-playbook-spec.md` → Section 4.1.1
 - `docs/tickets/GH-190-GGUF-APR-CONVERSION-GARBAGE-OUTPUT.md`
 - `aprender/CLAUDE.md` → LAYOUT-002 section
 - `realizar/CLAUDE.md` → LAYOUT-002 section
+
+### Per-Tensor Layout Summary (from Tensor Layout Contract)
+
+**DO NOT GREP FOR LAYOUTS.** Read Section E.8 of the Qwen showcase spec.
+
+Quick reference (authoritative source is E.8):
+
+| Tensor | APR Shape | Why |
+|--------|-----------|-----|
+| `lm_head.weight` | `[vocab, hidden]` | Kernel: `matmul(W, x, vocab, hidden)` |
+| `q_proj.weight` | `[heads*head_dim, hidden]` | Kernel: `matmul(W, x, heads*head_dim, hidden)` |
+| `embed_tokens.weight` | `[vocab, hidden]` | Lookup table, row = token embedding |
+
+**Key Insight:** The KERNEL defines shape, not comments. When `matmul_q6k_rowmajor(W, x, out_dim, in_dim)` is called with `out_dim=vocab`, W must have `vocab` rows.
 
 ## Testing Philosophy
 

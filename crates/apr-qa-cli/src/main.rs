@@ -516,55 +516,15 @@ fn run_playbook(
         }
     };
 
-    // §3.1: Playbook integrity verification
     if !no_integrity_check {
-        let lock_path = std::path::Path::new("playbooks/playbook.lock.yaml");
-        if lock_path.exists() {
-            match apr_qa_runner::load_lock_file(lock_path) {
-                Ok(lock_file) => {
-                    if let Err(e) = apr_qa_runner::verify_playbook_integrity(
-                        playbook_path,
-                        &lock_file,
-                        &playbook.name,
-                    ) {
-                        eprintln!("[INTEGRITY] {e}");
-                        eprintln!("[INTEGRITY] Playbook hash does not match lock file.");
-                        eprintln!("[INTEGRITY] Either:");
-                        eprintln!("  1. Run `apr-qa lock-playbooks` to regenerate the lock file");
-                        eprintln!("  2. Use --no-integrity-check to bypass (NOT RECOMMENDED)");
-                        std::process::exit(1);
-                    }
-                    println!("  Integrity check: PASSED");
-                }
-                Err(e) => {
-                    eprintln!("[WARN] Could not load lock file: {e}");
-                }
-            }
-        } else {
-            eprintln!(
-                "[WARN] No playbook lock file found. Run `apr-qa lock-playbooks` to generate one."
-            );
-        }
+        verify_playbook_lock_or_exit(playbook_path, &playbook.name);
     }
 
-    // Auto-resolve model path from playbook's hf_repo if not provided (HF-CACHE-001)
-    let model_path = match model_path {
-        Some(p) => Some(p),
-        None => match apr_qa_runner::resolve_hf_repo_to_cache(&playbook.model.hf_repo) {
-            Ok(path) => {
-                println!("  Auto-resolved model: {}", path.display());
-                Some(path.to_string_lossy().to_string())
-            }
-            Err(e) => {
-                eprintln!("Warning: {e}");
-                eprintln!(
-                    "Hint: Download model with `huggingface-cli download {}` or use --model-path",
-                    playbook.model.hf_repo
-                );
-                None
-            }
-        },
-    };
+    // Model path resolution is handled by G0-PULL in the executor.
+    // G0-PULL calls `apr pull --json <hf_repo>` which is the authoritative
+    // source for model location (Five-Whys: GH-190). The previous HF-CACHE-001
+    // auto-resolution via resolve_hf_repo_to_cache() could pick up corrupt
+    // cached models (e.g., 2.4GB F32 zeros in HF cache).
 
     // Validate failure policy
     if parse_failure_policy(failure_policy).is_err() {
@@ -640,43 +600,48 @@ fn run_playbook(
         }
     }
 
-    match execute_playbook(&playbook, config) {
-        Ok(result) => {
-            println!("\n=== Execution Results ===");
-            println!("  Total scenarios: {}", result.total_scenarios);
-            println!("  Passed: {}", result.passed);
-            println!("  Failed: {}", result.failed);
-            println!("  Skipped: {}", result.skipped);
-            println!("  Duration: {}ms", result.duration_ms);
-            println!("  Pass rate: {:.1}%", result.pass_rate());
-
-            if let Some(ref gateway_fail) = result.gateway_failed {
-                println!("  Gateway FAILED: {gateway_fail}");
-            }
-
-            // Create output directory
-            if let Err(e) = std::fs::create_dir_all(output_dir) {
-                eprintln!("Error creating output directory: {e}");
-                return;
-            }
-
-            // Save evidence
-            let evidence_path = output_dir.join("evidence.json");
-            match result.evidence.to_json() {
-                Ok(json) => {
-                    if let Err(e) = std::fs::write(&evidence_path, json) {
-                        eprintln!("Error writing evidence: {e}");
-                    } else {
-                        println!("\nEvidence saved to: {}", evidence_path.display());
-                    }
-                }
-                Err(e) => eprintln!("Error serializing evidence: {e}"),
-            }
-        }
+    let result = match execute_playbook(&playbook, config) {
+        Ok(r) => r,
         Err(e) => {
             eprintln!("{e}");
             std::process::exit(1);
         }
+    };
+
+    print_playbook_results(&result);
+    save_playbook_evidence(&result, output_dir);
+}
+
+fn print_playbook_results(result: &apr_qa_runner::ExecutionResult) {
+    println!("\n=== Execution Results ===");
+    println!("  Total scenarios: {}", result.total_scenarios);
+    println!("  Passed: {}", result.passed);
+    println!("  Failed: {}", result.failed);
+    println!("  Skipped: {}", result.skipped);
+    println!("  Duration: {}ms", result.duration_ms);
+    println!("  Pass rate: {:.1}%", result.pass_rate());
+
+    if let Some(ref gateway_fail) = result.gateway_failed {
+        println!("  Gateway FAILED: {gateway_fail}");
+    }
+}
+
+fn save_playbook_evidence(result: &apr_qa_runner::ExecutionResult, output_dir: &PathBuf) {
+    if let Err(e) = std::fs::create_dir_all(output_dir) {
+        eprintln!("Error creating output directory: {e}");
+        return;
+    }
+
+    let evidence_path = output_dir.join("evidence.json");
+    match result.evidence.to_json() {
+        Ok(json) => {
+            if let Err(e) = std::fs::write(&evidence_path, json) {
+                eprintln!("Error writing evidence: {e}");
+            } else {
+                println!("\nEvidence saved to: {}", evidence_path.display());
+            }
+        }
+        Err(e) => eprintln!("Error serializing evidence: {e}"),
     }
 }
 
@@ -1003,7 +968,7 @@ fn run_parity_check(
     list: bool,
     self_check: bool,
 ) {
-    use apr_qa_gen::{HfParityOracle, Tolerance, hash_prompt};
+    use apr_qa_gen::{HfParityOracle, Tolerance};
 
     println!("=== HuggingFace Parity Oracle ===\n");
     println!("Model family: {model_family}");
@@ -1044,115 +1009,133 @@ fn run_parity_check(
         std::process::exit(1);
     }
 
-    // List mode: show available golden outputs
     if list {
-        println!("\n=== Available Golden Outputs ===\n");
-        let manifest_path = corpus_dir.join("manifest.json");
-        if manifest_path.exists() {
-            if let Ok(content) = std::fs::read_to_string(&manifest_path) {
-                if let Ok(manifest) = serde_json::from_str::<serde_json::Value>(&content) {
-                    if let Some(prompts) = manifest.get("prompts").and_then(|p| p.as_array()) {
-                        println!("Found {} golden outputs:\n", prompts.len());
-                        // List the JSON files to get the prompts
-                        for entry in std::fs::read_dir(&corpus_dir)
-                            .into_iter()
-                            .flatten()
-                            .flatten()
-                        {
-                            let path = entry.path();
-                            if path.extension().is_some_and(|e| e == "json")
-                                && path.file_stem().is_some_and(|s| s != "manifest")
-                            {
-                                if let Ok(json) = std::fs::read_to_string(&path) {
-                                    if let Ok(meta) =
-                                        serde_json::from_str::<serde_json::Value>(&json)
-                                    {
-                                        if let Some(prompt_str) =
-                                            meta.get("prompt").and_then(|p| p.as_str())
-                                        {
-                                            let hash = path
-                                                .file_stem()
-                                                .map(|s| s.to_string_lossy())
-                                                .unwrap_or_default();
-                                            let truncated = if prompt_str.len() > 50 {
-                                                format!("{}...", &prompt_str[..50])
-                                            } else {
-                                                prompt_str.to_string()
-                                            };
-                                            println!("  [{hash}] {truncated}");
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        parity_list_golden(&corpus_dir);
         return;
     }
 
-    // Self-check mode: verify golden outputs against themselves
     if self_check {
-        println!("\n=== Self-Check Mode ===");
-        println!("Verifying golden outputs match themselves (sanity check)...\n");
-
-        let mut passed = 0;
-        let mut failed = 0;
-
-        for entry in std::fs::read_dir(&corpus_dir)
-            .into_iter()
-            .flatten()
-            .flatten()
-        {
-            let path = entry.path();
-            if path.extension().is_some_and(|e| e == "json")
-                && path.file_stem().is_some_and(|s| s != "manifest")
-            {
-                if let Ok(json) = std::fs::read_to_string(&path) {
-                    if let Ok(meta) = serde_json::from_str::<serde_json::Value>(&json) {
-                        if let Some(prompt_str) = meta.get("prompt").and_then(|p| p.as_str()) {
-                            match oracle.load_golden(prompt_str) {
-                                Ok(golden) => {
-                                    // Verify against itself
-                                    match oracle.tensors_close(&golden.logits, &golden.logits) {
-                                        Ok(()) => {
-                                            passed += 1;
-                                            let short_prompt = if prompt_str.len() > 40 {
-                                                format!("{}...", &prompt_str[..40])
-                                            } else {
-                                                prompt_str.to_string()
-                                            };
-                                            println!("  ✓ {short_prompt}");
-                                        }
-                                        Err(diff) => {
-                                            failed += 1;
-                                            eprintln!("  ✗ {prompt_str}: {diff}");
-                                        }
-                                    }
-                                }
-                                Err(e) => {
-                                    failed += 1;
-                                    eprintln!("  ✗ Failed to load {prompt_str}: {e}");
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        println!("\n=== Self-Check Results ===");
-        println!("Passed: {passed}");
-        println!("Failed: {failed}");
-
-        if failed > 0 {
-            std::process::exit(1);
-        }
+        parity_self_check(&oracle, &corpus_dir);
         return;
     }
 
-    // Verification mode: compare logits file against golden
+    parity_verify(&oracle, logits_file, prompt, tolerance_str);
+}
+
+/// List available golden outputs in the corpus directory
+fn parity_list_golden(corpus_dir: &std::path::Path) {
+    println!("\n=== Available Golden Outputs ===\n");
+    let manifest_path = corpus_dir.join("manifest.json");
+    if !manifest_path.exists() {
+        return;
+    }
+    let Ok(content) = std::fs::read_to_string(&manifest_path) else {
+        return;
+    };
+    let Ok(manifest) = serde_json::from_str::<serde_json::Value>(&content) else {
+        return;
+    };
+    let Some(prompts) = manifest.get("prompts").and_then(|p| p.as_array()) else {
+        return;
+    };
+    println!("Found {} golden outputs:\n", prompts.len());
+
+    for entry in std::fs::read_dir(corpus_dir)
+        .into_iter()
+        .flatten()
+        .flatten()
+    {
+        let path = entry.path();
+        if path.extension().is_none_or(|e| e != "json")
+            || path.file_stem().is_none_or(|s| s == "manifest")
+        {
+            continue;
+        }
+        if let Some((hash, prompt_str)) = read_golden_prompt(&path) {
+            let truncated = truncate_str(&prompt_str, 50);
+            println!("  [{hash}] {truncated}");
+        }
+    }
+}
+
+/// Read the prompt from a golden output JSON file, returning (hash, prompt)
+fn read_golden_prompt(path: &std::path::Path) -> Option<(String, String)> {
+    let json = std::fs::read_to_string(path).ok()?;
+    let meta: serde_json::Value = serde_json::from_str(&json).ok()?;
+    let prompt = meta.get("prompt")?.as_str()?.to_string();
+    let hash = path
+        .file_stem()
+        .map(|s| s.to_string_lossy().to_string())
+        .unwrap_or_default();
+    Some((hash, prompt))
+}
+
+fn truncate_str(s: &str, max_len: usize) -> String {
+    if s.len() > max_len {
+        format!("{}...", &s[..max_len])
+    } else {
+        s.to_string()
+    }
+}
+
+/// Self-check mode: verify golden outputs match themselves
+fn parity_self_check(oracle: &apr_qa_gen::HfParityOracle, corpus_dir: &std::path::Path) {
+    println!("\n=== Self-Check Mode ===");
+    println!("Verifying golden outputs match themselves (sanity check)...\n");
+
+    let mut passed = 0;
+    let mut failed = 0;
+
+    for entry in std::fs::read_dir(corpus_dir)
+        .into_iter()
+        .flatten()
+        .flatten()
+    {
+        let path = entry.path();
+        if path.extension().is_none_or(|e| e != "json")
+            || path.file_stem().is_none_or(|s| s == "manifest")
+        {
+            continue;
+        }
+        let Some((_, prompt_str)) = read_golden_prompt(&path) else {
+            continue;
+        };
+        match oracle.load_golden(&prompt_str) {
+            Ok(golden) => match oracle.tensors_close(&golden.logits, &golden.logits) {
+                Ok(()) => {
+                    passed += 1;
+                    println!("  ✓ {}", truncate_str(&prompt_str, 40));
+                }
+                Err(diff) => {
+                    failed += 1;
+                    eprintln!("  ✗ {prompt_str}: {diff}");
+                }
+            },
+            Err(e) => {
+                failed += 1;
+                eprintln!("  ✗ Failed to load {prompt_str}: {e}");
+            }
+        }
+    }
+
+    println!("\n=== Self-Check Results ===");
+    println!("Passed: {passed}");
+    println!("Failed: {failed}");
+
+    if failed > 0 {
+        std::process::exit(1);
+    }
+}
+
+/// Verification mode: compare a logits file against golden reference
+fn parity_verify(
+    oracle: &apr_qa_gen::HfParityOracle,
+    logits_file: Option<&std::path::Path>,
+    prompt: Option<&str>,
+    tolerance_str: &str,
+) {
+    use apr_qa_gen::hash_prompt;
+
     let Some(logits_path) = logits_file else {
         eprintln!("\nError: --logits-file is required for verification");
         eprintln!("Use --list to see available golden outputs");
@@ -1169,38 +1152,8 @@ fn run_parity_check(
     println!("Prompt: {prompt_str}");
     println!("Logits file: {}", logits_path.display());
 
-    // Load the logits to verify
-    let logits_data = match std::fs::read(logits_path) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("Error reading logits file: {e}");
-            std::process::exit(1);
-        }
-    };
+    let logits = load_logits_from_file(logits_path);
 
-    let tensors = match safetensors::SafeTensors::deserialize(&logits_data) {
-        Ok(t) => t,
-        Err(e) => {
-            eprintln!("Error parsing SafeTensors: {e}");
-            std::process::exit(1);
-        }
-    };
-
-    let logits_view = match tensors.tensor("logits") {
-        Ok(v) => v,
-        Err(e) => {
-            eprintln!("Error: 'logits' tensor not found: {e}");
-            std::process::exit(1);
-        }
-    };
-
-    let logits: Vec<f32> = logits_view
-        .data()
-        .chunks_exact(4)
-        .map(|b| f32::from_le_bytes([b[0], b[1], b[2], b[3]]))
-        .collect();
-
-    // Load golden and compare
     match oracle.load_golden(prompt_str) {
         Ok(golden) => {
             println!("\nGolden output found:");
@@ -1208,7 +1161,6 @@ fn run_parity_check(
             println!("  Transformers version: {}", golden.transformers_version);
             println!("  Shape: {:?}", golden.shape);
             println!("  Input hash: {}", hash_prompt(prompt_str));
-
             println!(
                 "\nComparing logits ({} vs {} elements)...",
                 logits.len(),
@@ -1238,6 +1190,39 @@ fn run_parity_check(
             std::process::exit(1);
         }
     }
+}
+
+/// Load logits tensor from a SafeTensors file
+fn load_logits_from_file(logits_path: &std::path::Path) -> Vec<f32> {
+    let logits_data = match std::fs::read(logits_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("Error reading logits file: {e}");
+            std::process::exit(1);
+        }
+    };
+
+    let tensors = match safetensors::SafeTensors::deserialize(&logits_data) {
+        Ok(t) => t,
+        Err(e) => {
+            eprintln!("Error parsing SafeTensors: {e}");
+            std::process::exit(1);
+        }
+    };
+
+    let logits_view = match tensors.tensor("logits") {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("Error: 'logits' tensor not found: {e}");
+            std::process::exit(1);
+        }
+    };
+
+    logits_view
+        .data()
+        .chunks_exact(4)
+        .map(|b| f32::from_le_bytes([b[0], b[1], b[2], b[3]]))
+        .collect()
 }
 
 fn run_tool_tests(
@@ -1335,13 +1320,8 @@ fn run_certification(
     fail_fast: bool,
     oracle_enhance: bool,
 ) {
-    use apr_qa_certify::{
-        CertificationStatus, CertificationTier, grade_from_tier, parse_csv, score_from_tier,
-        status_from_tier, write_csv,
-    };
-    use chrono::Utc;
+    use apr_qa_certify::write_csv;
 
-    // Parse tier
     let tier: CertTier = match tier_str.parse() {
         Ok(t) => t,
         Err(e) => {
@@ -1350,64 +1330,17 @@ fn run_certification(
         }
     };
 
-    // Default model_cache to ~/.cache/apr-models when not provided
-    let model_cache: Option<PathBuf> = if model_cache.is_none() {
-        let home = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
-        let default_cache = PathBuf::from(home).join(".cache/apr-models");
-        println!("Auto-resolving model cache: {}", default_cache.display());
-        Some(default_cache)
-    } else {
-        model_cache
-    };
+    let model_cache = resolve_default_model_cache(model_cache);
 
-    // Log environment for fail-fast mode (§12.5.3)
     if fail_fast {
         log_environment();
     }
 
-    println!("=== APR Model Certification ===\n");
-    println!("Tier: {tier_str}");
-    println!("Dry run: {dry_run}");
-    println!("Fail-fast: {fail_fast}");
-    if let Some(ref cache) = model_cache {
-        println!("Model cache: {}", cache.display());
-    }
-    println!();
+    print_certification_header(tier_str, dry_run, fail_fast, model_cache.as_ref());
 
-    // Load current certification data
-    let csv_path = std::path::Path::new("docs/certifications/models.csv");
-    let csv_content = match std::fs::read_to_string(csv_path) {
-        Ok(c) => c,
-        Err(e) => {
-            eprintln!("Error reading models.csv: {e}");
-            std::process::exit(1);
-        }
-    };
-
-    let mut certifications: Vec<apr_qa_certify::ModelCertification> = match parse_csv(&csv_content)
-    {
-        Ok(c) => c,
-        Err(e) => {
-            eprintln!("Error parsing models.csv: {e}");
-            std::process::exit(1);
-        }
-    };
-
-    // Determine which models to certify
-    let models_to_certify: Vec<String> = if all {
-        certifications.iter().map(|c| c.model_id.clone()).collect()
-    } else if let Some(ref fam) = family {
-        certifications
-            .iter()
-            .filter(|c| c.family == *fam)
-            .map(|c| c.model_id.clone())
-            .collect()
-    } else if !model_ids.is_empty() {
-        model_ids.to_vec()
-    } else {
-        eprintln!("Error: Specify --all, --family, or model IDs");
-        std::process::exit(1);
-    };
+    let (csv_path, mut certifications) = load_certification_csv();
+    let models_to_certify =
+        determine_models_to_certify(all, family.as_deref(), model_ids, &certifications);
 
     println!("Models to certify: {}\n", models_to_certify.len());
 
@@ -1420,25 +1353,135 @@ fn run_certification(
         return;
     }
 
-    // Create output directory
     if let Err(e) = std::fs::create_dir_all(output_dir) {
         eprintln!("Error creating output directory: {e}");
         std::process::exit(1);
     }
 
-    // Certify each model
+    let (certified_count, failed_count) = certify_model_loop(
+        &models_to_certify,
+        tier,
+        tier_str,
+        model_cache.as_ref(),
+        apr_binary,
+        no_integrity_check,
+        fail_fast,
+        oracle_enhance,
+        output_dir,
+        &mut certifications,
+    );
+
+    let csv_output = write_csv(&certifications);
+    if let Err(e) = std::fs::write(&csv_path, &csv_output) {
+        eprintln!("Error writing models.csv: {e}");
+    } else {
+        println!("Updated: {}", csv_path.display());
+    }
+
+    warn_missing_lock_file(no_integrity_check);
+
+    if auto_ticket {
+        run_auto_ticket_generation(&models_to_certify, output_dir, ticket_repo);
+    }
+
+    println!("\n=== Certification Summary ===");
+    println!("Certified: {certified_count}");
+    println!("Failed: {failed_count}");
+    println!("Total: {}", models_to_certify.len());
+}
+
+fn resolve_default_model_cache(model_cache: Option<PathBuf>) -> Option<PathBuf> {
+    if model_cache.is_some() {
+        return model_cache;
+    }
+    let home = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
+    let default_cache = PathBuf::from(home).join(".cache/apr-models");
+    println!("Auto-resolving model cache: {}", default_cache.display());
+    Some(default_cache)
+}
+
+fn print_certification_header(
+    tier_str: &str,
+    dry_run: bool,
+    fail_fast: bool,
+    model_cache: Option<&PathBuf>,
+) {
+    println!("=== APR Model Certification ===\n");
+    println!("Tier: {tier_str}");
+    println!("Dry run: {dry_run}");
+    println!("Fail-fast: {fail_fast}");
+    if let Some(cache) = model_cache {
+        println!("Model cache: {}", cache.display());
+    }
+    println!();
+}
+
+fn load_certification_csv() -> (PathBuf, Vec<apr_qa_certify::ModelCertification>) {
+    use apr_qa_certify::parse_csv;
+    let csv_path = PathBuf::from("docs/certifications/models.csv");
+    let csv_content = match std::fs::read_to_string(&csv_path) {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("Error reading models.csv: {e}");
+            std::process::exit(1);
+        }
+    };
+    let certifications = match parse_csv(&csv_content) {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("Error parsing models.csv: {e}");
+            std::process::exit(1);
+        }
+    };
+    (csv_path, certifications)
+}
+
+fn determine_models_to_certify(
+    all: bool,
+    family: Option<&str>,
+    model_ids: &[String],
+    certifications: &[apr_qa_certify::ModelCertification],
+) -> Vec<String> {
+    if all {
+        certifications.iter().map(|c| c.model_id.clone()).collect()
+    } else if let Some(fam) = family {
+        certifications
+            .iter()
+            .filter(|c| c.family == fam)
+            .map(|c| c.model_id.clone())
+            .collect()
+    } else if !model_ids.is_empty() {
+        model_ids.to_vec()
+    } else {
+        eprintln!("Error: Specify --all, --family, or model IDs");
+        std::process::exit(1);
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn certify_model_loop(
+    models_to_certify: &[String],
+    tier: CertTier,
+    tier_str: &str,
+    model_cache: Option<&PathBuf>,
+    apr_binary: &str,
+    no_integrity_check: bool,
+    fail_fast: bool,
+    oracle_enhance: bool,
+    output_dir: &PathBuf,
+    certifications: &mut [apr_qa_certify::ModelCertification],
+) -> (usize, usize) {
     let mut certified_count = 0;
     let mut failed_count = 0;
 
-    for model_id in &models_to_certify {
+    for model_id in models_to_certify {
         let short: &str = model_id.split('/').next_back().unwrap_or(model_id);
         let playbook_name = playbook_path_for_model(model_id, tier);
 
         println!("--- Certifying: {model_id} ---");
         println!("  Playbook: {playbook_name}");
 
-        // Auto-populate model cache before execution
-        if let Some(ref cache) = model_cache {
+        if let Some(cache) = model_cache {
             let model_dir = cache.join(short.to_lowercase().replace('.', "-"));
             auto_populate_model_cache(model_id, &model_dir, apr_binary);
         }
@@ -1459,38 +1502,12 @@ fn run_certification(
             }
         };
 
-        // §3.1: Playbook integrity verification
-        if !no_integrity_check {
-            let lock_path = std::path::Path::new("playbooks/playbook.lock.yaml");
-            if lock_path.exists() {
-                match apr_qa_runner::load_lock_file(lock_path) {
-                    Ok(lock_file) => {
-                        if let Err(e) = apr_qa_runner::verify_playbook_integrity(
-                            playbook_path,
-                            &lock_file,
-                            &playbook.name,
-                        ) {
-                            eprintln!("  [INTEGRITY] {e}");
-                            eprintln!(
-                                "  [INTEGRITY] CERTIFICATION BLOCKED: Playbook modified without updating lock file."
-                            );
-                            eprintln!(
-                                "  [INTEGRITY] Run `apr-qa lock-playbooks` first or use --no-integrity-check"
-                            );
-                            failed_count += 1;
-                            continue;
-                        }
-                        println!("  Integrity check: PASSED");
-                    }
-                    Err(e) => {
-                        eprintln!("  [WARN] Could not load lock file: {e}");
-                    }
-                }
-            }
+        if !verify_playbook_lock(playbook_path, &playbook.name, no_integrity_check) {
+            failed_count += 1;
+            continue;
         }
 
-        // Configure execution
-        let model_cache_path = model_cache.as_ref().map(|cache| {
+        let model_cache_path = model_cache.map(|cache| {
             cache
                 .join(short.to_lowercase().replace('.', "-"))
                 .to_string_lossy()
@@ -1498,340 +1515,493 @@ fn run_certification(
         });
 
         let config = build_certification_config_with_policy(tier, model_cache_path, fail_fast);
+        let should_break = process_certification_result(
+            model_id,
+            &playbook,
+            config,
+            tier,
+            tier_str,
+            model_cache,
+            apr_binary,
+            fail_fast,
+            oracle_enhance,
+            output_dir,
+            certifications,
+            short,
+            &mut certified_count,
+            &mut failed_count,
+        );
 
-        match execute_playbook(&playbook, config) {
-            Ok(result) => {
-                println!("  Scenarios: {}", result.total_scenarios);
-                println!("  Passed: {}", result.passed);
-                println!("  Failed: {}", result.failed);
-                println!("  Pass rate: {:.1}%", result.pass_rate());
-
-                // Calculate MQS score using tier-aware scoring
-                let evidence_vec: Vec<_> = result.evidence.all().to_vec();
-                let collector = collect_evidence(evidence_vec);
-                let mqs = match calculate_mqs_score(model_id, &collector) {
-                    Ok(s) => s,
-                    Err(e) => {
-                        eprintln!("  Error calculating MQS: {e}");
-                        failed_count += 1;
-                        continue;
-                    }
-                };
-
-                // Determine certification tier from CLI tier
-                let cert_tier = match tier {
-                    CertTier::Mvp => CertificationTier::Mvp,
-                    CertTier::Smoke | CertTier::Quick | CertTier::Standard | CertTier::Deep => {
-                        CertificationTier::Full
-                    }
-                };
-
-                // Use tier-aware scoring
-                let pass_rate = result.pass_rate() / 100.0; // Convert percentage to 0-1
-                let has_p0 = result.gateway_failed.is_some();
-                let raw_score = score_from_tier(cert_tier, pass_rate, has_p0);
-                let status = status_from_tier(cert_tier, pass_rate, has_p0);
-                let grade = grade_from_tier(cert_tier, pass_rate, has_p0);
-
-                println!("  Tier: {tier_str}");
-                println!("  MQS Score: {raw_score}/1000");
-                println!("  Grade: {grade}");
-                println!("  Status: {status}");
-
-                // §12.5.3: Skip profiling in fail-fast mode when there are failures
-                // Goal: stop instantly, generate trace for GitHub ticket
-                let has_failures = result.failed > 0 || result.gateway_failed.is_some();
-                let mut profile = apr_qa_runner::SixColumnProfile::default();
-
-                if fail_fast && has_failures {
-                    eprintln!("\n[FAIL-FAST] Skipping profiling - failures detected");
-                    eprintln!("[FAIL-FAST] Use evidence above for GitHub ticket\n");
-                } else if let Some(ref cache) = model_cache {
-                    // Model cache structure: <cache>/<model-short-name>/<format>/<file>
-                    let model_dir = cache.join(short.to_lowercase().replace('.', "-"));
-
-                    if model_dir.exists() {
-                        println!("  Running 6-column profiling...");
-                        match apr_qa_runner::run_six_column_profile(
-                            apr_binary, &model_dir, 1, // warmup
-                            2, // iterations
-                        ) {
-                            Ok(p) => {
-                                profile = p;
-                                // Print conversion results
-                                for conv in &profile.conversions {
-                                    let status = if conv.cached {
-                                        "cached"
-                                    } else if conv.success {
-                                        "ok"
-                                    } else {
-                                        "FAILED"
-                                    };
-                                    println!(
-                                        "    {} → {}: {} ({}ms)",
-                                        conv.source_format,
-                                        conv.target_format,
-                                        status,
-                                        conv.duration_ms
-                                    );
-                                    if let Some(ref err) = conv.error {
-                                        // Print first line of error
-                                        if let Some(line) = err.lines().last() {
-                                            println!("      {line}");
-                                        }
-                                    }
-                                }
-                                // Print throughput results
-                                println!("    Throughput (tok/s):");
-                                if let Some(tps) = profile.tps_gguf_cpu {
-                                    println!("      GGUF CPU: {tps:.1}");
-                                }
-                                if let Some(tps) = profile.tps_gguf_gpu {
-                                    println!("      GGUF GPU: {tps:.1}");
-                                }
-                                if let Some(tps) = profile.tps_apr_cpu {
-                                    println!("      APR CPU:  {tps:.1}");
-                                }
-                                if let Some(tps) = profile.tps_apr_gpu {
-                                    println!("      APR GPU:  {tps:.1}");
-                                }
-                                if let Some(tps) = profile.tps_st_cpu {
-                                    println!("      ST CPU:   {tps:.1}");
-                                }
-                                if let Some(tps) = profile.tps_st_gpu {
-                                    println!("      ST GPU:   {tps:.1}");
-                                }
-                                println!(
-                                    "    Total profiling time: {}ms",
-                                    profile.total_duration_ms
-                                );
-
-                                // Check assertions from playbook
-                                if let Some(ref profile_ci) = playbook.profile_ci {
-                                    let cpu_threshold = profile_ci
-                                        .assertions
-                                        .min_throughput_cpu
-                                        .or(profile_ci.assertions.min_throughput)
-                                        .unwrap_or(5.0);
-                                    let gpu_threshold = profile_ci
-                                        .assertions
-                                        .min_throughput_gpu
-                                        .or(profile_ci.assertions.min_throughput)
-                                        .unwrap_or(50.0);
-
-                                    profile.check_assertions(cpu_threshold, gpu_threshold);
-
-                                    if !profile.failed_assertions.is_empty() {
-                                        println!("    ⚠️  Assertion failures:");
-                                        for fail in &profile.failed_assertions {
-                                            println!(
-                                                "      {} {}: {:.1} tok/s < {:.1} min",
-                                                fail.format.to_uppercase(),
-                                                fail.backend.to_uppercase(),
-                                                fail.actual_tps,
-                                                fail.min_threshold
-                                            );
-                                        }
-                                    }
-                                }
-                            }
-                            Err(e) => {
-                                eprintln!("  Profiling failed: {e}");
-                            }
-                        }
-                    }
-                }
-
-                // Update certification record
-                if let Some(cert) = certifications.iter_mut().find(|c| c.model_id == *model_id) {
-                    // Check if assertions failed - if so, block certification
-                    let (final_status, final_grade, final_tier) =
-                        if profile.failed_assertions.is_empty() {
-                            (status, grade.to_string(), tier_str.to_string())
-                        } else {
-                            println!("  ❌ Certification BLOCKED by throughput assertions");
-                            (
-                                CertificationStatus::Blocked,
-                                "-".to_string(),
-                                "none".to_string(),
-                            )
-                        };
-
-                    cert.mqs_score = raw_score;
-                    cert.grade = final_grade;
-                    cert.status = final_status;
-                    cert.certified_tier = final_tier;
-                    cert.last_certified = Some(Utc::now());
-                    // Set gateway status from MQS gateway results
-                    let gw = &mqs.gateways;
-                    cert.g1 = gw.first().is_some_and(|g| g.passed);
-                    cert.g2 = gw.get(1).is_some_and(|g| g.passed);
-                    cert.g3 = gw.get(2).is_some_and(|g| g.passed);
-                    cert.g4 = gw.get(3).is_some_and(|g| g.passed);
-
-                    // Set tok/s values from 6-column profiling
-                    cert.tps_gguf_cpu = profile.tps_gguf_cpu;
-                    cert.tps_gguf_gpu = profile.tps_gguf_gpu;
-                    cert.tps_apr_cpu = profile.tps_apr_cpu;
-                    cert.tps_apr_gpu = profile.tps_apr_gpu;
-                    cert.tps_st_cpu = profile.tps_st_cpu;
-                    cert.tps_st_gpu = profile.tps_st_gpu;
-                }
-
-                // Save evidence to model-specific directory
-                let model_output = output_dir.join(short.to_lowercase().replace('.', "-"));
-                if let Err(e) = std::fs::create_dir_all(&model_output) {
-                    eprintln!("  Error creating model output dir: {e}");
-                }
-
-                let evidence_path = model_output.join("evidence.json");
-                if let Ok(json) = result.evidence.to_json() {
-                    let _ = std::fs::write(&evidence_path, json);
-                    println!("  Evidence: {}", evidence_path.display());
-                }
-
-                // §12.1.1: Oracle enhancement for failure analysis
-                if oracle_enhance && result.failed > 0 {
-                    use apr_qa_runner::{OracleEnhancer, generate_checklist_markdown};
-
-                    let enhancer = OracleEnhancer::new();
-                    let failed_evidence = result.evidence.failures();
-
-                    if !failed_evidence.is_empty() {
-                        // Enhance the first failure (most relevant)
-                        let context = enhancer.enhance_failure(failed_evidence[0]);
-
-                        // Calculate simple MQS approximation
-                        let total = result.passed + result.failed;
-                        #[allow(clippy::cast_precision_loss)]
-                        let pass_rate = if total > 0 {
-                            (result.passed as f64 / total as f64) * 1000.0
-                        } else {
-                            0.0
-                        };
-                        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-                        let mqs = pass_rate as u32;
-                        let grade = if mqs >= 800 {
-                            "A"
-                        } else if mqs >= 600 {
-                            "B"
-                        } else if mqs >= 400 {
-                            "C"
-                        } else {
-                            "F"
-                        };
-
-                        // Generate checklist markdown
-                        let checklist_md = generate_checklist_markdown(
-                            model_id,
-                            mqs,
-                            grade,
-                            total,
-                            result.failed,
-                            &context,
-                        );
-
-                        // Save checklist.md
-                        let checklist_path = model_output.join("checklist.md");
-                        if let Err(e) = std::fs::write(&checklist_path, &checklist_md) {
-                            eprintln!("  Error writing checklist: {e}");
-                        } else {
-                            println!("  Checklist: {}", checklist_path.display());
-                        }
-
-                        if context.oracle_available {
-                            println!(
-                                "  Oracle: {} hypotheses, {} cross-refs ({}ms)",
-                                context.hypotheses.len(),
-                                context.cross_references.len(),
-                                context.query_latency_ms
-                            );
-                        } else {
-                            println!("  Oracle: unavailable (using static checklist)");
-                        }
-                    }
-                }
-
-                certified_count += 1;
-                println!();
-
-                // §12.5.3: Stop certification loop on fail-fast with any failure
-                if fail_fast && (result.failed > 0 || result.gateway_failed.is_some()) {
-                    eprintln!("[FAIL-FAST] Stopping certification after {model_id} (had failures)");
-                    break;
-                }
-            }
-            Err(e) => {
-                eprintln!("  Execution failed: {e}");
-                failed_count += 1;
-
-                // §12.5.3: Stop certification loop on fail-fast with execution error
-                if fail_fast {
-                    eprintln!(
-                        "[FAIL-FAST] Stopping certification after {model_id} (execution error)"
-                    );
-                    break;
-                }
-            }
+        if should_break {
+            break;
         }
     }
 
-    // Write updated CSV
-    let csv_output = write_csv(&certifications);
-    if let Err(e) = std::fs::write(csv_path, &csv_output) {
-        eprintln!("Error writing models.csv: {e}");
+    (certified_count, failed_count)
+}
+
+/// Verify playbook lock or exit (for `run` subcommand)
+fn verify_playbook_lock_or_exit(playbook_path: &std::path::Path, playbook_name: &str) {
+    let lock_path = std::path::Path::new("playbooks/playbook.lock.yaml");
+    if lock_path.exists() {
+        match apr_qa_runner::load_lock_file(lock_path) {
+            Ok(lock_file) => {
+                if let Err(e) = apr_qa_runner::verify_playbook_integrity(
+                    playbook_path,
+                    &lock_file,
+                    playbook_name,
+                ) {
+                    eprintln!("[INTEGRITY] {e}");
+                    eprintln!("[INTEGRITY] Playbook hash does not match lock file.");
+                    eprintln!("[INTEGRITY] Either:");
+                    eprintln!("  1. Run `apr-qa lock-playbooks` to regenerate the lock file");
+                    eprintln!("  2. Use --no-integrity-check to bypass (NOT RECOMMENDED)");
+                    std::process::exit(1);
+                }
+                println!("  Integrity check: PASSED");
+            }
+            Err(e) => {
+                eprintln!("[WARN] Could not load lock file: {e}");
+            }
+        }
     } else {
-        println!("Updated: {}", csv_path.display());
+        eprintln!(
+            "[WARN] No playbook lock file found. Run `apr-qa lock-playbooks` to generate one."
+        );
+    }
+}
+
+/// Returns true if playbook integrity is verified (or check skipped), false if blocked
+fn verify_playbook_lock(
+    playbook_path: &std::path::Path,
+    playbook_name: &str,
+    no_integrity_check: bool,
+) -> bool {
+    if no_integrity_check {
+        return true;
+    }
+    let lock_path = std::path::Path::new("playbooks/playbook.lock.yaml");
+    if !lock_path.exists() {
+        return true;
+    }
+    match apr_qa_runner::load_lock_file(lock_path) {
+        Ok(lock_file) => {
+            if let Err(e) =
+                apr_qa_runner::verify_playbook_integrity(playbook_path, &lock_file, playbook_name)
+            {
+                eprintln!("  [INTEGRITY] {e}");
+                eprintln!(
+                    "  [INTEGRITY] CERTIFICATION BLOCKED: Playbook modified without updating lock file."
+                );
+                eprintln!(
+                    "  [INTEGRITY] Run `apr-qa lock-playbooks` first or use --no-integrity-check"
+                );
+                return false;
+            }
+            println!("  Integrity check: PASSED");
+            true
+        }
+        Err(e) => {
+            eprintln!("  [WARN] Could not load lock file: {e}");
+            true
+        }
+    }
+}
+
+/// Process a single model's certification result. Returns true if the loop should break.
+#[allow(clippy::too_many_arguments)]
+fn process_certification_result(
+    model_id: &str,
+    playbook: &apr_qa_runner::Playbook,
+    config: apr_qa_runner::ExecutionConfig,
+    tier: CertTier,
+    tier_str: &str,
+    model_cache: Option<&PathBuf>,
+    apr_binary: &str,
+    fail_fast: bool,
+    oracle_enhance: bool,
+    output_dir: &PathBuf,
+    certifications: &mut [apr_qa_certify::ModelCertification],
+    short: &str,
+    certified_count: &mut usize,
+    failed_count: &mut usize,
+) -> bool {
+    match execute_playbook(playbook, config) {
+        Ok(result) => {
+            print_execution_summary(&result);
+
+            let Some((raw_score, status, grade, mqs)) =
+                compute_certification_scores(model_id, &result, tier)
+            else {
+                *failed_count += 1;
+                return false;
+            };
+
+            println!("  Tier: {tier_str}");
+            println!("  MQS Score: {raw_score}/1000");
+            println!("  Grade: {grade}");
+            println!("  Status: {status}");
+
+            let profile =
+                run_profiling_phase(&result, playbook, model_cache, short, apr_binary, fail_fast);
+
+            update_certification_record(
+                certifications,
+                model_id,
+                raw_score,
+                &grade,
+                status,
+                tier_str,
+                &mqs,
+                &profile,
+            );
+
+            let model_output = output_dir.join(short.to_lowercase().replace('.', "-"));
+            save_evidence(&model_output, &result);
+
+            if oracle_enhance && result.failed > 0 {
+                run_oracle_enhancement(model_id, &result, &model_output);
+            }
+
+            *certified_count += 1;
+            println!();
+
+            if fail_fast && (result.failed > 0 || result.gateway_failed.is_some()) {
+                eprintln!("[FAIL-FAST] Stopping certification after {model_id} (had failures)");
+                return true;
+            }
+            false
+        }
+        Err(e) => {
+            eprintln!("  Execution failed: {e}");
+            *failed_count += 1;
+            if fail_fast {
+                eprintln!("[FAIL-FAST] Stopping certification after {model_id} (execution error)");
+                return true;
+            }
+            false
+        }
+    }
+}
+
+fn print_execution_summary(result: &apr_qa_runner::ExecutionResult) {
+    println!("  Scenarios: {}", result.total_scenarios);
+    println!("  Passed: {}", result.passed);
+    println!("  Failed: {}", result.failed);
+    println!("  Pass rate: {:.1}%", result.pass_rate());
+}
+
+fn compute_certification_scores(
+    model_id: &str,
+    result: &apr_qa_runner::ExecutionResult,
+    tier: CertTier,
+) -> Option<(
+    u32,
+    apr_qa_certify::CertificationStatus,
+    String,
+    apr_qa_report::MqsScore,
+)> {
+    use apr_qa_certify::{CertificationTier, grade_from_tier, score_from_tier, status_from_tier};
+
+    let evidence_vec: Vec<_> = result.evidence.all().to_vec();
+    let collector = collect_evidence(evidence_vec);
+    let mqs = match calculate_mqs_score(model_id, &collector) {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("  Error calculating MQS: {e}");
+            return None;
+        }
+    };
+
+    let cert_tier = match tier {
+        CertTier::Mvp => CertificationTier::Mvp,
+        CertTier::Smoke | CertTier::Quick | CertTier::Standard | CertTier::Deep => {
+            CertificationTier::Full
+        }
+    };
+
+    let pass_rate = result.pass_rate() / 100.0;
+    let has_p0 = result.gateway_failed.is_some();
+    let raw_score = score_from_tier(cert_tier, pass_rate, has_p0);
+    let status = status_from_tier(cert_tier, pass_rate, has_p0);
+    let grade = grade_from_tier(cert_tier, pass_rate, has_p0);
+
+    Some((raw_score, status, grade.to_string(), mqs))
+}
+
+fn run_profiling_phase(
+    result: &apr_qa_runner::ExecutionResult,
+    playbook: &apr_qa_runner::Playbook,
+    model_cache: Option<&PathBuf>,
+    short: &str,
+    apr_binary: &str,
+    fail_fast: bool,
+) -> apr_qa_runner::SixColumnProfile {
+    let has_failures = result.failed > 0 || result.gateway_failed.is_some();
+    let mut profile = apr_qa_runner::SixColumnProfile::default();
+
+    if fail_fast && has_failures {
+        eprintln!("\n[FAIL-FAST] Skipping profiling - failures detected");
+        eprintln!("[FAIL-FAST] Use evidence above for GitHub ticket\n");
+        return profile;
     }
 
-    // §3.1: Integrity check warning
-    if !no_integrity_check {
-        let lock_path = "playbooks/playbook.lock.yaml";
-        if !std::path::Path::new(lock_path).exists() {
-            eprintln!(
-                "[WARN] No playbook lock file found at {lock_path}. Run `apr-qa lock-playbooks` to generate one."
+    let Some(cache) = model_cache else {
+        return profile;
+    };
+
+    let model_dir = cache.join(short.to_lowercase().replace('.', "-"));
+    if !model_dir.exists() {
+        return profile;
+    }
+
+    println!("  Running 6-column profiling...");
+    match apr_qa_runner::run_six_column_profile(apr_binary, &model_dir, 1, 2) {
+        Ok(p) => {
+            profile = p;
+            print_profiling_results(&profile);
+            check_profiling_assertions(&mut profile, playbook);
+        }
+        Err(e) => {
+            eprintln!("  Profiling failed: {e}");
+        }
+    }
+
+    profile
+}
+
+fn print_profiling_results(profile: &apr_qa_runner::SixColumnProfile) {
+    for conv in &profile.conversions {
+        let status = if conv.cached {
+            "cached"
+        } else if conv.success {
+            "ok"
+        } else {
+            "FAILED"
+        };
+        println!(
+            "    {} → {}: {} ({}ms)",
+            conv.source_format, conv.target_format, status, conv.duration_ms
+        );
+        if let Some(ref err) = conv.error {
+            if let Some(line) = err.lines().last() {
+                println!("      {line}");
+            }
+        }
+    }
+    println!("    Throughput (tok/s):");
+    for (label, tps) in [
+        ("GGUF CPU", profile.tps_gguf_cpu),
+        ("GGUF GPU", profile.tps_gguf_gpu),
+        ("APR CPU ", profile.tps_apr_cpu),
+        ("APR GPU ", profile.tps_apr_gpu),
+        ("ST CPU  ", profile.tps_st_cpu),
+        ("ST GPU  ", profile.tps_st_gpu),
+    ] {
+        if let Some(tps) = tps {
+            println!("      {label}: {tps:.1}");
+        }
+    }
+    println!("    Total profiling time: {}ms", profile.total_duration_ms);
+}
+
+fn check_profiling_assertions(
+    profile: &mut apr_qa_runner::SixColumnProfile,
+    playbook: &apr_qa_runner::Playbook,
+) {
+    let Some(ref profile_ci) = playbook.profile_ci else {
+        return;
+    };
+    let cpu_threshold = profile_ci
+        .assertions
+        .min_throughput_cpu
+        .or(profile_ci.assertions.min_throughput)
+        .unwrap_or(5.0);
+    let gpu_threshold = profile_ci
+        .assertions
+        .min_throughput_gpu
+        .or(profile_ci.assertions.min_throughput)
+        .unwrap_or(50.0);
+
+    profile.check_assertions(cpu_threshold, gpu_threshold);
+
+    if !profile.failed_assertions.is_empty() {
+        println!("    ⚠️  Assertion failures:");
+        for fail in &profile.failed_assertions {
+            println!(
+                "      {} {}: {:.1} tok/s < {:.1} min",
+                fail.format.to_uppercase(),
+                fail.backend.to_uppercase(),
+                fail.actual_tps,
+                fail.min_threshold
             );
         }
     }
+}
 
-    // §3.6: Auto-ticket generation from failures
-    if auto_ticket {
-        // Collect all evidence files from output directory
-        let mut all_evidence: Vec<apr_qa_runner::Evidence> = Vec::new();
-        for model_id in &models_to_certify {
-            let short: &str = model_id.split('/').next_back().unwrap_or(model_id);
-            let evidence_path = output_dir
-                .join(short.to_lowercase().replace('.', "-"))
-                .join("evidence.json");
-            if let Ok(json) = std::fs::read_to_string(&evidence_path) {
-                if let Ok(ev) = parse_evidence(&json) {
-                    all_evidence.extend(ev);
-                }
-            }
-        }
+#[allow(clippy::too_many_arguments)]
+fn update_certification_record(
+    certifications: &mut [apr_qa_certify::ModelCertification],
+    model_id: &str,
+    raw_score: u32,
+    grade: &str,
+    status: apr_qa_certify::CertificationStatus,
+    tier_str: &str,
+    mqs: &apr_qa_report::MqsScore,
+    profile: &apr_qa_runner::SixColumnProfile,
+) {
+    use apr_qa_certify::CertificationStatus;
+    use chrono::Utc;
 
-        if !all_evidence.is_empty() {
-            let tickets = execute_auto_tickets(&all_evidence, ticket_repo);
-            if tickets.is_empty() {
-                println!(
-                    "\n[AUTO-TICKET] No structured tickets generated (no classified failures)."
-                );
-            } else {
-                println!("\n=== Auto-Generated Tickets ({}) ===", tickets.len());
-                for ticket in &tickets {
-                    println!("  {} [{}]", ticket.title, ticket.priority);
-                    if let Some(ref fixture) = ticket.upstream_fixture {
-                        println!("    Fixture: {fixture}");
-                    }
-                }
+    let Some(cert) = certifications.iter_mut().find(|c| c.model_id == model_id) else {
+        return;
+    };
+
+    let (final_status, final_grade, final_tier) = if profile.failed_assertions.is_empty() {
+        (status, grade.to_string(), tier_str.to_string())
+    } else {
+        println!("  ❌ Certification BLOCKED by throughput assertions");
+        (
+            CertificationStatus::Blocked,
+            "-".to_string(),
+            "none".to_string(),
+        )
+    };
+
+    cert.mqs_score = raw_score;
+    cert.grade = final_grade;
+    cert.status = final_status;
+    cert.certified_tier = final_tier;
+    cert.last_certified = Some(Utc::now());
+
+    let gw = &mqs.gateways;
+    cert.g1 = gw.first().is_some_and(|g| g.passed);
+    cert.g2 = gw.get(1).is_some_and(|g| g.passed);
+    cert.g3 = gw.get(2).is_some_and(|g| g.passed);
+    cert.g4 = gw.get(3).is_some_and(|g| g.passed);
+
+    cert.tps_gguf_cpu = profile.tps_gguf_cpu;
+    cert.tps_gguf_gpu = profile.tps_gguf_gpu;
+    cert.tps_apr_cpu = profile.tps_apr_cpu;
+    cert.tps_apr_gpu = profile.tps_apr_gpu;
+    cert.tps_st_cpu = profile.tps_st_cpu;
+    cert.tps_st_gpu = profile.tps_st_gpu;
+}
+
+fn save_evidence(model_output: &std::path::Path, result: &apr_qa_runner::ExecutionResult) {
+    if let Err(e) = std::fs::create_dir_all(model_output) {
+        eprintln!("  Error creating model output dir: {e}");
+    }
+    let evidence_path = model_output.join("evidence.json");
+    if let Ok(json) = result.evidence.to_json() {
+        let _ = std::fs::write(&evidence_path, json);
+        println!("  Evidence: {}", evidence_path.display());
+    }
+}
+
+fn run_oracle_enhancement(
+    model_id: &str,
+    result: &apr_qa_runner::ExecutionResult,
+    model_output: &std::path::Path,
+) {
+    use apr_qa_runner::{OracleEnhancer, generate_checklist_markdown};
+
+    let enhancer = OracleEnhancer::new();
+    let failed_evidence = result.evidence.failures();
+
+    if failed_evidence.is_empty() {
+        return;
+    }
+
+    let context = enhancer.enhance_failure(failed_evidence[0]);
+
+    let total = result.passed + result.failed;
+    #[allow(clippy::cast_precision_loss)]
+    let pass_rate = if total > 0 {
+        (result.passed as f64 / total as f64) * 1000.0
+    } else {
+        0.0
+    };
+    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+    let mqs = pass_rate as u32;
+    let grade = if mqs >= 800 {
+        "A"
+    } else if mqs >= 600 {
+        "B"
+    } else if mqs >= 400 {
+        "C"
+    } else {
+        "F"
+    };
+
+    let checklist_md =
+        generate_checklist_markdown(model_id, mqs, grade, total, result.failed, &context);
+
+    let checklist_path = model_output.join("checklist.md");
+    if let Err(e) = std::fs::write(&checklist_path, &checklist_md) {
+        eprintln!("  Error writing checklist: {e}");
+    } else {
+        println!("  Checklist: {}", checklist_path.display());
+    }
+
+    if context.oracle_available {
+        println!(
+            "  Oracle: {} hypotheses, {} cross-refs ({}ms)",
+            context.hypotheses.len(),
+            context.cross_references.len(),
+            context.query_latency_ms
+        );
+    } else {
+        println!("  Oracle: unavailable (using static checklist)");
+    }
+}
+
+fn warn_missing_lock_file(no_integrity_check: bool) {
+    if no_integrity_check {
+        return;
+    }
+    let lock_path = "playbooks/playbook.lock.yaml";
+    if !std::path::Path::new(lock_path).exists() {
+        eprintln!(
+            "[WARN] No playbook lock file found at {lock_path}. Run `apr-qa lock-playbooks` to generate one."
+        );
+    }
+}
+
+fn run_auto_ticket_generation(
+    models_to_certify: &[String],
+    output_dir: &PathBuf,
+    ticket_repo: &str,
+) {
+    let mut all_evidence: Vec<apr_qa_runner::Evidence> = Vec::new();
+    for model_id in models_to_certify {
+        let short: &str = model_id.split('/').next_back().unwrap_or(model_id);
+        let evidence_path = output_dir
+            .join(short.to_lowercase().replace('.', "-"))
+            .join("evidence.json");
+        if let Ok(json) = std::fs::read_to_string(&evidence_path) {
+            if let Ok(ev) = parse_evidence(&json) {
+                all_evidence.extend(ev);
             }
         }
     }
 
-    println!("\n=== Certification Summary ===");
-    println!("Certified: {certified_count}");
-    println!("Failed: {failed_count}");
-    println!("Total: {}", models_to_certify.len());
+    if all_evidence.is_empty() {
+        return;
+    }
+
+    let tickets = execute_auto_tickets(&all_evidence, ticket_repo);
+    if tickets.is_empty() {
+        println!("\n[AUTO-TICKET] No structured tickets generated (no classified failures).");
+    } else {
+        println!("\n=== Auto-Generated Tickets ({}) ===", tickets.len());
+        for ticket in &tickets {
+            println!("  {} [{}]", ticket.title, ticket.priority);
+            if let Some(ref fixture) = ticket.upstream_fixture {
+                println!("    Fixture: {fixture}");
+            }
+        }
+    }
 }
 
 /// Auto-populate model cache directory with symlinks from pacha and HF caches.
@@ -1845,7 +2015,6 @@ fn auto_populate_model_cache(model_id: &str, model_dir: &std::path::Path, apr_bi
     let apr_dir = model_dir.join("apr");
     let st_dir = model_dir.join("safetensors");
 
-    // Skip if already populated (gguf dir has a .gguf file)
     if gguf_dir.exists() && has_file_with_ext(&gguf_dir, "gguf") {
         println!("  Cache already populated: {}", model_dir.display());
         return;
@@ -1853,7 +2022,6 @@ fn auto_populate_model_cache(model_id: &str, model_dir: &std::path::Path, apr_bi
 
     println!("  Auto-populating model cache...");
 
-    // Create subdirectories
     for dir in [&gguf_dir, &apr_dir, &st_dir] {
         if let Err(e) = std::fs::create_dir_all(dir) {
             eprintln!("  Error creating {}: {e}", dir.display());
@@ -1861,10 +2029,16 @@ fn auto_populate_model_cache(model_id: &str, model_dir: &std::path::Path, apr_bi
         }
     }
 
+    run_apr_pull(apr_binary, model_id);
+
     let home = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
     let home = std::path::Path::new(&home);
 
-    // Step 1: Pull model via apr (ensures it's in pacha cache)
+    link_gguf_from_pacha(model_id, home, &gguf_dir);
+    link_safetensors_from_hf(model_id, home, &st_dir);
+}
+
+fn run_apr_pull(apr_binary: &str, model_id: &str) {
     println!("  Running: {apr_binary} pull {model_id}");
     let pull_status = std::process::Command::new(apr_binary)
         .args(["pull", model_id])
@@ -1877,50 +2051,55 @@ fn auto_populate_model_cache(model_id: &str, model_dir: &std::path::Path, apr_bi
         Ok(s) => eprintln!("  Pull exited with: {s}"),
         Err(e) => eprintln!("  Pull failed: {e}"),
     }
+}
 
-    // Step 2: Find GGUF in pacha cache via manifest
+fn link_gguf_from_pacha(model_id: &str, home: &std::path::Path, gguf_dir: &std::path::Path) {
     let manifest_path = home.join(".cache/pacha/models/manifest.json");
-    if let Some(gguf_path) = find_gguf_in_pacha(&manifest_path, model_id) {
-        let link = gguf_dir.join("model.gguf");
-        if !link.exists() {
-            match std::os::unix::fs::symlink(&gguf_path, &link) {
-                Ok(()) => println!("  Linked GGUF: {gguf_path}"),
-                Err(e) => eprintln!("  Error symlinking GGUF: {e}"),
-            }
-        }
-    } else {
+    let Some(gguf_path) = find_gguf_in_pacha(&manifest_path, model_id) else {
         eprintln!("  No GGUF found in pacha cache for {model_id}");
+        return;
+    };
+    let link = gguf_dir.join("model.gguf");
+    if link.exists() {
+        return;
     }
+    match std::os::unix::fs::symlink(&gguf_path, &link) {
+        Ok(()) => println!("  Linked GGUF: {gguf_path}"),
+        Err(e) => eprintln!("  Error symlinking GGUF: {e}"),
+    }
+}
 
-    // Step 3: Find SafeTensors in HF cache
+fn link_safetensors_from_hf(model_id: &str, home: &std::path::Path, st_dir: &std::path::Path) {
     let (org, repo) = split_model_id(model_id);
     let hf_model_dir = home
         .join(".cache/huggingface/hub")
         .join(format!("models--{org}--{repo}"))
         .join("snapshots");
 
-    if let Some(st_path) = find_safetensors_in_hf(&hf_model_dir) {
-        let link = st_dir.join("model.safetensors");
-        if !link.exists() {
-            match std::os::unix::fs::symlink(&st_path, &link) {
-                Ok(()) => println!("  Linked SafeTensors: {}", st_path.display()),
-                Err(e) => eprintln!("  Error symlinking SafeTensors: {e}"),
-            }
-        }
-
-        // Copy config.json from the same snapshot directory
-        if let Some(snapshot_dir) = st_path.parent() {
-            let config_src = snapshot_dir.join("config.json");
-            let config_dst = st_dir.join("config.json");
-            if config_src.exists() && !config_dst.exists() {
-                match std::fs::copy(&config_src, &config_dst) {
-                    Ok(_) => println!("  Copied config.json"),
-                    Err(e) => eprintln!("  Error copying config.json: {e}"),
-                }
-            }
-        }
-    } else {
+    let Some(st_path) = find_safetensors_in_hf(&hf_model_dir) else {
         eprintln!("  No SafeTensors found in HF cache for {model_id}");
+        return;
+    };
+
+    let link = st_dir.join("model.safetensors");
+    if !link.exists() {
+        match std::os::unix::fs::symlink(&st_path, &link) {
+            Ok(()) => println!("  Linked SafeTensors: {}", st_path.display()),
+            Err(e) => eprintln!("  Error symlinking SafeTensors: {e}"),
+        }
+    }
+
+    // Copy config.json from the same snapshot directory
+    let Some(snapshot_dir) = st_path.parent() else {
+        return;
+    };
+    let config_src = snapshot_dir.join("config.json");
+    let config_dst = st_dir.join("config.json");
+    if config_src.exists() && !config_dst.exists() {
+        match std::fs::copy(&config_src, &config_dst) {
+            Ok(_) => println!("  Copied config.json"),
+            Err(e) => eprintln!("  Error copying config.json: {e}"),
+        }
     }
 }
 
