@@ -1031,7 +1031,10 @@ impl Executor {
 
     /// G0-VALIDATE Pre-flight Check: Validates model physics (NaN, Inf, all-zeros)
     ///
-    /// Runs `apr validate --strict --json` before any conversion or inference tests.
+    /// Runs `apr validate --strict --json` on each SafeTensors file before any
+    /// conversion or inference tests. Resolves directories to individual
+    /// `.safetensors` files (supports multi-file sharded models).
+    ///
     /// Catches corrupt model files (e.g., 6.7GB F32 zeros instead of 2.88GB BF16)
     /// that would waste qualification time producing meaningless results.
     ///
@@ -1039,42 +1042,92 @@ impl Executor {
     ///
     /// (passed_count, failed_count) - evidence is added to collector
     fn run_g0_validate_check(&mut self, model_path: &Path, model_id: &ModelId) -> (usize, usize) {
-        let start = Instant::now();
-        let output = self.command_runner.validate_model_strict(model_path);
-        let duration = start.elapsed().as_millis() as u64;
-
-        if output.success {
-            let ev = Evidence::corroborated(
-                "G0-VALIDATE-001",
-                Self::validate_scenario(model_id),
-                &format!("G0 PASS: model physics validated\n{}", output.stdout),
-                duration,
-            );
-            self.collector.add(ev);
-            (1, 0)
-        } else {
-            // Parse issues from JSON output if available
-            let reason = if output.stdout.is_empty() {
-                format!(
-                    "G0 FAIL: model physics validation failed: {}",
-                    output.stderr
-                )
-            } else {
-                format!(
-                    "G0 FAIL: corrupt model detected (NaN/Inf/all-zeros)\n{}",
-                    output.stdout
-                )
-            };
-            let ev = Evidence::falsified(
-                "G0-VALIDATE-001",
-                Self::validate_scenario(model_id),
-                &reason,
-                &output.stdout,
-                duration,
-            );
-            self.collector.add(ev);
-            (0, 1)
+        // Resolve to individual safetensors files
+        let files = Self::find_safetensors_files(model_path);
+        if files.is_empty() {
+            // No safetensors files found — not applicable, auto-pass
+            return (0, 0);
         }
+
+        let mut passed = 0;
+        let mut failed = 0;
+
+        for file in &files {
+            let start = Instant::now();
+            let output = self.command_runner.validate_model_strict(file);
+            let duration = start.elapsed().as_millis() as u64;
+            let file_name = file
+                .file_name()
+                .map_or("unknown", |f| f.to_str().unwrap_or("unknown"));
+
+            if output.success {
+                let ev = Evidence::corroborated(
+                    "G0-VALIDATE-001",
+                    Self::validate_scenario(model_id),
+                    &format!("G0 PASS: {file_name} physics validated\n{}", output.stdout),
+                    duration,
+                );
+                self.collector.add(ev);
+                passed += 1;
+            } else {
+                let reason = if output.stdout.is_empty() {
+                    format!(
+                        "G0 FAIL: {file_name} physics validation failed: {}",
+                        output.stderr
+                    )
+                } else {
+                    format!(
+                        "G0 FAIL: {file_name} corrupt (NaN/Inf/all-zeros)\n{}",
+                        output.stdout
+                    )
+                };
+                let ev = Evidence::falsified(
+                    "G0-VALIDATE-001",
+                    Self::validate_scenario(model_id),
+                    &reason,
+                    &output.stdout,
+                    duration,
+                );
+                self.collector.add(ev);
+                failed += 1;
+            }
+        }
+
+        (passed, failed)
+    }
+
+    /// Find all `.safetensors` files for a model path
+    ///
+    /// Supports:
+    /// - Single file: returns `[file]` if it has `.safetensors` extension
+    /// - Directory with `safetensors/` subdir (apr cache): lists files in subdir
+    /// - Directory with `.safetensors` files directly (HF cache): lists files
+    fn find_safetensors_files(model_path: &Path) -> Vec<std::path::PathBuf> {
+        if model_path.is_file() {
+            return if model_path.extension().is_some_and(|e| e == "safetensors") {
+                vec![model_path.to_path_buf()]
+            } else {
+                Vec::new()
+            };
+        }
+
+        // Find the directory containing safetensors files
+        let Some(st_dir) = Self::find_safetensors_dir(model_path) else {
+            return Vec::new();
+        };
+
+        // Collect all .safetensors files
+        let Ok(entries) = st_dir.read_dir() else {
+            return Vec::new();
+        };
+
+        let mut files: Vec<_> = entries
+            .flatten()
+            .filter(|e| e.path().extension().is_some_and(|ext| ext == "safetensors"))
+            .map(|e| e.path())
+            .collect();
+        files.sort();
+        files
     }
 
     /// Execute a single scenario
@@ -3438,7 +3491,7 @@ test_matrix:
         let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
         let result = executor.execute(&playbook).expect("Execution failed");
 
-        assert_eq!(result.total_scenarios, 4); // 3 scenarios + 1 G0-VALIDATE
+        assert_eq!(result.total_scenarios, 3);
         // With mock runner, all scenarios should complete
         assert!(result.passed > 0 || result.failed > 0);
     }
@@ -4678,9 +4731,9 @@ test_matrix:
         let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
         let result = executor.execute(&playbook).expect("Execution failed");
 
-        // Should collect all failures (3 scenarios) + 1 G0-VALIDATE pass
+        // Should collect all failures (3 scenarios)
         assert_eq!(result.failed, 3);
-        assert_eq!(result.total_scenarios, 4); // 3 scenarios + 1 G0-VALIDATE
+        assert_eq!(result.total_scenarios, 3);
     }
 
     // =========================================================================
@@ -5862,12 +5915,22 @@ test_matrix:
         assert!(scenario.prompt.contains("G0 Validate"));
     }
 
+    /// Helper: create a temp model directory with a safetensors file
+    fn make_temp_model_dir() -> tempfile::TempDir {
+        let dir = tempfile::TempDir::new().expect("create temp dir");
+        let st_dir = dir.path().join("safetensors");
+        std::fs::create_dir_all(&st_dir).expect("mkdir safetensors");
+        std::fs::write(st_dir.join("model.safetensors"), b"fake").expect("write");
+        dir
+    }
+
     #[test]
     fn test_g0_validate_pass() {
         let mock_runner = MockCommandRunner::new(); // validate_strict_success defaults to true
+        let dir = make_temp_model_dir();
 
         let config = ExecutionConfig {
-            model_path: Some("/test/model.gguf".to_string()),
+            model_path: Some(dir.path().to_string_lossy().to_string()),
             run_conversion_tests: false,
             run_golden_rule_test: false,
             run_contract_tests: false,
@@ -5876,8 +5939,7 @@ test_matrix:
 
         let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
         let model_id = ModelId::new("test", "model");
-        let (passed, failed) =
-            executor.run_g0_validate_check(Path::new("/test/model.gguf"), &model_id);
+        let (passed, failed) = executor.run_g0_validate_check(dir.path(), &model_id);
 
         assert_eq!(passed, 1);
         assert_eq!(failed, 0);
@@ -5894,9 +5956,10 @@ test_matrix:
     #[test]
     fn test_g0_validate_fail_corrupt_model() {
         let mock_runner = MockCommandRunner::new().with_validate_strict_failure();
+        let dir = make_temp_model_dir();
 
         let config = ExecutionConfig {
-            model_path: Some("/test/model.gguf".to_string()),
+            model_path: Some(dir.path().to_string_lossy().to_string()),
             run_conversion_tests: false,
             run_golden_rule_test: false,
             run_contract_tests: false,
@@ -5905,8 +5968,7 @@ test_matrix:
 
         let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
         let model_id = ModelId::new("test", "model");
-        let (passed, failed) =
-            executor.run_g0_validate_check(Path::new("/test/model.gguf"), &model_id);
+        let (passed, failed) = executor.run_g0_validate_check(dir.path(), &model_id);
 
         assert_eq!(passed, 0);
         assert_eq!(failed, 1);
@@ -5924,9 +5986,10 @@ test_matrix:
     fn test_g0_validate_fail_stops_execution() {
         // Jidoka: If G0-VALIDATE fails, skip all subsequent tests
         let mock_runner = MockCommandRunner::new().with_validate_strict_failure();
+        let dir = make_temp_model_dir();
 
         let config = ExecutionConfig {
-            model_path: Some("/test/model.gguf".to_string()),
+            model_path: Some(dir.path().to_string_lossy().to_string()),
             run_conversion_tests: true,
             run_golden_rule_test: true,
             run_contract_tests: true,
@@ -5969,9 +6032,10 @@ test_matrix:
     fn test_g0_validate_pass_continues_execution() {
         // When G0-VALIDATE passes, execution should continue normally
         let mock_runner = MockCommandRunner::new(); // validate_strict_success defaults to true
+        let dir = make_temp_model_dir();
 
         let config = ExecutionConfig {
-            model_path: Some("/test/model.gguf".to_string()),
+            model_path: Some(dir.path().to_string_lossy().to_string()),
             run_conversion_tests: false,
             run_golden_rule_test: false,
             run_contract_tests: false,
@@ -6034,6 +6098,77 @@ test_matrix:
         assert!(result.gateway_failed.is_none());
         // Only 1 scenario (no validate added)
         assert_eq!(result.total_scenarios, 1);
+    }
+
+    #[test]
+    fn test_g0_validate_no_safetensors_files() {
+        // When model dir has no safetensors files, G0-VALIDATE auto-passes (0, 0)
+        let dir = tempfile::TempDir::new().expect("create temp dir");
+        let mock_runner = MockCommandRunner::new();
+
+        let config = ExecutionConfig {
+            model_path: Some(dir.path().to_string_lossy().to_string()),
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+        let model_id = ModelId::new("test", "model");
+        let (passed, failed) = executor.run_g0_validate_check(dir.path(), &model_id);
+
+        assert_eq!(passed, 0);
+        assert_eq!(failed, 0);
+    }
+
+    #[test]
+    fn test_g0_validate_multiple_shards() {
+        // Multi-file sharded models: validate each shard
+        let dir = tempfile::TempDir::new().expect("create temp dir");
+        let st_dir = dir.path().join("safetensors");
+        std::fs::create_dir_all(&st_dir).expect("mkdir");
+        std::fs::write(st_dir.join("model-00001-of-00002.safetensors"), b"shard1").expect("write");
+        std::fs::write(st_dir.join("model-00002-of-00002.safetensors"), b"shard2").expect("write");
+
+        let mock_runner = MockCommandRunner::new();
+        let config = ExecutionConfig {
+            model_path: Some(dir.path().to_string_lossy().to_string()),
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+        let model_id = ModelId::new("test", "model");
+        let (passed, failed) = executor.run_g0_validate_check(dir.path(), &model_id);
+
+        // Both shards should be validated
+        assert_eq!(passed, 2);
+        assert_eq!(failed, 0);
+    }
+
+    #[test]
+    fn test_find_safetensors_files_single_file() {
+        let dir = tempfile::TempDir::new().expect("create temp dir");
+        let file = dir.path().join("model.safetensors");
+        std::fs::write(&file, b"test").expect("write");
+
+        let files = Executor::find_safetensors_files(&file);
+        assert_eq!(files.len(), 1);
+        assert_eq!(files[0], file);
+    }
+
+    #[test]
+    fn test_find_safetensors_files_non_safetensors() {
+        let dir = tempfile::TempDir::new().expect("create temp dir");
+        let file = dir.path().join("model.gguf");
+        std::fs::write(&file, b"test").expect("write");
+
+        let files = Executor::find_safetensors_files(&file);
+        assert!(files.is_empty());
+    }
+
+    #[test]
+    fn test_find_safetensors_files_directory() {
+        let dir = make_temp_model_dir();
+        let files = Executor::find_safetensors_files(dir.path());
+        assert_eq!(files.len(), 1);
     }
 
     #[test]
