@@ -236,6 +236,30 @@ impl Executor {
             });
         }
 
+        // G0-VALIDATE: Model physics validation (NaN, Inf, all-zeros)
+        // Catches corrupt model files before wasting time on qualification
+        let (validate_passed, validate_failed) =
+            self.config.model_path.clone().map_or((0, 0), |model_path| {
+                let model_id = playbook.model_id();
+                self.run_g0_validate_check(Path::new(&model_path), &model_id)
+            });
+
+        // Jidoka: If G0-VALIDATE fails, stop immediately — corrupt model
+        if validate_failed > 0 {
+            return Ok(ExecutionResult {
+                playbook_name: playbook.name.clone(),
+                total_scenarios: total + validate_passed + validate_failed,
+                passed: validate_passed,
+                failed: total + validate_failed,
+                skipped: 0,
+                duration_ms: start.elapsed().as_millis() as u64,
+                gateway_failed: Some(
+                    "G0-VALIDATE-001: Model physics validation failed (corrupt model)".to_string(),
+                ),
+                evidence: self.collector.clone(),
+            });
+        }
+
         // G0: Model integrity check for SafeTensors models (pre-flight)
         // This catches corrupted config.json before inference even starts
         let (integrity_passed, integrity_failed) =
@@ -370,13 +394,15 @@ impl Executor {
             + golden_passed
             + integrity_passed
             + hf_parity_passed
-            + contract_passed;
+            + contract_passed
+            + validate_passed;
         let total_failed = failed
             + conversion_failed
             + golden_failed
             + integrity_failed
             + hf_parity_failed
-            + contract_failed;
+            + contract_failed
+            + validate_failed;
 
         Ok(ExecutionResult {
             playbook_name: playbook.name.clone(),
@@ -390,7 +416,9 @@ impl Executor {
                 + hf_parity_passed
                 + hf_parity_failed
                 + contract_passed
-                + contract_failed,
+                + contract_failed
+                + validate_passed
+                + validate_failed,
             passed: total_passed,
             failed: total_failed,
             skipped,
@@ -987,6 +1015,66 @@ impl Executor {
             "G0 Integrity: config.json vs tensor metadata".to_string(),
             0,
         )
+    }
+
+    /// Create a scenario for G0-VALIDATE evidence
+    fn validate_scenario(model_id: &ModelId) -> apr_qa_gen::QaScenario {
+        apr_qa_gen::QaScenario::new(
+            model_id.clone(),
+            apr_qa_gen::Modality::Run,
+            apr_qa_gen::Backend::Cpu,
+            apr_qa_gen::Format::SafeTensors,
+            "G0 Validate: NaN/Inf/all-zeros tensor check".to_string(),
+            0,
+        )
+    }
+
+    /// G0-VALIDATE Pre-flight Check: Validates model physics (NaN, Inf, all-zeros)
+    ///
+    /// Runs `apr validate --strict --json` before any conversion or inference tests.
+    /// Catches corrupt model files (e.g., 6.7GB F32 zeros instead of 2.88GB BF16)
+    /// that would waste qualification time producing meaningless results.
+    ///
+    /// # Returns
+    ///
+    /// (passed_count, failed_count) - evidence is added to collector
+    fn run_g0_validate_check(&mut self, model_path: &Path, model_id: &ModelId) -> (usize, usize) {
+        let start = Instant::now();
+        let output = self.command_runner.validate_model_strict(model_path);
+        let duration = start.elapsed().as_millis() as u64;
+
+        if output.success {
+            let ev = Evidence::corroborated(
+                "G0-VALIDATE-001",
+                Self::validate_scenario(model_id),
+                &format!("G0 PASS: model physics validated\n{}", output.stdout),
+                duration,
+            );
+            self.collector.add(ev);
+            (1, 0)
+        } else {
+            // Parse issues from JSON output if available
+            let reason = if output.stdout.is_empty() {
+                format!(
+                    "G0 FAIL: model physics validation failed: {}",
+                    output.stderr
+                )
+            } else {
+                format!(
+                    "G0 FAIL: corrupt model detected (NaN/Inf/all-zeros)\n{}",
+                    output.stdout
+                )
+            };
+            let ev = Evidence::falsified(
+                "G0-VALIDATE-001",
+                Self::validate_scenario(model_id),
+                &reason,
+                &output.stdout,
+                duration,
+            );
+            self.collector.add(ev);
+            (0, 1)
+        }
     }
 
     /// Execute a single scenario
@@ -3350,7 +3438,7 @@ test_matrix:
         let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
         let result = executor.execute(&playbook).expect("Execution failed");
 
-        assert_eq!(result.total_scenarios, 3);
+        assert_eq!(result.total_scenarios, 4); // 3 scenarios + 1 G0-VALIDATE
         // With mock runner, all scenarios should complete
         assert!(result.passed > 0 || result.failed > 0);
     }
@@ -4590,9 +4678,9 @@ test_matrix:
         let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
         let result = executor.execute(&playbook).expect("Execution failed");
 
-        // Should collect all failures (3 scenarios)
+        // Should collect all failures (3 scenarios) + 1 G0-VALIDATE pass
         assert_eq!(result.failed, 3);
-        assert_eq!(result.total_scenarios, 3);
+        assert_eq!(result.total_scenarios, 4); // 3 scenarios + 1 G0-VALIDATE
     }
 
     // =========================================================================
@@ -4776,6 +4864,9 @@ test_matrix:
             fn validate_stats(&self, _a: &Path, _b: &Path) -> CommandOutput {
                 CommandOutput::success("")
             }
+            fn validate_model_strict(&self, _path: &Path) -> CommandOutput {
+                CommandOutput::success(r#"{"valid":true,"tensors_checked":100,"issues":[]}"#)
+            }
         }
 
         let config = ExecutionConfig {
@@ -4909,6 +5000,9 @@ test_matrix:
             fn validate_stats(&self, _a: &Path, _b: &Path) -> CommandOutput {
                 CommandOutput::success("")
             }
+            fn validate_model_strict(&self, _path: &Path) -> CommandOutput {
+                CommandOutput::success(r#"{"valid":true,"tensors_checked":100,"issues":[]}"#)
+            }
         }
 
         let config = ExecutionConfig {
@@ -5037,6 +5131,9 @@ test_matrix:
             }
             fn validate_stats(&self, _a: &Path, _b: &Path) -> CommandOutput {
                 CommandOutput::success("")
+            }
+            fn validate_model_strict(&self, _path: &Path) -> CommandOutput {
+                CommandOutput::success(r#"{"valid":true,"tensors_checked":100,"issues":[]}"#)
             }
         }
 
@@ -5345,9 +5442,11 @@ test_matrix:
 
         let evidence = executor.evidence().all();
         assert!(!evidence.is_empty());
-        // Corroborated evidence should have stderr
-        let ev = &evidence[0];
-        assert!(ev.stderr.is_some());
+        // Corroborated scenario evidence (not G0-VALIDATE) should have stderr
+        let ev = evidence
+            .iter()
+            .find(|e| e.stderr.is_some())
+            .expect("should have evidence with stderr");
         assert!(ev.stderr.as_ref().unwrap().contains("Warning"));
     }
 
@@ -5387,7 +5486,10 @@ test_matrix:
         assert!(result.failed >= 1);
 
         let evidence = executor.evidence().all();
-        let ev = &evidence[0];
+        let ev = evidence
+            .iter()
+            .find(|e| e.stderr.is_some())
+            .expect("should have evidence with stderr");
         assert!(ev.stderr.is_some());
     }
 
@@ -5636,6 +5738,9 @@ test_matrix:
             fn validate_stats(&self, _a: &Path, _b: &Path) -> CommandOutput {
                 CommandOutput::success("")
             }
+            fn validate_model_strict(&self, _path: &Path) -> CommandOutput {
+                CommandOutput::success(r#"{"valid":true,"tensors_checked":100,"issues":[]}"#)
+            }
         }
 
         let config = ExecutionConfig {
@@ -5740,6 +5845,195 @@ test_matrix:
     fn test_has_safetensors_files_nonexistent_dir() {
         let nonexistent = std::path::Path::new("/nonexistent/path/xyz123");
         assert!(!Executor::has_safetensors_files(nonexistent));
+    }
+
+    // =========================================================================
+    // G0-VALIDATE Pre-flight Gate Tests
+    // =========================================================================
+
+    #[test]
+    fn test_validate_scenario_creation() {
+        let model_id = ModelId::new("test", "model");
+        let scenario = Executor::validate_scenario(&model_id);
+
+        assert_eq!(scenario.model.org, "test");
+        assert_eq!(scenario.model.name, "model");
+        assert_eq!(scenario.format, Format::SafeTensors);
+        assert!(scenario.prompt.contains("G0 Validate"));
+    }
+
+    #[test]
+    fn test_g0_validate_pass() {
+        let mock_runner = MockCommandRunner::new(); // validate_strict_success defaults to true
+
+        let config = ExecutionConfig {
+            model_path: Some("/test/model.gguf".to_string()),
+            run_conversion_tests: false,
+            run_golden_rule_test: false,
+            run_contract_tests: false,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+        let model_id = ModelId::new("test", "model");
+        let (passed, failed) =
+            executor.run_g0_validate_check(Path::new("/test/model.gguf"), &model_id);
+
+        assert_eq!(passed, 1);
+        assert_eq!(failed, 0);
+
+        let evidence = executor.evidence().all();
+        let validate_ev = evidence
+            .iter()
+            .find(|e| e.gate_id == "G0-VALIDATE-001")
+            .expect("should have G0-VALIDATE evidence");
+        assert!(validate_ev.outcome.is_pass());
+        assert!(validate_ev.output.contains("G0 PASS"));
+    }
+
+    #[test]
+    fn test_g0_validate_fail_corrupt_model() {
+        let mock_runner = MockCommandRunner::new().with_validate_strict_failure();
+
+        let config = ExecutionConfig {
+            model_path: Some("/test/model.gguf".to_string()),
+            run_conversion_tests: false,
+            run_golden_rule_test: false,
+            run_contract_tests: false,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+        let model_id = ModelId::new("test", "model");
+        let (passed, failed) =
+            executor.run_g0_validate_check(Path::new("/test/model.gguf"), &model_id);
+
+        assert_eq!(passed, 0);
+        assert_eq!(failed, 1);
+
+        let evidence = executor.evidence().all();
+        let validate_ev = evidence
+            .iter()
+            .find(|e| e.gate_id == "G0-VALIDATE-001")
+            .expect("should have G0-VALIDATE evidence");
+        assert!(!validate_ev.outcome.is_pass());
+        assert!(validate_ev.reason.contains("G0 FAIL"));
+    }
+
+    #[test]
+    fn test_g0_validate_fail_stops_execution() {
+        // Jidoka: If G0-VALIDATE fails, skip all subsequent tests
+        let mock_runner = MockCommandRunner::new().with_validate_strict_failure();
+
+        let config = ExecutionConfig {
+            model_path: Some("/test/model.gguf".to_string()),
+            run_conversion_tests: true,
+            run_golden_rule_test: true,
+            run_contract_tests: true,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        let yaml = r#"
+name: validate-fail-test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 3
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let result = executor.execute(&playbook).expect("Execution failed");
+
+        // Gateway should be failed
+        assert!(result.gateway_failed.is_some());
+        assert!(
+            result
+                .gateway_failed
+                .as_ref()
+                .unwrap()
+                .contains("G0-VALIDATE-001")
+        );
+
+        // All scenario tests should be counted as failed (skipped via early return)
+        assert_eq!(result.passed, 0);
+        // 3 scenarios + 1 validate failure = 4 total failed
+        assert_eq!(result.failed, 4);
+    }
+
+    #[test]
+    fn test_g0_validate_pass_continues_execution() {
+        // When G0-VALIDATE passes, execution should continue normally
+        let mock_runner = MockCommandRunner::new(); // validate_strict_success defaults to true
+
+        let config = ExecutionConfig {
+            model_path: Some("/test/model.gguf".to_string()),
+            run_conversion_tests: false,
+            run_golden_rule_test: false,
+            run_contract_tests: false,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        let yaml = r#"
+name: validate-pass-test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let result = executor.execute(&playbook).expect("Execution failed");
+
+        // No gateway failure
+        assert!(result.gateway_failed.is_none());
+        // At least the validate + 1 scenario
+        assert!(result.total_scenarios >= 2);
+        assert!(result.passed >= 1);
+    }
+
+    #[test]
+    fn test_g0_validate_no_model_path() {
+        // When no model_path is set, G0-VALIDATE should be skipped (0, 0)
+        let mock_runner = MockCommandRunner::new();
+
+        let config = ExecutionConfig {
+            model_path: None, // No model path
+            run_conversion_tests: false,
+            run_golden_rule_test: false,
+            run_contract_tests: false,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        let yaml = r#"
+name: no-model-path-test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let result = executor.execute(&playbook).expect("Execution failed");
+
+        // No gateway failure
+        assert!(result.gateway_failed.is_none());
+        // Only 1 scenario (no validate added)
+        assert_eq!(result.total_scenarios, 1);
     }
 
     #[test]
@@ -6053,12 +6347,12 @@ test_matrix:
 
         // The corroborated evidence should carry stderr
         let evidence = executor.evidence().all();
-        let passed: Vec<_> = evidence.iter().filter(|e| e.outcome.is_pass()).collect();
-        assert!(!passed.is_empty());
-        // stderr is set on evidence when present
-        if let Some(ev) = passed.first() {
-            assert!(ev.stderr.is_some());
-        }
+        assert!(
+            evidence
+                .iter()
+                .any(|e| e.outcome.is_pass() && e.stderr.is_some()),
+            "should have corroborated evidence with stderr"
+        );
     }
 
     #[test]

@@ -123,6 +123,12 @@ pub trait CommandRunner: Send + Sync {
     /// Execute apr run with --profile and --focus
     fn profile_with_focus(&self, model_path: &Path, focus: &str, no_gpu: bool) -> CommandOutput;
 
+    /// Execute an apr validate command with --strict --json flags
+    ///
+    /// Runs physics-level validation: detects NaN, Inf, and all-zeros tensors
+    /// in model weights. Used by the G0-VALIDATE pre-flight gate.
+    fn validate_model_strict(&self, model_path: &Path) -> CommandOutput;
+
     /// Execute apr rosetta fingerprint to capture tensor statistics
     fn fingerprint_model(&self, model_path: &Path, json: bool) -> CommandOutput;
 
@@ -218,6 +224,11 @@ impl CommandRunner for RealCommandRunner {
     fn validate_model(&self, model_path: &Path) -> CommandOutput {
         let path_str = model_path.display().to_string();
         self.execute(&["validate", &path_str])
+    }
+
+    fn validate_model_strict(&self, model_path: &Path) -> CommandOutput {
+        let path_str = model_path.display().to_string();
+        self.execute(&["validate", "--strict", "--json", &path_str])
     }
 
     fn bench_model(&self, model_path: &Path) -> CommandOutput {
@@ -436,6 +447,8 @@ pub struct MockCommandRunner {
     pub fingerprint_success: bool,
     /// Whether validate_stats should fail
     pub validate_stats_success: bool,
+    /// Whether validate_model_strict should fail
+    pub validate_strict_success: bool,
 }
 
 impl Default for MockCommandRunner {
@@ -461,6 +474,7 @@ impl Default for MockCommandRunner {
             profile_focus_success: true,
             fingerprint_success: true,
             validate_stats_success: true,
+            validate_strict_success: true,
         }
     }
 }
@@ -616,6 +630,13 @@ impl MockCommandRunner {
         self.validate_stats_success = false;
         self
     }
+
+    /// Set whether validate_model_strict should fail
+    #[must_use]
+    pub fn with_validate_strict_failure(mut self) -> Self {
+        self.validate_strict_success = false;
+        self
+    }
 }
 
 impl CommandRunner for MockCommandRunner {
@@ -696,6 +717,18 @@ impl CommandRunner for MockCommandRunner {
             CommandOutput::success("Model validation passed")
         } else {
             CommandOutput::failure(1, "Validation failed: corrupted tensors")
+        }
+    }
+
+    fn validate_model_strict(&self, _model_path: &Path) -> CommandOutput {
+        if self.validate_strict_success {
+            CommandOutput::success(r#"{"valid":true,"tensors_checked":100,"issues":[]}"#)
+        } else {
+            CommandOutput::with_output(
+                r#"{"valid":false,"tensors_checked":100,"issues":["all-zeros tensor: lm_head.weight (6.7GB F32)","expected BF16 but found F32"]}"#,
+                "Validation failed: corrupt model detected",
+                1,
+            )
         }
     }
 
@@ -1593,5 +1626,38 @@ mod tests {
             .with_profile_focus_failure();
         assert!(!runner.profile_flamegraph_success);
         assert!(!runner.profile_focus_success);
+    }
+
+    #[test]
+    fn test_mock_runner_validate_strict_success() {
+        let runner = MockCommandRunner::new();
+        let path = PathBuf::from("model.gguf");
+        let output = runner.validate_model_strict(&path);
+        assert!(output.success);
+        assert!(output.stdout.contains("\"valid\":true"));
+    }
+
+    #[test]
+    fn test_mock_runner_validate_strict_failure() {
+        let runner = MockCommandRunner::new().with_validate_strict_failure();
+        let path = PathBuf::from("model.gguf");
+        let output = runner.validate_model_strict(&path);
+        assert!(!output.success);
+        assert!(output.stdout.contains("\"valid\":false"));
+        assert!(output.stdout.contains("all-zeros"));
+    }
+
+    #[test]
+    fn test_mock_runner_validate_strict_default() {
+        let runner = MockCommandRunner::default();
+        assert!(runner.validate_strict_success);
+    }
+
+    #[test]
+    fn test_real_runner_validate_strict() {
+        let runner = RealCommandRunner::with_binary("/nonexistent/binary");
+        let path = PathBuf::from("model.gguf");
+        let output = runner.validate_model_strict(&path);
+        assert!(!output.success);
     }
 }
