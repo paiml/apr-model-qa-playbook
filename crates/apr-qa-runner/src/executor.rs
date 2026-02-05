@@ -236,6 +236,32 @@ impl Executor {
             });
         }
 
+        // G0-PULL: Ensure model is cached via apr pull
+        let model_id = playbook.model_id();
+        let (pull_passed, pull_failed, pulled_path) =
+            self.run_g0_pull_check(&playbook.model.hf_repo, &model_id);
+
+        // Jidoka: If G0-PULL fails, stop immediately — model acquisition failed
+        if pull_failed > 0 {
+            return Ok(ExecutionResult {
+                playbook_name: playbook.name.clone(),
+                total_scenarios: total + pull_passed + pull_failed,
+                passed: pull_passed,
+                failed: total + pull_failed,
+                skipped: 0,
+                duration_ms: start.elapsed().as_millis() as u64,
+                gateway_failed: Some("G0-PULL-001: Model acquisition failed".to_string()),
+                evidence: self.collector.clone(),
+            });
+        }
+
+        // Use pulled path if model_path wasn't explicitly set
+        if let Some(ref path) = pulled_path {
+            if self.config.model_path.is_none() {
+                self.config.model_path = Some(path.clone());
+            }
+        }
+
         // G0-VALIDATE: Model physics validation (NaN, Inf, all-zeros)
         // Catches corrupt model files before wasting time on qualification
         let (validate_passed, validate_failed) =
@@ -248,8 +274,8 @@ impl Executor {
         if validate_failed > 0 {
             return Ok(ExecutionResult {
                 playbook_name: playbook.name.clone(),
-                total_scenarios: total + validate_passed + validate_failed,
-                passed: validate_passed,
+                total_scenarios: total + pull_passed + validate_passed + validate_failed,
+                passed: pull_passed + validate_passed,
                 failed: total + validate_failed,
                 skipped: 0,
                 duration_ms: start.elapsed().as_millis() as u64,
@@ -395,14 +421,16 @@ impl Executor {
             + integrity_passed
             + hf_parity_passed
             + contract_passed
-            + validate_passed;
+            + validate_passed
+            + pull_passed;
         let total_failed = failed
             + conversion_failed
             + golden_failed
             + integrity_failed
             + hf_parity_failed
             + contract_failed
-            + validate_failed;
+            + validate_failed
+            + pull_failed;
 
         Ok(ExecutionResult {
             playbook_name: playbook.name.clone(),
@@ -418,7 +446,9 @@ impl Executor {
                 + contract_passed
                 + contract_failed
                 + validate_passed
-                + validate_failed,
+                + validate_failed
+                + pull_passed
+                + pull_failed,
             passed: total_passed,
             failed: total_failed,
             skipped,
@@ -1027,6 +1057,65 @@ impl Executor {
             "G0 Validate: NaN/Inf/all-zeros tensor check".to_string(),
             0,
         )
+    }
+
+    /// Create a scenario for G0-PULL evidence
+    fn pull_scenario(model_id: &ModelId) -> apr_qa_gen::QaScenario {
+        apr_qa_gen::QaScenario::new(
+            model_id.clone(),
+            apr_qa_gen::Modality::Run,
+            apr_qa_gen::Backend::Cpu,
+            apr_qa_gen::Format::SafeTensors,
+            "G0 Pull: acquire model via apr pull".to_string(),
+            0,
+        )
+    }
+
+    /// G0-PULL Pre-flight Check: Acquires model via `apr pull --json`
+    ///
+    /// Ensures the model is downloaded and cached before any validation
+    /// or inference tests. Parses the `Path:` line from stdout to determine
+    /// the cached model location.
+    ///
+    /// # Returns
+    ///
+    /// (passed_count, failed_count, Option<pulled_path>) - evidence is added to collector
+    fn run_g0_pull_check(
+        &mut self,
+        hf_repo: &str,
+        model_id: &ModelId,
+    ) -> (usize, usize, Option<String>) {
+        let start = Instant::now();
+        let output = self.command_runner.pull_model(hf_repo);
+        let duration = start.elapsed().as_millis() as u64;
+
+        if output.success {
+            // Parse "Path: <path>" from stdout
+            let pulled_path = output
+                .stdout
+                .lines()
+                .find_map(|line| line.strip_prefix("Path: ").map(|p| p.trim().to_string()));
+
+            let ev = Evidence::corroborated(
+                "G0-PULL-001",
+                Self::pull_scenario(model_id),
+                &format!("G0 PASS: model acquired via apr pull\n{}", output.stdout),
+                duration,
+            );
+            self.collector.add(ev);
+            (1, 0, pulled_path)
+        } else {
+            let reason = format!("G0 FAIL: apr pull failed for {hf_repo}: {}", output.stderr);
+            let ev = Evidence::falsified(
+                "G0-PULL-001",
+                Self::pull_scenario(model_id),
+                &reason,
+                &output.stdout,
+                duration,
+            );
+            self.collector.add(ev);
+            (0, 1, None)
+        }
     }
 
     /// G0-VALIDATE Pre-flight Check: Validates model physics (NaN, Inf, all-zeros)
@@ -2272,18 +2361,19 @@ test_matrix:
 
     #[test]
     fn test_executor_dry_run() {
+        let mock_runner = MockCommandRunner::new();
         let config = ExecutionConfig {
             dry_run: true,
             ..Default::default()
         };
-        let mut executor = Executor::with_config(config);
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
         let playbook = test_playbook();
 
         let result = executor.execute(&playbook).expect("Execution failed");
 
         assert_eq!(result.skipped, 5);
-        assert_eq!(result.passed, 0);
-        assert_eq!(result.failed, 0);
+        // G0-PULL passes even in dry run (pull still happens)
+        assert!(result.passed >= 1);
     }
 
     #[test]
@@ -3491,7 +3581,8 @@ test_matrix:
         let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
         let result = executor.execute(&playbook).expect("Execution failed");
 
-        assert_eq!(result.total_scenarios, 3);
+        // 3 scenarios + 1 G0-PULL = 4
+        assert_eq!(result.total_scenarios, 4);
         // With mock runner, all scenarios should complete
         assert!(result.passed > 0 || result.failed > 0);
     }
@@ -4200,11 +4291,12 @@ test_matrix:
 
     #[test]
     fn test_executor_execute_dry_run() {
+        let mock_runner = MockCommandRunner::new();
         let config = ExecutionConfig {
             dry_run: true,
             ..Default::default()
         };
-        let mut executor = Executor::with_config(config);
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
 
         let yaml = r#"
 name: dry-run-test
@@ -4222,8 +4314,8 @@ test_matrix:
 
         // In dry run mode, all scenarios should be skipped
         assert_eq!(result.skipped, 3);
-        assert_eq!(result.passed, 0);
-        assert_eq!(result.failed, 0);
+        // G0-PULL passes
+        assert!(result.passed >= 1);
     }
 
     #[test]
@@ -4733,7 +4825,8 @@ test_matrix:
 
         // Should collect all failures (3 scenarios)
         assert_eq!(result.failed, 3);
-        assert_eq!(result.total_scenarios, 3);
+        // 3 scenarios + 1 G0-PULL = 4
+        assert_eq!(result.total_scenarios, 4);
     }
 
     // =========================================================================
@@ -4920,6 +5013,9 @@ test_matrix:
             fn validate_model_strict(&self, _path: &Path) -> CommandOutput {
                 CommandOutput::success(r#"{"valid":true,"tensors_checked":100,"issues":[]}"#)
             }
+            fn pull_model(&self, _hf_repo: &str) -> CommandOutput {
+                CommandOutput::success("Path: /mock/model.safetensors")
+            }
         }
 
         let config = ExecutionConfig {
@@ -5056,6 +5152,9 @@ test_matrix:
             fn validate_model_strict(&self, _path: &Path) -> CommandOutput {
                 CommandOutput::success(r#"{"valid":true,"tensors_checked":100,"issues":[]}"#)
             }
+            fn pull_model(&self, _hf_repo: &str) -> CommandOutput {
+                CommandOutput::success("Path: /mock/model.safetensors")
+            }
         }
 
         let config = ExecutionConfig {
@@ -5187,6 +5286,9 @@ test_matrix:
             }
             fn validate_model_strict(&self, _path: &Path) -> CommandOutput {
                 CommandOutput::success(r#"{"valid":true,"tensors_checked":100,"issues":[]}"#)
+            }
+            fn pull_model(&self, _hf_repo: &str) -> CommandOutput {
+                CommandOutput::success("Path: /mock/model.safetensors")
             }
         }
 
@@ -5794,6 +5896,9 @@ test_matrix:
             fn validate_model_strict(&self, _path: &Path) -> CommandOutput {
                 CommandOutput::success(r#"{"valid":true,"tensors_checked":100,"issues":[]}"#)
             }
+            fn pull_model(&self, _hf_repo: &str) -> CommandOutput {
+                CommandOutput::success("Path: /mock/model.safetensors")
+            }
         }
 
         let config = ExecutionConfig {
@@ -5915,6 +6020,156 @@ test_matrix:
         assert!(scenario.prompt.contains("G0 Validate"));
     }
 
+    #[test]
+    fn test_pull_scenario_creation() {
+        let model_id = ModelId::new("test", "model");
+        let scenario = Executor::pull_scenario(&model_id);
+
+        assert_eq!(scenario.model.org, "test");
+        assert_eq!(scenario.model.name, "model");
+        assert_eq!(scenario.format, Format::SafeTensors);
+        assert!(scenario.prompt.contains("G0 Pull"));
+    }
+
+    #[test]
+    fn test_g0_pull_pass() {
+        let mock_runner = MockCommandRunner::new();
+
+        let config = ExecutionConfig {
+            model_path: Some("/test/model.gguf".to_string()),
+            run_conversion_tests: false,
+            run_golden_rule_test: false,
+            run_contract_tests: false,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+        let model_id = ModelId::new("test", "model");
+        let (passed, failed, pulled_path) = executor.run_g0_pull_check("test/model", &model_id);
+
+        assert_eq!(passed, 1);
+        assert_eq!(failed, 0);
+        assert_eq!(pulled_path.as_deref(), Some("/mock/model.safetensors"));
+
+        let evidence = executor.evidence().all();
+        let pull_ev = evidence
+            .iter()
+            .find(|e| e.gate_id == "G0-PULL-001")
+            .expect("should have G0-PULL evidence");
+        assert!(pull_ev.outcome.is_pass());
+        assert!(pull_ev.output.contains("G0 PASS"));
+    }
+
+    #[test]
+    fn test_g0_pull_fail() {
+        let mock_runner = MockCommandRunner::new().with_pull_failure();
+
+        let config = ExecutionConfig {
+            model_path: Some("/test/model.gguf".to_string()),
+            run_conversion_tests: false,
+            run_golden_rule_test: false,
+            run_contract_tests: false,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+        let model_id = ModelId::new("test", "model");
+        let (passed, failed, pulled_path) = executor.run_g0_pull_check("test/model", &model_id);
+
+        assert_eq!(passed, 0);
+        assert_eq!(failed, 1);
+        assert!(pulled_path.is_none());
+
+        let evidence = executor.evidence().all();
+        let pull_ev = evidence
+            .iter()
+            .find(|e| e.gate_id == "G0-PULL-001")
+            .expect("should have G0-PULL evidence");
+        assert!(!pull_ev.outcome.is_pass());
+        assert!(pull_ev.reason.contains("G0 FAIL"));
+    }
+
+    #[test]
+    fn test_g0_pull_fail_stops_execution() {
+        // Jidoka: If G0-PULL fails, skip all subsequent tests
+        let mock_runner = MockCommandRunner::new().with_pull_failure();
+
+        let config = ExecutionConfig {
+            model_path: Some("/test/model.gguf".to_string()),
+            run_conversion_tests: true,
+            run_golden_rule_test: true,
+            run_contract_tests: true,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        let yaml = r#"
+name: pull-fail-test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 3
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let result = executor.execute(&playbook).expect("Execution failed");
+
+        // Gateway should be failed
+        assert!(result.gateway_failed.is_some());
+        assert!(
+            result
+                .gateway_failed
+                .as_ref()
+                .unwrap()
+                .contains("G0-PULL-001")
+        );
+
+        // No scenarios passed
+        assert_eq!(result.passed, 0);
+        // 3 scenarios + 1 pull failure = 4 total failed
+        assert_eq!(result.failed, 4);
+    }
+
+    #[test]
+    fn test_g0_pull_sets_model_path() {
+        // When model_path is None, G0-PULL should set it from pulled path
+        let mock_runner =
+            MockCommandRunner::new().with_pull_model_path("/pulled/model.safetensors");
+
+        let config = ExecutionConfig {
+            model_path: None, // No model path initially
+            run_conversion_tests: false,
+            run_golden_rule_test: false,
+            run_contract_tests: false,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+
+        let yaml = r#"
+name: pull-set-path-test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let result = executor.execute(&playbook).expect("Execution failed");
+
+        // Should not fail on gateway
+        assert!(result.gateway_failed.is_none());
+        // G0-PULL should pass
+        assert!(result.passed >= 1);
+    }
+
     /// Helper: create a temp model directory with a safetensors file
     fn make_temp_model_dir() -> tempfile::TempDir {
         let dir = tempfile::TempDir::new().expect("create temp dir");
@@ -6022,8 +6277,8 @@ test_matrix:
                 .contains("G0-VALIDATE-001")
         );
 
-        // All scenario tests should be counted as failed (skipped via early return)
-        assert_eq!(result.passed, 0);
+        // G0-PULL passes (1 passed), then G0-VALIDATE fails
+        assert_eq!(result.passed, 1); // G0-PULL-001
         // 3 scenarios + 1 validate failure = 4 total failed
         assert_eq!(result.failed, 4);
     }
@@ -6096,8 +6351,8 @@ test_matrix:
 
         // No gateway failure
         assert!(result.gateway_failed.is_none());
-        // Only 1 scenario (no validate added)
-        assert_eq!(result.total_scenarios, 1);
+        // 1 scenario + 1 G0-PULL (no validate — mock path has no safetensors)
+        assert_eq!(result.total_scenarios, 2);
     }
 
     #[test]
@@ -6592,7 +6847,8 @@ test_matrix:
         assert!(!config.check_integrity);
         assert!(config.lock_file_path.is_none());
 
-        let mut executor = Executor::with_config(config);
+        let mock_runner = MockCommandRunner::new();
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
         let yaml = r#"
 name: no-integrity
 version: "1.0.0"
@@ -6614,6 +6870,7 @@ test_matrix:
     #[test]
     fn test_integrity_check_missing_lock_file_warns() {
         // When lock file path is set but file doesn't exist, should warn (not error)
+        let mock_runner = MockCommandRunner::new();
         let config = ExecutionConfig {
             check_integrity: true,
             lock_file_path: Some("/nonexistent/playbook.lock.yaml".to_string()),
@@ -6622,7 +6879,7 @@ test_matrix:
             ..Default::default()
         };
 
-        let mut executor = Executor::with_config(config);
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
         let yaml = r#"
 name: missing-lock
 version: "1.0.0"
@@ -6644,6 +6901,7 @@ test_matrix:
     #[test]
     fn test_warn_implicit_skips_flag() {
         // warn_implicit_skips should not crash even when no skip files exist
+        let mock_runner = MockCommandRunner::new();
         let config = ExecutionConfig {
             warn_implicit_skips: true,
             run_conversion_tests: false,
@@ -6651,7 +6909,7 @@ test_matrix:
             ..Default::default()
         };
 
-        let mut executor = Executor::with_config(config);
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
         let yaml = r#"
 name: skip-warn-test
 version: "1.0.0"
@@ -6695,6 +6953,7 @@ test_matrix:
     #[test]
     fn test_hf_parity_skipped_when_missing_config() {
         // When HF parity is enabled but config is incomplete, should skip gracefully
+        let mock_runner = MockCommandRunner::new();
         let config = ExecutionConfig {
             run_hf_parity: true,
             hf_parity_corpus_path: None,  // Missing!
@@ -6704,7 +6963,7 @@ test_matrix:
             ..Default::default()
         };
 
-        let mut executor = Executor::with_config(config);
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
         let yaml = r#"
 name: hf-parity-test
 version: "1.0.0"
@@ -6734,6 +6993,7 @@ test_matrix:
     #[test]
     fn test_hf_parity_skipped_when_manifest_missing() {
         // When HF parity config points to non-existent corpus
+        let mock_runner = MockCommandRunner::new();
         let config = ExecutionConfig {
             run_hf_parity: true,
             hf_parity_corpus_path: Some("/nonexistent/corpus".to_string()),
@@ -6743,7 +7003,7 @@ test_matrix:
             ..Default::default()
         };
 
-        let mut executor = Executor::with_config(config);
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
         let yaml = r#"
 name: hf-parity-missing-test
 version: "1.0.0"

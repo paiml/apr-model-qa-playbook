@@ -134,6 +134,9 @@ pub trait CommandRunner: Send + Sync {
 
     /// Execute apr rosetta validate-stats to compare tensor statistics
     fn validate_stats(&self, fp_a: &Path, fp_b: &Path) -> CommandOutput;
+
+    /// Execute `apr pull --json <hf_repo>` to acquire model from cache or remote
+    fn pull_model(&self, hf_repo: &str) -> CommandOutput;
 }
 
 /// Real command runner that executes actual subprocess commands
@@ -398,6 +401,10 @@ impl CommandRunner for RealCommandRunner {
         let b_str = fp_b.display().to_string();
         self.execute(&["rosetta", "validate-stats", &a_str, &b_str])
     }
+
+    fn pull_model(&self, hf_repo: &str) -> CommandOutput {
+        self.execute(&["pull", "--json", hf_repo])
+    }
 }
 
 /// Mock command runner for testing
@@ -449,6 +456,10 @@ pub struct MockCommandRunner {
     pub validate_stats_success: bool,
     /// Whether validate_model_strict should fail
     pub validate_strict_success: bool,
+    /// Whether pull_model should succeed
+    pub pull_success: bool,
+    /// Path returned by pull_model on success
+    pub pull_model_path: String,
 }
 
 impl Default for MockCommandRunner {
@@ -475,6 +486,8 @@ impl Default for MockCommandRunner {
             fingerprint_success: true,
             validate_stats_success: true,
             validate_strict_success: true,
+            pull_success: true,
+            pull_model_path: "/mock/model.safetensors".to_string(),
         }
     }
 }
@@ -635,6 +648,20 @@ impl MockCommandRunner {
     #[must_use]
     pub fn with_validate_strict_failure(mut self) -> Self {
         self.validate_strict_success = false;
+        self
+    }
+
+    /// Set whether pull_model should fail
+    #[must_use]
+    pub fn with_pull_failure(mut self) -> Self {
+        self.pull_success = false;
+        self
+    }
+
+    /// Set the model path returned by pull_model
+    #[must_use]
+    pub fn with_pull_model_path(mut self, path: impl Into<String>) -> Self {
+        self.pull_model_path = path.into();
         self
     }
 }
@@ -872,6 +899,14 @@ impl CommandRunner for MockCommandRunner {
             )
         } else {
             CommandOutput::failure(1, "Stats validation failed: 3 tensors exceed tolerance")
+        }
+    }
+
+    fn pull_model(&self, _hf_repo: &str) -> CommandOutput {
+        if self.pull_success {
+            CommandOutput::success(format!("Path: {}", self.pull_model_path))
+        } else {
+            CommandOutput::failure(1, "Pull failed: model not found in registry")
         }
     }
 }
@@ -1658,6 +1693,49 @@ mod tests {
         let runner = RealCommandRunner::with_binary("/nonexistent/binary");
         let path = PathBuf::from("model.gguf");
         let output = runner.validate_model_strict(&path);
+        assert!(!output.success);
+    }
+
+    #[test]
+    fn test_mock_runner_pull_success() {
+        let runner = MockCommandRunner::new();
+        let output = runner.pull_model("test/model");
+        assert!(output.success);
+        assert!(output.stdout.contains("Path: /mock/model.safetensors"));
+    }
+
+    #[test]
+    fn test_mock_runner_pull_failure() {
+        let runner = MockCommandRunner::new().with_pull_failure();
+        let output = runner.pull_model("test/model");
+        assert!(!output.success);
+        assert!(output.stderr.contains("Pull failed"));
+    }
+
+    #[test]
+    fn test_mock_runner_pull_custom_path() {
+        let runner =
+            MockCommandRunner::new().with_pull_model_path("/custom/path/model.safetensors");
+        let output = runner.pull_model("test/model");
+        assert!(output.success);
+        assert!(
+            output
+                .stdout
+                .contains("Path: /custom/path/model.safetensors")
+        );
+    }
+
+    #[test]
+    fn test_mock_runner_pull_default() {
+        let runner = MockCommandRunner::default();
+        assert!(runner.pull_success);
+        assert_eq!(runner.pull_model_path, "/mock/model.safetensors");
+    }
+
+    #[test]
+    fn test_real_runner_pull_model() {
+        let runner = RealCommandRunner::with_binary("/nonexistent/binary");
+        let output = runner.pull_model("test/model");
         assert!(!output.success);
     }
 }
