@@ -32,6 +32,7 @@ pub mod evidence;
 pub mod executor;
 pub mod family_contract;
 pub mod integrity;
+pub mod layout_contract;
 pub mod oracle;
 pub mod parallel;
 pub mod patterns;
@@ -82,6 +83,11 @@ pub use executor::{
 pub use integrity::{
     ConfigValues, IntegrityResult, TensorDerivedValues, check_safetensors_integrity,
     gate_ids as integrity_gate_ids,
+};
+pub use layout_contract::{
+    ModelValidationResult, TensorLayoutContract, TensorSpec, TensorValidationResult,
+    ValidationRule, get_critical_tensors, get_validation_rules, load_contract, load_contract_from,
+    validate_model,
 };
 pub use oracle::{
     CheckStatus, Confidence, CrossReference, FalsificationCheckItem, OracleContext, OracleEnhancer,
