@@ -9,6 +9,59 @@ use std::path::Path;
 
 use crate::error::{Error, Result};
 
+/// Model size category for resource management (§3.4 Resource-Aware Scheduling)
+///
+/// These categories enforce worker limits to prevent OOM conditions when testing
+/// large models. The executor MUST respect these limits.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum SizeCategory {
+    /// < 1B params: 4 workers, can run in parallel with others
+    #[default]
+    Tiny,
+    /// 1-2B params: 4 workers, can run in parallel with tiny models
+    Small,
+    /// 2-4B params: 2 workers, should run alone or with tiny/small
+    Medium,
+    /// 4-10B params: 1 worker, must run alone
+    Large,
+    /// 10-30B params: 1 worker, must run alone, may need swap
+    Xlarge,
+    /// > 30B params: 1 worker, requires careful resource management
+    Huge,
+}
+
+impl SizeCategory {
+    /// Maximum workers allowed for this model size
+    #[must_use]
+    pub const fn max_workers(&self) -> usize {
+        match self {
+            Self::Tiny | Self::Small => 4,
+            Self::Medium => 2,
+            Self::Large | Self::Xlarge | Self::Huge => 1,
+        }
+    }
+
+    /// Estimated memory requirement in GB (rough heuristic)
+    #[must_use]
+    pub const fn estimated_memory_gb(&self) -> usize {
+        match self {
+            Self::Tiny => 2,
+            Self::Small => 4,
+            Self::Medium => 8,
+            Self::Large => 16,
+            Self::Xlarge => 32,
+            Self::Huge => 64,
+        }
+    }
+
+    /// Can run concurrently with other playbooks
+    #[must_use]
+    pub const fn can_run_concurrent(&self) -> bool {
+        matches!(self, Self::Tiny | Self::Small)
+    }
+}
+
 /// A complete playbook for model qualification
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Playbook {
@@ -117,6 +170,22 @@ impl Playbook {
     pub fn model_id(&self) -> ModelId {
         ModelId::new(&self.model.hf_org(), &self.model.hf_name())
     }
+
+    /// Get the effective maximum workers based on model size (§3.4)
+    ///
+    /// This ENFORCES resource limits - the executor MUST use this value
+    /// and cannot exceed it. Large models get fewer workers to prevent OOM.
+    #[must_use]
+    pub fn effective_max_workers(&self, requested: usize) -> usize {
+        let size_limit = self.model.size_category.max_workers();
+        requested.min(size_limit)
+    }
+
+    /// Get the model's size category
+    #[must_use]
+    pub fn size_category(&self) -> SizeCategory {
+        self.model.size_category
+    }
 }
 
 /// Model configuration
@@ -132,6 +201,12 @@ pub struct ModelConfig {
     /// Quantizations to test
     #[serde(default = "default_quantizations")]
     pub quantizations: Vec<String>,
+    /// Model size category for resource-aware scheduling (§3.4)
+    /// Defaults to `small` which allows 4 workers.
+    /// IMPORTANT: Large models (7B+) MUST set this to `large` or higher
+    /// to prevent OOM conditions during parallel testing.
+    #[serde(default)]
+    pub size_category: SizeCategory,
 }
 
 impl ModelConfig {
@@ -934,6 +1009,7 @@ falsification_gates:
             local_path: None,
             formats: vec![Format::Gguf],
             quantizations: vec![],
+            size_category: SizeCategory::default(),
         };
         assert_eq!(config.hf_org(), "model-name");
         assert_eq!(config.hf_name(), "model-name");
@@ -946,6 +1022,7 @@ falsification_gates:
             local_path: Some("/path/to/model".to_string()),
             formats: default_formats(),
             quantizations: default_quantizations(),
+            size_category: SizeCategory::default(),
         };
         assert!(config.local_path.is_some());
     }
@@ -1017,6 +1094,7 @@ test_matrix:
             local_path: None,
             formats: vec![Format::Gguf],
             quantizations: vec!["q4_k_m".to_string()],
+            size_category: SizeCategory::Small,
         };
 
         assert_eq!(config.hf_org(), "Qwen");
@@ -1538,5 +1616,118 @@ test_matrix:
     fn test_skip_type_eq() {
         assert_eq!(SkipType::Explicit, SkipType::Explicit);
         assert_ne!(SkipType::Explicit, SkipType::Implicit);
+    }
+
+    // ── §3.4 Resource-aware scheduling tests ────────────────────────────
+
+    #[test]
+    fn test_size_category_max_workers() {
+        assert_eq!(SizeCategory::Tiny.max_workers(), 4);
+        assert_eq!(SizeCategory::Small.max_workers(), 4);
+        assert_eq!(SizeCategory::Medium.max_workers(), 2);
+        assert_eq!(SizeCategory::Large.max_workers(), 1);
+        assert_eq!(SizeCategory::Xlarge.max_workers(), 1);
+        assert_eq!(SizeCategory::Huge.max_workers(), 1);
+    }
+
+    #[test]
+    fn test_size_category_estimated_memory() {
+        assert_eq!(SizeCategory::Tiny.estimated_memory_gb(), 2);
+        assert_eq!(SizeCategory::Small.estimated_memory_gb(), 4);
+        assert_eq!(SizeCategory::Medium.estimated_memory_gb(), 8);
+        assert_eq!(SizeCategory::Large.estimated_memory_gb(), 16);
+        assert_eq!(SizeCategory::Xlarge.estimated_memory_gb(), 32);
+        assert_eq!(SizeCategory::Huge.estimated_memory_gb(), 64);
+    }
+
+    #[test]
+    fn test_size_category_can_run_concurrent() {
+        assert!(SizeCategory::Tiny.can_run_concurrent());
+        assert!(SizeCategory::Small.can_run_concurrent());
+        assert!(!SizeCategory::Medium.can_run_concurrent());
+        assert!(!SizeCategory::Large.can_run_concurrent());
+        assert!(!SizeCategory::Xlarge.can_run_concurrent());
+        assert!(!SizeCategory::Huge.can_run_concurrent());
+    }
+
+    #[test]
+    fn test_size_category_default() {
+        assert_eq!(SizeCategory::default(), SizeCategory::Tiny);
+    }
+
+    #[test]
+    fn test_size_category_serde() {
+        let yaml = r#"
+name: test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  size_category: large
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("parse");
+        assert_eq!(playbook.model.size_category, SizeCategory::Large);
+    }
+
+    #[test]
+    fn test_effective_max_workers_respects_size() {
+        let yaml = r#"
+name: test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  size_category: large
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("parse");
+        // Large model caps at 1 worker regardless of request
+        assert_eq!(playbook.effective_max_workers(4), 1);
+        assert_eq!(playbook.effective_max_workers(8), 1);
+        assert_eq!(playbook.effective_max_workers(1), 1);
+    }
+
+    #[test]
+    fn test_effective_max_workers_small_model() {
+        let yaml = r#"
+name: test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  size_category: small
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("parse");
+        // Small model allows up to 4 workers
+        assert_eq!(playbook.effective_max_workers(4), 4);
+        assert_eq!(playbook.effective_max_workers(8), 4); // capped at 4
+        assert_eq!(playbook.effective_max_workers(2), 2); // respects lower request
+    }
+
+    #[test]
+    fn test_effective_max_workers_medium_model() {
+        let yaml = r#"
+name: test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  size_category: medium
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("parse");
+        // Medium model caps at 2 workers
+        assert_eq!(playbook.effective_max_workers(4), 2);
+        assert_eq!(playbook.effective_max_workers(1), 1);
     }
 }

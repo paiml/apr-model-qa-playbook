@@ -12,7 +12,7 @@ model:
     - gguf         # Third-party format
   quantizations:
     - q4_k_m
-  size_category: small
+  size_category: medium  # 3B params, caps workers at 2
 
 test_matrix:
   modalities:

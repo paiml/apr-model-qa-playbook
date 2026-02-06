@@ -532,19 +532,31 @@ fn run_playbook(
         std::process::exit(1);
     }
 
+    // §3.4: Resource-aware scheduling - enforce worker limits based on model size
+    let effective_workers = playbook.effective_max_workers(workers);
+    if effective_workers < workers {
+        eprintln!(
+            "[RESOURCE] Model size {:?} caps workers at {} (requested {})",
+            playbook.size_category(),
+            effective_workers,
+            workers
+        );
+    }
+
     println!("Running playbook: {}", playbook.name);
     println!("  Total tests: {}", playbook.total_tests());
     println!("  Dry run: {dry_run}");
+    println!("  Model size: {:?}", playbook.size_category());
     if let Some(ref path) = model_path {
         println!("  Model path: {path}");
     }
-    println!("  Workers: {workers}");
+    println!("  Workers: {} (max for size: {})", effective_workers, playbook.model.size_category.max_workers());
     println!("  Timeout: {timeout}ms");
 
     let run_config = PlaybookRunConfig {
         failure_policy: failure_policy.to_string(),
         dry_run,
-        workers,
+        workers: effective_workers, // §3.4: Use enforced worker limit
         model_path: model_path.clone(),
         timeout,
         no_gpu,
