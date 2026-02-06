@@ -360,6 +360,30 @@ enum Commands {
         #[arg(long, default_value = "mvp")]
         tier: String,
     },
+
+    /// Validate model against tensor layout contract (Issue #4)
+    ///
+    /// Checks that an APR model file conforms to the tensor layout contract
+    /// from aprender (tensor-layout-v1.yaml). This prevents GH-202 style bugs
+    /// where wrong tensor shapes cause garbage output.
+    ValidateContract {
+        /// Path to APR model file to validate
+        #[arg(value_name = "MODEL")]
+        model_path: PathBuf,
+
+        /// Path to tensor layout contract YAML
+        /// Defaults to ../aprender/contracts/tensor-layout-v1.yaml
+        #[arg(long)]
+        contract_path: Option<PathBuf>,
+
+        /// Output format (text, json)
+        #[arg(long, default_value = "text")]
+        format: String,
+
+        /// Only check critical tensors (lm_head, etc.)
+        #[arg(long)]
+        critical_only: bool,
+    },
 }
 
 /// Setup SIGINT handler for Jidoka cleanup
@@ -554,6 +578,19 @@ fn main() {
                 &size,
                 &playbook_name,
                 &tier,
+            );
+        }
+        Commands::ValidateContract {
+            model_path,
+            contract_path,
+            format,
+            critical_only,
+        } => {
+            validate_contract_command(
+                &model_path,
+                contract_path.as_deref(),
+                &format,
+                critical_only,
             );
         }
     }
@@ -2653,4 +2690,156 @@ fn export_evidence(
     println!("  Grade: {grade}");
     println!("  Pass Rate: {:.1}%", pass_rate * 100.0);
     println!("  Total Scenarios: {total_scenarios}");
+}
+
+/// Validate a model against the tensor layout contract (Issue #4)
+///
+/// Checks that tensor shapes in the APR model match the contract expectations.
+/// This prevents GH-202 style bugs where wrong shapes cause garbage output.
+fn validate_contract_command(
+    model_path: &Path,
+    contract_path: Option<&Path>,
+    format: &str,
+    critical_only: bool,
+) {
+    use apr_qa_runner::{get_critical_tensors, get_validation_rules, validate_model};
+
+    println!("Validating model against tensor layout contract...");
+    println!("  Model: {}", model_path.display());
+
+    let contract = load_layout_contract(contract_path);
+    println!("  Contract version: {}", contract.metadata.version);
+
+    print_validation_rules(get_validation_rules(&contract));
+
+    if critical_only {
+        print_critical_tensors(get_critical_tensors(&contract));
+    }
+
+    println!("\n=== Running Validation ===");
+    let result = match validate_model(model_path, &contract) {
+        Ok(r) => r,
+        Err(e) => {
+            eprintln!("Error: Validation failed: {e}");
+            std::process::exit(1);
+        }
+    };
+
+    output_validation_result(&result, format);
+    exit_with_validation_status(result.passed);
+}
+
+/// Load the tensor layout contract, exiting on failure.
+fn load_layout_contract(contract_path: Option<&Path>) -> apr_qa_runner::TensorLayoutContract {
+    use apr_qa_runner::{load_contract, load_contract_from};
+
+    let contract = contract_path.map_or_else(
+        || {
+            println!(
+                "  Contract: {} (default)",
+                apr_qa_runner::layout_contract::DEFAULT_CONTRACT_PATH
+            );
+            load_contract()
+        },
+        |path| {
+            println!("  Contract: {}", path.display());
+            load_contract_from(path)
+        },
+    );
+
+    match contract {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("Error: Failed to load contract: {e}");
+            eprintln!("\nHint: Ensure aprender is cloned as a sibling directory:");
+            eprintln!("  ../aprender/contracts/tensor-layout-v1.yaml");
+            std::process::exit(1);
+        }
+    }
+}
+
+/// Print validation rules from the contract.
+fn print_validation_rules(rules: &[apr_qa_runner::ValidationRule]) {
+    println!("\n=== Validation Rules ({}) ===", rules.len());
+    for rule in rules {
+        let critical_marker = if rule.critical { " [CRITICAL]" } else { "" };
+        println!("  {}: {}{}", rule.id, rule.name, critical_marker);
+    }
+}
+
+/// Print critical tensors from the contract.
+fn print_critical_tensors(tensors: Vec<&apr_qa_runner::TensorSpec>) {
+    println!("\n=== Critical Tensors ({}) ===", tensors.len());
+    for tensor in &tensors {
+        println!(
+            "  {} -> {} (transpose: {})",
+            tensor.gguf_name, tensor.apr_name, tensor.transpose
+        );
+    }
+}
+
+/// Output validation result in text or JSON format.
+fn output_validation_result(result: &apr_qa_runner::ModelValidationResult, format: &str) {
+    if format == "json" {
+        match serde_json::to_string_pretty(result) {
+            Ok(json) => println!("{json}"),
+            Err(e) => eprintln!("Error serializing result: {e}"),
+        }
+        return;
+    }
+
+    println!("\n=== Validation Results ===");
+    println!(
+        "  Status: {}",
+        if result.passed { "PASSED" } else { "FAILED" }
+    );
+    println!("  Rules Checked: {}", result.rules_checked);
+    println!("  Rules Passed: {}", result.rules_passed);
+    println!("  Rules Failed: {}", result.rules_failed);
+
+    print_tensor_results(&result.tensor_results);
+    print_critical_failures(&result.critical_failures);
+}
+
+/// Print per-tensor validation results.
+fn print_tensor_results(tensor_results: &[apr_qa_runner::TensorValidationResult]) {
+    if tensor_results.is_empty() {
+        return;
+    }
+    println!("\n  Per-Tensor Results:");
+    for tr in tensor_results {
+        let status = if tr.passed { "✓" } else { "✗" };
+        println!("    {} [{}] {}", status, tr.rule_id, tr.tensor_name);
+        if !tr.passed {
+            println!("      Details: {}", tr.details);
+            if let Some(ref expected) = tr.expected {
+                println!("      Expected: {expected}");
+            }
+            if let Some(ref actual) = tr.actual {
+                println!("      Actual: {actual}");
+            }
+        }
+    }
+}
+
+/// Print critical failures if any.
+fn print_critical_failures(failures: &[String]) {
+    if failures.is_empty() {
+        return;
+    }
+    println!("\n  CRITICAL FAILURES:");
+    for failure in failures {
+        println!("    ✗ {failure}");
+    }
+}
+
+/// Exit with appropriate status code based on validation result.
+fn exit_with_validation_status(passed: bool) -> ! {
+    if passed {
+        println!("\n✓ Model conforms to tensor layout contract");
+        std::process::exit(0);
+    } else {
+        println!("\n✗ Model DOES NOT conform to tensor layout contract");
+        std::process::exit(1);
+    }
 }
