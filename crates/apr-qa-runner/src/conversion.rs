@@ -196,6 +196,16 @@ pub fn resolve_model_path(base_path: &Path, format: Format) -> Result<std::path:
         return Ok(resolved);
     }
 
+    // Try sharded SafeTensors: {base}/{format}/model.safetensors.index.json
+    // Return the directory for sharded models - apr run handles directory with index
+    if extension == "safetensors" {
+        let st_dir = base_path.join(subdir);
+        let sharded_index = st_dir.join("model.safetensors.index.json");
+        if sharded_index.exists() {
+            return Ok(st_dir);
+        }
+    }
+
     // Try HuggingFace cache structure: {base}/model.{ext} (flat)
     let flat_resolved = base_path.join(format!("model.{extension}"));
     if flat_resolved.exists() {

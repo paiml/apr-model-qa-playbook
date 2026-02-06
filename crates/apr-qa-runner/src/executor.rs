@@ -265,14 +265,25 @@ impl Executor {
             }
         }
 
-        // G0-FORMAT: If model_path is a single file, prepare workspace with all formats.
+        // G0-FORMAT: If model_path is a single file or sharded index, prepare workspace.
         // This creates the APR cache directory structure that directory-mode resolution expects,
         // so downstream code (resolve_model_path, run_conversion_tests, run_golden_rule_test,
         // run_contract_invariants) all work without modification.
+        //
+        // Handles two cases:
+        // 1. Single file: /path/to/abc123.safetensors (pacha cache, small models)
+        // 2. Sharded model: /path/to/model.safetensors.index.json (HF cache, 3B+ models)
         let (format_passed, format_failed) =
             if let Some(ref model_path_str) = self.config.model_path.clone() {
                 let path = Path::new(&model_path_str);
-                if path.is_file() && path.extension().is_some_and(|e| e == "safetensors") {
+                let is_single_safetensors =
+                    path.is_file() && path.extension().is_some_and(|e| e == "safetensors");
+                let is_sharded_index = path.is_file()
+                    && path
+                        .file_name()
+                        .is_some_and(|n| n.to_string_lossy().ends_with(".safetensors.index.json"));
+
+                if is_single_safetensors || is_sharded_index {
                     let model_id = playbook.model_id();
                     let (workspace, fp, ff) =
                         self.prepare_model_workspace(path, &model_id, &playbook.model.formats);
@@ -1438,6 +1449,16 @@ impl Executor {
             return Some(resolved.to_string_lossy().to_string());
         }
 
+        // Try sharded SafeTensors: {base}/{format}/model.safetensors.index.json
+        // Return the directory, not the index file - apr run expects a directory for sharded models
+        if extension == "safetensors" {
+            let st_dir = path.join(subdir);
+            let sharded_index = st_dir.join("model.safetensors.index.json");
+            if sharded_index.exists() {
+                return Some(st_dir.to_string_lossy().to_string());
+            }
+        }
+
         // Try HuggingFace cache structure: {base}/model.{ext} (flat)
         let flat_resolved = path.join(format!("model.{extension}"));
         if flat_resolved.exists() {
@@ -1607,88 +1628,127 @@ impl Executor {
             return (workspace.to_string_lossy().to_string(), 0, 1);
         }
 
-        // Step 2: Symlink the safetensors model file
-        let st_link = st_dir.join("model.safetensors");
-        // Remove existing symlink/file to allow re-runs
-        let _ = std::fs::remove_file(&st_link);
-        #[cfg(unix)]
-        let link_result = std::os::unix::fs::symlink(source_file, &st_link);
-        #[cfg(not(unix))]
-        let link_result = std::fs::copy(source_file, &st_link).map(|_| ());
+        // Detect if this is a sharded model (index.json) or single file
+        let is_sharded = source_file
+            .file_name()
+            .is_some_and(|n| n.to_string_lossy().ends_with(".safetensors.index.json"));
 
-        if let Err(e) = link_result {
-            let ev = Evidence::falsified(
-                "G0-FORMAT-WORKSPACE-001",
-                Self::format_scenario(model_id, Format::SafeTensors),
-                format!("Failed to symlink model file: {e}"),
-                "N/A",
-                0,
-            );
-            self.collector.add(ev);
-            return (workspace.to_string_lossy().to_string(), 0, 1);
-        }
-
-        // Step 3: Symlink sibling config files (config.json, tokenizer.json, etc.)
-        let siblings = Self::find_sibling_model_files(source_file);
-        for (src_path, canonical_name) in &siblings {
-            let link_path = st_dir.join(canonical_name);
-            let _ = std::fs::remove_file(&link_path);
-            #[cfg(unix)]
-            let _ = std::os::unix::fs::symlink(src_path, &link_path);
-            #[cfg(not(unix))]
-            let _ = std::fs::copy(src_path, &link_path);
-        }
-
-        // Step 4: Convert to each requested non-SafeTensors format
-        for format in requested_formats {
-            if *format == Format::SafeTensors {
-                continue;
-            }
-
-            let (subdir, ext, gate_id) = match format {
-                Format::Apr => ("apr", "apr", "G0-FORMAT-APR-001"),
-                Format::Gguf => ("gguf", "gguf", "G0-FORMAT-GGUF-001"),
-                Format::SafeTensors => unreachable!(),
-            };
-
-            let format_dir = workspace.join(subdir);
-            if let Err(e) = std::fs::create_dir_all(&format_dir) {
+        if is_sharded {
+            // Sharded model: symlink all files from the source directory
+            let Some(source_dir) = source_file.parent() else {
                 let ev = Evidence::falsified(
-                    gate_id,
-                    Self::format_scenario(model_id, *format),
-                    format!("Failed to create {subdir} directory: {e}"),
+                    "G0-FORMAT-WORKSPACE-001",
+                    Self::format_scenario(model_id, Format::SafeTensors),
+                    "Sharded model has no parent directory".to_string(),
                     "N/A",
                     0,
                 );
                 self.collector.add(ev);
-                failed += 1;
-                continue;
+                return (workspace.to_string_lossy().to_string(), 0, 1);
+            };
+
+            // Symlink all files from source directory to workspace safetensors dir
+            if let Ok(entries) = std::fs::read_dir(source_dir) {
+                for entry in entries.flatten() {
+                    let src_path = entry.path();
+                    let Some(filename) = src_path.file_name() else {
+                        continue;
+                    };
+                    let link_path = st_dir.join(filename);
+                    let _ = std::fs::remove_file(&link_path);
+                    #[cfg(unix)]
+                    let _ = std::os::unix::fs::symlink(&src_path, &link_path);
+                    #[cfg(not(unix))]
+                    let _ = std::fs::copy(&src_path, &link_path);
+                }
+            }
+        } else {
+            // Single file: symlink the model file
+            let st_link = st_dir.join("model.safetensors");
+            let _ = std::fs::remove_file(&st_link);
+            #[cfg(unix)]
+            let link_result = std::os::unix::fs::symlink(source_file, &st_link);
+            #[cfg(not(unix))]
+            let link_result = std::fs::copy(source_file, &st_link).map(|_| ());
+
+            if let Err(e) = link_result {
+                let ev = Evidence::falsified(
+                    "G0-FORMAT-WORKSPACE-001",
+                    Self::format_scenario(model_id, Format::SafeTensors),
+                    format!("Failed to symlink model file: {e}"),
+                    "N/A",
+                    0,
+                );
+                self.collector.add(ev);
+                return (workspace.to_string_lossy().to_string(), 0, 1);
             }
 
-            let target = format_dir.join(format!("model.{ext}"));
-            let start = Instant::now();
-            let output = self.command_runner.convert_model(source_file, &target);
-            let duration = start.elapsed().as_millis() as u64;
+            // Symlink sibling config files (config.json, tokenizer.json, etc.)
+            let siblings = Self::find_sibling_model_files(source_file);
+            for (src_path, canonical_name) in &siblings {
+                let link_path = st_dir.join(canonical_name);
+                let _ = std::fs::remove_file(&link_path);
+                #[cfg(unix)]
+                let _ = std::os::unix::fs::symlink(src_path, &link_path);
+                #[cfg(not(unix))]
+                let _ = std::fs::copy(src_path, &link_path);
+            }
+        }
 
-            if output.success {
-                let ev = Evidence::corroborated(
-                    gate_id,
-                    Self::format_scenario(model_id, *format),
-                    &format!("G0 PASS: converted to {subdir}\n{}", output.stdout),
-                    duration,
-                );
-                self.collector.add(ev);
-                passed += 1;
-            } else {
-                let ev = Evidence::falsified(
-                    gate_id,
-                    Self::format_scenario(model_id, *format),
-                    format!("G0 FAIL: conversion to {subdir} failed: {}", output.stderr),
-                    &output.stdout,
-                    duration,
-                );
-                self.collector.add(ev);
-                failed += 1;
+        // Step 4: Convert to each requested non-SafeTensors format
+        // Skip conversion for sharded models - they only support SafeTensors for now
+        // TODO: Support conversion of sharded models once apr convert handles them
+        if !is_sharded {
+            for format in requested_formats {
+                if *format == Format::SafeTensors {
+                    continue;
+                }
+
+                let (subdir, ext, gate_id) = match format {
+                    Format::Apr => ("apr", "apr", "G0-FORMAT-APR-001"),
+                    Format::Gguf => ("gguf", "gguf", "G0-FORMAT-GGUF-001"),
+                    Format::SafeTensors => unreachable!(),
+                };
+
+                let format_dir = workspace.join(subdir);
+                if let Err(e) = std::fs::create_dir_all(&format_dir) {
+                    let ev = Evidence::falsified(
+                        gate_id,
+                        Self::format_scenario(model_id, *format),
+                        format!("Failed to create {subdir} directory: {e}"),
+                        "N/A",
+                        0,
+                    );
+                    self.collector.add(ev);
+                    failed += 1;
+                    continue;
+                }
+
+                let target = format_dir.join(format!("model.{ext}"));
+                let start = Instant::now();
+                let output = self.command_runner.convert_model(source_file, &target);
+                let duration = start.elapsed().as_millis() as u64;
+
+                if output.success {
+                    let ev = Evidence::corroborated(
+                        gate_id,
+                        Self::format_scenario(model_id, *format),
+                        &format!("G0 PASS: converted to {subdir}\n{}", output.stdout),
+                        duration,
+                    );
+                    self.collector.add(ev);
+                    passed += 1;
+                } else {
+                    let ev = Evidence::falsified(
+                        gate_id,
+                        Self::format_scenario(model_id, *format),
+                        format!("G0 FAIL: conversion to {subdir} failed: {}", output.stderr),
+                        &output.stdout,
+                        duration,
+                    );
+                    self.collector.add(ev);
+                    failed += 1;
+                }
             }
         }
 
