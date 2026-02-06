@@ -2374,7 +2374,7 @@ fn process_evidence_files(
 
     for entry in entries.flatten() {
         let path = entry.path();
-        if !path.extension().is_some_and(|ext| ext == "json") {
+        if path.extension().is_none_or(|ext| ext != "json") {
             continue;
         }
         let content = match std::fs::read_to_string(&path) {
@@ -2396,6 +2396,7 @@ fn process_evidence_files(
     (processed, updated)
 }
 
+#[allow(clippy::option_if_let_else, clippy::single_match_else)]
 fn update_row_from_export(
     rows: &mut Vec<apr_qa_report::CertificationRow>,
     export: &apr_qa_report::EvidenceExport,
@@ -2404,6 +2405,7 @@ fn update_row_from_export(
     use chrono::Utc;
 
     let model_id = &export.model.hf_repo;
+    // Can't use map_or_else here due to borrow checker - we need mutable access to rows
     let (row_idx, was_updated) = match rows.iter().position(|r| r.model_id == *model_id) {
         Some(idx) => (idx, true),
         None => {
@@ -2428,6 +2430,7 @@ fn update_row_from_export(
     was_updated
 }
 
+#[allow(clippy::missing_const_for_fn)] // Can't be const due to internal use statement
 fn derive_status_from_mqs(mqs: &apr_qa_report::MqsExport) -> apr_qa_report::ModelStatus {
     use apr_qa_report::ModelStatus;
 
