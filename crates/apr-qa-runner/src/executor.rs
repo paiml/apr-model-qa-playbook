@@ -12,7 +12,7 @@ use crate::evidence::{Evidence, EvidenceCollector, Outcome, PerformanceMetrics};
 use crate::integrity;
 use crate::playbook::Playbook;
 use apr_qa_gen::{Backend, Format, HfParityOracle, Modality, ModelId, QaScenario, Tolerance};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Instant;
 
@@ -265,6 +265,26 @@ impl Executor {
             }
         }
 
+        // G0-FORMAT: If model_path is a single file, prepare workspace with all formats.
+        // This creates the APR cache directory structure that directory-mode resolution expects,
+        // so downstream code (resolve_model_path, run_conversion_tests, run_golden_rule_test,
+        // run_contract_invariants) all work without modification.
+        let (format_passed, format_failed) =
+            if let Some(ref model_path_str) = self.config.model_path.clone() {
+                let path = Path::new(&model_path_str);
+                if path.is_file() && path.extension().is_some_and(|e| e == "safetensors") {
+                    let model_id = playbook.model_id();
+                    let (workspace, fp, ff) =
+                        self.prepare_model_workspace(path, &model_id, &playbook.model.formats);
+                    self.config.model_path = Some(workspace);
+                    (fp, ff)
+                } else {
+                    (0, 0)
+                }
+            } else {
+                (0, 0)
+            };
+
         // G0-VALIDATE: Model physics validation (NaN, Inf, all-zeros)
         // Catches corrupt model files before wasting time on qualification
         let (validate_passed, validate_failed) =
@@ -425,7 +445,8 @@ impl Executor {
             + hf_parity_passed
             + contract_passed
             + validate_passed
-            + pull_passed;
+            + pull_passed
+            + format_passed;
         let total_failed = failed
             + conversion_failed
             + golden_failed
@@ -433,7 +454,8 @@ impl Executor {
             + hf_parity_failed
             + contract_failed
             + validate_failed
-            + pull_failed;
+            + pull_failed
+            + format_failed;
 
         Ok(ExecutionResult {
             playbook_name: playbook.name.clone(),
@@ -451,7 +473,9 @@ impl Executor {
                 + validate_passed
                 + validate_failed
                 + pull_passed
-                + pull_failed,
+                + pull_failed
+                + format_passed
+                + format_failed,
             passed: total_passed,
             failed: total_failed,
             skipped,
@@ -1493,6 +1517,182 @@ impl Executor {
             .join("\n")
             .trim()
             .to_string()
+    }
+
+    /// Create a scenario for G0-FORMAT evidence
+    fn format_scenario(model_id: &ModelId, format: Format) -> QaScenario {
+        QaScenario::new(
+            model_id.clone(),
+            Modality::Run,
+            Backend::Cpu,
+            format,
+            format!("G0 Format: prepare {format:?} workspace"),
+            0,
+        )
+    }
+
+    /// Find sibling files that share the same hash prefix in a pacha cache directory.
+    ///
+    /// Given `/cache/abc123.safetensors`, scans the parent dir for files like
+    /// `abc123.config.json`, `abc123.tokenizer.json`, etc. Returns pairs of
+    /// `(source_path, canonical_name)` — e.g., `("abc123.config.json", "config.json")`.
+    fn find_sibling_model_files(model_file: &Path) -> Vec<(PathBuf, String)> {
+        let Some(parent) = model_file.parent() else {
+            return Vec::new();
+        };
+        let Some(stem) = model_file.file_name().and_then(|n| n.to_str()) else {
+            return Vec::new();
+        };
+        let Some(hash_prefix) = stem.strip_suffix(".safetensors") else {
+            return Vec::new();
+        };
+
+        let prefix_dot = format!("{hash_prefix}.");
+        let Ok(entries) = std::fs::read_dir(parent) else {
+            return Vec::new();
+        };
+
+        entries
+            .flatten()
+            .filter_map(|entry| {
+                let path = entry.path();
+                let name = path.file_name()?.to_str()?.to_string();
+                // Skip the safetensors file itself
+                if name == stem {
+                    return None;
+                }
+                // Must share the hash prefix
+                let canonical = name.strip_prefix(&prefix_dot)?;
+                Some((path, canonical.to_string()))
+            })
+            .collect()
+    }
+
+    /// Prepare a workspace directory with the APR cache structure.
+    ///
+    /// When G0-PULL resolves `model_path` to a single `.safetensors` file,
+    /// downstream code expects a directory with `safetensors/`, `apr/`, `gguf/`
+    /// subdirectories. This method creates that structure using symlinks for the
+    /// source file and config files, then converts to each requested format.
+    ///
+    /// # Returns
+    ///
+    /// `(workspace_path, passed_count, failed_count)` — evidence is added to collector
+    fn prepare_model_workspace(
+        &mut self,
+        source_file: &Path,
+        model_id: &ModelId,
+        requested_formats: &[Format],
+    ) -> (String, usize, usize) {
+        let output_dir = self.config.output_dir.as_deref().unwrap_or("output");
+        let workspace = PathBuf::from(output_dir)
+            .join("workspace")
+            .join(&model_id.org)
+            .join(&model_id.name);
+
+        let mut passed = 0;
+        let mut failed = 0;
+
+        // Step 1: Create safetensors subdirectory
+        let st_dir = workspace.join("safetensors");
+        if let Err(e) = std::fs::create_dir_all(&st_dir) {
+            let ev = Evidence::falsified(
+                "G0-FORMAT-WORKSPACE-001",
+                Self::format_scenario(model_id, Format::SafeTensors),
+                format!("Failed to create workspace directory: {e}"),
+                "N/A",
+                0,
+            );
+            self.collector.add(ev);
+            return (workspace.to_string_lossy().to_string(), 0, 1);
+        }
+
+        // Step 2: Symlink the safetensors model file
+        let st_link = st_dir.join("model.safetensors");
+        // Remove existing symlink/file to allow re-runs
+        let _ = std::fs::remove_file(&st_link);
+        #[cfg(unix)]
+        let link_result = std::os::unix::fs::symlink(source_file, &st_link);
+        #[cfg(not(unix))]
+        let link_result = std::fs::copy(source_file, &st_link).map(|_| ());
+
+        if let Err(e) = link_result {
+            let ev = Evidence::falsified(
+                "G0-FORMAT-WORKSPACE-001",
+                Self::format_scenario(model_id, Format::SafeTensors),
+                format!("Failed to symlink model file: {e}"),
+                "N/A",
+                0,
+            );
+            self.collector.add(ev);
+            return (workspace.to_string_lossy().to_string(), 0, 1);
+        }
+
+        // Step 3: Symlink sibling config files (config.json, tokenizer.json, etc.)
+        let siblings = Self::find_sibling_model_files(source_file);
+        for (src_path, canonical_name) in &siblings {
+            let link_path = st_dir.join(canonical_name);
+            let _ = std::fs::remove_file(&link_path);
+            #[cfg(unix)]
+            let _ = std::os::unix::fs::symlink(src_path, &link_path);
+            #[cfg(not(unix))]
+            let _ = std::fs::copy(src_path, &link_path);
+        }
+
+        // Step 4: Convert to each requested non-SafeTensors format
+        for format in requested_formats {
+            if *format == Format::SafeTensors {
+                continue;
+            }
+
+            let (subdir, ext, gate_id) = match format {
+                Format::Apr => ("apr", "apr", "G0-FORMAT-APR-001"),
+                Format::Gguf => ("gguf", "gguf", "G0-FORMAT-GGUF-001"),
+                Format::SafeTensors => unreachable!(),
+            };
+
+            let format_dir = workspace.join(subdir);
+            if let Err(e) = std::fs::create_dir_all(&format_dir) {
+                let ev = Evidence::falsified(
+                    gate_id,
+                    Self::format_scenario(model_id, *format),
+                    format!("Failed to create {subdir} directory: {e}"),
+                    "N/A",
+                    0,
+                );
+                self.collector.add(ev);
+                failed += 1;
+                continue;
+            }
+
+            let target = format_dir.join(format!("model.{ext}"));
+            let start = Instant::now();
+            let output = self.command_runner.convert_model(source_file, &target);
+            let duration = start.elapsed().as_millis() as u64;
+
+            if output.success {
+                let ev = Evidence::corroborated(
+                    gate_id,
+                    Self::format_scenario(model_id, *format),
+                    &format!("G0 PASS: converted to {subdir}\n{}", output.stdout),
+                    duration,
+                );
+                self.collector.add(ev);
+                passed += 1;
+            } else {
+                let ev = Evidence::falsified(
+                    gate_id,
+                    Self::format_scenario(model_id, *format),
+                    format!("G0 FAIL: conversion to {subdir} failed: {}", output.stderr),
+                    &output.stdout,
+                    duration,
+                );
+                self.collector.add(ev);
+                failed += 1;
+            }
+        }
+
+        (workspace.to_string_lossy().to_string(), passed, failed)
     }
 
     /// Check gateway conditions
@@ -7043,6 +7243,340 @@ test_matrix:
         assert!(
             has_parity_evidence,
             "Expected F-HF-PARITY-001 evidence for missing manifest"
+        );
+    }
+
+    // ============================================================
+    // G0-FORMAT Workspace Tests
+    // ============================================================
+
+    #[test]
+    fn test_workspace_creates_directory_structure() {
+        let dir = tempfile::tempdir().expect("create temp dir");
+        let output_dir = dir.path().join("output");
+
+        // Create a fake safetensors file
+        let model_file = dir.path().join("abc123.safetensors");
+        std::fs::write(&model_file, b"fake-safetensors-content").expect("write model");
+
+        let mock_runner = MockCommandRunner::new();
+        let config = ExecutionConfig {
+            output_dir: Some(output_dir.to_string_lossy().to_string()),
+            run_conversion_tests: false,
+            run_golden_rule_test: false,
+            run_contract_tests: false,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+        let model_id = ModelId::new("test", "model");
+        let formats = vec![Format::SafeTensors, Format::Apr];
+
+        let (workspace, passed, _failed) =
+            executor.prepare_model_workspace(&model_file, &model_id, &formats);
+
+        // Verify workspace directory was created
+        let ws_path = Path::new(&workspace);
+        assert!(ws_path.exists(), "Workspace directory should exist");
+
+        // Verify safetensors subdir exists with symlinked model
+        let st_dir = ws_path.join("safetensors");
+        assert!(st_dir.exists(), "safetensors subdir should exist");
+        let st_link = st_dir.join("model.safetensors");
+        assert!(st_link.exists(), "model.safetensors symlink should exist");
+
+        // Verify APR subdir was created with converted model
+        let apr_dir = ws_path.join("apr");
+        assert!(apr_dir.exists(), "apr subdir should exist");
+
+        // MockCommandRunner.convert_model returns success, so conversion passed
+        assert!(passed >= 1, "At least one format conversion should pass");
+    }
+
+    #[test]
+    fn test_workspace_symlinks_config_files() {
+        let dir = tempfile::tempdir().expect("create temp dir");
+        let output_dir = dir.path().join("output");
+
+        // Create model file and sibling config files (pacha cache naming)
+        let model_file = dir.path().join("abc123.safetensors");
+        std::fs::write(&model_file, b"fake-model").expect("write model");
+        std::fs::write(
+            dir.path().join("abc123.config.json"),
+            r#"{"num_hidden_layers": 24}"#,
+        )
+        .expect("write config");
+        std::fs::write(
+            dir.path().join("abc123.tokenizer.json"),
+            r#"{"version": "1.0"}"#,
+        )
+        .expect("write tokenizer");
+
+        let mock_runner = MockCommandRunner::new();
+        let config = ExecutionConfig {
+            output_dir: Some(output_dir.to_string_lossy().to_string()),
+            run_conversion_tests: false,
+            run_golden_rule_test: false,
+            run_contract_tests: false,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+        let model_id = ModelId::new("test", "model");
+        let formats = vec![Format::SafeTensors];
+
+        let (workspace, _passed, _failed) =
+            executor.prepare_model_workspace(&model_file, &model_id, &formats);
+
+        let ws_path = Path::new(&workspace);
+        let st_dir = ws_path.join("safetensors");
+
+        // Verify config files were symlinked with canonical names
+        assert!(
+            st_dir.join("config.json").exists(),
+            "config.json should be symlinked"
+        );
+        assert!(
+            st_dir.join("tokenizer.json").exists(),
+            "tokenizer.json should be symlinked"
+        );
+    }
+
+    #[test]
+    fn test_workspace_conversion_failure_nonfatal() {
+        let dir = tempfile::tempdir().expect("create temp dir");
+        let output_dir = dir.path().join("output");
+
+        let model_file = dir.path().join("test.safetensors");
+        std::fs::write(&model_file, b"fake-model").expect("write model");
+
+        // Use a mock runner where conversion fails
+        let mock_runner = MockCommandRunner::new().with_convert_failure();
+        let config = ExecutionConfig {
+            output_dir: Some(output_dir.to_string_lossy().to_string()),
+            run_conversion_tests: false,
+            run_golden_rule_test: false,
+            run_contract_tests: false,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+        let model_id = ModelId::new("test", "model");
+        let formats = vec![Format::SafeTensors, Format::Apr, Format::Gguf];
+
+        let (workspace, passed, failed) =
+            executor.prepare_model_workspace(&model_file, &model_id, &formats);
+
+        // Workspace should still be created
+        assert!(
+            Path::new(&workspace).exists(),
+            "Workspace should exist even with conversion failures"
+        );
+        // SafeTensors subdir should exist
+        assert!(
+            Path::new(&workspace).join("safetensors").exists(),
+            "safetensors dir should exist"
+        );
+
+        // Conversions should have failed (APR + GGUF = 2 failures)
+        assert_eq!(passed, 0, "No conversions should pass");
+        assert_eq!(failed, 2, "Both APR and GGUF conversions should fail");
+
+        // Verify evidence was collected for failures
+        let evidence = executor.evidence().all();
+        let apr_evidence = evidence.iter().any(|e| e.gate_id == "G0-FORMAT-APR-001");
+        let gguf_evidence = evidence.iter().any(|e| e.gate_id == "G0-FORMAT-GGUF-001");
+        assert!(apr_evidence, "Should have G0-FORMAT-APR-001 evidence");
+        assert!(gguf_evidence, "Should have G0-FORMAT-GGUF-001 evidence");
+    }
+
+    #[test]
+    fn test_workspace_skipped_for_directory() {
+        // When model_path is already a directory, workspace creation should be skipped
+        let mock_runner = MockCommandRunner::new();
+        let config = ExecutionConfig {
+            model_path: Some("/some/directory/path".to_string()),
+            run_conversion_tests: false,
+            run_golden_rule_test: false,
+            run_contract_tests: false,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+        let yaml = r#"
+name: workspace-skip-test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [safetensors, apr]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("parse");
+        let result = executor.execute(&playbook).expect("execute");
+
+        // No G0-FORMAT evidence should be present (workspace was skipped)
+        let has_format_evidence = result
+            .evidence
+            .all()
+            .iter()
+            .any(|e| e.gate_id.starts_with("G0-FORMAT"));
+        assert!(
+            !has_format_evidence,
+            "No G0-FORMAT evidence expected for directory model path"
+        );
+    }
+
+    #[test]
+    fn test_workspace_evidence_emitted() {
+        let dir = tempfile::tempdir().expect("create temp dir");
+        let output_dir = dir.path().join("output");
+
+        let model_file = dir.path().join("test.safetensors");
+        std::fs::write(&model_file, b"fake-model").expect("write model");
+
+        let mock_runner = MockCommandRunner::new();
+        let config = ExecutionConfig {
+            output_dir: Some(output_dir.to_string_lossy().to_string()),
+            run_conversion_tests: false,
+            run_golden_rule_test: false,
+            run_contract_tests: false,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+        let model_id = ModelId::new("test", "model");
+        let formats = vec![Format::SafeTensors, Format::Apr, Format::Gguf];
+
+        let (_workspace, passed, failed) =
+            executor.prepare_model_workspace(&model_file, &model_id, &formats);
+
+        // Both APR and GGUF conversions should produce evidence
+        assert_eq!(passed + failed, 2, "Should have evidence for APR and GGUF");
+
+        let evidence = executor.evidence().all();
+        let format_evidence_count = evidence
+            .iter()
+            .filter(|e| e.gate_id.starts_with("G0-FORMAT"))
+            .count();
+        assert_eq!(
+            format_evidence_count, 2,
+            "Should have 2 G0-FORMAT evidence entries"
+        );
+    }
+
+    #[test]
+    fn test_find_sibling_model_files() {
+        let dir = tempfile::tempdir().expect("create temp dir");
+
+        // Create pacha cache structure
+        let model_file = dir.path().join("abc123.safetensors");
+        std::fs::write(&model_file, b"model").expect("write");
+        std::fs::write(dir.path().join("abc123.config.json"), b"config").expect("write");
+        std::fs::write(dir.path().join("abc123.tokenizer.json"), b"tokenizer").expect("write");
+        // Different model (should be excluded)
+        std::fs::write(dir.path().join("def456.safetensors"), b"other").expect("write");
+        std::fs::write(dir.path().join("def456.config.json"), b"other-config").expect("write");
+
+        let siblings = Executor::find_sibling_model_files(&model_file);
+
+        // Should find config.json and tokenizer.json for abc123 only
+        assert_eq!(siblings.len(), 2, "Should find exactly 2 sibling files");
+
+        let canonical_names: Vec<&str> = siblings.iter().map(|(_, n)| n.as_str()).collect();
+        assert!(
+            canonical_names.contains(&"config.json"),
+            "Should find config.json"
+        );
+        assert!(
+            canonical_names.contains(&"tokenizer.json"),
+            "Should find tokenizer.json"
+        );
+    }
+
+    #[test]
+    fn test_find_sibling_model_files_no_siblings() {
+        let dir = tempfile::tempdir().expect("create temp dir");
+
+        let model_file = dir.path().join("lonely.safetensors");
+        std::fs::write(&model_file, b"model").expect("write");
+
+        let siblings = Executor::find_sibling_model_files(&model_file);
+        assert!(siblings.is_empty(), "Should find no siblings");
+    }
+
+    #[test]
+    fn test_find_sibling_model_files_non_safetensors() {
+        let dir = tempfile::tempdir().expect("create temp dir");
+
+        let model_file = dir.path().join("model.gguf");
+        std::fs::write(&model_file, b"model").expect("write");
+
+        let siblings = Executor::find_sibling_model_files(&model_file);
+        assert!(
+            siblings.is_empty(),
+            "Should return empty for non-safetensors files"
+        );
+    }
+
+    #[test]
+    fn test_workspace_execute_integration_with_single_file() {
+        // Integration test: execute() with a real single .safetensors file
+        // should trigger workspace creation and resolve all formats
+        let dir = tempfile::tempdir().expect("create temp dir");
+        let output_dir = dir.path().join("output");
+
+        let model_file = dir.path().join("test.safetensors");
+        std::fs::write(&model_file, b"fake-model").expect("write model");
+
+        let mock_runner =
+            MockCommandRunner::new().with_pull_model_path(model_file.to_string_lossy().to_string());
+        let config = ExecutionConfig {
+            model_path: Some(model_file.to_string_lossy().to_string()),
+            output_dir: Some(output_dir.to_string_lossy().to_string()),
+            run_conversion_tests: false,
+            run_golden_rule_test: false,
+            run_contract_tests: false,
+            ..Default::default()
+        };
+
+        let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+        let yaml = r#"
+name: workspace-integration
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [safetensors, apr]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("parse");
+        let result = executor.execute(&playbook).expect("execute");
+
+        // Verify the model_path was changed from file to workspace directory
+        let final_model_path = executor.config().model_path.as_deref().unwrap_or("");
+        assert!(
+            final_model_path.contains("workspace"),
+            "model_path should point to workspace: {final_model_path}"
+        );
+        assert!(
+            !final_model_path.ends_with(".safetensors"),
+            "model_path should not be a file: {final_model_path}"
+        );
+
+        // G0-FORMAT evidence should be present (conversion to APR)
+        let has_format_evidence = result
+            .evidence
+            .all()
+            .iter()
+            .any(|e| e.gate_id.starts_with("G0-FORMAT"));
+        assert!(
+            has_format_evidence,
+            "Should have G0-FORMAT evidence for APR conversion"
         );
     }
 }
