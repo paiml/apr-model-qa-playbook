@@ -10,6 +10,7 @@ use crate::diagnostics::FailFastReporter;
 use crate::error::Result;
 use crate::evidence::{Evidence, EvidenceCollector, Outcome, PerformanceMetrics};
 use crate::integrity;
+use crate::layout_contract::{DEFAULT_CONTRACT_PATH, load_contract_from, validate_model};
 use crate::playbook::Playbook;
 use apr_qa_gen::{Backend, Format, HfParityOracle, Modality, ModelId, QaScenario, Tolerance};
 use std::path::{Path, PathBuf};
@@ -348,6 +349,15 @@ impl Executor {
                 self.run_g0_integrity_check(Path::new(&model_path), &model_id)
             });
 
+        // G0-LAYOUT: Tensor layout contract validation (Issue #4)
+        // Validates model tensor shapes against aprender's tensor-layout-v1.yaml
+        // This catches GH-202 style bugs where wrong shapes cause garbage output
+        let (layout_passed, layout_failed) =
+            self.config.model_path.clone().map_or((0, 0), |model_path| {
+                let model_id = playbook.model_id();
+                self.run_g0_layout_check(Path::new(&model_path), &model_id)
+            });
+
         let mut passed = 0;
         let mut failed = 0;
         let mut skipped = 0;
@@ -478,7 +488,8 @@ impl Executor {
             + validate_passed
             + pull_passed
             + format_passed
-            + tensor_passed;
+            + tensor_passed
+            + layout_passed;
         let total_failed = failed
             + conversion_failed
             + golden_failed
@@ -488,7 +499,8 @@ impl Executor {
             + validate_failed
             + pull_failed
             + format_failed
-            + tensor_failed;
+            + tensor_failed
+            + layout_failed;
 
         Ok(ExecutionResult {
             playbook_name: playbook.name.clone(),
@@ -510,7 +522,9 @@ impl Executor {
                 + format_passed
                 + format_failed
                 + tensor_passed
-                + tensor_failed,
+                + tensor_failed
+                + layout_passed
+                + layout_failed,
             passed: total_passed,
             failed: total_failed,
             skipped,
@@ -1113,6 +1127,122 @@ impl Executor {
             "G0 Integrity: config.json vs tensor metadata".to_string(),
             0,
         )
+    }
+
+    /// G0-LAYOUT Pre-flight Check: Validates tensor layouts against contract (Issue #4)
+    ///
+    /// Compares model tensor shapes against the tensor layout contract
+    /// (`tensor-layout-v1.yaml`) to catch GH-202 style bugs where wrong shapes
+    /// cause garbage output.
+    ///
+    /// # Arguments
+    ///
+    /// * `model_path` - Path to the model file or directory
+    /// * `model_id` - Model identifier for evidence tracking
+    ///
+    /// # Returns
+    ///
+    /// (passed_count, failed_count) - evidence is added to collector
+    fn run_g0_layout_check(&mut self, model_path: &Path, model_id: &ModelId) -> (usize, usize) {
+        // Try to load the contract from the default location
+        // If not found, skip the check (contract is optional)
+        let Ok(contract) = load_contract_from(DEFAULT_CONTRACT_PATH) else {
+            // Contract not found - check is not applicable
+            // This is expected when aprender is not a sibling directory
+            return (0, 0);
+        };
+
+        let start = Instant::now();
+        let result = match validate_model(model_path, &contract) {
+            Ok(r) => r,
+            Err(e) => {
+                // Validation itself failed - emit falsified evidence
+                let ev = Evidence::falsified(
+                    "G0-LAYOUT-001",
+                    Self::layout_scenario(model_id),
+                    &format!("Tensor layout validation error: {e}"),
+                    "",
+                    start.elapsed().as_millis() as u64,
+                );
+                self.collector.add(ev);
+                return (0, 1);
+            }
+        };
+
+        let duration = start.elapsed().as_millis() as u64;
+
+        if result.passed {
+            let ev = Evidence::corroborated(
+                "G0-LAYOUT-001",
+                Self::layout_scenario(model_id),
+                &format!(
+                    "G0 PASS: Tensor layouts conform to contract\n  Rules checked: {}\n  Rules passed: {}",
+                    result.rules_checked, result.rules_passed
+                ),
+                duration,
+            );
+            self.collector.add(ev);
+            (1, 0)
+        } else {
+            // Emit evidence for each failed rule
+            let mut failed = 0;
+            for tensor_result in &result.tensor_results {
+                if !tensor_result.passed {
+                    let details = Self::format_tensor_failure(tensor_result);
+                    let ev = Evidence::falsified(
+                        &tensor_result.rule_id,
+                        Self::layout_scenario(model_id),
+                        &details,
+                        "",
+                        duration,
+                    );
+                    self.collector.add(ev);
+                    failed += 1;
+                }
+            }
+
+            // Also emit evidence for critical failures
+            for critical in &result.critical_failures {
+                let ev = Evidence::falsified(
+                    "G0-LAYOUT-CRITICAL",
+                    Self::layout_scenario(model_id),
+                    critical,
+                    "",
+                    duration,
+                );
+                self.collector.add(ev);
+                failed += 1;
+            }
+
+            (0, failed.max(1)) // Ensure at least 1 failure is reported
+        }
+    }
+
+    /// Create a scenario for G0-LAYOUT evidence
+    fn layout_scenario(model_id: &ModelId) -> apr_qa_gen::QaScenario {
+        apr_qa_gen::QaScenario::new(
+            model_id.clone(),
+            apr_qa_gen::Modality::Run,
+            apr_qa_gen::Backend::Cpu,
+            apr_qa_gen::Format::SafeTensors,
+            "G0 Layout: tensor shape contract validation".to_string(),
+            0,
+        )
+    }
+
+    /// Format a tensor validation failure for evidence output
+    fn format_tensor_failure(
+        tensor_result: &crate::layout_contract::TensorValidationResult,
+    ) -> String {
+        match (&tensor_result.expected, &tensor_result.actual) {
+            (Some(expected), Some(actual)) => {
+                format!(
+                    "{}: {}\n  Expected: {}\n  Actual: {}",
+                    tensor_result.rule_id, tensor_result.details, expected, actual
+                )
+            }
+            _ => format!("{}: {}", tensor_result.rule_id, tensor_result.details),
+        }
     }
 
     /// Create a scenario for G0-VALIDATE evidence
@@ -7130,6 +7260,116 @@ test_matrix:
 
         let evidence = executor.evidence();
         assert!(evidence.all().iter().any(|e| e.gate_id.contains("VOCAB")));
+    }
+
+    // G0-LAYOUT Pre-flight Gate Tests (Issue #4)
+
+    #[test]
+    fn test_run_g0_layout_check_no_contract() {
+        // When tensor-layout-v1.yaml is not found, the check should auto-skip (0, 0)
+        use tempfile::TempDir;
+        let dir = TempDir::new().expect("create temp dir");
+
+        let mut executor = Executor::new();
+        let model_id = ModelId::new("test", "model");
+        let (passed, failed) = executor.run_g0_layout_check(dir.path(), &model_id);
+
+        // Contract not found → skip (0, 0), not failure
+        assert_eq!(passed, 0);
+        assert_eq!(failed, 0);
+    }
+
+    #[test]
+    fn test_run_g0_layout_check_model_not_found() {
+        // When model file doesn't exist but contract is found, validation fails
+        use tempfile::TempDir;
+        let dir = TempDir::new().expect("create temp dir");
+
+        // Create a minimal contract file
+        let contract_path = dir.path().join("tensor-layout-v1.yaml");
+        std::fs::write(
+            &contract_path,
+            r#"
+metadata:
+  version: "1.0"
+  created: "2026-01-01"
+  updated: "2026-01-01"
+  author: "test"
+  description: "test"
+formats: {}
+kernel:
+  signature: "test"
+  weight_shape: "[out, in]"
+  computation: "y = Wx"
+  byte_calculation: "out * in"
+  block_sizes: {}
+  QK_K: 256
+tensors: {}
+validation_rules: []
+"#,
+        )
+        .expect("write contract");
+
+        // Test with a non-existent path inside the temp directory
+        let nonexistent_path = dir.path().join("does_not_exist.safetensors");
+        let contract =
+            crate::layout_contract::load_contract_from(&contract_path).expect("load contract");
+        let result = crate::layout_contract::validate_model(&nonexistent_path, &contract)
+            .expect("validation should return result");
+
+        // Model not found = failed validation
+        assert!(!result.passed);
+        assert!(!result.critical_failures.is_empty());
+    }
+
+    #[test]
+    fn test_layout_scenario_creation() {
+        let model_id = ModelId::new("test", "model");
+        let scenario = Executor::layout_scenario(&model_id);
+
+        assert_eq!(
+            scenario.prompt,
+            "G0 Layout: tensor shape contract validation"
+        );
+        assert_eq!(scenario.format, Format::SafeTensors);
+        assert_eq!(scenario.backend, Backend::Cpu);
+        assert_eq!(scenario.modality, Modality::Run);
+    }
+
+    #[test]
+    fn test_format_tensor_failure_with_expected_and_actual() {
+        let tensor_result = crate::layout_contract::TensorValidationResult {
+            tensor_name: "lm_head.weight".to_string(),
+            rule_id: "F-LAYOUT-CONTRACT-002".to_string(),
+            passed: false,
+            details: "Shape mismatch".to_string(),
+            expected: Some("[vocab, hidden]".to_string()),
+            actual: Some("[hidden, vocab]".to_string()),
+        };
+
+        let formatted = Executor::format_tensor_failure(&tensor_result);
+        assert!(formatted.contains("F-LAYOUT-CONTRACT-002"));
+        assert!(formatted.contains("Shape mismatch"));
+        assert!(formatted.contains("Expected: [vocab, hidden]"));
+        assert!(formatted.contains("Actual: [hidden, vocab]"));
+    }
+
+    #[test]
+    fn test_format_tensor_failure_without_expected() {
+        let tensor_result = crate::layout_contract::TensorValidationResult {
+            tensor_name: "test.weight".to_string(),
+            rule_id: "F-LAYOUT-CONTRACT-001".to_string(),
+            passed: false,
+            details: "Missing transpose".to_string(),
+            expected: None,
+            actual: None,
+        };
+
+        let formatted = Executor::format_tensor_failure(&tensor_result);
+        assert!(formatted.contains("F-LAYOUT-CONTRACT-001"));
+        assert!(formatted.contains("Missing transpose"));
+        assert!(!formatted.contains("Expected:"));
+        assert!(!formatted.contains("Actual:"));
     }
 
     #[test]
