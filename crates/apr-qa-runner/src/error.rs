@@ -77,6 +77,10 @@ pub enum Error {
     /// Provenance validation error (PMAT-PROV-001)
     #[error("Provenance error: {0}")]
     Provenance(#[from] crate::provenance::ProvenanceError),
+
+    /// Validation error (PMAT-266: naming convention, schema validation)
+    #[error("Validation error: {0}")]
+    Validation(String),
 }
 
 #[cfg(test)]
@@ -101,5 +105,12 @@ mod tests {
             timeout_ms: 30000,
         };
         assert!(err.to_string().contains("30000ms"));
+    }
+
+    #[test]
+    fn test_validation_error() {
+        let err = Error::Validation("Invalid playbook name".to_string());
+        assert!(err.to_string().contains("Validation error"));
+        assert!(err.to_string().contains("Invalid playbook name"));
     }
 }

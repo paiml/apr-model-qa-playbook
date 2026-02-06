@@ -30,6 +30,7 @@ pub mod differential;
 pub mod error;
 pub mod evidence;
 pub mod executor;
+pub mod family_contract;
 pub mod integrity;
 pub mod oracle;
 pub mod parallel;

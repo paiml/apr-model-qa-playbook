@@ -35,8 +35,10 @@
 #![cfg_attr(test, allow(clippy::float_cmp))]
 
 pub mod certificate;
+pub mod certification_data;
 pub mod defect_map;
 pub mod error;
+pub mod evidence_export;
 pub mod html;
 pub mod junit;
 pub mod markdown;
@@ -45,7 +47,15 @@ pub mod popperian;
 pub mod ticket;
 
 pub use certificate::{Certificate, CertificateGenerator, CertificationStatus};
+pub use certification_data::{
+    CertificationRow, ModelStatus, SizeCategory, lookup_family, lookup_model, read_models_csv,
+    write_models_csv,
+};
 pub use error::{Error, Result};
+pub use evidence_export::{
+    EvidenceExport, EvidenceExportBuilder, ExportSummary, GateResult, ModelMeta, MqsExport,
+    PlaybookMeta,
+};
 pub use markdown::{generate_evidence_detail, generate_index_entry, generate_rag_markdown};
 pub use mqs::{GatewayResult, MqsCalculator, MqsScore};
 pub use popperian::PopperianScore;

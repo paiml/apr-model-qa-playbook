@@ -204,6 +204,110 @@ Tests follow Popperian falsification:
 
 The parallel executor implements Jidoka—stops on first P0 failure when configured with `stop_on_p0` policy.
 
+## Oracle Integration (PMAT-275)
+
+The QA framework integrates with aprender's Oracle system for certification tracking and model lookup.
+
+### Data Flow: Certification Pipeline
+
+```
+┌─────────────────────┐
+│   Run Playbook      │  cargo run --bin apr-qa -- run playbook.yaml
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  Collect Evidence   │  certifications/{model}/evidence.json
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  Calculate MQS      │  0-1000 score with G0-G4 gateways
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  Update models.csv  │  docs/certifications/models.csv
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  Oracle Lookup      │  apr oracle <model_id> → certification status
+└─────────────────────┘
+```
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `certifications/{model}/evidence.json` | Raw test evidence (JSON array) |
+| `docs/certifications/models.csv` | Certification lookup table |
+| `playbooks/evidence.schema.json` | Evidence JSON schema |
+| `scripts/validate-schemas.sh` | Schema validation script |
+| `scripts/validate-aprender-alignment.sh` | Cross-repo consistency check |
+
+### Gateway System (G0-G4)
+
+| Gate | Name | Description |
+|------|------|-------------|
+| G0 | Integrity | config.json matches tensor metadata |
+| G1 | Load | Model loads successfully |
+| G2 | Inference | Basic inference works |
+| G3 | Stability | No crashes or panics |
+| G4 | Quality | Output is not garbage |
+
+**Any gateway failure zeros the MQS score.**
+
+### Family Contract Integration
+
+Playbooks auto-populate from aprender's family YAMLs:
+- `size_category` from `certification.size_categories`
+- `expected_hidden_dim` from `size_variants.{size}.hidden_dim`
+- Tensor templates from `tensor_template`
+
+Cross-repo validation runs in CI to ensure alignment.
+
+### Certification Workflows
+
+**Certify a new model:**
+```bash
+# 1. Create playbook from template
+cp playbooks/templates/mvp-template.yaml playbooks/models/my-model-mvp.playbook.yaml
+# Edit playbook with model details
+
+# 2. Run certification
+cargo run --bin apr-qa -- run playbooks/models/my-model-mvp.playbook.yaml \
+    --output certifications/my-model/evidence.json
+
+# 3. Update models.csv (manual or script)
+# 4. Commit evidence and CSV updates
+```
+
+**Re-run after fixes:**
+```bash
+# Clear old evidence (optional - append mode also works)
+rm -rf certifications/my-model/
+
+# Re-run same playbook
+cargo run --bin apr-qa -- run playbooks/models/my-model-mvp.playbook.yaml \
+    --output certifications/my-model/evidence.json
+```
+
+### Troubleshooting
+
+**"Gateway G0 failed: config mismatch"**
+- Model's config.json doesn't match actual tensor shapes
+- Verify config.json exists and is not corrupted
+- Check `num_hidden_layers`, `hidden_size` match tensor count/shapes
+
+**"size_category mismatch" in cross-repo validation**
+- Playbook's `size_category` doesn't match family YAML
+- Update playbook or submit PR to fix family contract
+
+**Evidence JSON validation errors**
+- Run `./scripts/validate-schemas.sh` locally
+- Check evidence.json is valid JSON array with required fields
+
 ## Stack Documentation Search
 
 Query this component's documentation and the entire Sovereign AI Stack using batuta's RAG Oracle:

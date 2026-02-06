@@ -25,6 +25,7 @@ apr-qa-gen = { workspace = true }
 hostname = "0.4"
 rayon = "1.10"
 sha2 = "0.10"
+regex = { workspace = true }
 num_cpus = "1.16"
 safetensors = { workspace = true }
 # Test fixtures dependencies (optional)

@@ -16,11 +16,13 @@ thiserror = { workspace = true }
 anyhow = { workspace = true }
 chrono = { workspace = true }
 colored = { workspace = true }
+csv = { workspace = true }
 apr-qa-gen = { workspace = true }
 apr-qa-runner = { workspace = true }
 
 [dev-dependencies]
 proptest = { workspace = true }
+tempfile = "3.15"
 
 [lints]
 workspace = true

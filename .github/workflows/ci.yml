@@ -111,3 +111,39 @@ jobs:
             echo "Validating: $f"
             yq eval '.' "$f" > /dev/null
           done
+
+  validate-schemas:
+    name: Validate Schemas (PMAT-273)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Validate evidence JSON and models.csv
+        run: ./scripts/validate-schemas.sh
+
+  examples:
+    name: Build Examples
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-action@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Build all examples
+        run: |
+          cargo build --example generate_scenarios -p apr-qa-gen
+          cargo build --example collect_evidence -p apr-qa-runner
+          cargo build --example rosetta_testing -p apr-qa-runner
+          cargo build --example contract_demo -p apr-qa-runner
+          cargo build --example calculate_mqs -p apr-qa-report
+          cargo build --example generate_certificate -p apr-qa-report
+          cargo build --example generate_rag_markdown -p apr-qa-report
+          cargo build --example fail_fast_demo -p apr-qa-cli
+          cargo build --example integrity_lock_demo -p apr-qa-cli

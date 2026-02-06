@@ -8,9 +8,13 @@ pub type Result<T> = std::result::Result<T, Error>;
 /// Errors that can occur during report generation
 #[derive(Debug, Error)]
 pub enum Error {
-    /// IO error
+    /// IO error (from std::io)
     #[error("IO error: {0}")]
     IoError(#[from] std::io::Error),
+
+    /// IO error with custom message
+    #[error("IO error: {0}")]
+    Io(String),
 
     /// Serialization error
     #[error("Serialization error: {0}")]
@@ -19,6 +23,10 @@ pub enum Error {
     /// Invalid score calculation
     #[error("Invalid score calculation: {0}")]
     InvalidScore(String),
+
+    /// Validation error
+    #[error("Validation error: {0}")]
+    Validation(String),
 
     /// Template rendering error
     #[error("Template error: {0}")]
@@ -52,5 +60,23 @@ mod tests {
     fn test_invalid_score() {
         let err = Error::InvalidScore("Negative weight".to_string());
         assert!(err.to_string().contains("Negative weight"));
+    }
+
+    #[test]
+    fn test_io_error() {
+        let err = Error::Io("File not found".to_string());
+        assert!(err.to_string().contains("File not found"));
+    }
+
+    #[test]
+    fn test_validation_error() {
+        let err = Error::Validation("Invalid CSV field".to_string());
+        assert!(err.to_string().contains("Invalid CSV field"));
+    }
+
+    #[test]
+    fn test_template_error() {
+        let err = Error::TemplateError("Missing variable".to_string());
+        assert!(err.to_string().contains("Missing variable"));
     }
 }

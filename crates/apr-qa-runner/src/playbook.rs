@@ -3,11 +3,110 @@
 //! Playbooks define test scenarios in YAML format.
 
 use apr_qa_gen::{Backend, Format, Modality, ModelId, QaScenario};
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::Path;
+use std::sync::LazyLock;
 
 use crate::error::{Error, Result};
+
+// ── Playbook Naming Convention (PMAT-266) ────────────────────────────────────
+//
+// Playbook filenames MUST follow the pattern:
+//   {family}-{size}[-{tier}].playbook.yaml
+//
+// Examples:
+//   qwen2.5-coder-0.5b-mvp.playbook.yaml   → family="qwen2.5-coder", size="0.5b", tier="mvp"
+//   llama3.2-1b.playbook.yaml              → family="llama3.2", size="1b", tier=None
+//   deepseek-coder-v2-16b-full.playbook.yaml → family="deepseek-coder-v2", size="16b", tier="full"
+//
+// Size patterns: {digits}[.{digits}]b (e.g., 0.5b, 1b, 7b, 70b)
+// Tier patterns: mvp, smoke, quick, ci, full, nightly, release
+
+/// Regex pattern for playbook naming convention
+/// Matches: {family}-{size}[-{tier}].playbook.yaml
+/// - family: one or more segments separated by `-` (letters, digits, dots)
+/// - size: digits optionally with decimal, followed by `b` (e.g., 0.5b, 1b, 7b)
+/// - tier (optional): mvp, smoke, quick, ci, full, nightly, release
+static PLAYBOOK_NAME_REGEX: LazyLock<Regex> = LazyLock::new(|| {
+    // This regex pattern is verified at compile time, unwrap is safe here
+    #[allow(clippy::unwrap_used)]
+    Regex::new(
+        r"^(?P<family>(?:[a-z0-9]+\.?)+(?:-[a-z0-9]+\.?)*)-(?P<size>\d+(?:\.\d+)?b)(?:-(?P<tier>mvp|smoke|quick|ci|full|nightly|release))?\.playbook\.yaml$"
+    ).unwrap()
+});
+
+/// Valid tier values for playbook naming
+pub const VALID_TIERS: &[&str] = &["mvp", "smoke", "quick", "ci", "full", "nightly", "release"];
+
+/// Parsed components from a playbook filename
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PlaybookNameParts {
+    /// Model family (e.g., "qwen2.5-coder", "llama3.2")
+    pub family: String,
+    /// Model size (e.g., "0.5b", "7b", "70b")
+    pub size: String,
+    /// Optional tier (e.g., "mvp", "full", "nightly")
+    pub tier: Option<String>,
+}
+
+impl PlaybookNameParts {
+    /// Reconstruct the canonical filename from parts
+    #[must_use]
+    #[allow(clippy::option_if_let_else)]
+    pub fn to_filename(&self) -> String {
+        match &self.tier {
+            Some(tier) => {
+                format!("{}-{}-{}.playbook.yaml", self.family, self.size, tier)
+            }
+            None => format!("{}-{}.playbook.yaml", self.family, self.size),
+        }
+    }
+}
+
+/// Validate a playbook filename against the naming convention (PMAT-266)
+///
+/// # Arguments
+/// * `filename` - The filename to validate (not the full path)
+///
+/// # Returns
+/// * `Ok(PlaybookNameParts)` if valid
+/// * `Err` with descriptive message if invalid
+///
+/// # Errors
+///
+/// Returns an error if the filename doesn't match the naming convention.
+pub fn validate_playbook_name(filename: &str) -> Result<PlaybookNameParts> {
+    let captures = PLAYBOOK_NAME_REGEX.captures(filename).ok_or_else(|| {
+        Error::Validation(format!(
+            "Playbook filename '{filename}' does not match naming convention: \
+             {{family}}-{{size}}[-{{tier}}].playbook.yaml\n\
+             Examples: qwen2.5-coder-0.5b-mvp.playbook.yaml, llama3.2-7b.playbook.yaml"
+        ))
+    })?;
+
+    Ok(PlaybookNameParts {
+        family: captures["family"].to_string(),
+        size: captures["size"].to_string(),
+        tier: captures.name("tier").map(|m| m.as_str().to_string()),
+    })
+}
+
+/// Extract and validate playbook name from a full path
+///
+/// # Errors
+///
+/// Returns an error if the path has no filename or doesn't match the naming convention.
+pub fn validate_playbook_path(path: impl AsRef<Path>) -> Result<PlaybookNameParts> {
+    let path = path.as_ref();
+    let filename = path
+        .file_name()
+        .and_then(|n| n.to_str())
+        .ok_or_else(|| Error::Validation(format!("Invalid playbook path: {}", path.display())))?;
+
+    validate_playbook_name(filename)
+}
 
 /// Model size category for resource management (§3.4 Resource-Aware Scheduling)
 ///
@@ -59,6 +158,27 @@ impl SizeCategory {
     #[must_use]
     pub const fn can_run_concurrent(&self) -> bool {
         matches!(self, Self::Tiny | Self::Small)
+    }
+
+    /// Parse a size category from a string.
+    ///
+    /// Accepts lowercase category names: tiny, small, medium, large, xlarge, huge.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the string doesn't match a valid category.
+    pub fn from_str_lowercase(s: &str) -> Result<Self> {
+        match s.to_lowercase().as_str() {
+            "tiny" => Ok(Self::Tiny),
+            "small" => Ok(Self::Small),
+            "medium" => Ok(Self::Medium),
+            "large" => Ok(Self::Large),
+            "xlarge" => Ok(Self::Xlarge),
+            "huge" => Ok(Self::Huge),
+            _ => Err(Error::Validation(format!(
+                "Invalid size category: {s}. Valid: tiny, small, medium, large, xlarge, huge"
+            ))),
+        }
     }
 }
 
@@ -207,6 +327,32 @@ pub struct ModelConfig {
     /// to prevent OOM conditions during parallel testing.
     #[serde(default)]
     pub size_category: SizeCategory,
+
+    // ── PMAT-269: Expected architectural parameters from family YAML ────────
+    /// Expected hidden dimension (from family YAML size_variants)
+    #[serde(default)]
+    pub expected_hidden_dim: Option<u32>,
+    /// Expected number of layers (from family YAML size_variants)
+    #[serde(default)]
+    pub expected_num_layers: Option<u32>,
+    /// Expected number of attention heads (from family YAML size_variants)
+    #[serde(default)]
+    pub expected_num_heads: Option<u32>,
+    /// Expected number of KV heads for GQA (from family YAML size_variants)
+    #[serde(default)]
+    pub expected_num_kv_heads: Option<u32>,
+    /// Expected vocabulary size (from family YAML size_variants)
+    #[serde(default)]
+    pub expected_vocab_size: Option<u32>,
+    /// Expected intermediate/FFN dimension (from family YAML size_variants)
+    #[serde(default)]
+    pub expected_intermediate_dim: Option<u32>,
+    /// Model family identifier for contract lookup
+    #[serde(default)]
+    pub family: Option<String>,
+    /// Size variant identifier (e.g., "0.5b", "7b")
+    #[serde(default)]
+    pub size_variant: Option<String>,
 }
 
 impl ModelConfig {
@@ -228,6 +374,105 @@ impl ModelConfig {
             .nth(1)
             .unwrap_or(&self.hf_repo)
             .to_string()
+    }
+
+    /// Populate expected architectural parameters from a family contract (PMAT-269).
+    ///
+    /// This method derives expected values from the family YAML size_variants,
+    /// enabling YAML-driven test matrix generation.
+    ///
+    /// # Arguments
+    /// * `contract` - The family contract to derive values from
+    /// * `size` - The size variant key (e.g., "0.5b", "7b")
+    ///
+    /// # Returns
+    /// `true` if the size variant was found and values were populated,
+    /// `false` if the size variant doesn't exist in the contract.
+    pub fn populate_from_family_contract(
+        &mut self,
+        contract: &crate::family_contract::FamilyContract,
+        size: &str,
+    ) -> bool {
+        let Some(variant) = contract.get_size_variant(size) else {
+            return false;
+        };
+
+        self.family = Some(contract.family.clone());
+        self.size_variant = Some(size.to_string());
+        self.expected_hidden_dim = Some(variant.hidden_dim);
+        self.expected_num_layers = Some(variant.num_layers);
+        self.expected_num_heads = Some(variant.num_heads);
+        self.expected_num_kv_heads = variant.num_kv_heads;
+        self.expected_vocab_size = variant.vocab_size;
+        self.expected_intermediate_dim = variant.intermediate_dim;
+
+        // PMAT-270: Auto-set size_category from family YAML if not explicitly set
+        // Only override if the current size_category is the default (Tiny)
+        if self.size_category == SizeCategory::default() {
+            if let Some(category_str) = contract.get_size_category(size) {
+                if let Ok(category) = SizeCategory::from_str_lowercase(category_str) {
+                    self.size_category = category;
+                }
+            }
+        }
+
+        true
+    }
+
+    /// Check if this config has expected architectural parameters set.
+    #[must_use]
+    pub fn has_expected_params(&self) -> bool {
+        self.expected_hidden_dim.is_some()
+            || self.expected_num_layers.is_some()
+            || self.expected_num_heads.is_some()
+    }
+
+    /// Validate that the model matches expected architectural parameters.
+    ///
+    /// Returns a list of mismatches if any parameters don't match.
+    #[must_use]
+    pub fn validate_architecture(
+        &self,
+        hidden_dim: u32,
+        num_layers: u32,
+        num_heads: u32,
+        num_kv_heads: Option<u32>,
+    ) -> Vec<String> {
+        let mut mismatches = Vec::new();
+
+        if let Some(expected) = self.expected_hidden_dim {
+            if expected != hidden_dim {
+                mismatches.push(format!(
+                    "hidden_dim mismatch: expected {expected}, got {hidden_dim}"
+                ));
+            }
+        }
+
+        if let Some(expected) = self.expected_num_layers {
+            if expected != num_layers {
+                mismatches.push(format!(
+                    "num_layers mismatch: expected {expected}, got {num_layers}"
+                ));
+            }
+        }
+
+        if let Some(expected) = self.expected_num_heads {
+            if expected != num_heads {
+                mismatches.push(format!(
+                    "num_heads mismatch: expected {expected}, got {num_heads}"
+                ));
+            }
+        }
+
+        if let (Some(expected), Some(actual)) = (self.expected_num_kv_heads, num_kv_heads) {
+            if expected != actual {
+                mismatches.push(format!(
+                    "num_kv_heads mismatch: expected {expected}, got {actual}"
+                ));
+            }
+        }
+
+        mismatches
     }
 }
 
@@ -1010,6 +1255,14 @@ falsification_gates:
             formats: vec![Format::Gguf],
             quantizations: vec![],
             size_category: SizeCategory::default(),
+            expected_hidden_dim: None,
+            expected_num_layers: None,
+            expected_num_heads: None,
+            expected_num_kv_heads: None,
+            expected_vocab_size: None,
+            expected_intermediate_dim: None,
+            family: None,
+            size_variant: None,
         };
         assert_eq!(config.hf_org(), "model-name");
         assert_eq!(config.hf_name(), "model-name");
@@ -1023,6 +1276,14 @@ falsification_gates:
             formats: default_formats(),
             quantizations: default_quantizations(),
             size_category: SizeCategory::default(),
+            expected_hidden_dim: None,
+            expected_num_layers: None,
+            expected_num_heads: None,
+            expected_num_kv_heads: None,
+            expected_vocab_size: None,
+            expected_intermediate_dim: None,
+            family: None,
+            size_variant: None,
         };
         assert!(config.local_path.is_some());
     }
@@ -1095,6 +1356,14 @@ test_matrix:
             formats: vec![Format::Gguf],
             quantizations: vec!["q4_k_m".to_string()],
             size_category: SizeCategory::Small,
+            expected_hidden_dim: None,
+            expected_num_layers: None,
+            expected_num_heads: None,
+            expected_num_kv_heads: None,
+            expected_vocab_size: None,
+            expected_intermediate_dim: None,
+            family: None,
+            size_variant: None,
         };
 
         assert_eq!(config.hf_org(), "Qwen");
@@ -1729,5 +1998,528 @@ test_matrix:
         // Medium model caps at 2 workers
         assert_eq!(playbook.effective_max_workers(4), 2);
         assert_eq!(playbook.effective_max_workers(1), 1);
+    }
+
+    // ── PMAT-266 Naming convention tests ─────────────────────────────────
+
+    #[test]
+    fn test_validate_playbook_name_basic() {
+        let result = validate_playbook_name("qwen2.5-coder-0.5b-mvp.playbook.yaml");
+        assert!(result.is_ok());
+        let parts = result.unwrap();
+        assert_eq!(parts.family, "qwen2.5-coder");
+        assert_eq!(parts.size, "0.5b");
+        assert_eq!(parts.tier, Some("mvp".to_string()));
+    }
+
+    #[test]
+    fn test_validate_playbook_name_no_tier() {
+        let result = validate_playbook_name("llama3.2-7b.playbook.yaml");
+        assert!(result.is_ok());
+        let parts = result.unwrap();
+        assert_eq!(parts.family, "llama3.2");
+        assert_eq!(parts.size, "7b");
+        assert_eq!(parts.tier, None);
+    }
+
+    #[test]
+    fn test_validate_playbook_name_large_model() {
+        let result = validate_playbook_name("deepseek-coder-v2-16b-full.playbook.yaml");
+        assert!(result.is_ok());
+        let parts = result.unwrap();
+        assert_eq!(parts.family, "deepseek-coder-v2");
+        assert_eq!(parts.size, "16b");
+        assert_eq!(parts.tier, Some("full".to_string()));
+    }
+
+    #[test]
+    fn test_validate_playbook_name_various_tiers() {
+        for tier in VALID_TIERS {
+            let filename = format!("model-1b-{tier}.playbook.yaml");
+            let result = validate_playbook_name(&filename);
+            assert!(result.is_ok(), "Failed for tier: {tier}");
+            assert_eq!(result.unwrap().tier, Some((*tier).to_string()));
+        }
+    }
+
+    #[test]
+    fn test_validate_playbook_name_various_sizes() {
+        let sizes = ["0.5b", "1b", "1.5b", "3b", "7b", "13b", "70b", "405b"];
+        for size in sizes {
+            let filename = format!("model-{size}.playbook.yaml");
+            let result = validate_playbook_name(&filename);
+            assert!(result.is_ok(), "Failed for size: {size}");
+            assert_eq!(result.unwrap().size, size);
+        }
+    }
+
+    #[test]
+    fn test_validate_playbook_name_invalid_no_size() {
+        let result = validate_playbook_name("qwen2.5-coder-mvp.playbook.yaml");
+        assert!(result.is_err());
+        let err = result.unwrap_err().to_string();
+        assert!(err.contains("does not match naming convention"));
+    }
+
+    #[test]
+    fn test_validate_playbook_name_invalid_wrong_extension() {
+        let result = validate_playbook_name("qwen2.5-coder-0.5b-mvp.yaml");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_validate_playbook_name_invalid_tier() {
+        let result = validate_playbook_name("qwen2.5-coder-0.5b-unknown.playbook.yaml");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_validate_playbook_name_invalid_format() {
+        let invalid_names = [
+            "model.playbook.yaml",         // no size
+            "model-big.playbook.yaml",     // invalid size format
+            "model-7gb.playbook.yaml",     // wrong unit (gb instead of b)
+            ".playbook.yaml",              // empty name
+            "model-7b-test.playbook.yaml", // invalid tier
+        ];
+        for name in invalid_names {
+            let result = validate_playbook_name(name);
+            assert!(result.is_err(), "Expected error for: {name}");
+        }
+    }
+
+    #[test]
+    fn test_validate_playbook_path() {
+        let path = std::path::Path::new("/some/path/qwen2.5-coder-1.5b-mvp.playbook.yaml");
+        let result = validate_playbook_path(path);
+        assert!(result.is_ok());
+        let parts = result.unwrap();
+        assert_eq!(parts.family, "qwen2.5-coder");
+        assert_eq!(parts.size, "1.5b");
+        assert_eq!(parts.tier, Some("mvp".to_string()));
+    }
+
+    #[test]
+    fn test_playbook_name_parts_to_filename() {
+        let parts = PlaybookNameParts {
+            family: "qwen2.5-coder".to_string(),
+            size: "0.5b".to_string(),
+            tier: Some("mvp".to_string()),
+        };
+        assert_eq!(parts.to_filename(), "qwen2.5-coder-0.5b-mvp.playbook.yaml");
+
+        let parts_no_tier = PlaybookNameParts {
+            family: "llama3.2".to_string(),
+            size: "7b".to_string(),
+            tier: None,
+        };
+        assert_eq!(parts_no_tier.to_filename(), "llama3.2-7b.playbook.yaml");
+    }
+
+    #[test]
+    fn test_playbook_name_parts_eq() {
+        let parts1 = PlaybookNameParts {
+            family: "model".to_string(),
+            size: "1b".to_string(),
+            tier: Some("mvp".to_string()),
+        };
+        let parts2 = PlaybookNameParts {
+            family: "model".to_string(),
+            size: "1b".to_string(),
+            tier: Some("mvp".to_string()),
+        };
+        assert_eq!(parts1, parts2);
+    }
+
+    #[test]
+    fn test_valid_tiers_constant() {
+        assert_eq!(VALID_TIERS.len(), 7);
+        assert!(VALID_TIERS.contains(&"mvp"));
+        assert!(VALID_TIERS.contains(&"smoke"));
+        assert!(VALID_TIERS.contains(&"quick"));
+        assert!(VALID_TIERS.contains(&"ci"));
+        assert!(VALID_TIERS.contains(&"full"));
+        assert!(VALID_TIERS.contains(&"nightly"));
+        assert!(VALID_TIERS.contains(&"release"));
+    }
+
+    // ── PMAT-269 Test matrix generation tests ────────────────────────────
+
+    #[test]
+    fn test_populate_from_family_contract() {
+        use crate::family_contract::FamilyContract;
+
+        // PMAT-270: Include certification.size_categories for auto-alignment test
+        let yaml = r#"
+family: qwen2
+size_variants:
+  0.5b:
+    parameters: "0.5B"
+    hidden_dim: 896
+    num_layers: 24
+    num_heads: 14
+    num_kv_heads: 2
+    vocab_size: 151936
+    intermediate_dim: 4864
+certification:
+  size_categories:
+    0.5b: tiny
+    1.5b: small
+    7b: medium
+"#;
+        let contract = FamilyContract::from_yaml(yaml).expect("parse");
+
+        let mut config = ModelConfig {
+            hf_repo: "Qwen/Qwen2.5-Coder-0.5B-Instruct".to_string(),
+            local_path: None,
+            formats: vec![Format::Gguf],
+            quantizations: vec![],
+            size_category: SizeCategory::Tiny, // default
+            expected_hidden_dim: None,
+            expected_num_layers: None,
+            expected_num_heads: None,
+            expected_num_kv_heads: None,
+            expected_vocab_size: None,
+            expected_intermediate_dim: None,
+            family: None,
+            size_variant: None,
+        };
+
+        // Populate from contract
+        let result = config.populate_from_family_contract(&contract, "0.5b");
+        assert!(result);
+
+        // Verify values populated
+        assert_eq!(config.family, Some("qwen2".to_string()));
+        assert_eq!(config.size_variant, Some("0.5b".to_string()));
+        assert_eq!(config.expected_hidden_dim, Some(896));
+        assert_eq!(config.expected_num_layers, Some(24));
+        assert_eq!(config.expected_num_heads, Some(14));
+        assert_eq!(config.expected_num_kv_heads, Some(2));
+        assert_eq!(config.expected_vocab_size, Some(151_936));
+        assert_eq!(config.expected_intermediate_dim, Some(4864));
+        // PMAT-270: Verify size_category auto-populated
+        assert_eq!(config.size_category, SizeCategory::Tiny);
+    }
+
+    #[test]
+    fn test_populate_from_family_contract_missing_size() {
+        use crate::family_contract::FamilyContract;
+
+        let yaml = r#"
+family: qwen2
+size_variants:
+  0.5b:
+    parameters: "0.5B"
+    hidden_dim: 896
+    num_layers: 24
+    num_heads: 14
+"#;
+        let contract = FamilyContract::from_yaml(yaml).expect("parse");
+
+        let mut config = ModelConfig {
+            hf_repo: "test".to_string(),
+            local_path: None,
+            formats: vec![],
+            quantizations: vec![],
+            size_category: SizeCategory::default(),
+            expected_hidden_dim: None,
+            expected_num_layers: None,
+            expected_num_heads: None,
+            expected_num_kv_heads: None,
+            expected_vocab_size: None,
+            expected_intermediate_dim: None,
+            family: None,
+            size_variant: None,
+        };
+
+        // Try to populate with non-existent size
+        let result = config.populate_from_family_contract(&contract, "7b");
+        assert!(!result);
+
+        // Values should remain None
+        assert!(config.expected_hidden_dim.is_none());
+    }
+
+    #[test]
+    fn test_has_expected_params() {
+        let config_empty = ModelConfig {
+            hf_repo: "test".to_string(),
+            local_path: None,
+            formats: vec![],
+            quantizations: vec![],
+            size_category: SizeCategory::default(),
+            expected_hidden_dim: None,
+            expected_num_layers: None,
+            expected_num_heads: None,
+            expected_num_kv_heads: None,
+            expected_vocab_size: None,
+            expected_intermediate_dim: None,
+            family: None,
+            size_variant: None,
+        };
+        assert!(!config_empty.has_expected_params());
+
+        let config_with_params = ModelConfig {
+            hf_repo: "test".to_string(),
+            local_path: None,
+            formats: vec![],
+            quantizations: vec![],
+            size_category: SizeCategory::default(),
+            expected_hidden_dim: Some(896),
+            expected_num_layers: None,
+            expected_num_heads: None,
+            expected_num_kv_heads: None,
+            expected_vocab_size: None,
+            expected_intermediate_dim: None,
+            family: None,
+            size_variant: None,
+        };
+        assert!(config_with_params.has_expected_params());
+    }
+
+    #[test]
+    fn test_validate_architecture_match() {
+        let config = ModelConfig {
+            hf_repo: "test".to_string(),
+            local_path: None,
+            formats: vec![],
+            quantizations: vec![],
+            size_category: SizeCategory::default(),
+            expected_hidden_dim: Some(896),
+            expected_num_layers: Some(24),
+            expected_num_heads: Some(14),
+            expected_num_kv_heads: Some(2),
+            expected_vocab_size: None,
+            expected_intermediate_dim: None,
+            family: None,
+            size_variant: None,
+        };
+
+        // All match
+        let mismatches = config.validate_architecture(896, 24, 14, Some(2));
+        assert!(mismatches.is_empty());
+    }
+
+    #[test]
+    fn test_validate_architecture_mismatch() {
+        let config = ModelConfig {
+            hf_repo: "test".to_string(),
+            local_path: None,
+            formats: vec![],
+            quantizations: vec![],
+            size_category: SizeCategory::default(),
+            expected_hidden_dim: Some(896),
+            expected_num_layers: Some(24),
+            expected_num_heads: Some(14),
+            expected_num_kv_heads: Some(2),
+            expected_vocab_size: None,
+            expected_intermediate_dim: None,
+            family: None,
+            size_variant: None,
+        };
+
+        // All wrong
+        let mismatches = config.validate_architecture(1024, 12, 16, Some(4));
+        assert_eq!(mismatches.len(), 4);
+        assert!(mismatches[0].contains("hidden_dim"));
+        assert!(mismatches[1].contains("num_layers"));
+        assert!(mismatches[2].contains("num_heads"));
+        assert!(mismatches[3].contains("num_kv_heads"));
+    }
+
+    #[test]
+    fn test_validate_architecture_partial_expected() {
+        let config = ModelConfig {
+            hf_repo: "test".to_string(),
+            local_path: None,
+            formats: vec![],
+            quantizations: vec![],
+            size_category: SizeCategory::default(),
+            expected_hidden_dim: Some(896),
+            expected_num_layers: None, // Not set
+            expected_num_heads: None,  // Not set
+            expected_num_kv_heads: None,
+            expected_vocab_size: None,
+            expected_intermediate_dim: None,
+            family: None,
+            size_variant: None,
+        };
+
+        // Only hidden_dim is checked
+        let mismatches = config.validate_architecture(896, 999, 999, Some(999));
+        assert!(mismatches.is_empty()); // hidden_dim matches, others not checked
+    }
+
+    // ── PMAT-270: Size category auto-alignment tests ─────────────────────────
+
+    #[test]
+    fn test_size_category_auto_alignment_from_family_yaml() {
+        use crate::family_contract::FamilyContract;
+
+        // FALSIFY-FAM-001: Size category alignment
+        let yaml = r#"
+family: qwen2
+size_variants:
+  7b:
+    parameters: "7B"
+    hidden_dim: 3584
+    num_layers: 28
+    num_heads: 28
+certification:
+  size_categories:
+    0.5b: tiny
+    1.5b: small
+    3b: small
+    7b: medium
+    14b: large
+"#;
+        let contract = FamilyContract::from_yaml(yaml).expect("parse");
+
+        // Start with default (Tiny)
+        let mut config = ModelConfig {
+            hf_repo: "Qwen/Qwen2.5-Coder-7B-Instruct".to_string(),
+            local_path: None,
+            formats: vec![],
+            quantizations: vec![],
+            size_category: SizeCategory::Tiny, // default
+            expected_hidden_dim: None,
+            expected_num_layers: None,
+            expected_num_heads: None,
+            expected_num_kv_heads: None,
+            expected_vocab_size: None,
+            expected_intermediate_dim: None,
+            family: None,
+            size_variant: None,
+        };
+
+        // Populate from contract with 7b size
+        let result = config.populate_from_family_contract(&contract, "7b");
+        assert!(result);
+
+        // PMAT-270: Verify size_category auto-set to Medium (from 7b -> medium mapping)
+        assert_eq!(config.size_category, SizeCategory::Medium);
+    }
+
+    #[test]
+    fn test_size_category_explicit_not_overridden() {
+        use crate::family_contract::FamilyContract;
+
+        let yaml = r#"
+family: qwen2
+size_variants:
+  7b:
+    parameters: "7B"
+    hidden_dim: 3584
+    num_layers: 28
+    num_heads: 28
+certification:
+  size_categories:
+    7b: medium
+"#;
+        let contract = FamilyContract::from_yaml(yaml).expect("parse");
+
+        // Explicitly set to Large (user override)
+        let mut config = ModelConfig {
+            hf_repo: "Qwen/Qwen2.5-Coder-7B-Instruct".to_string(),
+            local_path: None,
+            formats: vec![],
+            quantizations: vec![],
+            size_category: SizeCategory::Large, // explicitly set, not default
+            expected_hidden_dim: None,
+            expected_num_layers: None,
+            expected_num_heads: None,
+            expected_num_kv_heads: None,
+            expected_vocab_size: None,
+            expected_intermediate_dim: None,
+            family: None,
+            size_variant: None,
+        };
+
+        // Populate from contract
+        config.populate_from_family_contract(&contract, "7b");
+
+        // Should NOT override explicit setting - Large remains Large
+        assert_eq!(config.size_category, SizeCategory::Large);
+    }
+
+    #[test]
+    fn test_size_category_from_str_lowercase() {
+        assert_eq!(
+            SizeCategory::from_str_lowercase("tiny").unwrap(),
+            SizeCategory::Tiny
+        );
+        assert_eq!(
+            SizeCategory::from_str_lowercase("small").unwrap(),
+            SizeCategory::Small
+        );
+        assert_eq!(
+            SizeCategory::from_str_lowercase("medium").unwrap(),
+            SizeCategory::Medium
+        );
+        assert_eq!(
+            SizeCategory::from_str_lowercase("large").unwrap(),
+            SizeCategory::Large
+        );
+        assert_eq!(
+            SizeCategory::from_str_lowercase("xlarge").unwrap(),
+            SizeCategory::Xlarge
+        );
+        assert_eq!(
+            SizeCategory::from_str_lowercase("huge").unwrap(),
+            SizeCategory::Huge
+        );
+
+        // Case insensitive
+        assert_eq!(
+            SizeCategory::from_str_lowercase("TINY").unwrap(),
+            SizeCategory::Tiny
+        );
+        assert_eq!(
+            SizeCategory::from_str_lowercase("Medium").unwrap(),
+            SizeCategory::Medium
+        );
+
+        // Invalid
+        let err = SizeCategory::from_str_lowercase("invalid").unwrap_err();
+        assert!(err.to_string().contains("Invalid size category"));
+    }
+
+    #[test]
+    fn test_size_category_no_certification_config() {
+        use crate::family_contract::FamilyContract;
+
+        // No certification section at all
+        let yaml = r#"
+family: qwen2
+size_variants:
+  0.5b:
+    parameters: "0.5B"
+    hidden_dim: 896
+    num_layers: 24
+    num_heads: 14
+"#;
+        let contract = FamilyContract::from_yaml(yaml).expect("parse");
+
+        let mut config = ModelConfig {
+            hf_repo: "test".to_string(),
+            local_path: None,
+            formats: vec![],
+            quantizations: vec![],
+            size_category: SizeCategory::Tiny, // default
+            expected_hidden_dim: None,
+            expected_num_layers: None,
+            expected_num_heads: None,
+            expected_num_kv_heads: None,
+            expected_vocab_size: None,
+            expected_intermediate_dim: None,
+            family: None,
+            size_variant: None,
+        };
+
+        config.populate_from_family_contract(&contract, "0.5b");
+
+        // Should remain default since no certification config
+        assert_eq!(config.size_category, SizeCategory::Tiny);
     }
 }

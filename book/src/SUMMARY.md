@@ -29,6 +29,7 @@
 - [Oracle Types](./reference/oracles.md)
 - [CLI Reference](./reference/cli.md)
 - [Certified Testing](./reference/certified-testing.md)
+- [Oracle Integration](./reference/oracle-integration.md)
 
 # Specification
 

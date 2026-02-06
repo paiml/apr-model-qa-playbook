@@ -7,7 +7,7 @@ description: "Smoke test for Qwen2.5-Coder-7B-Instruct"
 model:
   hf_repo: "Qwen/Qwen2.5-Coder-7B-Instruct"
   formats:
-    - gguf
+    - safetensors
   quantizations:
     - q4_k_m
   size_category: medium

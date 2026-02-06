@@ -137,6 +137,12 @@ pub trait CommandRunner: Send + Sync {
 
     /// Execute `apr pull --json <hf_repo>` to acquire model from cache or remote
     fn pull_model(&self, hf_repo: &str) -> CommandOutput;
+
+    /// Execute `apr rosetta inspect --json` to get model metadata including tensor names
+    ///
+    /// Returns JSON output with tensor_count, tensor_names, and other model metadata.
+    /// Used by G0-TENSOR-001 for tensor template validation (PMAT-271).
+    fn inspect_model_json(&self, model_path: &Path) -> CommandOutput;
 }
 
 /// Real command runner that executes actual subprocess commands
@@ -405,6 +411,11 @@ impl CommandRunner for RealCommandRunner {
     fn pull_model(&self, hf_repo: &str) -> CommandOutput {
         self.execute(&["pull", "--json", hf_repo])
     }
+
+    fn inspect_model_json(&self, model_path: &Path) -> CommandOutput {
+        let path_str = model_path.display().to_string();
+        self.execute(&["rosetta", "inspect", "--json", &path_str])
+    }
 }
 
 /// Mock command runner for testing
@@ -460,6 +471,10 @@ pub struct MockCommandRunner {
     pub pull_success: bool,
     /// Path returned by pull_model on success
     pub pull_model_path: String,
+    /// Whether inspect_model_json should succeed
+    pub inspect_json_success: bool,
+    /// Tensor names returned by inspect_model_json
+    pub inspect_tensor_names: Vec<String>,
 }
 
 impl Default for MockCommandRunner {
@@ -488,6 +503,19 @@ impl Default for MockCommandRunner {
             validate_strict_success: true,
             pull_success: true,
             pull_model_path: "/mock/model.safetensors".to_string(),
+            inspect_json_success: true,
+            inspect_tensor_names: vec![
+                "model.embed_tokens.weight".to_string(),
+                "model.layers.0.self_attn.q_proj.weight".to_string(),
+                "model.layers.0.self_attn.k_proj.weight".to_string(),
+                "model.layers.0.self_attn.v_proj.weight".to_string(),
+                "model.layers.0.self_attn.o_proj.weight".to_string(),
+                "model.layers.0.mlp.gate_proj.weight".to_string(),
+                "model.layers.0.mlp.up_proj.weight".to_string(),
+                "model.layers.0.mlp.down_proj.weight".to_string(),
+                "model.norm.weight".to_string(),
+                "lm_head.weight".to_string(),
+            ],
         }
     }
 }
@@ -662,6 +690,20 @@ impl MockCommandRunner {
     #[must_use]
     pub fn with_pull_model_path(mut self, path: impl Into<String>) -> Self {
         self.pull_model_path = path.into();
+        self
+    }
+
+    /// Set whether inspect_model_json should fail
+    #[must_use]
+    pub fn with_inspect_json_failure(mut self) -> Self {
+        self.inspect_json_success = false;
+        self
+    }
+
+    /// Set custom tensor names for inspect_model_json
+    #[must_use]
+    pub fn with_tensor_names(mut self, names: Vec<String>) -> Self {
+        self.inspect_tensor_names = names;
         self
     }
 }
@@ -907,6 +949,24 @@ impl CommandRunner for MockCommandRunner {
             CommandOutput::success(format!("Path: {}", self.pull_model_path))
         } else {
             CommandOutput::failure(1, "Pull failed: model not found in registry")
+        }
+    }
+
+    fn inspect_model_json(&self, _model_path: &Path) -> CommandOutput {
+        if self.inspect_json_success {
+            let tensor_names_json: String = self
+                .inspect_tensor_names
+                .iter()
+                .map(|s| format!("\"{s}\""))
+                .collect::<Vec<_>>()
+                .join(", ");
+            CommandOutput::success(format!(
+                r#"{{"format":"SafeTensors","tensor_count":{},"tensor_names":[{}],"parameters":"1.5B"}}"#,
+                self.inspect_tensor_names.len(),
+                tensor_names_json
+            ))
+        } else {
+            CommandOutput::failure(1, "Inspect failed: invalid model format")
         }
     }
 }

@@ -15,6 +15,8 @@ use apr_qa_cli::{
     load_playbook, parse_evidence, parse_failure_policy, playbook_path_for_model,
     scenarios_to_json, scenarios_to_yaml,
 };
+use apr_qa_report::{MqsScore, PopperianScore};
+use apr_qa_runner::{Evidence, EvidenceCollector};
 use apr_qa_runner::ToolExecutor;
 use clap::{Parser, Subcommand};
 use std::path::{Path, PathBuf};
@@ -306,6 +308,58 @@ enum Commands {
         #[arg(long)]
         self_check: bool,
     },
+
+    /// Export certification data to models.csv (PMAT-264)
+    ///
+    /// Scans evidence directory and updates models.csv with MQS scores,
+    /// grades, and certification status for oracle consumption.
+    ExportCsv {
+        /// Directory containing evidence JSON files
+        #[arg(short, long, default_value = "docs/certifications/evidence")]
+        evidence_dir: PathBuf,
+
+        /// Output CSV file path
+        #[arg(short, long, default_value = "docs/certifications/models.csv")]
+        output: PathBuf,
+
+        /// Append to existing CSV (instead of overwrite)
+        #[arg(long)]
+        append: bool,
+    },
+
+    /// Export evidence to schema-compliant JSON (PMAT-265)
+    ///
+    /// Exports test run results to the standard evidence JSON format
+    /// consumed by the oracle for certification lookup.
+    ExportEvidence {
+        /// Path to source evidence or execution result JSON
+        #[arg(value_name = "SOURCE")]
+        source: PathBuf,
+
+        /// Output directory for evidence files
+        #[arg(short, long, default_value = "docs/certifications/evidence")]
+        output_dir: PathBuf,
+
+        /// Model HF repo ID (e.g., "Qwen/Qwen2.5-Coder-0.5B-Instruct")
+        #[arg(short, long)]
+        model: String,
+
+        /// Model family (e.g., "qwen2")
+        #[arg(long)]
+        family: String,
+
+        /// Model size (e.g., "0.5b")
+        #[arg(long)]
+        size: String,
+
+        /// Playbook name
+        #[arg(long)]
+        playbook_name: String,
+
+        /// Certification tier (smoke, mvp, full)
+        #[arg(long, default_value = "mvp")]
+        tier: String,
+    },
 }
 
 /// Setup SIGINT handler for Jidoka cleanup
@@ -476,6 +530,32 @@ fn main() {
                 self_check,
             );
         }
+        Commands::ExportCsv {
+            evidence_dir,
+            output,
+            append,
+        } => {
+            export_csv(&evidence_dir, &output, append);
+        }
+        Commands::ExportEvidence {
+            source,
+            output_dir,
+            model,
+            family,
+            size,
+            playbook_name,
+            tier,
+        } => {
+            export_evidence(
+                &source,
+                &output_dir,
+                &model,
+                &family,
+                &size,
+                &playbook_name,
+                &tier,
+            );
+        }
     }
 }
 
@@ -550,7 +630,11 @@ fn run_playbook(
     if let Some(ref path) = model_path {
         println!("  Model path: {path}");
     }
-    println!("  Workers: {} (max for size: {})", effective_workers, playbook.model.size_category.max_workers());
+    println!(
+        "  Workers: {} (max for size: {})",
+        effective_workers,
+        playbook.model.size_category.max_workers()
+    );
     println!("  Timeout: {timeout}ms");
 
     let run_config = PlaybookRunConfig {
@@ -644,7 +728,7 @@ fn save_playbook_evidence(result: &apr_qa_runner::ExecutionResult, output_dir: &
         .extension()
         .is_some_and(|ext| ext.eq_ignore_ascii_case("json"))
     {
-        let parent = output_dir.parent().unwrap_or(Path::new("."));
+        let parent = output_dir.parent().unwrap_or_else(|| Path::new("."));
         if let Err(e) = std::fs::create_dir_all(parent) {
             eprintln!("Error creating output directory: {e}");
             return;
@@ -814,87 +898,115 @@ fn calculate_score(evidence_path: &PathBuf, model_id: &str) {
 }
 
 fn generate_report(evidence_path: &PathBuf, output_dir: &PathBuf, formats: &str, model_id: &str) {
-    let evidence_json = match std::fs::read_to_string(evidence_path) {
-        Ok(s) => s,
-        Err(e) => {
-            eprintln!("Error reading evidence file: {e}");
-            std::process::exit(1);
-        }
-    };
-
-    let evidence = match parse_evidence(&evidence_json) {
-        Ok(e) => e,
-        Err(e) => {
-            eprintln!("{e}");
-            std::process::exit(1);
-        }
-    };
-
+    let evidence_json = read_file_or_exit(evidence_path, "evidence file");
+    let evidence = parse_evidence_or_exit(&evidence_json);
     let collector = collect_evidence(evidence);
-
-    // Calculate scores
-    let mqs_score = match calculate_mqs_score(model_id, &collector) {
-        Ok(s) => s,
-        Err(e) => {
-            eprintln!("{e}");
-            std::process::exit(1);
-        }
-    };
-
+    let mqs_score = calculate_mqs_or_exit(model_id, &collector);
     let popperian_score = calculate_popperian_score(model_id, &collector);
 
-    // Create output directory
-    if let Err(e) = std::fs::create_dir_all(output_dir) {
+    create_dir_or_exit(output_dir);
+    write_report_formats(output_dir, formats, model_id, &mqs_score, &popperian_score, &collector);
+}
+
+fn read_file_or_exit(path: &PathBuf, desc: &str) -> String {
+    std::fs::read_to_string(path).unwrap_or_else(|e| {
+        eprintln!("Error reading {desc}: {e}");
+        std::process::exit(1);
+    })
+}
+
+fn parse_evidence_or_exit(json: &str) -> Vec<Evidence> {
+    parse_evidence(json).unwrap_or_else(|e| {
+        eprintln!("{e}");
+        std::process::exit(1);
+    })
+}
+
+fn calculate_mqs_or_exit(model_id: &str, collector: &EvidenceCollector) -> MqsScore {
+    calculate_mqs_score(model_id, collector).unwrap_or_else(|e| {
+        eprintln!("{e}");
+        std::process::exit(1);
+    })
+}
+
+fn create_dir_or_exit(dir: &PathBuf) {
+    if let Err(e) = std::fs::create_dir_all(dir) {
         eprintln!("Error creating output directory: {e}");
         std::process::exit(1);
     }
+}
 
+fn write_report_formats(
+    output_dir: &PathBuf,
+    formats: &str,
+    model_id: &str,
+    mqs_score: &MqsScore,
+    popperian_score: &PopperianScore,
+    collector: &EvidenceCollector,
+) {
     let gen_html = formats == "all" || formats == "html";
     let gen_junit = formats == "all" || formats == "junit";
 
     if gen_html {
-        match generate_html_report(
-            &format!("MQS Report: {model_id}"),
-            &mqs_score,
-            &popperian_score,
-            &collector,
-        ) {
-            Ok(html) => {
-                let path = output_dir.join("report.html");
-                if let Err(e) = std::fs::write(&path, html) {
-                    eprintln!("Error writing HTML report: {e}");
-                } else {
-                    println!("HTML report: {}", path.display());
-                }
-            }
-            Err(e) => eprintln!("{e}"),
-        }
+        write_html_report(output_dir, model_id, mqs_score, popperian_score, collector);
     }
-
     if gen_junit {
-        match generate_junit_report(model_id, &collector, &mqs_score) {
-            Ok(xml) => {
-                let path = output_dir.join("junit.xml");
-                if let Err(e) = std::fs::write(&path, xml) {
-                    eprintln!("Error writing JUnit report: {e}");
-                } else {
-                    println!("JUnit report: {}", path.display());
-                }
-            }
-            Err(e) => eprintln!("{e}"),
-        }
+        write_junit_report(output_dir, model_id, collector, mqs_score);
     }
+    write_mqs_json(output_dir, mqs_score);
+}
 
-    // Save MQS score as JSON
-    let score_path = output_dir.join("mqs.json");
-    match serde_json::to_string_pretty(&mqs_score) {
-        Ok(json) => {
-            if let Err(e) = std::fs::write(&score_path, json) {
-                eprintln!("Error writing MQS JSON: {e}");
-            } else {
-                println!("MQS score: {}", score_path.display());
+fn write_html_report(
+    output_dir: &PathBuf,
+    model_id: &str,
+    mqs_score: &MqsScore,
+    popperian_score: &PopperianScore,
+    collector: &EvidenceCollector,
+) {
+    let result = generate_html_report(
+        &format!("MQS Report: {model_id}"),
+        mqs_score,
+        popperian_score,
+        collector,
+    );
+    write_report_file(output_dir, "report.html", "HTML report", result);
+}
+
+fn write_junit_report(
+    output_dir: &PathBuf,
+    model_id: &str,
+    collector: &EvidenceCollector,
+    mqs_score: &MqsScore,
+) {
+    let result = generate_junit_report(model_id, collector, mqs_score);
+    write_report_file(output_dir, "junit.xml", "JUnit report", result);
+}
+
+fn write_report_file<E: std::fmt::Display>(
+    output_dir: &PathBuf,
+    filename: &str,
+    desc: &str,
+    result: Result<String, E>,
+) {
+    match result {
+        Ok(content) => {
+            let path = output_dir.join(filename);
+            match std::fs::write(&path, content) {
+                Ok(()) => println!("{desc}: {}", path.display()),
+                Err(e) => eprintln!("Error writing {desc}: {e}"),
             }
         }
+        Err(e) => eprintln!("{e}"),
+    }
+}
+
+fn write_mqs_json(output_dir: &PathBuf, mqs_score: &MqsScore) {
+    let score_path = output_dir.join("mqs.json");
+    match serde_json::to_string_pretty(mqs_score) {
+        Ok(json) => match std::fs::write(&score_path, json) {
+            Ok(()) => println!("MQS score: {}", score_path.display()),
+            Err(e) => eprintln!("Error writing MQS JSON: {e}"),
+        },
         Err(e) => eprintln!("Error serializing MQS: {e}"),
     }
 }
@@ -2185,4 +2297,348 @@ fn find_safetensors_in_hf(snapshots_dir: &std::path::Path) -> Option<std::path::
 /// e.g. `"Qwen/Qwen2.5-Coder-1.5B-Instruct"` → `("Qwen", "Qwen2.5-Coder-1.5B-Instruct")`
 fn split_model_id(model_id: &str) -> (&str, &str) {
     model_id.split_once('/').unwrap_or(("unknown", model_id))
+}
+
+/// Export certification data to models.csv (PMAT-264)
+///
+/// Scans evidence directory, calculates MQS for each evidence file,
+/// and writes/updates models.csv for oracle consumption.
+#[allow(clippy::too_many_lines)]
+fn export_csv(evidence_dir: &Path, output: &Path, append: bool) {
+    use apr_qa_report::write_models_csv;
+
+    println!("Exporting certification data to CSV...");
+    println!("  Evidence directory: {}", evidence_dir.display());
+    println!("  Output: {}", output.display());
+    println!("  Mode: {}", if append { "append" } else { "overwrite" });
+
+    let mut rows = load_existing_csv_rows(output, append);
+    let (processed, updated) = process_evidence_files(evidence_dir, &mut rows);
+
+    if processed == 0 {
+        println!("  No evidence files found in {}", evidence_dir.display());
+        return;
+    }
+
+    ensure_parent_dir(output);
+    if let Err(e) = write_models_csv(&rows, output) {
+        eprintln!("Error: Failed to write CSV: {e}");
+        std::process::exit(1);
+    }
+
+    println!("\nExported {} row(s) to {}", rows.len(), output.display());
+    println!("  Processed: {processed}");
+    println!("  Updated: {updated}");
+    println!("  New: {}", processed - updated);
+}
+
+fn load_existing_csv_rows(output: &Path, append: bool) -> Vec<apr_qa_report::CertificationRow> {
+    use apr_qa_report::read_models_csv;
+
+    if !append || !output.exists() {
+        return Vec::new();
+    }
+    match read_models_csv(output) {
+        Ok(existing) => {
+            println!("  Loaded {} existing row(s)", existing.len());
+            existing
+        }
+        Err(e) => {
+            eprintln!("Warning: Could not read existing CSV: {e}");
+            Vec::new()
+        }
+    }
+}
+
+fn process_evidence_files(
+    evidence_dir: &Path,
+    rows: &mut Vec<apr_qa_report::CertificationRow>,
+) -> (usize, usize) {
+    let entries = match std::fs::read_dir(evidence_dir) {
+        Ok(e) => e,
+        Err(e) => {
+            eprintln!("Error: Cannot read evidence directory: {e}");
+            std::process::exit(1);
+        }
+    };
+
+    let mut processed = 0;
+    let mut updated = 0;
+
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if !path.extension().is_some_and(|ext| ext == "json") {
+            continue;
+        }
+        let content = match std::fs::read_to_string(&path) {
+            Ok(c) => c,
+            Err(e) => {
+                eprintln!("  Warning: Could not read {}: {e}", path.display());
+                continue;
+            }
+        };
+        let Ok(export) = serde_json::from_str::<apr_qa_report::EvidenceExport>(&content) else {
+            continue;
+        };
+        processed += 1;
+        let was_updated = update_row_from_export(rows, &export);
+        if was_updated {
+            updated += 1;
+        }
+    }
+    (processed, updated)
+}
+
+fn update_row_from_export(
+    rows: &mut Vec<apr_qa_report::CertificationRow>,
+    export: &apr_qa_report::EvidenceExport,
+) -> bool {
+    use apr_qa_report::CertificationRow;
+    use chrono::Utc;
+
+    let model_id = &export.model.hf_repo;
+    let (row_idx, was_updated) =
+        match rows.iter().position(|r| r.model_id == *model_id) {
+            Some(idx) => (idx, true),
+            None => {
+                rows.push(CertificationRow::new(model_id, &export.model.family));
+                (rows.len() - 1, false)
+            }
+        };
+
+    let row = &mut rows[row_idx];
+    row.parameters.clone_from(&export.model.size);
+    row.mqs_score = export.mqs.score;
+    row.grade.clone_from(&export.mqs.grade);
+    row.certified_tier.clone_from(&export.playbook.tier);
+    row.last_certified = Utc::now();
+    row.status = derive_status_from_mqs(&export.mqs);
+    update_gateway_flags(row, &export.gates);
+
+    println!("  Processed: {} → MQS {}, {}", model_id, row.mqs_score, row.status);
+    was_updated
+}
+
+fn derive_status_from_mqs(mqs: &apr_qa_report::MqsExport) -> apr_qa_report::ModelStatus {
+    use apr_qa_report::ModelStatus;
+
+    if mqs.score >= 800 && mqs.gateway_passed {
+        ModelStatus::Certified
+    } else if mqs.score == 0 {
+        ModelStatus::Pending
+    } else {
+        ModelStatus::Blocked
+    }
+}
+
+fn update_gateway_flags(
+    row: &mut apr_qa_report::CertificationRow,
+    gates: &std::collections::HashMap<String, apr_qa_report::GateResult>,
+) {
+    if let Some(g1) = gates.get("G1-MODEL-LOADS") {
+        row.g1 = g1.passed;
+    }
+    if let Some(g2) = gates.get("G2-BASIC-INFERENCE") {
+        row.g2 = g2.passed;
+    }
+    if let Some(g3) = gates.get("G3-NO-CRASHES") {
+        row.g3 = g3.passed;
+    }
+    if let Some(g4) = gates.get("G4-OUTPUT-QUALITY") {
+        row.g4 = g4.passed;
+    }
+}
+
+fn ensure_parent_dir(path: &Path) {
+    if let Some(parent) = path.parent() {
+        if let Err(e) = std::fs::create_dir_all(parent) {
+            eprintln!("Error: Cannot create output directory: {e}");
+            std::process::exit(1);
+        }
+    }
+}
+
+/// Export evidence to schema-compliant JSON (PMAT-265)
+///
+/// Converts test run results to the EvidenceExport format for oracle consumption.
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+fn export_evidence(
+    source: &Path,
+    output_dir: &Path,
+    model: &str,
+    family: &str,
+    size: &str,
+    playbook_name: &str,
+    tier: &str,
+) {
+    use apr_qa_report::{
+        EvidenceExport, ExportSummary, GateResult, ModelMeta, MqsExport, PlaybookMeta,
+    };
+    use chrono::Utc;
+    use std::collections::HashMap;
+
+    println!("Exporting evidence to schema-compliant JSON...");
+    println!("  Source: {}", source.display());
+    println!("  Output dir: {}", output_dir.display());
+    println!("  Model: {model}");
+
+    // Read source file
+    let content = match std::fs::read_to_string(source) {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("Error: Cannot read source file: {e}");
+            std::process::exit(1);
+        }
+    };
+
+    // Try to parse as execution result (from apr-qa run output)
+    let json_value: serde_json::Value = match serde_json::from_str(&content) {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("Error: Invalid JSON in source file: {e}");
+            std::process::exit(1);
+        }
+    };
+
+    // Extract evidence array and summary from execution result
+    let evidence_array = json_value
+        .get("evidence")
+        .and_then(|e| e.as_array())
+        .cloned()
+        .unwrap_or_default();
+
+    #[allow(clippy::cast_possible_truncation)]
+    let total_scenarios = json_value
+        .get("total_scenarios")
+        .and_then(serde_json::Value::as_u64)
+        .unwrap_or(evidence_array.len() as u64) as usize;
+    #[allow(clippy::cast_possible_truncation)]
+    let passed = json_value
+        .get("passed")
+        .and_then(serde_json::Value::as_u64)
+        .unwrap_or(0) as usize;
+    #[allow(clippy::cast_possible_truncation)]
+    let failed = json_value
+        .get("failed")
+        .and_then(serde_json::Value::as_u64)
+        .unwrap_or(0) as usize;
+    #[allow(clippy::cast_possible_truncation)]
+    let skipped = json_value
+        .get("skipped")
+        .and_then(serde_json::Value::as_u64)
+        .unwrap_or(0) as usize;
+    let duration_ms = json_value
+        .get("duration_ms")
+        .and_then(serde_json::Value::as_u64)
+        .unwrap_or(0);
+
+    #[allow(clippy::cast_precision_loss)]
+    let pass_rate = if total_scenarios > 0 {
+        passed as f64 / total_scenarios as f64
+    } else {
+        0.0
+    };
+
+    // Calculate MQS from pass rate (simplified)
+    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+    let mqs_score = (pass_rate * 1000.0) as u32;
+    let grade = match mqs_score {
+        900..=1000 => "A",
+        800..=899 => "B",
+        600..=799 => "C",
+        400..=599 => "D",
+        _ => "F",
+    };
+
+    // Extract gateway results from evidence
+    let mut gates: HashMap<String, GateResult> = HashMap::new();
+    for ev in &evidence_array {
+        if let Some(gate_id) = ev.get("gate_id").and_then(|g| g.as_str()) {
+            if gate_id.starts_with('G') && !gates.contains_key(gate_id) {
+                let passed = ev
+                    .get("outcome")
+                    .and_then(|o| o.as_str())
+                    .is_some_and(|o| o == "Corroborated" || o == "Skipped");
+                let reason = ev
+                    .get("reason")
+                    .and_then(|r| r.as_str())
+                    .unwrap_or("")
+                    .to_string();
+                gates.insert(gate_id.to_string(), GateResult { passed, reason });
+            }
+        }
+    }
+
+    // Check if all gateways passed
+    let gateway_passed = ["G1", "G2", "G3", "G4"].iter().all(|g| {
+        gates
+            .iter()
+            .filter(|(k, _)| k.starts_with(g))
+            .all(|(_, v)| v.passed)
+    });
+
+    // Build export structure
+    let export = EvidenceExport {
+        schema: "https://paiml.com/schemas/apr-qa-evidence.schema.json".to_string(),
+        version: "1.0.0".to_string(),
+        model: ModelMeta {
+            hf_repo: model.to_string(),
+            family: family.to_string(),
+            size: size.to_string(),
+            format: "safetensors".to_string(),
+        },
+        playbook: PlaybookMeta {
+            name: playbook_name.to_string(),
+            version: "1.0.0".to_string(),
+            tier: tier.to_string(),
+        },
+        summary: ExportSummary {
+            total_scenarios,
+            passed,
+            failed,
+            skipped,
+            pass_rate,
+            duration_ms,
+            timestamp: Utc::now(),
+        },
+        mqs: MqsExport {
+            score: mqs_score,
+            grade: grade.to_string(),
+            gateway_passed,
+            category_scores: HashMap::new(),
+        },
+        gates,
+        evidence: evidence_array,
+    };
+
+    // Create output directory
+    if let Err(e) = std::fs::create_dir_all(output_dir) {
+        eprintln!("Error: Cannot create output directory: {e}");
+        std::process::exit(1);
+    }
+
+    // Generate output filename from model
+    let safe_name = model.replace('/', "-").to_lowercase();
+    let output_path = output_dir.join(format!("{safe_name}.json"));
+
+    // Write export
+    let json = match export.to_json() {
+        Ok(j) => j,
+        Err(e) => {
+            eprintln!("Error: Failed to serialize export: {e}");
+            std::process::exit(1);
+        }
+    };
+
+    if let Err(e) = std::fs::write(&output_path, &json) {
+        eprintln!("Error: Failed to write output: {e}");
+        std::process::exit(1);
+    }
+
+    println!("\nExported evidence to: {}", output_path.display());
+    println!("  Model: {model}");
+    println!("  MQS Score: {mqs_score}");
+    println!("  Grade: {grade}");
+    println!("  Pass Rate: {:.1}%", pass_rate * 100.0);
+    println!("  Total Scenarios: {total_scenarios}");
 }

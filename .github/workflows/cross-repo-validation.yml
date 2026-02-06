@@ -1,0 +1,64 @@
+name: Cross-Repo Validation (PMAT-274)
+
+# Validates apr-model-qa-playbook data against aprender family YAMLs
+# This workflow runs independently and doesn't block main CI initially
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'playbooks/**'
+      - 'docs/certifications/**'
+      - 'scripts/validate-aprender-alignment.sh'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'playbooks/**'
+      - 'docs/certifications/**'
+      - 'scripts/validate-aprender-alignment.sh'
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  validate-aprender-alignment:
+    name: Validate Aprender Alignment
+    runs-on: ubuntu-latest
+    # Don't block PRs while we fix existing misalignments
+    continue-on-error: true
+    steps:
+      - name: Checkout apr-model-qa-playbook
+        uses: actions/checkout@v4
+
+      - name: Checkout aprender
+        uses: actions/checkout@v4
+        with:
+          repository: paiml/aprender
+          path: aprender
+          # Use SSH key or token if repo is private
+          # ssh-key: ${{ secrets.APRENDER_DEPLOY_KEY }}
+
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Validate cross-repo alignment
+        run: |
+          ./scripts/validate-aprender-alignment.sh ./aprender
+        env:
+          APRENDER_PATH: ./aprender
+
+      - name: Report alignment status
+        if: always()
+        run: |
+          echo "## Cross-Repo Validation Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if ./scripts/validate-aprender-alignment.sh ./aprender 2>&1 | tee validation.log; then
+            echo "✅ All validations passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Misalignments detected - see log for details" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Log Output" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            cat validation.log >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
