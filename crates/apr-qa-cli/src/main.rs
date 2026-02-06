@@ -16,8 +16,8 @@ use apr_qa_cli::{
     scenarios_to_json, scenarios_to_yaml,
 };
 use apr_qa_report::{MqsScore, PopperianScore};
-use apr_qa_runner::{Evidence, EvidenceCollector};
 use apr_qa_runner::ToolExecutor;
+use apr_qa_runner::{Evidence, EvidenceCollector};
 use clap::{Parser, Subcommand};
 use std::path::{Path, PathBuf};
 
@@ -905,7 +905,14 @@ fn generate_report(evidence_path: &PathBuf, output_dir: &PathBuf, formats: &str,
     let popperian_score = calculate_popperian_score(model_id, &collector);
 
     create_dir_or_exit(output_dir);
-    write_report_formats(output_dir, formats, model_id, &mqs_score, &popperian_score, &collector);
+    write_report_formats(
+        output_dir,
+        formats,
+        model_id,
+        &mqs_score,
+        &popperian_score,
+        &collector,
+    );
 }
 
 fn read_file_or_exit(path: &PathBuf, desc: &str) -> String {
@@ -2397,14 +2404,13 @@ fn update_row_from_export(
     use chrono::Utc;
 
     let model_id = &export.model.hf_repo;
-    let (row_idx, was_updated) =
-        match rows.iter().position(|r| r.model_id == *model_id) {
-            Some(idx) => (idx, true),
-            None => {
-                rows.push(CertificationRow::new(model_id, &export.model.family));
-                (rows.len() - 1, false)
-            }
-        };
+    let (row_idx, was_updated) = match rows.iter().position(|r| r.model_id == *model_id) {
+        Some(idx) => (idx, true),
+        None => {
+            rows.push(CertificationRow::new(model_id, &export.model.family));
+            (rows.len() - 1, false)
+        }
+    };
 
     let row = &mut rows[row_idx];
     row.parameters.clone_from(&export.model.size);
@@ -2415,7 +2421,10 @@ fn update_row_from_export(
     row.status = derive_status_from_mqs(&export.mqs);
     update_gateway_flags(row, &export.gates);
 
-    println!("  Processed: {} → MQS {}, {}", model_id, row.mqs_score, row.status);
+    println!(
+        "  Processed: {} → MQS {}, {}",
+        model_id, row.mqs_score, row.status
+    );
     was_updated
 }
 
