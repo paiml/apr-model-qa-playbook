@@ -197,12 +197,11 @@ pub fn resolve_model_path(base_path: &Path, format: Format) -> Result<std::path:
     }
 
     // Try sharded SafeTensors: {base}/{format}/model.safetensors.index.json
-    // Return the directory for sharded models - apr run handles directory with index
+    // Return the index file path - apr run uses index to locate all shards
     if extension == "safetensors" {
-        let st_dir = base_path.join(subdir);
-        let sharded_index = st_dir.join("model.safetensors.index.json");
+        let sharded_index = base_path.join(subdir).join("model.safetensors.index.json");
         if sharded_index.exists() {
-            return Ok(st_dir);
+            return Ok(sharded_index);
         }
     }
 

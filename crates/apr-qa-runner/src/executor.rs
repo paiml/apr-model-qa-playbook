@@ -1450,12 +1450,11 @@ impl Executor {
         }
 
         // Try sharded SafeTensors: {base}/{format}/model.safetensors.index.json
-        // Return the directory, not the index file - apr run expects a directory for sharded models
+        // Return the index file path - apr run uses index to locate all shards
         if extension == "safetensors" {
-            let st_dir = path.join(subdir);
-            let sharded_index = st_dir.join("model.safetensors.index.json");
+            let sharded_index = path.join(subdir).join("model.safetensors.index.json");
             if sharded_index.exists() {
-                return Some(st_dir.to_string_lossy().to_string());
+                return Some(sharded_index.to_string_lossy().to_string());
             }
         }
 
