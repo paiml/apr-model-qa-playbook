@@ -17,7 +17,7 @@ use apr_qa_cli::{
 };
 use apr_qa_runner::ToolExecutor;
 use clap::{Parser, Subcommand};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[derive(Parser)]
 #[command(name = "apr-qa")]
@@ -627,12 +627,24 @@ fn print_playbook_results(result: &apr_qa_runner::ExecutionResult) {
 }
 
 fn save_playbook_evidence(result: &apr_qa_runner::ExecutionResult, output_dir: &PathBuf) {
-    if let Err(e) = std::fs::create_dir_all(output_dir) {
-        eprintln!("Error creating output directory: {e}");
-        return;
-    }
-
-    let evidence_path = output_dir.join("evidence.json");
+    // GH-212: If --output ends with .json, treat as file path, not directory
+    let evidence_path = if output_dir
+        .extension()
+        .is_some_and(|ext| ext.eq_ignore_ascii_case("json"))
+    {
+        let parent = output_dir.parent().unwrap_or(Path::new("."));
+        if let Err(e) = std::fs::create_dir_all(parent) {
+            eprintln!("Error creating output directory: {e}");
+            return;
+        }
+        output_dir.clone()
+    } else {
+        if let Err(e) = std::fs::create_dir_all(output_dir) {
+            eprintln!("Error creating output directory: {e}");
+            return;
+        }
+        output_dir.join("evidence.json")
+    };
     match result.evidence.to_json() {
         Ok(json) => {
             if let Err(e) = std::fs::write(&evidence_path, json) {
