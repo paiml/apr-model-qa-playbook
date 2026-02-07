@@ -12,7 +12,7 @@ use crate::evidence::Evidence;
 use apr_qa_gen::{Backend, Format, Modality, ModelId, QaScenario};
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 /// Embedded YAML contract — single source of truth for format invariants.
@@ -319,6 +319,20 @@ pub fn run_contract_tests(
     evidence
 }
 
+/// Resolve the APR file path from a workspace directory.
+///
+/// Workspace layout: `{workspace}/apr/model.apr`
+/// Avoids `Path::with_extension` which corrupts names containing dots
+/// (e.g., `Qwen2.5-Coder-0.5B-Instruct` becomes `Qwen2.5-Coder-0.apr`).
+fn resolve_apr_path(model_path: &Path) -> PathBuf {
+    model_path.join("apr").join("model.apr")
+}
+
+/// Resolve the SafeTensors file path from a workspace directory.
+fn resolve_safetensors_path(model_path: &Path) -> PathBuf {
+    model_path.join("safetensors").join("model.safetensors")
+}
+
 /// I-2: Tensor Name Bijection — writer names == reader names.
 fn run_i2_tensor_bijection(
     runner: &Arc<dyn CommandRunner>,
@@ -326,8 +340,9 @@ fn run_i2_tensor_bijection(
     model_id: &ModelId,
     gate_id: &str,
 ) -> Evidence {
-    let apr_path = model_path.with_extension("apr");
-    let result = runner.diff_tensors(model_path, &apr_path, true);
+    let st_path = resolve_safetensors_path(model_path);
+    let apr_path = resolve_apr_path(model_path);
+    let result = runner.diff_tensors(&st_path, &apr_path, true);
 
     if !result.success {
         return Evidence::falsified(
@@ -369,7 +384,8 @@ fn run_i3_no_silent_fallbacks(
     model_id: &ModelId,
     gate_id: &str,
 ) -> Evidence {
-    let result = runner.check_model(model_path);
+    let st_path = resolve_safetensors_path(model_path);
+    let result = runner.check_model(&st_path);
 
     if !result.success {
         return Evidence::falsified(
@@ -412,8 +428,9 @@ fn run_i4_statistical_preservation(
     model_id: &ModelId,
     gate_id: &str,
 ) -> Evidence {
-    let apr_path = model_path.with_extension("apr");
-    let result = runner.validate_stats(model_path, &apr_path);
+    let st_path = resolve_safetensors_path(model_path);
+    let apr_path = resolve_apr_path(model_path);
+    let result = runner.validate_stats(&st_path, &apr_path);
 
     if !result.success {
         return Evidence::falsified(
@@ -455,8 +472,9 @@ fn run_i5_tokenizer_roundtrip(
     model_id: &ModelId,
     gate_id: &str,
 ) -> Evidence {
-    let apr_path = model_path.with_extension("apr");
-    let result = runner.compare_inference(model_path, &apr_path, "Hello", 1, 0.0);
+    let st_path = resolve_safetensors_path(model_path);
+    let apr_path = resolve_apr_path(model_path);
+    let result = runner.compare_inference(&st_path, &apr_path, "Hello", 1, 0.0);
 
     if !result.success {
         return Evidence::falsified(
@@ -705,7 +723,7 @@ mod tests {
 
         let evidence = run_contract_tests(
             &runner,
-            Path::new("/test/model.safetensors"),
+            Path::new("/test/workspace/org/model"),
             &model_id,
             &config,
         );
@@ -729,7 +747,7 @@ mod tests {
 
         let evidence = run_contract_tests(
             &runner,
-            Path::new("/test/model.safetensors"),
+            Path::new("/test/workspace/org/model"),
             &model_id,
             &config,
         );
@@ -751,7 +769,7 @@ mod tests {
 
         let evidence = run_contract_tests(
             &runner,
-            Path::new("/test/model.safetensors"),
+            Path::new("/test/workspace/org/model"),
             &model_id,
             &config,
         );
@@ -774,7 +792,7 @@ mod tests {
 
         let evidence = run_contract_tests(
             &runner,
-            Path::new("/test/model.safetensors"),
+            Path::new("/test/workspace/org/model"),
             &model_id,
             &config,
         );
@@ -796,7 +814,7 @@ mod tests {
 
         let evidence = run_contract_tests(
             &runner,
-            Path::new("/test/model.safetensors"),
+            Path::new("/test/workspace/org/model"),
             &model_id,
             &config,
         );
@@ -819,7 +837,7 @@ mod tests {
 
         let evidence = run_contract_tests(
             &runner,
-            Path::new("/test/model.safetensors"),
+            Path::new("/test/workspace/org/model"),
             &model_id,
             &config,
         );
@@ -841,7 +859,7 @@ mod tests {
 
         let evidence = run_contract_tests(
             &runner,
-            Path::new("/test/model.safetensors"),
+            Path::new("/test/workspace/org/model"),
             &model_id,
             &config,
         );
@@ -864,7 +882,7 @@ mod tests {
 
         let evidence = run_contract_tests(
             &runner,
-            Path::new("/test/model.safetensors"),
+            Path::new("/test/workspace/org/model"),
             &model_id,
             &config,
         );
@@ -884,7 +902,7 @@ mod tests {
 
         let evidence = run_contract_tests(
             &runner,
-            Path::new("/test/model.safetensors"),
+            Path::new("/test/workspace/org/model"),
             &model_id,
             &config,
         );
@@ -913,7 +931,7 @@ mod tests {
 
         let evidence = run_contract_tests(
             &runner,
-            Path::new("/test/model.safetensors"),
+            Path::new("/test/workspace/org/model"),
             &model_id,
             &config,
         );
@@ -935,12 +953,66 @@ mod tests {
 
         let evidence = run_contract_tests(
             &runner,
-            Path::new("/test/model.safetensors"),
+            Path::new("/test/workspace/org/model"),
             &model_id,
             &config,
         );
 
         assert!(evidence.is_empty());
+    }
+
+    #[test]
+    fn test_resolve_paths_with_dots_in_name() {
+        // Regression: Qwen2.5-Coder-0.5B-Instruct contains dots which caused
+        // Path::with_extension("apr") to produce "Qwen2.5-Coder-0.apr"
+        let workspace = Path::new("/output/workspace/Qwen/Qwen2.5-Coder-0.5B-Instruct");
+        let apr = resolve_apr_path(workspace);
+        let st = resolve_safetensors_path(workspace);
+
+        assert_eq!(
+            apr,
+            PathBuf::from("/output/workspace/Qwen/Qwen2.5-Coder-0.5B-Instruct/apr/model.apr")
+        );
+        assert_eq!(
+            st,
+            PathBuf::from(
+                "/output/workspace/Qwen/Qwen2.5-Coder-0.5B-Instruct/safetensors/model.safetensors"
+            )
+        );
+
+        // Contrast with the old broken behavior
+        let broken = workspace.with_extension("apr");
+        assert_eq!(
+            broken,
+            PathBuf::from("/output/workspace/Qwen/Qwen2.5-Coder-0.apr")
+        );
+    }
+
+    #[test]
+    fn test_contract_tests_with_dotted_workspace_path() {
+        use crate::command::MockCommandRunner;
+
+        let runner: Arc<dyn CommandRunner> = Arc::new(MockCommandRunner::new());
+        let model_id = ModelId::new("Qwen", "Qwen2.5-Coder-0.5B-Instruct");
+        let config = ContractTestConfig::default();
+
+        let evidence = run_contract_tests(
+            &runner,
+            Path::new("/workspace/Qwen/Qwen2.5-Coder-0.5B-Instruct"),
+            &model_id,
+            &config,
+        );
+
+        // All 4 invariants (I-2 through I-5) should produce evidence
+        assert_eq!(evidence.len(), 4, "Expected 4 invariant results");
+        for ev in &evidence {
+            // None should mention truncated paths like "Coder-0.apr"
+            assert!(
+                !ev.reason.contains("Coder-0.apr"),
+                "Path was truncated by with_extension: {}",
+                ev.reason
+            );
+        }
     }
 
     #[test]
