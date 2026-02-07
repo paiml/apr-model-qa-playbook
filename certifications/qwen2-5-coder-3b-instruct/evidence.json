@@ -1,6 +1,6 @@
 [
   {
-    "id": "00000000000000001890c7512096e378",
+    "id": "000000000000000018912d7211304839",
     "gate_id": "G0-INTEGRITY-CONFIG",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -31,7 +31,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-03T15:50:04.809644875Z",
+    "timestamp": "2026-02-04T23:01:36.471214608Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -42,7 +42,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c751c1aeb6d2",
+    "id": "000000000000000018912d72ae00d935",
     "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -62,18 +62,18 @@
       "oracle_type": "arithmetic"
     },
     "outcome": "Falsified",
-    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.1.ffn_down.weight\", \"blk.13.attn_k.bias\", \"blk.10.attn_q.weight\", \"blk.1.ffn_up.weight\", \"blk.11.attn_k.bias\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.1.ffn_gate.weight\", \"blk.12.ffn_up.weight\", \"blk.1.attn_v.bias\", \"blk.10.attn_norm.weight\", \"blk.10.attn_q.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors\n",
+    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.11.attn_q.bias\", \"blk.11.ffn_gate.weight\", \"blk.10.attn_k.bias\", \"blk.11.ffn_norm.weight\", \"blk.10.attn_output.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.0.ffn_norm.weight\", \"blk.10.attn_output.weight\", \"blk.10.ffn_up.weight\", \"blk.0.attn_q.bias\", \"blk.11.attn_q.bias\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors\n",
     "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors",
-    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.1.ffn_down.weight\", \"blk.13.attn_k.bias\", \"blk.10.attn_q.weight\", \"blk.1.ffn_up.weight\", \"blk.11.attn_k.bias\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.1.ffn_gate.weight\", \"blk.12.ffn_up.weight\", \"blk.1.attn_v.bias\", \"blk.10.attn_norm.weight\", \"blk.10.attn_q.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors\n",
+    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.11.attn_q.bias\", \"blk.11.ffn_gate.weight\", \"blk.10.attn_k.bias\", \"blk.11.ffn_norm.weight\", \"blk.10.attn_output.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.0.ffn_norm.weight\", \"blk.10.attn_output.weight\", \"blk.10.ffn_up.weight\", \"blk.0.attn_q.bias\", \"blk.11.attn_q.bias\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors\n",
     "exit_code": 8,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 2702
+      "duration_ms": 2630
     },
-    "timestamp": "2026-02-03T15:50:07.512340809Z",
+    "timestamp": "2026-02-04T23:01:39.102130019Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -84,7 +84,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c76b42ace8bc",
+    "id": "000000000000000018912d8cd46bcc8e",
     "gate_id": "F-A1-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_apr_0000000000000001",
@@ -105,17 +105,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/apr/model.apr\n\ntokens: 10\nlatency: 109477.45ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/apr/model.apr",
-    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\n[AprV2ModelCuda] Built indexed weights for 36 layers\n[AprV2ModelCuda] Pre-cached 11698 MB of weights on GPU (36 layers, 253 quantized, 144 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 1187 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\nGenerated 32 tokens in 88262.6ms (0.4 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/apr/model.apr\n\ntokens: 32\nlatency: 112250.59ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/apr/model.apr",
+    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\n[AprV2ModelCuda] VRAM sufficient (23166 MB free), using full cache mode\n[AprV2ModelCuda] Built indexed weights for 36 layers\n[AprV2ModelCuda] Pre-cached 11698 MB of weights on GPU (36 layers, 253 quantized, 144 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 1187 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\nGenerated 32 tokens in 90954.8ms (0.4 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 0.1,
+      "tokens_per_second": 0.3,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 109538
+      "duration_ms": 112313
     },
-    "timestamp": "2026-02-03T15:51:57.050665549Z",
+    "timestamp": "2026-02-04T23:03:31.415822966Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -126,7 +126,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c76cbe742b9f",
+    "id": "000000000000000018912d8e5023dc8a",
     "gate_id": "F-A1-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_gguf_0000000000000002",
@@ -147,17 +147,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/gguf/model.gguf\n\ntokens: 16\nlatency: 6235.84ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/gguf/model.gguf",
-    "stderr": "Generated 32 tokens in 2396.0ms (13.4 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/gguf/model.gguf\n\ntokens: 32\nlatency: 6216.03ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 2402.5ms (13.3 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 2.6,
+      "tokens_per_second": 5.1,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 6371
+      "duration_ms": 6370
     },
-    "timestamp": "2026-02-03T15:52:03.422288709Z",
+    "timestamp": "2026-02-04T23:03:37.786450727Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -168,7 +168,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c76d433c1165",
+    "id": "000000000000000018912d8ed1afc33d",
     "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_run_gpu_safetensors_0000000000000003",
@@ -188,18 +188,18 @@
       "oracle_type": "arithmetic"
     },
     "outcome": "Falsified",
-    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.11.attn_output.weight\", \"blk.1.ffn_down.weight\", \"blk.0.attn_q.bias\", \"blk.12.attn_norm.weight\", \"blk.11.attn_v.bias\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.12.ffn_gate.weight\", \"blk.1.attn_q.weight\", \"blk.0.attn_q.weight\", \"blk.12.attn_v.weight\", \"blk.1.attn_norm.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors\n",
+    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.0.attn_v.bias\", \"blk.10.attn_q.bias\", \"blk.0.ffn_gate.weight\", \"blk.13.attn_norm.weight\", \"blk.10.attn_norm.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.10.ffn_up.weight\", \"blk.12.attn_q.bias\", \"blk.0.attn_v.weight\", \"blk.0.attn_output.weight\", \"blk.12.attn_v.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors\n",
     "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors",
-    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.11.attn_output.weight\", \"blk.1.ffn_down.weight\", \"blk.0.attn_q.bias\", \"blk.12.attn_norm.weight\", \"blk.11.attn_v.bias\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.12.ffn_gate.weight\", \"blk.1.attn_q.weight\", \"blk.0.attn_q.weight\", \"blk.12.attn_v.weight\", \"blk.1.attn_norm.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors\n",
+    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.0.attn_v.bias\", \"blk.10.attn_q.bias\", \"blk.0.ffn_gate.weight\", \"blk.13.attn_norm.weight\", \"blk.10.attn_norm.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.10.ffn_up.weight\", \"blk.12.attn_q.bias\", \"blk.0.attn_v.weight\", \"blk.0.attn_output.weight\", \"blk.12.attn_v.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors\n",
     "exit_code": 8,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 2227
+      "duration_ms": 2173
     },
-    "timestamp": "2026-02-03T15:52:05.649982238Z",
+    "timestamp": "2026-02-04T23:03:39.959879533Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -210,7 +210,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c786b72ae80d",
+    "id": "000000000000000018912da885b9426d",
     "gate_id": "F-A2-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_run_gpu_apr_0000000000000004",
@@ -231,17 +231,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/apr/model.apr\n\ntokens: 10\nlatency: 109261.09ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/apr/model.apr",
-    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\n[AprV2ModelCuda] Built indexed weights for 36 layers\n[AprV2ModelCuda] Pre-cached 11698 MB of weights on GPU (36 layers, 253 quantized, 144 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 1187 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\nGenerated 32 tokens in 88350.3ms (0.4 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/apr/model.apr\n\ntokens: 32\nlatency: 110334.54ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/apr/model.apr",
+    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\n[AprV2ModelCuda] VRAM sufficient (23166 MB free), using full cache mode\n[AprV2ModelCuda] Built indexed weights for 36 layers\n[AprV2ModelCuda] Pre-cached 11698 MB of weights on GPU (36 layers, 253 quantized, 144 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 1187 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\nGenerated 32 tokens in 89740.9ms (0.4 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 0.1,
+      "tokens_per_second": 0.3,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 109319
+      "duration_ms": 110394
     },
-    "timestamp": "2026-02-03T15:53:54.969196608Z",
+    "timestamp": "2026-02-04T23:05:30.354583528Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -252,7 +252,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7880bb71d5a",
+    "id": "000000000000000018912da9e9d01e6e",
     "gate_id": "F-A2-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_run_gpu_gguf_0000000000000005",
@@ -273,17 +273,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/gguf/model.gguf\n\ntokens: 16\nlatency: 5581.43ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/gguf/model.gguf",
-    "stderr": "Generated 32 tokens in 2269.2ms (14.1 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/gguf/model.gguf\n\ntokens: 32\nlatency: 5874.71ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 2437.4ms (13.1 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 2.9,
+      "tokens_per_second": 5.4,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 5713
+      "duration_ms": 5974
     },
-    "timestamp": "2026-02-03T15:54:00.682639053Z",
+    "timestamp": "2026-02-04T23:05:36.328771027Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -294,7 +294,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c78890188de6",
+    "id": "000000000000000018912daa6c5765a1",
     "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_chat_cpu_safetensors_0000000000000006",
@@ -314,18 +314,18 @@
       "oracle_type": "arithmetic"
     },
     "outcome": "Falsified",
-    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.10.ffn_norm.weight\", \"blk.12.attn_v.weight\", \"blk.0.attn_norm.weight\", \"blk.10.attn_q.weight\", \"blk.12.attn_output.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.12.ffn_norm.weight\", \"blk.10.attn_q.bias\", \"blk.11.attn_k.weight\", \"blk.0.attn_q.bias\", \"blk.1.attn_output.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors\n",
+    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.11.ffn_norm.weight\", \"blk.12.ffn_norm.weight\", \"blk.0.attn_v.weight\", \"blk.10.ffn_norm.weight\", \"blk.11.attn_output.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.0.ffn_down.weight\", \"blk.0.ffn_gate.weight\", \"blk.10.attn_q.weight\", \"blk.0.attn_v.bias\", \"blk.10.attn_norm.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors\n",
     "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors",
-    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.10.ffn_norm.weight\", \"blk.12.attn_v.weight\", \"blk.0.attn_norm.weight\", \"blk.10.attn_q.weight\", \"blk.12.attn_output.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.12.ffn_norm.weight\", \"blk.10.attn_q.bias\", \"blk.11.attn_k.weight\", \"blk.0.attn_q.bias\", \"blk.1.attn_output.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors\n",
+    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.11.ffn_norm.weight\", \"blk.12.ffn_norm.weight\", \"blk.0.attn_v.weight\", \"blk.10.ffn_norm.weight\", \"blk.11.attn_output.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.0.ffn_down.weight\", \"blk.0.ffn_gate.weight\", \"blk.10.attn_q.weight\", \"blk.0.attn_v.bias\", \"blk.10.attn_norm.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors\n",
     "exit_code": 8,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 2220
+      "duration_ms": 2189
     },
-    "timestamp": "2026-02-03T15:54:02.903617359Z",
+    "timestamp": "2026-02-04T23:05:38.518674043Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -336,7 +336,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7a2229e79bf",
+    "id": "000000000000000018912dc4129edefe",
     "gate_id": "F-A3-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_chat_cpu_apr_0000000000000007",
@@ -357,17 +357,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/apr/model.apr\n\ntokens: 10\nlatency: 109771.36ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/apr/model.apr",
-    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\n[AprV2ModelCuda] Built indexed weights for 36 layers\n[AprV2ModelCuda] Pre-cached 11698 MB of weights on GPU (36 layers, 253 quantized, 144 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 1187 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\nGenerated 32 tokens in 88885.4ms (0.4 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/apr/model.apr\n\ntokens: 32\nlatency: 110105.88ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/apr/model.apr",
+    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\n[AprV2ModelCuda] VRAM sufficient (23166 MB free), using full cache mode\n[AprV2ModelCuda] Built indexed weights for 36 layers\n[AprV2ModelCuda] Pre-cached 11698 MB of weights on GPU (36 layers, 253 quantized, 144 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 1187 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\nGenerated 32 tokens in 89507.7ms (0.4 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 0.1,
+      "tokens_per_second": 0.3,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 109832
+      "duration_ms": 110163
     },
-    "timestamp": "2026-02-03T15:55:52.736049659Z",
+    "timestamp": "2026-02-04T23:07:28.682558424Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -378,7 +378,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7a380696c94",
+    "id": "000000000000000018912dc5767a48e4",
     "gate_id": "F-A3-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_chat_cpu_gguf_0000000000000008",
@@ -399,17 +399,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/gguf/model.gguf\n\ntokens: 16\nlatency: 5747.13ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/gguf/model.gguf",
-    "stderr": "Generated 32 tokens in 2347.6ms (13.6 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/gguf/model.gguf\n\ntokens: 32\nlatency: 5821.45ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 2452.4ms (13.0 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 2.8,
+      "tokens_per_second": 5.5,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 5868
+      "duration_ms": 5970
     },
-    "timestamp": "2026-02-03T15:55:58.604598421Z",
+    "timestamp": "2026-02-04T23:07:34.652849838Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -420,7 +420,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7a40511056b",
+    "id": "000000000000000018912dc5faf995f6",
     "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_chat_gpu_safetensors_0000000000000009",
@@ -440,18 +440,18 @@
       "oracle_type": "arithmetic"
     },
     "outcome": "Falsified",
-    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.1.attn_norm.weight\", \"blk.11.ffn_up.weight\", \"blk.11.attn_k.bias\", \"blk.0.ffn_gate.weight\", \"blk.1.ffn_up.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.1.attn_v.weight\", \"blk.11.attn_v.bias\", \"blk.12.attn_v.weight\", \"blk.1.attn_q.weight\", \"blk.1.attn_k.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors\n",
+    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.13.attn_k.bias\", \"blk.0.ffn_up.weight\", \"blk.10.attn_q.bias\", \"blk.10.attn_output.weight\", \"blk.11.ffn_up.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.1.ffn_norm.weight\", \"blk.10.attn_output.weight\", \"blk.12.attn_norm.weight\", \"blk.10.ffn_norm.weight\", \"blk.10.ffn_gate.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors\n",
     "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors",
-    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.1.attn_norm.weight\", \"blk.11.ffn_up.weight\", \"blk.11.attn_k.bias\", \"blk.0.ffn_gate.weight\", \"blk.1.ffn_up.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.1.attn_v.weight\", \"blk.11.attn_v.bias\", \"blk.12.attn_v.weight\", \"blk.1.attn_q.weight\", \"blk.1.attn_k.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors\n",
+    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.13.attn_k.bias\", \"blk.0.ffn_up.weight\", \"blk.10.attn_q.bias\", \"blk.10.attn_output.weight\", \"blk.11.ffn_up.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.1.ffn_norm.weight\", \"blk.10.attn_output.weight\", \"blk.12.attn_norm.weight\", \"blk.10.ffn_norm.weight\", \"blk.10.ffn_gate.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors\n",
     "exit_code": 8,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 2225
+      "duration_ms": 2222
     },
-    "timestamp": "2026-02-03T15:56:00.830175132Z",
+    "timestamp": "2026-02-04T23:07:36.875785112Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -462,7 +462,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7bdacacb4f3",
+    "id": "000000000000000018912ddfc10f7d49",
     "gate_id": "F-A4-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_chat_gpu_apr_000000000000000a",
@@ -483,17 +483,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/apr/model.apr\n\ntokens: 10\nlatency: 110128.54ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/apr/model.apr",
-    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\n[AprV2ModelCuda] Built indexed weights for 36 layers\n[AprV2ModelCuda] Pre-cached 11698 MB of weights on GPU (36 layers, 253 quantized, 144 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 1187 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\nGenerated 32 tokens in 89141.8ms (0.4 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/apr/model.apr\n\ntokens: 32\nlatency: 110637.33ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/apr/model.apr",
+    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\n[AprV2ModelCuda] VRAM sufficient (23166 MB free), using full cache mode\n[AprV2ModelCuda] Built indexed weights for 36 layers\n[AprV2ModelCuda] Pre-cached 11698 MB of weights on GPU (36 layers, 253 quantized, 144 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 1187 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\nGenerated 32 tokens in 90069.0ms (0.4 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 0.1,
+      "tokens_per_second": 0.3,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 110186
+      "duration_ms": 110697
     },
-    "timestamp": "2026-02-03T15:57:51.016355019Z",
+    "timestamp": "2026-02-04T23:09:27.573291655Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -504,7 +504,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7bf070d68e2",
+    "id": "000000000000000018912de12b2d3ead",
     "gate_id": "F-A4-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_chat_gpu_gguf_000000000000000b",
@@ -525,17 +525,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/gguf/model.gguf\n\ntokens: 16\nlatency: 5676.68ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/gguf/model.gguf",
-    "stderr": "Generated 32 tokens in 2351.9ms (13.6 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/gguf/model.gguf\n\ntokens: 32\nlatency: 5918.53ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 2449.7ms (13.1 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 2.8,
+      "tokens_per_second": 5.4,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 5811
+      "duration_ms": 6075
     },
-    "timestamp": "2026-02-03T15:57:56.827609344Z",
+    "timestamp": "2026-02-04T23:09:33.648593979Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -546,7 +546,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7bf8ced06d5",
+    "id": "000000000000000018912de1ae9f9c47",
     "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_serve_cpu_safetensors_000000000000000c",
@@ -566,18 +566,18 @@
       "oracle_type": "arithmetic"
     },
     "outcome": "Falsified",
-    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.1.ffn_down.weight\", \"blk.12.ffn_gate.weight\", \"blk.11.ffn_gate.weight\", \"blk.1.ffn_norm.weight\", \"blk.1.ffn_up.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.0.attn_k.weight\", \"blk.0.attn_q.bias\", \"blk.1.attn_v.bias\", \"blk.10.attn_norm.weight\", \"blk.11.ffn_gate.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors\n",
+    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.10.attn_k.bias\", \"blk.12.attn_q.weight\", \"blk.0.attn_q.weight\", \"blk.1.attn_norm.weight\", \"blk.12.ffn_up.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.11.attn_output.weight\", \"blk.10.ffn_up.weight\", \"blk.10.ffn_gate.weight\", \"blk.11.attn_k.weight\", \"blk.13.attn_output.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors\n",
     "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors",
-    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.1.ffn_down.weight\", \"blk.12.ffn_gate.weight\", \"blk.11.ffn_gate.weight\", \"blk.1.ffn_norm.weight\", \"blk.1.ffn_up.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.0.attn_k.weight\", \"blk.0.attn_q.bias\", \"blk.1.attn_v.bias\", \"blk.10.attn_norm.weight\", \"blk.11.ffn_gate.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors\n",
+    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.10.attn_k.bias\", \"blk.12.attn_q.weight\", \"blk.0.attn_q.weight\", \"blk.1.attn_norm.weight\", \"blk.12.ffn_up.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.11.attn_output.weight\", \"blk.10.ffn_up.weight\", \"blk.10.ffn_gate.weight\", \"blk.11.attn_k.weight\", \"blk.13.attn_output.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors\n",
     "exit_code": 8,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 2246
+      "duration_ms": 2205
     },
-    "timestamp": "2026-02-03T15:57:59.073634186Z",
+    "timestamp": "2026-02-04T23:09:35.853904141Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -588,7 +588,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7d93895f5bd",
+    "id": "000000000000000018912dfb882b4412",
     "gate_id": "F-A5-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_serve_cpu_apr_000000000000000d",
@@ -609,17 +609,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/apr/model.apr\n\ntokens: 10\nlatency: 110196.88ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/apr/model.apr",
-    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\n[AprV2ModelCuda] Built indexed weights for 36 layers\n[AprV2ModelCuda] Pre-cached 11698 MB of weights on GPU (36 layers, 253 quantized, 144 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 1187 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\nGenerated 32 tokens in 89334.6ms (0.4 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/apr/model.apr\n\ntokens: 32\nlatency: 110956.31ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/apr/model.apr",
+    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\n[AprV2ModelCuda] VRAM sufficient (23166 MB free), using full cache mode\n[AprV2ModelCuda] Built indexed weights for 36 layers\n[AprV2ModelCuda] Pre-cached 11698 MB of weights on GPU (36 layers, 253 quantized, 144 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 1187 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\nGenerated 32 tokens in 90332.1ms (0.4 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 0.1,
+      "tokens_per_second": 0.3,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 110254
+      "duration_ms": 111023
     },
-    "timestamp": "2026-02-03T15:59:49.327791579Z",
+    "timestamp": "2026-02-04T23:11:26.877895042Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -630,7 +630,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7da963b62fe",
+    "id": "000000000000000018912dfceb3fea7d",
     "gate_id": "F-A5-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_serve_cpu_gguf_000000000000000e",
@@ -651,17 +651,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/gguf/model.gguf\n\ntokens: 16\nlatency: 5717.63ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/gguf/model.gguf",
-    "stderr": "Generated 32 tokens in 2355.0ms (13.6 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/gguf/model.gguf\n\ntokens: 32\nlatency: 5838.87ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 2429.4ms (13.2 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 2.8,
+      "tokens_per_second": 5.5,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 5866
+      "duration_ms": 5957
     },
-    "timestamp": "2026-02-03T15:59:55.193881262Z",
+    "timestamp": "2026-02-04T23:11:32.835160886Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -672,7 +672,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7db1b7c344b",
+    "id": "000000000000000018912dfd70197940",
     "gate_id": "G2-BASIC",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_serve_gpu_safetensors_000000000000000f",
@@ -692,18 +692,18 @@
       "oracle_type": "arithmetic"
     },
     "outcome": "Falsified",
-    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.11.ffn_down.weight\", \"blk.11.attn_v.weight\", \"blk.10.attn_k.weight\", \"blk.12.ffn_up.weight\", \"blk.10.attn_norm.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.13.attn_norm.weight\", \"blk.1.attn_v.bias\", \"blk.12.attn_k.weight\", \"blk.10.ffn_up.weight\", \"blk.10.attn_output.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors\n",
+    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.12.attn_q.weight\", \"blk.0.ffn_up.weight\", \"blk.13.attn_k.weight\", \"blk.1.ffn_down.weight\", \"blk.1.attn_v.bias\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.11.attn_v.weight\", \"blk.12.attn_norm.weight\", \"blk.1.attn_q.weight\", \"blk.10.attn_v.weight\", \"blk.11.attn_k.bias\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors\n",
     "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors",
-    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.11.ffn_down.weight\", \"blk.11.attn_v.weight\", \"blk.10.attn_k.weight\", \"blk.12.ffn_up.weight\", \"blk.10.attn_norm.weight\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.13.attn_norm.weight\", \"blk.1.attn_v.bias\", \"blk.12.attn_k.weight\", \"blk.10.ffn_up.weight\", \"blk.10.attn_output.weight\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors\n",
+    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.12.attn_q.weight\", \"blk.0.ffn_up.weight\", \"blk.13.attn_k.weight\", \"blk.1.ffn_down.weight\", \"blk.1.attn_v.bias\"], ...\n\n--- TRACE OUTPUT ---\nInference tracing enabled (APR-TRACE-001)\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.11.attn_v.weight\", \"blk.12.attn_norm.weight\", \"blk.1.attn_q.weight\", \"blk.10.attn_v.weight\", \"blk.11.attn_k.bias\"], ...\n\n--- TRACE STDOUT ---\n=== APR Run ===\n\nSource: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/safetensors/model.safetensors\n",
     "exit_code": 8,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 2235
+      "duration_ms": 2228
     },
-    "timestamp": "2026-02-03T15:59:57.429499676Z",
+    "timestamp": "2026-02-04T23:11:35.064010236Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -714,7 +714,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7f6c7f6ee22",
+    "id": "000000000000000018912e1732dd8008",
     "gate_id": "F-A6-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_serve_gpu_apr_0000000000000010",
@@ -735,17 +735,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/apr/model.apr\n\ntokens: 10\nlatency: 118790.61ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/apr/model.apr",
-    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\n[AprV2ModelCuda] Built indexed weights for 36 layers\n[AprV2ModelCuda] Pre-cached 11698 MB of weights on GPU (36 layers, 253 quantized, 144 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 1187 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\nGenerated 32 tokens in 97778.7ms (0.3 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/apr/model.apr\n\ntokens: 32\nlatency: 110582.05ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/apr/model.apr",
+    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\n[AprV2ModelCuda] VRAM sufficient (23166 MB free), using full cache mode\n[AprV2ModelCuda] Built indexed weights for 36 layers\n[AprV2ModelCuda] Pre-cached 11698 MB of weights on GPU (36 layers, 253 quantized, 144 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 1187 MB\n[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\nGenerated 32 tokens in 90068.4ms (0.4 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 0.1,
+      "tokens_per_second": 0.3,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 118857
+      "duration_ms": 110641
     },
-    "timestamp": "2026-02-03T16:01:56.287340217Z",
+    "timestamp": "2026-02-04T23:13:25.705819492Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -756,7 +756,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7f841aa00ae",
+    "id": "000000000000000018912e189353e346",
     "gate_id": "F-A6-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_serve_gpu_gguf_0000000000000011",
@@ -777,17 +777,17 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/gguf/model.gguf\n\ntokens: 16\nlatency: 6177.20ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/gguf/model.gguf",
-    "stderr": "Generated 32 tokens in 2590.3ms (12.4 tok/s)\n",
+    "output": "Source: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/gguf/model.gguf\n\ntokens: 32\nlatency: 5788.06ms\nmodel: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct/gguf/model.gguf",
+    "stderr": "Generated 32 tokens in 2417.1ms (13.2 tok/s)\n",
     "exit_code": 0,
     "metrics": {
-      "tokens_per_second": 2.6,
+      "tokens_per_second": 5.5,
       "time_to_first_token_ms": null,
       "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 6336
+      "duration_ms": 5913
     },
-    "timestamp": "2026-02-03T16:02:02.624086140Z",
+    "timestamp": "2026-02-04T23:13:31.619158529Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -798,13 +798,13 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7f841d94eb5",
+    "id": "000000000000000018912e26cb66a966",
     "gate_id": "F-CONV-G-A",
     "scenario": {
-      "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_apr_0000000000000000",
+      "id": "test_run_cpu_apr_0000000000000000",
       "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-3B-Instruct",
+        "org": "conversion",
+        "name": "test",
         "variant": null
       },
       "modality": "run",
@@ -818,8 +818,8 @@
       "oracle_type": "garbage"
     },
     "outcome": "Falsified",
-    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
-    "output": "N/A",
+    "reason": "Conversion Gguf → Apr produced different output (diff: 8.67e-1, ε: 1.00e-6)",
+    "output": "1573bbcee78a5c81",
     "stderr": null,
     "exit_code": null,
     "metrics": {
@@ -829,7 +829,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-03T16:02:02.627185617Z",
+    "timestamp": "2026-02-04T23:14:32.689454415Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -840,13 +840,13 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7f8420a916c",
+    "id": "000000000000000018912e349f0461e3",
     "gate_id": "F-CONV-G-A",
     "scenario": {
-      "id": "Qwen2.5-Coder-3B-Instruct_run_gpu_apr_0000000000000000",
+      "id": "test_run_gpu_apr_0000000000000000",
       "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-3B-Instruct",
+        "org": "conversion",
+        "name": "test",
         "variant": null
       },
       "modality": "run",
@@ -860,8 +860,8 @@
       "oracle_type": "garbage"
     },
     "outcome": "Falsified",
-    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
-    "output": "N/A",
+    "reason": "Conversion Gguf → Apr produced different output (diff: 8.67e-1, ε: 1.00e-6)",
+    "output": "861fe1ddb6026e8f",
     "stderr": null,
     "exit_code": null,
     "metrics": {
@@ -871,7 +871,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-03T16:02:02.630414340Z",
+    "timestamp": "2026-02-04T23:15:32.074358141Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -882,13 +882,13 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7f8423db9ae",
+    "id": "000000000000000018912e5d08d20d48",
     "gate_id": "F-CONV-A-G",
     "scenario": {
-      "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_gguf_0000000000000000",
+      "id": "test_run_cpu_gguf_0000000000000000",
       "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-3B-Instruct",
+        "org": "conversion",
+        "name": "test",
         "variant": null
       },
       "modality": "run",
@@ -902,8 +902,8 @@
       "oracle_type": "garbage"
     },
     "outcome": "Falsified",
-    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
-    "output": "N/A",
+    "reason": "Conversion Apr → Gguf produced different output (diff: 8.97e-1, ε: 1.00e-6)",
+    "output": "cca3786afab279e2",
     "stderr": null,
     "exit_code": null,
     "metrics": {
@@ -913,7 +913,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-03T16:02:02.633764678Z",
+    "timestamp": "2026-02-04T23:18:25.648136558Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -924,13 +924,13 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7f842674a35",
+    "id": "000000000000000018912e8cbc7ca17b",
     "gate_id": "F-CONV-A-G",
     "scenario": {
-      "id": "Qwen2.5-Coder-3B-Instruct_run_gpu_gguf_0000000000000000",
+      "id": "test_run_gpu_gguf_0000000000000000",
       "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-3B-Instruct",
+        "org": "conversion",
+        "name": "test",
         "variant": null
       },
       "modality": "run",
@@ -944,8 +944,8 @@
       "oracle_type": "garbage"
     },
     "outcome": "Falsified",
-    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
-    "output": "N/A",
+    "reason": "Conversion Apr → Gguf produced different output (diff: 8.97e-1, ε: 1.00e-6)",
+    "output": "3da90e92664f58a7",
     "stderr": null,
     "exit_code": null,
     "metrics": {
@@ -955,7 +955,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-03T16:02:02.636488262Z",
+    "timestamp": "2026-02-04T23:21:50.525900142Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -966,13 +966,13 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7f8428cf5d3",
+    "id": "000000000000000018912ea0dae116eb",
     "gate_id": "F-CONV-G-S",
     "scenario": {
-      "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_safetensors_0000000000000000",
+      "id": "test_run_cpu_safetensors_0000000000000000",
       "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-3B-Instruct",
+        "org": "conversion",
+        "name": "test",
         "variant": null
       },
       "modality": "run",
@@ -986,8 +986,8 @@
       "oracle_type": "garbage"
     },
     "outcome": "Falsified",
-    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
-    "output": "N/A",
+    "reason": "Conversion Gguf → SafeTensors produced different output (diff: 8.56e-1, ε: 1.00e-6)",
+    "output": "879530ee64192080",
     "stderr": null,
     "exit_code": null,
     "metrics": {
@@ -997,7 +997,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-03T16:02:02.638956889Z",
+    "timestamp": "2026-02-04T23:23:16.935146377Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1008,13 +1008,13 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7f842b3c1e4",
+    "id": "000000000000000018912eb8125a6861",
     "gate_id": "F-CONV-G-S",
     "scenario": {
-      "id": "Qwen2.5-Coder-3B-Instruct_run_gpu_safetensors_0000000000000000",
+      "id": "test_run_gpu_safetensors_0000000000000000",
       "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-3B-Instruct",
+        "org": "conversion",
+        "name": "test",
         "variant": null
       },
       "modality": "run",
@@ -1028,8 +1028,8 @@
       "oracle_type": "garbage"
     },
     "outcome": "Falsified",
-    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
-    "output": "N/A",
+    "reason": "Conversion Gguf → SafeTensors produced different output (diff: 8.56e-1, ε: 1.00e-6)",
+    "output": "6f4b903ba85774af",
     "stderr": null,
     "exit_code": null,
     "metrics": {
@@ -1039,7 +1039,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-03T16:02:02.641502292Z",
+    "timestamp": "2026-02-04T23:24:56.650091624Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1050,7 +1050,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7f842e10fd0",
+    "id": "000000000000000018912eb85878ed1c",
     "gate_id": "F-CONV-S-G",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_gguf_0000000000000000",
@@ -1070,7 +1070,7 @@
       "oracle_type": "garbage"
     },
     "outcome": "Falsified",
-    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
+    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.10.attn_q.weight\", \"blk.10.attn_k.bias\", \"blk.10.attn_v.bias\", \"blk.0.ffn_up.weight\", \"blk.10.attn_q.bias\"], ...\n",
     "output": "N/A",
     "stderr": null,
     "exit_code": null,
@@ -1081,7 +1081,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-03T16:02:02.644469988Z",
+    "timestamp": "2026-02-04T23:24:57.826496683Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1092,7 +1092,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7f843062cfe",
+    "id": "000000000000000018912eb89acd95b0",
     "gate_id": "F-CONV-S-G",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_run_gpu_gguf_0000000000000000",
@@ -1112,7 +1112,7 @@
       "oracle_type": "garbage"
     },
     "outcome": "Falsified",
-    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
+    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.11.attn_v.bias\", \"blk.0.attn_norm.weight\", \"blk.1.ffn_up.weight\", \"blk.10.attn_q.weight\", \"blk.1.attn_q.bias\"], ...\n",
     "output": "N/A",
     "stderr": null,
     "exit_code": null,
@@ -1123,7 +1123,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-03T16:02:02.646900887Z",
+    "timestamp": "2026-02-04T23:24:58.939341150Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1134,7 +1134,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7f84329105b",
+    "id": "000000000000000018912ee4d40306c7",
     "gate_id": "F-CONV-A-S",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -1154,7 +1154,7 @@
       "oracle_type": "garbage"
     },
     "outcome": "Falsified",
-    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
+    "reason": "Conversion infrastructure error: Execution error: Inference failed: \n[PMAT-172] ERROR: No tokenizer found for output/conversions/Qwen/Qwen2.5-Coder-3B-Instruct/basic/model.converted.safetensors.\n           Expected sibling file: model.converted.tokenizer.json or tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\n\nthread 'main' (2877831) panicked at /home/noah/src/realizar/src/apr_transformer/mod.rs:1660:28:\nrange end index 4096 out of range for slice of length 2560\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n",
     "output": "N/A",
     "stderr": null,
     "exit_code": null,
@@ -1165,7 +1165,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-03T16:02:02.649187296Z",
+    "timestamp": "2026-02-04T23:28:08.877705744Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1176,7 +1176,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7f8434d3b72",
+    "id": "000000000000000018912f1210281f43",
     "gate_id": "F-CONV-A-S",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_run_gpu_safetensors_0000000000000000",
@@ -1196,7 +1196,7 @@
       "oracle_type": "garbage"
     },
     "outcome": "Falsified",
-    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
+    "reason": "Conversion infrastructure error: Execution error: Inference failed: \n[PMAT-172] ERROR: No tokenizer found for output/conversions/Qwen/Qwen2.5-Coder-3B-Instruct/basic/model.converted.safetensors.\n           Expected sibling file: model.converted.tokenizer.json or tokenizer.json\n           For SafeTensors models, tokenizer.json must be in same directory.\n\n\nthread 'main' (2880855) panicked at /home/noah/src/realizar/src/apr_transformer/mod.rs:1660:28:\nrange end index 4096 out of range for slice of length 2560\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n",
     "output": "N/A",
     "stderr": null,
     "exit_code": null,
@@ -1207,7 +1207,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-03T16:02:02.651557563Z",
+    "timestamp": "2026-02-04T23:31:23.160298094Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1218,7 +1218,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7f8437356e0",
+    "id": "000000000000000018912f124fcd1f08",
     "gate_id": "F-CONV-S-A",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_apr_0000000000000000",
@@ -1238,7 +1238,7 @@
       "oracle_type": "garbage"
     },
     "outcome": "Falsified",
-    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
+    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.11.attn_q.bias\", \"blk.11.attn_output.weight\", \"blk.10.ffn_gate.weight\", \"blk.10.ffn_up.weight\", \"blk.11.attn_v.weight\"], ...\n",
     "output": "N/A",
     "stderr": null,
     "exit_code": null,
@@ -1249,7 +1249,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-03T16:02:02.654055224Z",
+    "timestamp": "2026-02-04T23:31:24.228076163Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1260,7 +1260,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7f8439a0a42",
+    "id": "000000000000000018912f128fd37489",
     "gate_id": "F-CONV-S-A",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_run_gpu_apr_0000000000000000",
@@ -1280,7 +1280,7 @@
       "oracle_type": "garbage"
     },
     "outcome": "Falsified",
-    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
+    "reason": "Conversion infrastructure error: Execution error: Inference failed: error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.11.attn_v.weight\", \"blk.11.ffn_down.weight\", \"blk.0.attn_q.weight\", \"blk.0.ffn_norm.weight\", \"blk.11.attn_q.weight\"], ...\n",
     "output": "N/A",
     "stderr": null,
     "exit_code": null,
@@ -1291,7 +1291,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-03T16:02:02.656591103Z",
+    "timestamp": "2026-02-04T23:31:25.302233202Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1302,19 +1302,19 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7f843e36cd0",
+    "id": "000000000000000018912f50af0209af",
     "gate_id": "F-CONV-RT-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_gguf_0000000000000000",
+      "id": "test_run_cpu_gguf_0000000000000000",
       "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-3B-Instruct",
+        "org": "conversion",
+        "name": "test",
         "variant": null
       },
       "modality": "run",
       "backend": "cpu",
       "format": "gguf",
-      "prompt": "Round-trip conversion",
+      "prompt": "Convert Gguf to Gguf",
       "temperature": 0.0,
       "max_tokens": 32,
       "seed": 0,
@@ -1322,8 +1322,8 @@
       "oracle_type": "garbage"
     },
     "outcome": "Falsified",
-    "reason": "Round-trip failed: Execution error: Conversion failed: error: Validation failed: Source inspection failed: Invalid model format: No file extension found\n",
-    "output": "N/A",
+    "reason": "Round-trip conversion produced different output",
+    "output": "6faf364b98cdf080",
     "stderr": null,
     "exit_code": null,
     "metrics": {
@@ -1333,7 +1333,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-03T16:02:02.661400641Z",
+    "timestamp": "2026-02-04T23:35:52.113352148Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1344,19 +1344,19 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7f844373093",
+    "id": "000000000000000018912f8e0bbedb9c",
     "gate_id": "F-CONV-RT-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-3B-Instruct_run_gpu_gguf_0000000000000000",
+      "id": "test_run_gpu_gguf_0000000000000000",
       "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-3B-Instruct",
+        "org": "conversion",
+        "name": "test",
         "variant": null
       },
       "modality": "run",
       "backend": "gpu",
       "format": "gguf",
-      "prompt": "Round-trip conversion",
+      "prompt": "Convert Gguf to Gguf",
       "temperature": 0.0,
       "max_tokens": 32,
       "seed": 0,
@@ -1364,8 +1364,8 @@
       "oracle_type": "garbage"
     },
     "outcome": "Falsified",
-    "reason": "Round-trip failed: Execution error: Conversion failed: error: Validation failed: Source inspection failed: Invalid model format: No file extension found\n",
-    "output": "N/A",
+    "reason": "Round-trip conversion produced different output",
+    "output": "f387420214d87767",
     "stderr": null,
     "exit_code": null,
     "metrics": {
@@ -1375,7 +1375,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-03T16:02:02.666889984Z",
+    "timestamp": "2026-02-04T23:40:15.662235285Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1386,19 +1386,19 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7f8447df5d5",
+    "id": "000000000000000018912f977097c636",
     "gate_id": "F-CONV-RT-002",
     "scenario": {
-      "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_safetensors_0000000000000000",
+      "id": "test_run_cpu_safetensors_0000000000000000",
       "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-3B-Instruct",
+        "org": "conversion",
+        "name": "test",
         "variant": null
       },
       "modality": "run",
       "backend": "cpu",
       "format": "safetensors",
-      "prompt": "Multi-hop: SafeTensors→Apr→Gguf→SafeTensors",
+      "prompt": "Convert SafeTensors to SafeTensors",
       "temperature": 0.0,
       "max_tokens": 32,
       "seed": 0,
@@ -1406,8 +1406,8 @@
       "oracle_type": "garbage"
     },
     "outcome": "Falsified",
-    "reason": "Multi-hop chain failed: Execution error: Conversion failed: error: Validation failed: Source inspection failed: Invalid model format: No file extension found\n",
-    "output": "N/A",
+    "reason": "Round-trip conversion produced different output",
+    "output": "4c5c21a35bc548ee",
     "stderr": null,
     "exit_code": null,
     "metrics": {
@@ -1417,7 +1417,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-03T16:02:02.671528263Z",
+    "timestamp": "2026-02-04T23:40:56.008878453Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1428,19 +1428,19 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7f844ccac89",
+    "id": "000000000000000018912fa129dace8f",
     "gate_id": "F-CONV-RT-002",
     "scenario": {
-      "id": "Qwen2.5-Coder-3B-Instruct_run_gpu_safetensors_0000000000000000",
+      "id": "test_run_gpu_safetensors_0000000000000000",
       "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-3B-Instruct",
+        "org": "conversion",
+        "name": "test",
         "variant": null
       },
       "modality": "run",
       "backend": "gpu",
       "format": "safetensors",
-      "prompt": "Multi-hop: SafeTensors→Apr→Gguf→SafeTensors",
+      "prompt": "Convert SafeTensors to SafeTensors",
       "temperature": 0.0,
       "max_tokens": 32,
       "seed": 0,
@@ -1448,8 +1448,8 @@
       "oracle_type": "garbage"
     },
     "outcome": "Falsified",
-    "reason": "Multi-hop chain failed: Execution error: Conversion failed: error: Validation failed: Source inspection failed: Invalid model format: No file extension found\n",
-    "output": "N/A",
+    "reason": "Round-trip conversion produced different output",
+    "output": "4c5c21a35bc548ee",
     "stderr": null,
     "exit_code": null,
     "metrics": {
@@ -1459,7 +1459,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-03T16:02:02.676686942Z",
+    "timestamp": "2026-02-04T23:41:37.771762156Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1470,19 +1470,19 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7f8451f0246",
+    "id": "000000000000000018912fabbaf0673c",
     "gate_id": "F-CONV-RT-003",
     "scenario": {
-      "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_safetensors_0000000000000000",
+      "id": "test_run_cpu_safetensors_0000000000000000",
       "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-3B-Instruct",
+        "org": "conversion",
+        "name": "test",
         "variant": null
       },
       "modality": "run",
       "backend": "cpu",
       "format": "safetensors",
-      "prompt": "Multi-hop: SafeTensors→Apr→Gguf→Apr→SafeTensors",
+      "prompt": "Convert SafeTensors to SafeTensors",
       "temperature": 0.0,
       "max_tokens": 32,
       "seed": 0,
@@ -1490,8 +1490,8 @@
       "oracle_type": "garbage"
     },
     "outcome": "Falsified",
-    "reason": "Multi-hop chain failed: Execution error: Conversion failed: error: Validation failed: Source inspection failed: Invalid model format: No file extension found\n",
-    "output": "N/A",
+    "reason": "Round-trip conversion produced different output",
+    "output": "b8e242448f409d6c",
     "stderr": null,
     "exit_code": null,
     "metrics": {
@@ -1501,7 +1501,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-03T16:02:02.682084666Z",
+    "timestamp": "2026-02-04T23:42:23.155546738Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1512,19 +1512,19 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7f845773d11",
+    "id": "000000000000000018912fb67377982c",
     "gate_id": "F-CONV-RT-003",
     "scenario": {
-      "id": "Qwen2.5-Coder-3B-Instruct_run_gpu_safetensors_0000000000000000",
+      "id": "test_run_gpu_safetensors_0000000000000000",
       "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-3B-Instruct",
+        "org": "conversion",
+        "name": "test",
         "variant": null
       },
       "modality": "run",
       "backend": "gpu",
       "format": "safetensors",
-      "prompt": "Multi-hop: SafeTensors→Apr→Gguf→Apr→SafeTensors",
+      "prompt": "Convert SafeTensors to SafeTensors",
       "temperature": 0.0,
       "max_tokens": 32,
       "seed": 0,
@@ -1532,8 +1532,8 @@
       "oracle_type": "garbage"
     },
     "outcome": "Falsified",
-    "reason": "Multi-hop chain failed: Execution error: Conversion failed: error: Validation failed: Source inspection failed: Invalid model format: No file extension found\n",
-    "output": "N/A",
+    "reason": "Round-trip conversion produced different output",
+    "output": "b8e242448f409d6c",
     "stderr": null,
     "exit_code": null,
     "metrics": {
@@ -1543,7 +1543,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-03T16:02:02.687865092Z",
+    "timestamp": "2026-02-04T23:43:09.201087439Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1554,19 +1554,19 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7f845a41be1",
+    "id": "000000000000000018912fcfb04d7b65",
     "gate_id": "F-CONV-IDEM-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_apr_0000000000000000",
+      "id": "test_run_cpu_apr_0000000000000000",
       "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-3B-Instruct",
+        "org": "conversion",
+        "name": "test",
         "variant": null
       },
       "modality": "run",
       "backend": "cpu",
       "format": "apr",
-      "prompt": "Idempotency: GGUF→APR twice",
+      "prompt": "Convert Gguf to Apr",
       "temperature": 0.0,
       "max_tokens": 32,
       "seed": 0,
@@ -1574,8 +1574,8 @@
       "oracle_type": "garbage"
     },
     "outcome": "Falsified",
-    "reason": "Idempotency test failed: Execution error: Conversion failed: error: Validation failed: Source inspection failed: Invalid model format: No file extension found\n",
-    "output": "N/A",
+    "reason": "Idempotency failure: Gguf→Apr produced different output on second conversion",
+    "output": "9a96615c3af5b681",
     "stderr": null,
     "exit_code": null,
     "metrics": {
@@ -1585,7 +1585,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-03T16:02:02.690806969Z",
+    "timestamp": "2026-02-04T23:44:57.595920306Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1596,19 +1596,19 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7f845c8e389",
+    "id": "000000000000000018912fe975dfdec9",
     "gate_id": "F-CONV-IDEM-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-3B-Instruct_run_gpu_apr_0000000000000000",
+      "id": "test_run_gpu_apr_0000000000000000",
       "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-3B-Instruct",
+        "org": "conversion",
+        "name": "test",
         "variant": null
       },
       "modality": "run",
       "backend": "gpu",
       "format": "apr",
-      "prompt": "Idempotency: GGUF→APR twice",
+      "prompt": "Convert Gguf to Apr",
       "temperature": 0.0,
       "max_tokens": 32,
       "seed": 0,
@@ -1616,8 +1616,8 @@
       "oracle_type": "garbage"
     },
     "outcome": "Falsified",
-    "reason": "Idempotency test failed: Execution error: Conversion failed: error: Validation failed: Source inspection failed: Invalid model format: No file extension found\n",
-    "output": "N/A",
+    "reason": "Idempotency failure: Gguf→Apr produced different output on second conversion",
+    "output": "7ea1aa5ed3f5f8d3",
     "stderr": null,
     "exit_code": null,
     "metrics": {
@@ -1627,7 +1627,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-03T16:02:02.693216385Z",
+    "timestamp": "2026-02-04T23:46:48.284807839Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1638,19 +1638,19 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7f845f2f21d",
+    "id": "00000000000000001891302e9b3a804f",
     "gate_id": "F-CONV-COM-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_apr_0000000000000000",
+      "id": "test_run_cpu_apr_0000000000000000",
       "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-3B-Instruct",
+        "org": "conversion",
+        "name": "test",
         "variant": null
       },
       "modality": "run",
       "backend": "cpu",
       "format": "apr",
-      "prompt": "Commutativity: GGUF→APR vs GGUF→ST→APR",
+      "prompt": "Convert Gguf to Apr",
       "temperature": 0.0,
       "max_tokens": 32,
       "seed": 0,
@@ -1658,8 +1658,8 @@
       "oracle_type": "garbage"
     },
     "outcome": "Falsified",
-    "reason": "Commutativity test failed: Execution error: Conversion failed: error: Validation failed: Source inspection failed: Invalid model format: No file extension found\n",
-    "output": "N/A",
+    "reason": "Commutativity failure: GGUF→APR differs from GGUF→ST→APR",
+    "output": "b0cfd35c12dec678",
     "stderr": null,
     "exit_code": null,
     "metrics": {
@@ -1669,7 +1669,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-03T16:02:02.695973911Z",
+    "timestamp": "2026-02-04T23:51:45.264248065Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1680,19 +1680,19 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7f84614feef",
+    "id": "000000000000000018913074dc6bcbd1",
     "gate_id": "F-CONV-COM-001",
     "scenario": {
-      "id": "Qwen2.5-Coder-3B-Instruct_run_gpu_apr_0000000000000000",
+      "id": "test_run_gpu_apr_0000000000000000",
       "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-3B-Instruct",
+        "org": "conversion",
+        "name": "test",
         "variant": null
       },
       "modality": "run",
       "backend": "gpu",
       "format": "apr",
-      "prompt": "Commutativity: GGUF→APR vs GGUF→ST→APR",
+      "prompt": "Convert Gguf to Apr",
       "temperature": 0.0,
       "max_tokens": 32,
       "seed": 0,
@@ -1700,8 +1700,8 @@
       "oracle_type": "garbage"
     },
     "outcome": "Falsified",
-    "reason": "Commutativity test failed: Execution error: Conversion failed: error: Validation failed: Source inspection failed: Invalid model format: No file extension found\n",
-    "output": "N/A",
+    "reason": "Commutativity failure: GGUF→APR differs from GGUF→ST→APR",
+    "output": "9c71fec8ee53fbb7",
     "stderr": null,
     "exit_code": null,
     "metrics": {
@@ -1711,7 +1711,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-03T16:02:02.698203544Z",
+    "timestamp": "2026-02-04T23:56:47.005708249Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -1722,7 +1722,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001890c7f846428762",
+    "id": "000000000000000018913075384be22c",
     "gate_id": "F-GOLDEN-RULE-001",
     "scenario": {
       "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_apr_0000000000000000",
@@ -1742,7 +1742,7 @@
       "oracle_type": "garbage"
     },
     "outcome": "Falsified",
-    "reason": "Golden Rule: original inference failed: error: Inference failed: Inference failed: Security error: Invalid model file extension: '.'. Expected one of: gguf, safetensors, apr, bin\n",
+    "reason": "Golden Rule: original inference failed: error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.embed_tokens.weight', 'token_embd.weight', or 'embed_tokens.weight'. Available tensors (64 total): [\"blk.0.attn_q.weight\", \"blk.11.ffn_gate.weight\", \"blk.11.attn_v.weight\", \"blk.1.attn_v.weight\", \"blk.10.ffn_down.weight\"], ...\n",
     "output": "N/A",
     "stderr": null,
     "exit_code": null,
@@ -1753,7 +1753,175 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-03T16:02:02.701188476Z",
+    "timestamp": "2026-02-04T23:56:48.547120892Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "000000000000000018913075387bc074",
+    "gate_id": "F-CONTRACT-I2-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_apr_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-3B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "Format contract invariant",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "I-2 Tensor Name Bijection: diff-tensors failed: error: File not found: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct.apr\n",
+    "output": "",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-04T23:56:48.550257788Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001891307538a93c5c",
+    "gate_id": "F-CONTRACT-I3-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_apr_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-3B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "Format contract invariant",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "I-3 No Silent Fallbacks: check failed: error: Invalid APR format: Unsupported format: . Use .apr or .gguf\n",
+    "output": "\n=== Model Self-Test (PMAT-112: Real Validation) ===\nModel: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct\n\n",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-04T23:56:48.553238748Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001891307538d84f5e",
+    "gate_id": "F-CONTRACT-I4-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_apr_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-3B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "Format contract invariant",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "I-4 Statistical Preservation: validate-stats failed: error: unexpected argument '/home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct.apr' found\n\nUsage: apr rosetta validate-stats [OPTIONS] <MODEL>\n\nFor more information, try '--help'.\n",
+    "output": "",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-04T23:56:48.556323686Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001891307538fdc51c",
+    "gate_id": "F-CONTRACT-I5-001",
+    "scenario": {
+      "id": "Qwen2.5-Coder-3B-Instruct_run_cpu_apr_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-3B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "Format contract invariant",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "I-5 Tokenizer Roundtrip: compare-inference failed: error: File not found: /home/noah/.cache/apr-models/qwen2-5-coder-3b-instruct.apr\n",
+    "output": "",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-04T23:56:48.558778059Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
