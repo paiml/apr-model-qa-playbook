@@ -159,10 +159,23 @@ These gates validate cross-runtime consistency between APR and Ollama.
 |---------|-------------|
 | F-OLLAMA-001 | APR and Ollama both produce output for the same prompt |
 | F-OLLAMA-002 | APR throughput is at least `min_perf_ratio` of Ollama throughput |
+| F-OLLAMA-003 | TTFT (time-to-first-token) ratio APR/Ollama within 3x threshold |
+| F-OLLAMA-004 | Ollama API endpoint `/api/tags` is accessible |
+| F-OLLAMA-005 | Ollama loads our GGUF via `ollama create` without errors |
 
 Ollama parity testing ensures that APR inference produces comparable results
 to Ollama for the same model and quantization. This catches runtime-specific
 bugs that format-level tests cannot detect.
+
+### Performance Gates (F-PERF-*)
+
+| Gate ID | Description |
+|---------|-------------|
+| F-PERF-003 | GPU throughput >= CPU throughput (ratio >= 1.0x) |
+| F-PERF-005 | Memory profiling completes and reports peak RSS |
+
+Performance gates run when `profile_ci` is enabled. F-PERF-003 requires both
+`cpu` and `gpu` in the profile backends list.
 
 ### Legacy Conversion Gates
 

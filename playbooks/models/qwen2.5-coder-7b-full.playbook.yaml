@@ -89,7 +89,7 @@ profile_ci:
     min_throughput_cpu: 5.0
     min_throughput_gpu: 50.0
     max_p99_ms: 5000.0
-  gates: ["F-PROFILE-CI-001", "F-PROFILE-CI-002"]
+  gates: ["F-PROFILE-CI-001", "F-PROFILE-CI-002", "F-PERF-003", "F-PERF-005"]
 
 # Trace payload testing
 trace_payload:
@@ -115,7 +115,7 @@ ollama_parity:
     - "Explain the difference between a stack and a queue."
   temperature: 0.0
   min_perf_ratio: 0.8
-  gates: ["F-OLLAMA-001", "F-OLLAMA-002"]
+  gates: ["F-OLLAMA-001", "F-OLLAMA-002", "F-OLLAMA-003", "F-OLLAMA-004", "F-OLLAMA-005"]
 
 metadata:
   author: "apr-qa-gen"

@@ -154,6 +154,20 @@ pub trait CommandRunner: Send + Sync {
 
     /// Execute `ollama pull <model_tag>` to acquire model (GH-6/AC-2)
     fn pull_ollama_model(&self, model_tag: &str) -> CommandOutput;
+
+    /// Execute `ollama create <tag> -f <modelfile>` to register a GGUF with ollama (F-OLLAMA-005)
+    fn create_ollama_model(&self, model_tag: &str, modelfile_path: &Path) -> CommandOutput;
+
+    /// Execute `apr serve` and return immediately (F-OLLAMA-004)
+    ///
+    /// The returned output contains the PID or server info in stdout.
+    fn serve_model(&self, model_path: &Path, port: u16) -> CommandOutput;
+
+    /// Execute an HTTP GET request (F-OLLAMA-004)
+    fn http_get(&self, url: &str) -> CommandOutput;
+
+    /// Execute `apr profile --memory` for memory usage (F-PERF-005)
+    fn profile_memory(&self, model_path: &Path) -> CommandOutput;
 }
 
 /// Real command runner that executes actual subprocess commands
@@ -465,6 +479,49 @@ impl CommandRunner for RealCommandRunner {
             Err(e) => CommandOutput::failure(-1, format!("Failed to execute ollama: {e}")),
         }
     }
+
+    fn create_ollama_model(&self, model_tag: &str, modelfile_path: &Path) -> CommandOutput {
+        use std::process::Command;
+
+        let path_str = modelfile_path.display().to_string();
+        match Command::new("ollama")
+            .args(["create", model_tag, "-f", &path_str])
+            .output()
+        {
+            Ok(output) => CommandOutput {
+                stdout: String::from_utf8_lossy(&output.stdout).to_string(),
+                stderr: String::from_utf8_lossy(&output.stderr).to_string(),
+                exit_code: output.status.code().unwrap_or(-1),
+                success: output.status.success(),
+            },
+            Err(e) => CommandOutput::failure(-1, format!("Failed to execute ollama create: {e}")),
+        }
+    }
+
+    fn serve_model(&self, model_path: &Path, port: u16) -> CommandOutput {
+        let model_str = model_path.display().to_string();
+        let port_str = port.to_string();
+        self.execute(&["serve", &model_str, "--port", &port_str])
+    }
+
+    fn http_get(&self, url: &str) -> CommandOutput {
+        use std::process::Command;
+
+        match Command::new("curl").args(["-s", "-m", "10", url]).output() {
+            Ok(output) => CommandOutput {
+                stdout: String::from_utf8_lossy(&output.stdout).to_string(),
+                stderr: String::from_utf8_lossy(&output.stderr).to_string(),
+                exit_code: output.status.code().unwrap_or(-1),
+                success: output.status.success(),
+            },
+            Err(e) => CommandOutput::failure(-1, format!("Failed to execute curl: {e}")),
+        }
+    }
+
+    fn profile_memory(&self, model_path: &Path) -> CommandOutput {
+        let path_str = model_path.display().to_string();
+        self.execute(&["profile", &path_str, "--memory", "--json"])
+    }
 }
 
 /// Mock command runner for testing
@@ -530,6 +587,16 @@ pub struct MockCommandRunner {
     pub ollama_response: String,
     /// Whether ollama pull should succeed
     pub ollama_pull_success: bool,
+    /// Whether ollama create should succeed
+    pub ollama_create_success: bool,
+    /// Whether serve_model should succeed
+    pub serve_success: bool,
+    /// Whether http_get should succeed
+    pub http_get_success: bool,
+    /// Custom HTTP response body
+    pub http_get_response: String,
+    /// Whether profile_memory should succeed
+    pub profile_memory_success: bool,
 }
 
 impl Default for MockCommandRunner {
@@ -574,6 +641,11 @@ impl Default for MockCommandRunner {
             ollama_success: true,
             ollama_response: "The answer is 4.".to_string(),
             ollama_pull_success: true,
+            ollama_create_success: true,
+            serve_success: true,
+            http_get_success: true,
+            http_get_response: r#"{"models":[]}"#.to_string(),
+            profile_memory_success: true,
         }
     }
 }
@@ -783,6 +855,41 @@ impl MockCommandRunner {
     #[must_use]
     pub fn with_ollama_pull_failure(mut self) -> Self {
         self.ollama_pull_success = false;
+        self
+    }
+
+    /// Set whether ollama create should fail
+    #[must_use]
+    pub fn with_ollama_create_failure(mut self) -> Self {
+        self.ollama_create_success = false;
+        self
+    }
+
+    /// Set whether serve_model should fail
+    #[must_use]
+    pub fn with_serve_failure(mut self) -> Self {
+        self.serve_success = false;
+        self
+    }
+
+    /// Set whether http_get should fail
+    #[must_use]
+    pub fn with_http_get_failure(mut self) -> Self {
+        self.http_get_success = false;
+        self
+    }
+
+    /// Set custom HTTP response body
+    #[must_use]
+    pub fn with_http_get_response(mut self, response: impl Into<String>) -> Self {
+        self.http_get_response = response.into();
+        self
+    }
+
+    /// Set whether profile_memory should fail
+    #[must_use]
+    pub fn with_profile_memory_failure(mut self) -> Self {
+        self.profile_memory_success = false;
         self
     }
 }
@@ -1070,6 +1177,38 @@ impl CommandRunner for MockCommandRunner {
             CommandOutput::success("pulling manifest... done")
         } else {
             CommandOutput::failure(1, "Ollama pull failed: model not found in registry")
+        }
+    }
+
+    fn create_ollama_model(&self, _model_tag: &str, _modelfile_path: &Path) -> CommandOutput {
+        if self.ollama_create_success {
+            CommandOutput::success("creating model... done")
+        } else {
+            CommandOutput::failure(1, "Ollama create failed: invalid modelfile")
+        }
+    }
+
+    fn serve_model(&self, _model_path: &Path, _port: u16) -> CommandOutput {
+        if self.serve_success {
+            CommandOutput::success(r#"{"status":"listening","port":8080}"#)
+        } else {
+            CommandOutput::failure(1, "Serve failed: port in use")
+        }
+    }
+
+    fn http_get(&self, _url: &str) -> CommandOutput {
+        if self.http_get_success {
+            CommandOutput::success(&self.http_get_response)
+        } else {
+            CommandOutput::failure(1, "HTTP request failed: connection refused")
+        }
+    }
+
+    fn profile_memory(&self, _model_path: &Path) -> CommandOutput {
+        if self.profile_memory_success {
+            CommandOutput::success(r#"{"peak_rss_mb":1024,"model_size_mb":512,"kv_cache_mb":256}"#)
+        } else {
+            CommandOutput::failure(1, "Profile memory failed: insufficient memory")
         }
     }
 }
@@ -1950,5 +2089,118 @@ mod tests {
         assert!(runner.ollama_success);
         assert!(runner.ollama_pull_success);
         assert_eq!(runner.ollama_response, "The answer is 4.");
+    }
+
+    // ── New gate methods (F-OLLAMA-003/004/005, F-PERF-003/005) ────────
+
+    #[test]
+    fn test_mock_runner_create_ollama_success() {
+        let runner = MockCommandRunner::new();
+        let path = PathBuf::from("/tmp/Modelfile");
+        let output = runner.create_ollama_model("test:latest", &path);
+        assert!(output.success);
+        assert!(output.stdout.contains("creating model"));
+    }
+
+    #[test]
+    fn test_mock_runner_create_ollama_failure() {
+        let runner = MockCommandRunner::new().with_ollama_create_failure();
+        let path = PathBuf::from("/tmp/Modelfile");
+        let output = runner.create_ollama_model("test:latest", &path);
+        assert!(!output.success);
+    }
+
+    #[test]
+    fn test_mock_runner_serve_success() {
+        let runner = MockCommandRunner::new();
+        let path = PathBuf::from("model.gguf");
+        let output = runner.serve_model(&path, 8080);
+        assert!(output.success);
+        assert!(output.stdout.contains("listening"));
+    }
+
+    #[test]
+    fn test_mock_runner_serve_failure() {
+        let runner = MockCommandRunner::new().with_serve_failure();
+        let path = PathBuf::from("model.gguf");
+        let output = runner.serve_model(&path, 8080);
+        assert!(!output.success);
+    }
+
+    #[test]
+    fn test_mock_runner_http_get_success() {
+        let runner = MockCommandRunner::new();
+        let output = runner.http_get("http://localhost:8080/v1/models");
+        assert!(output.success);
+        assert!(output.stdout.contains("models"));
+    }
+
+    #[test]
+    fn test_mock_runner_http_get_failure() {
+        let runner = MockCommandRunner::new().with_http_get_failure();
+        let output = runner.http_get("http://localhost:8080/v1/models");
+        assert!(!output.success);
+    }
+
+    #[test]
+    fn test_mock_runner_http_get_custom_response() {
+        let runner = MockCommandRunner::new().with_http_get_response(r#"{"status":"ok"}"#);
+        let output = runner.http_get("http://localhost:8080/health");
+        assert!(output.success);
+        assert!(output.stdout.contains("ok"));
+    }
+
+    #[test]
+    fn test_mock_runner_profile_memory_success() {
+        let runner = MockCommandRunner::new();
+        let path = PathBuf::from("model.gguf");
+        let output = runner.profile_memory(&path);
+        assert!(output.success);
+        assert!(output.stdout.contains("peak_rss_mb"));
+    }
+
+    #[test]
+    fn test_mock_runner_profile_memory_failure() {
+        let runner = MockCommandRunner::new().with_profile_memory_failure();
+        let path = PathBuf::from("model.gguf");
+        let output = runner.profile_memory(&path);
+        assert!(!output.success);
+    }
+
+    #[test]
+    fn test_mock_runner_new_default_fields() {
+        let runner = MockCommandRunner::default();
+        assert!(runner.ollama_create_success);
+        assert!(runner.serve_success);
+        assert!(runner.http_get_success);
+        assert!(runner.profile_memory_success);
+    }
+
+    #[test]
+    fn test_real_runner_create_ollama_model() {
+        // create_ollama_model calls `ollama` binary directly (not apr).
+        // With a nonexistent modelfile, it should fail regardless.
+        let runner = RealCommandRunner::new();
+        let path = PathBuf::from("/nonexistent/path/Modelfile");
+        let output = runner.create_ollama_model("apr-test-nonexistent:latest", &path);
+        // Either ollama isn't installed (failure) or modelfile is missing (failure)
+        // This tests the execution path, not the success case
+        assert!(output.exit_code != 0 || !output.success || output.stderr.contains("Error"));
+    }
+
+    #[test]
+    fn test_real_runner_serve_model() {
+        let runner = RealCommandRunner::with_binary("/nonexistent/binary");
+        let path = PathBuf::from("model.gguf");
+        let output = runner.serve_model(&path, 8080);
+        assert!(!output.success);
+    }
+
+    #[test]
+    fn test_real_runner_profile_memory() {
+        let runner = RealCommandRunner::with_binary("/nonexistent/binary");
+        let path = PathBuf::from("model.gguf");
+        let output = runner.profile_memory(&path);
+        assert!(!output.success);
     }
 }

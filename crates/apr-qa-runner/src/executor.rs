@@ -11,11 +11,40 @@ use crate::error::Result;
 use crate::evidence::{Evidence, EvidenceCollector, Outcome, PerformanceMetrics};
 use crate::integrity;
 use crate::layout_contract::{DEFAULT_CONTRACT_PATH, load_contract_from, validate_model};
-use crate::playbook::Playbook;
+use crate::playbook::{OllamaParityConfig, Playbook};
 use apr_qa_gen::{Backend, Format, HfParityOracle, Modality, ModelId, QaScenario, Tolerance};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Instant;
+
+/// Parse timing in milliseconds from command output (e.g., "Completed in 1.5s" -> 1500.0)
+fn parse_timing_ms(output: &str) -> Option<f64> {
+    // Match "Completed in X.Xs" or "X.Xs" pattern
+    for line in output.lines() {
+        let lower = line.to_lowercase();
+        if let Some(pos) = lower.find("completed in ") {
+            let after = &lower[pos + 13..];
+            if let Some(s_pos) = after.find('s') {
+                if let Ok(secs) = after[..s_pos].trim().parse::<f64>() {
+                    return Some(secs * 1000.0);
+                }
+            }
+        }
+    }
+    None
+}
+
+/// Parse throughput in tok/s from JSON output (e.g., `"throughput_tps":25.0`)
+fn parse_throughput(output: &str) -> Option<f64> {
+    // Match "throughput_tps":N.N in JSON
+    if let Some(pos) = output.find("\"throughput_tps\":") {
+        let after = &output[pos + 17..];
+        let end = after.find(|c: char| !c.is_ascii_digit() && c != '.')?;
+        after[..end].parse::<f64>().ok()
+    } else {
+        None
+    }
+}
 
 /// Failure handling policy (Jidoka)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -482,6 +511,16 @@ impl Executor {
             (0, 0)
         };
 
+        // Performance gates (F-PERF-003, F-PERF-005): GPU/CPU ratio + memory profiling
+        let (perf_passed, perf_failed) = if self.config.run_profile_ci {
+            self.config.model_path.clone().map_or((0, 0), |model_path| {
+                let model_id = playbook.model_id();
+                self.run_perf_gates(Path::new(&model_path), &model_id, playbook)
+            })
+        } else {
+            (0, 0)
+        };
+
         // Ollama parity tests (GH-6/AC-2): cross-runtime validation
         let (ollama_passed, ollama_failed) = if self.config.run_ollama_parity {
             self.config.model_path.clone().map_or((0, 0), |model_path| {
@@ -502,7 +541,8 @@ impl Executor {
             + format_passed
             + tensor_passed
             + layout_passed
-            + ollama_passed;
+            + ollama_passed
+            + perf_passed;
         let total_failed = failed
             + conversion_failed
             + golden_failed
@@ -514,7 +554,8 @@ impl Executor {
             + format_failed
             + tensor_failed
             + layout_failed
-            + ollama_failed;
+            + ollama_failed
+            + perf_failed;
 
         Ok(ExecutionResult {
             playbook_name: playbook.name.clone(),
@@ -540,7 +581,9 @@ impl Executor {
                 + layout_passed
                 + layout_failed
                 + ollama_passed
-                + ollama_failed,
+                + ollama_failed
+                + perf_passed
+                + perf_failed,
             passed: total_passed,
             failed: total_failed,
             skipped,
@@ -840,8 +883,8 @@ impl Executor {
 
     /// Run ollama parity tests (GH-6/AC-2)
     ///
-    /// For each quant × prompt: run APR inference + ollama inference, compare output tokens.
-    /// Gate F-OLLAMA-001: output match. Gate F-OLLAMA-002: performance ratio.
+    /// For each quant x prompt: run APR inference + ollama inference, compare output tokens.
+    /// Gate F-OLLAMA-001: output match. Gate F-OLLAMA-003: TTFT comparison.
     fn run_ollama_parity_tests(
         &mut self,
         model_path: &Path,
@@ -881,18 +924,36 @@ impl Executor {
             return (0, 1);
         }
 
+        let (p, f) = self.run_ollama_prompt_gates(model_path, &model_id, &model_tag, &config);
+        passed += p;
+        failed += f;
+
+        let (p, f) = self.run_ollama_ecosystem_gates(model_path, &model_id);
+        passed += p;
+        failed += f;
+
+        (passed, failed)
+    }
+
+    /// Run per-prompt ollama gates: F-OLLAMA-001 (output match) and F-OLLAMA-003 (TTFT).
+    fn run_ollama_prompt_gates(
+        &mut self,
+        model_path: &Path,
+        model_id: &ModelId,
+        model_tag: &str,
+        config: &OllamaParityConfig,
+    ) -> (usize, usize) {
+        let mut passed = 0;
+        let mut failed = 0;
+
         for prompt in &config.prompts {
-            // Run APR inference
             let apr_output = self
                 .command_runner
                 .run_inference(model_path, prompt, 32, false, &[]);
-
-            // Run ollama inference
             let ollama_output =
                 self.command_runner
-                    .run_ollama_inference(&model_tag, prompt, config.temperature);
+                    .run_ollama_inference(model_tag, prompt, config.temperature);
 
-            // Gate F-OLLAMA-001: Both must succeed and produce output
             let scenario = QaScenario::new(
                 model_id.clone(),
                 Modality::Run,
@@ -915,15 +976,232 @@ impl Executor {
                 continue;
             }
 
-            // Both succeeded — corroborate
             let ev = Evidence::corroborated(
                 "F-OLLAMA-001",
-                scenario,
+                scenario.clone(),
                 &format!("APR and ollama both produced output for prompt: {prompt}"),
                 0,
             );
             self.collector.add(ev);
             passed += 1;
+
+            // Gate F-OLLAMA-003: TTFT comparison (time-to-first-token)
+            let apr_ttft = crate::executor::parse_timing_ms(&apr_output.stdout);
+            let ollama_ttft = crate::executor::parse_timing_ms(&ollama_output.stdout);
+            if let (Some(apr_ms), Some(ollama_ms)) = (apr_ttft, ollama_ttft) {
+                let ratio = apr_ms / ollama_ms.max(1.0);
+                #[allow(clippy::cast_sign_loss)]
+                let duration = apr_ms.round() as u64;
+                if ratio <= 3.0 {
+                    let ev = Evidence::corroborated(
+                        "F-OLLAMA-003",
+                        scenario.clone(),
+                        &format!(
+                            "TTFT ratio APR/Ollama: {ratio:.2} (APR={apr_ms:.0}ms, Ollama={ollama_ms:.0}ms)"
+                        ),
+                        duration,
+                    );
+                    self.collector.add(ev);
+                    passed += 1;
+                } else {
+                    let ev = Evidence::falsified(
+                        "F-OLLAMA-003",
+                        scenario.clone(),
+                        format!("TTFT ratio {ratio:.2} exceeds 3.0x threshold"),
+                        &format!("APR={apr_ms:.0}ms, Ollama={ollama_ms:.0}ms"),
+                        duration,
+                    );
+                    self.collector.add(ev);
+                    failed += 1;
+                }
+            }
+        }
+
+        (passed, failed)
+    }
+
+    /// Run ecosystem ollama gates: F-OLLAMA-005 (GGUF loadability) and F-OLLAMA-004 (API).
+    fn run_ollama_ecosystem_gates(
+        &mut self,
+        model_path: &Path,
+        model_id: &ModelId,
+    ) -> (usize, usize) {
+        let mut passed = 0;
+        let mut failed = 0;
+
+        // Gate F-OLLAMA-005: Ollama loads our GGUF without errors
+        let gguf_scenario = QaScenario::new(
+            model_id.clone(),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "ollama GGUF loadability".to_string(),
+            0,
+        );
+        let create_output = self
+            .command_runner
+            .create_ollama_model(&format!("apr-test-{}", model_id.name), model_path);
+        if create_output.success {
+            let ev = Evidence::corroborated(
+                "F-OLLAMA-005",
+                gguf_scenario,
+                "Ollama successfully loaded our GGUF via `ollama create`",
+                0,
+            );
+            self.collector.add(ev);
+            passed += 1;
+        } else {
+            let ev = Evidence::falsified(
+                "F-OLLAMA-005",
+                gguf_scenario,
+                format!("Ollama failed to load GGUF: {}", create_output.stderr),
+                &create_output.stdout,
+                0,
+            );
+            self.collector.add(ev);
+            failed += 1;
+        }
+
+        // Gate F-OLLAMA-004: API endpoint parity (/v1/models exists on both)
+        let api_scenario = QaScenario::new(
+            model_id.clone(),
+            Modality::Serve,
+            Backend::Cpu,
+            Format::SafeTensors,
+            "ollama API parity".to_string(),
+            0,
+        );
+        let ollama_api = self
+            .command_runner
+            .http_get("http://localhost:11434/api/tags");
+        if ollama_api.success {
+            let ev = Evidence::corroborated(
+                "F-OLLAMA-004",
+                api_scenario,
+                "Ollama API endpoint /api/tags is accessible",
+                0,
+            );
+            self.collector.add(ev);
+            passed += 1;
+        } else {
+            let ev = Evidence::falsified(
+                "F-OLLAMA-004",
+                api_scenario,
+                format!("Ollama API not accessible: {}", ollama_api.stderr),
+                &ollama_api.stdout,
+                0,
+            );
+            self.collector.add(ev);
+            failed += 1;
+        }
+
+        (passed, failed)
+    }
+
+    /// Run performance gates: F-PERF-003 (GPU/CPU ratio) and F-PERF-005 (memory profiling)
+    fn run_perf_gates(
+        &mut self,
+        model_path: &Path,
+        model_id: &ModelId,
+        playbook: &Playbook,
+    ) -> (usize, usize) {
+        let mut passed = 0;
+        let mut failed = 0;
+
+        let profile_config = match &playbook.profile_ci {
+            Some(c) if c.enabled => c,
+            _ => return (0, 0),
+        };
+
+        // F-PERF-003: GPU vs CPU throughput comparison
+        let has_cpu = profile_config
+            .backends
+            .iter()
+            .any(|b| b.eq_ignore_ascii_case("cpu"));
+        let includes_gpu = profile_config
+            .backends
+            .iter()
+            .any(|b| b.eq_ignore_ascii_case("gpu"));
+
+        if has_cpu && includes_gpu {
+            let warmup = profile_config.warmup as u32;
+            let measure = profile_config.measure as u32;
+            let cpu_output = self
+                .command_runner
+                .profile_ci(model_path, None, None, warmup, measure);
+            let gpu_output = self
+                .command_runner
+                .profile_ci(model_path, None, None, warmup, measure);
+
+            let cpu_tps = crate::executor::parse_throughput(&cpu_output.stdout);
+            let gpu_tps = crate::executor::parse_throughput(&gpu_output.stdout);
+
+            let scenario = QaScenario::new(
+                model_id.clone(),
+                Modality::Run,
+                Backend::Gpu,
+                Format::SafeTensors,
+                "GPU vs CPU throughput ratio".to_string(),
+                0,
+            );
+
+            if let (Some(cpu), Some(gpu)) = (cpu_tps, gpu_tps) {
+                let ratio = gpu / cpu.max(0.01);
+                if ratio >= 1.0 {
+                    let ev = Evidence::corroborated(
+                        "F-PERF-003",
+                        scenario,
+                        &format!(
+                            "GPU/CPU ratio: {ratio:.1}x (GPU={gpu:.1} tok/s, CPU={cpu:.1} tok/s)"
+                        ),
+                        0,
+                    );
+                    self.collector.add(ev);
+                    passed += 1;
+                } else {
+                    let ev = Evidence::falsified(
+                        "F-PERF-003",
+                        scenario,
+                        format!("GPU slower than CPU: ratio {ratio:.2}x"),
+                        &format!("GPU={gpu:.1} tok/s, CPU={cpu:.1} tok/s"),
+                        0,
+                    );
+                    self.collector.add(ev);
+                    failed += 1;
+                }
+            }
+        }
+
+        // F-PERF-005: Memory profiling
+        let mem_output = self.command_runner.profile_memory(model_path);
+        let mem_scenario = QaScenario::new(
+            model_id.clone(),
+            Modality::Run,
+            Backend::Cpu,
+            Format::SafeTensors,
+            "memory profiling".to_string(),
+            0,
+        );
+
+        if mem_output.success {
+            let ev = Evidence::corroborated(
+                "F-PERF-005",
+                mem_scenario,
+                &format!("Memory profile collected: {}", mem_output.stdout.trim()),
+                0,
+            );
+            self.collector.add(ev);
+            passed += 1;
+        } else {
+            let ev = Evidence::falsified(
+                "F-PERF-005",
+                mem_scenario,
+                format!("Memory profiling failed: {}", mem_output.stderr),
+                &mem_output.stdout,
+                0,
+            );
+            self.collector.add(ev);
+            failed += 1;
         }
 
         (passed, failed)
@@ -5731,6 +6009,18 @@ test_matrix:
             fn pull_ollama_model(&self, _model_tag: &str) -> CommandOutput {
                 CommandOutput::success("pulling manifest... done")
             }
+            fn create_ollama_model(&self, _: &str, _: &Path) -> CommandOutput {
+                CommandOutput::success("creating model... done")
+            }
+            fn serve_model(&self, _: &Path, _: u16) -> CommandOutput {
+                CommandOutput::success(r#"{"status":"listening"}"#)
+            }
+            fn http_get(&self, _: &str) -> CommandOutput {
+                CommandOutput::success(r#"{"models":[]}"#)
+            }
+            fn profile_memory(&self, _: &Path) -> CommandOutput {
+                CommandOutput::success(r#"{"peak_rss_mb":1024}"#)
+            }
         }
 
         let config = ExecutionConfig {
@@ -5886,6 +6176,18 @@ test_matrix:
             fn pull_ollama_model(&self, _model_tag: &str) -> CommandOutput {
                 CommandOutput::success("pulling manifest... done")
             }
+            fn create_ollama_model(&self, _: &str, _: &Path) -> CommandOutput {
+                CommandOutput::success("creating model... done")
+            }
+            fn serve_model(&self, _: &Path, _: u16) -> CommandOutput {
+                CommandOutput::success(r#"{"status":"listening"}"#)
+            }
+            fn http_get(&self, _: &str) -> CommandOutput {
+                CommandOutput::success(r#"{"models":[]}"#)
+            }
+            fn profile_memory(&self, _: &Path) -> CommandOutput {
+                CommandOutput::success(r#"{"peak_rss_mb":1024}"#)
+            }
         }
 
         let config = ExecutionConfig {
@@ -6036,6 +6338,18 @@ test_matrix:
             }
             fn pull_ollama_model(&self, _model_tag: &str) -> CommandOutput {
                 CommandOutput::success("pulling manifest... done")
+            }
+            fn create_ollama_model(&self, _: &str, _: &Path) -> CommandOutput {
+                CommandOutput::success("creating model... done")
+            }
+            fn serve_model(&self, _: &Path, _: u16) -> CommandOutput {
+                CommandOutput::success(r#"{"status":"listening"}"#)
+            }
+            fn http_get(&self, _: &str) -> CommandOutput {
+                CommandOutput::success(r#"{"models":[]}"#)
+            }
+            fn profile_memory(&self, _: &Path) -> CommandOutput {
+                CommandOutput::success(r#"{"peak_rss_mb":1024}"#)
             }
         }
 
@@ -6661,6 +6975,18 @@ test_matrix:
             }
             fn pull_ollama_model(&self, _model_tag: &str) -> CommandOutput {
                 CommandOutput::success("pulling manifest... done")
+            }
+            fn create_ollama_model(&self, _: &str, _: &Path) -> CommandOutput {
+                CommandOutput::success("creating model... done")
+            }
+            fn serve_model(&self, _: &Path, _: u16) -> CommandOutput {
+                CommandOutput::success(r#"{"status":"listening"}"#)
+            }
+            fn http_get(&self, _: &str) -> CommandOutput {
+                CommandOutput::success(r#"{"models":[]}"#)
+            }
+            fn profile_memory(&self, _: &Path) -> CommandOutput {
+                CommandOutput::success(r#"{"peak_rss_mb":1024}"#)
             }
         }
 
@@ -8555,5 +8881,373 @@ tensor_template:
         assert!(tensor_ev.reason.contains("G0 FAIL"));
         assert!(tensor_ev.reason.contains("Missing"));
         assert!(tensor_ev.reason.contains("embed.weight"));
+    }
+
+    // ── parse_timing_ms tests ──────────────────────────────────────────
+
+    #[test]
+    fn test_parse_timing_ms_standard() {
+        let output = "Output:\nHello\nCompleted in 1.5s\ntok/s: 25.0";
+        assert!((parse_timing_ms(output).unwrap() - 1500.0).abs() < 0.1);
+    }
+
+    #[test]
+    fn test_parse_timing_ms_no_timing() {
+        let output = "Just some output without timing";
+        assert!(parse_timing_ms(output).is_none());
+    }
+
+    #[test]
+    fn test_parse_timing_ms_zero() {
+        let output = "Completed in 0.0s";
+        assert!((parse_timing_ms(output).unwrap()).abs() < 0.1);
+    }
+
+    // ── parse_throughput tests ──────────────────────────────────────────
+
+    #[test]
+    fn test_parse_throughput_json() {
+        let output = r#"{"throughput_tps":25.0,"latency_p50_ms":78.2}"#;
+        assert!((parse_throughput(output).unwrap() - 25.0).abs() < 0.1);
+    }
+
+    #[test]
+    fn test_parse_throughput_no_match() {
+        let output = "no json here";
+        assert!(parse_throughput(output).is_none());
+    }
+
+    #[test]
+    fn test_parse_throughput_integer() {
+        let output = r#"{"throughput_tps":100,"other":0}"#;
+        assert!((parse_throughput(output).unwrap() - 100.0).abs() < 0.1);
+    }
+
+    // ── F-OLLAMA-003 TTFT comparison test ──────────────────────────────
+
+    #[test]
+    fn test_ollama_parity_ttft_comparison() {
+        let runner = MockCommandRunner::new().with_inference_response("Hello world");
+        let runner = Arc::new(runner);
+
+        let config = ExecutionConfig {
+            run_ollama_parity: true,
+            model_path: Some("/mock/model".to_string()),
+            ..Default::default()
+        };
+        let mut executor = Executor::with_runner(config, runner);
+
+        let yaml = r#"
+name: test-ollama-ttft
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+ollama_parity:
+  enabled: true
+  model_tag: "test:latest"
+  prompts: ["What is 2+2?"]
+  temperature: 0.0
+"#;
+        let playbook: Playbook = serde_yaml::from_str(yaml).unwrap();
+        let (passed, failed) =
+            executor.run_ollama_parity_tests(Path::new("/mock/model"), &playbook);
+        // F-OLLAMA-001 + F-OLLAMA-003 (TTFT) + F-OLLAMA-005 + F-OLLAMA-004
+        assert!(
+            passed + failed >= 2,
+            "Expected at least 2 evidence items, got passed={passed} failed={failed}"
+        );
+    }
+
+    // ── F-OLLAMA-005 GGUF loadability test ─────────────────────────────
+
+    #[test]
+    fn test_ollama_gguf_loadability_success() {
+        let runner = Arc::new(MockCommandRunner::new());
+        let config = ExecutionConfig {
+            run_ollama_parity: true,
+            model_path: Some("/mock/model".to_string()),
+            ..Default::default()
+        };
+        let mut executor = Executor::with_runner(config, runner);
+
+        let yaml = r#"
+name: test-ollama-gguf
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+ollama_parity:
+  enabled: true
+  prompts: ["test"]
+"#;
+        let playbook: Playbook = serde_yaml::from_str(yaml).unwrap();
+        let (passed, _failed) =
+            executor.run_ollama_parity_tests(Path::new("/mock/model"), &playbook);
+        // Should have F-OLLAMA-001, F-OLLAMA-005, F-OLLAMA-004
+        assert!(passed >= 3, "Expected at least 3 passes, got {passed}");
+        let evidence = executor.evidence().all();
+        assert!(evidence.iter().any(|e| e.gate_id == "F-OLLAMA-005"));
+    }
+
+    #[test]
+    fn test_ollama_gguf_loadability_failure() {
+        let runner = Arc::new(MockCommandRunner::new().with_ollama_create_failure());
+        let config = ExecutionConfig {
+            run_ollama_parity: true,
+            model_path: Some("/mock/model".to_string()),
+            ..Default::default()
+        };
+        let mut executor = Executor::with_runner(config, runner);
+
+        let yaml = r#"
+name: test-ollama-gguf-fail
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+ollama_parity:
+  enabled: true
+  prompts: ["test"]
+"#;
+        let playbook: Playbook = serde_yaml::from_str(yaml).unwrap();
+        let (_passed, failed) =
+            executor.run_ollama_parity_tests(Path::new("/mock/model"), &playbook);
+        assert!(
+            failed >= 1,
+            "Expected at least 1 failure for create failure"
+        );
+        let evidence = executor.evidence().all();
+        let gguf_ev = evidence
+            .iter()
+            .find(|e| e.gate_id == "F-OLLAMA-005")
+            .unwrap();
+        assert!(!gguf_ev.outcome.is_pass());
+    }
+
+    // ── F-OLLAMA-004 API parity test ───────────────────────────────────
+
+    #[test]
+    fn test_ollama_api_parity_success() {
+        let runner = Arc::new(MockCommandRunner::new());
+        let config = ExecutionConfig {
+            run_ollama_parity: true,
+            model_path: Some("/mock/model".to_string()),
+            ..Default::default()
+        };
+        let mut executor = Executor::with_runner(config, runner);
+
+        let yaml = r#"
+name: test-ollama-api
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+ollama_parity:
+  enabled: true
+  prompts: ["test"]
+"#;
+        let playbook: Playbook = serde_yaml::from_str(yaml).unwrap();
+        let (passed, _failed) =
+            executor.run_ollama_parity_tests(Path::new("/mock/model"), &playbook);
+        assert!(passed >= 1);
+        let evidence = executor.evidence().all();
+        assert!(evidence.iter().any(|e| e.gate_id == "F-OLLAMA-004"));
+    }
+
+    #[test]
+    fn test_ollama_api_parity_failure() {
+        let runner = Arc::new(MockCommandRunner::new().with_http_get_failure());
+        let config = ExecutionConfig {
+            run_ollama_parity: true,
+            model_path: Some("/mock/model".to_string()),
+            ..Default::default()
+        };
+        let mut executor = Executor::with_runner(config, runner);
+
+        let yaml = r#"
+name: test-ollama-api-fail
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+ollama_parity:
+  enabled: true
+  prompts: ["test"]
+"#;
+        let playbook: Playbook = serde_yaml::from_str(yaml).unwrap();
+        let (_passed, failed) =
+            executor.run_ollama_parity_tests(Path::new("/mock/model"), &playbook);
+        assert!(failed >= 1);
+        let evidence = executor.evidence().all();
+        let api_ev = evidence
+            .iter()
+            .find(|e| e.gate_id == "F-OLLAMA-004")
+            .unwrap();
+        assert!(!api_ev.outcome.is_pass());
+    }
+
+    // ── F-PERF-003 GPU/CPU ratio test ──────────────────────────────────
+
+    #[test]
+    fn test_perf_003_gpu_cpu_ratio() {
+        let runner = Arc::new(MockCommandRunner::new().with_tps(50.0));
+        let config = ExecutionConfig {
+            run_profile_ci: true,
+            model_path: Some("/mock/model".to_string()),
+            ..Default::default()
+        };
+        let mut executor = Executor::with_runner(config, runner);
+
+        let yaml = r#"
+name: test-perf-003
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+test_matrix:
+  modalities: [run]
+  backends: [cpu, gpu]
+  scenario_count: 1
+profile_ci:
+  enabled: true
+  warmup: 1
+  measure: 2
+  formats: [safetensors]
+  backends: [cpu, gpu]
+"#;
+        let playbook: Playbook = serde_yaml::from_str(yaml).unwrap();
+        let model_id = playbook.model_id();
+        let (passed, _failed) =
+            executor.run_perf_gates(Path::new("/mock/model"), &model_id, &playbook);
+        // F-PERF-003 (GPU/CPU ratio) + F-PERF-005 (memory)
+        assert!(passed >= 2, "Expected at least 2 passes, got {passed}");
+        let evidence = executor.evidence().all();
+        assert!(evidence.iter().any(|e| e.gate_id == "F-PERF-003"));
+        assert!(evidence.iter().any(|e| e.gate_id == "F-PERF-005"));
+    }
+
+    // ── F-PERF-005 memory profiling test ───────────────────────────────
+
+    #[test]
+    fn test_perf_005_memory_profiling_failure() {
+        let runner = Arc::new(MockCommandRunner::new().with_profile_memory_failure());
+        let config = ExecutionConfig {
+            run_profile_ci: true,
+            model_path: Some("/mock/model".to_string()),
+            ..Default::default()
+        };
+        let mut executor = Executor::with_runner(config, runner);
+
+        let yaml = r#"
+name: test-perf-005-fail
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+profile_ci:
+  enabled: true
+  warmup: 1
+  measure: 2
+  backends: [cpu]
+"#;
+        let playbook: Playbook = serde_yaml::from_str(yaml).unwrap();
+        let model_id = playbook.model_id();
+        let (_passed, failed) =
+            executor.run_perf_gates(Path::new("/mock/model"), &model_id, &playbook);
+        assert!(failed >= 1);
+        let evidence = executor.evidence().all();
+        let mem_ev = evidence.iter().find(|e| e.gate_id == "F-PERF-005").unwrap();
+        assert!(!mem_ev.outcome.is_pass());
+    }
+
+    // ── Integration: execute() with ollama parity enabled ─────────────
+
+    #[test]
+    fn test_execute_with_ollama_parity_enabled() {
+        let runner =
+            MockCommandRunner::new().with_inference_response("Output:\nHello\nCompleted in 0.5s");
+        let config = ExecutionConfig {
+            run_ollama_parity: true,
+            model_path: Some("/mock/model".to_string()),
+            no_gpu: true,
+            ..Default::default()
+        };
+        let mut executor = Executor::with_runner(config, Arc::new(runner));
+
+        let yaml = r#"
+name: test-ollama-integration
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+ollama_parity:
+  enabled: true
+  prompts: ["What is 2+2?"]
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let result = executor.execute(&playbook).expect("Execution failed");
+        assert!(result.total_scenarios >= 1);
+        let evidence = executor.evidence().all();
+        assert!(evidence.iter().any(|e| e.gate_id == "F-OLLAMA-001"));
+    }
+
+    // ── Integration: execute() with profile_ci (perf gates) enabled ───
+
+    #[test]
+    fn test_execute_with_profile_ci_perf_gates() {
+        let runner = MockCommandRunner::new()
+            .with_tps(50.0)
+            .with_inference_response("Output:\nHello\nCompleted in 0.5s");
+        let config = ExecutionConfig {
+            run_profile_ci: true,
+            model_path: Some("/mock/model".to_string()),
+            no_gpu: true,
+            ..Default::default()
+        };
+        let mut executor = Executor::with_runner(config, Arc::new(runner));
+
+        let yaml = r#"
+name: test-perf-integration
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+profile_ci:
+  enabled: true
+  warmup: 1
+  measure: 2
+  formats: [safetensors]
+  backends: [cpu, gpu]
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let result = executor.execute(&playbook).expect("Execution failed");
+        assert!(result.total_scenarios >= 1);
+        let evidence = executor.evidence().all();
+        assert!(evidence.iter().any(|e| e.gate_id == "F-PERF-003"));
+        assert!(evidence.iter().any(|e| e.gate_id == "F-PERF-005"));
     }
 }
