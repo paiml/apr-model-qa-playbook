@@ -430,7 +430,7 @@ impl CommandRunner for RealCommandRunner {
     fn validate_stats(&self, fp_a: &Path, fp_b: &Path) -> CommandOutput {
         let a_str = fp_a.display().to_string();
         let b_str = fp_b.display().to_string();
-        self.execute(&["rosetta", "validate-stats", &a_str, &b_str])
+        self.execute(&["rosetta", "validate-stats", &a_str, "--reference", &b_str])
     }
 
     fn pull_model(&self, hf_repo: &str) -> CommandOutput {

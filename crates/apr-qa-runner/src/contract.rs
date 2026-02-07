@@ -384,8 +384,8 @@ fn run_i3_no_silent_fallbacks(
     model_id: &ModelId,
     gate_id: &str,
 ) -> Evidence {
-    let st_path = resolve_safetensors_path(model_path);
-    let result = runner.check_model(&st_path);
+    let apr_path = resolve_apr_path(model_path);
+    let result = runner.check_model(&apr_path);
 
     if !result.success {
         return Evidence::falsified(
