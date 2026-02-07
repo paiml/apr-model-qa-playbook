@@ -3,7 +3,8 @@
 
 .PHONY: all build test lint coverage clean check fmt doc \
        update-certifications certify-smoke certify-mvp certify-quick certify-standard certify-deep certify-qwen \
-       parity-check parity-list golden-generate
+       parity-check parity-list golden-generate \
+       ci-smoke nightly-7b
 
 # Default target
 all: check
@@ -147,6 +148,20 @@ certify-qwen:
 	cargo run --bin apr-qa -- certify --family qwen-coder --tier deep
 	@$(MAKE) update-certifications
 
+# ============================================================================
+# CI / Nightly Tier Targets (GH-6/AC-5)
+# ============================================================================
+
+# CI smoke: fastest possible qualification (1.5B, safetensors, CPU)
+ci-smoke:
+	@echo "Running CI smoke test (Qwen2.5-Coder-1.5B, ~1-2 min)..."
+	cargo run --bin apr-qa -- run playbooks/models/qwen2.5-coder-1.5b-smoke.playbook.yaml
+
+# Nightly 7B: full qualification of primary QA model
+nightly-7b:
+	@echo "Running nightly 7B qualification (Qwen2.5-Coder-7B, ~30-60 min)..."
+	cargo run --bin apr-qa -- run playbooks/models/qwen2.5-coder-7b-mvp.playbook.yaml
+
 # Help
 help:
 	@echo "APR Model QA Playbook - Make targets:"
@@ -173,6 +188,10 @@ help:
 	@echo "  certify-standard       Tier 4: ~1-2 hr per model (CI/CD)"
 	@echo "  certify-deep           Tier 5: ~8-24 hr per model (production)"
 	@echo "  certify-qwen           Full certification for Qwen Coder (priority)"
+	@echo ""
+	@echo "CI / Nightly targets (GH-6/AC-5):"
+	@echo "  ci-smoke               CI smoke: 1.5B safetensors CPU (~1-2 min)"
+	@echo "  nightly-7b             Nightly: 7B MVP qualification (~30-60 min)"
 	@echo ""
 	@echo "HF Parity Oracle targets (cross-implementation validation):"
 	@echo "  parity-check           Self-check all golden corpora"

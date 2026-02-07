@@ -236,3 +236,26 @@ make coverage-check # Verify >= 95% coverage
 make check          # fmt + lint + test
 make doc            # Generate documentation
 ```
+
+### Certification Targets
+
+```bash
+make certify-smoke     # Tier 1: ~1-2 min per model (sanity check)
+make certify-mvp       # Tier 2: ~5-10 min per model (all formats/backends/modalities)
+make certify-quick     # Tier 3: ~10-30 min per model (dev iteration)
+make certify-standard  # Tier 4: ~1-2 hr per model (CI/CD)
+make certify-deep      # Tier 5: ~8-24 hr per model (production)
+make certify-qwen      # Full certification for Qwen Coder (priority)
+```
+
+### CI / Nightly Targets (GH-6/AC-5)
+
+```bash
+make ci-smoke          # CI smoke: 1.5B safetensors CPU (~1-2 min)
+make nightly-7b        # Nightly: 7B MVP qualification (~30-60 min)
+```
+
+The `ci-smoke` target runs the fastest possible qualification (Qwen2.5-Coder-1.5B,
+safetensors, CPU only) and is designed for pull request CI pipelines. The `nightly-7b`
+target runs MVP-level qualification of the primary 7B QA model and is intended for
+nightly CI schedules.

@@ -214,6 +214,9 @@ pub struct Playbook {
     /// Contract invariant tests (GH-190/191 Five-Whys)
     #[serde(default)]
     pub contract_tests: Option<crate::contract::ContractTestConfig>,
+    /// Ollama parity tests (GH-6/AC-2)
+    #[serde(default)]
+    pub ollama_parity: Option<OllamaParityConfig>,
 }
 
 impl Playbook {
@@ -865,6 +868,47 @@ pub struct TracePayloadConfig {
     /// Gates to verify
     #[serde(default)]
     pub gates: Vec<String>,
+}
+
+/// Ollama parity configuration (GH-6/AC-2)
+///
+/// Tests that APR inference output matches ollama for the same model/quant.
+/// Catches format-specific regressions by comparing against an independent runtime.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OllamaParityConfig {
+    /// Enable ollama parity testing
+    #[serde(default)]
+    pub enabled: bool,
+    /// Ollama model tag (e.g., "qwen2.5-coder:7b-instruct-q4_k_m")
+    #[serde(default)]
+    pub model_tag: Option<String>,
+    /// Quantizations to test (each maps to an ollama tag suffix)
+    #[serde(default = "default_ollama_quantizations")]
+    pub quantizations: Vec<String>,
+    /// Prompts to test parity on
+    #[serde(default = "default_ollama_prompts")]
+    pub prompts: Vec<String>,
+    /// Inference temperature (0.0 for deterministic)
+    #[serde(default)]
+    pub temperature: f64,
+    /// Minimum performance ratio (APR tok/s / ollama tok/s)
+    #[serde(default = "default_min_perf_ratio")]
+    pub min_perf_ratio: f64,
+    /// Gates to verify
+    #[serde(default)]
+    pub gates: Vec<String>,
+}
+
+fn default_ollama_quantizations() -> Vec<String> {
+    vec!["q4_k_m".to_string()]
+}
+
+fn default_ollama_prompts() -> Vec<String> {
+    vec!["What is 2+2?".to_string()]
+}
+
+fn default_min_perf_ratio() -> f64 {
+    0.8
 }
 
 // ── Playbook Integrity Lock (§3.1) ──────────────────────────────────────
@@ -2521,5 +2565,84 @@ size_variants:
 
         // Should remain default since no certification config
         assert_eq!(config.size_category, SizeCategory::Tiny);
+    }
+
+    // ── GH-6/AC-2: Ollama parity config tests ────────────────────────────
+
+    #[test]
+    fn test_playbook_with_ollama_parity() {
+        let yaml = r#"
+name: ollama-test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+ollama_parity:
+  enabled: true
+  model_tag: "qwen2.5-coder:7b-instruct-q4_k_m"
+  quantizations: ["q4_k_m", "q6_k"]
+  prompts: ["What is 2+2?", "def hello():"]
+  temperature: 0.0
+  min_perf_ratio: 0.9
+  gates: ["F-OLLAMA-001", "F-OLLAMA-002"]
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
+        let ollama = playbook.ollama_parity.expect("Should have ollama parity");
+
+        assert!(ollama.enabled);
+        assert_eq!(
+            ollama.model_tag,
+            Some("qwen2.5-coder:7b-instruct-q4_k_m".to_string())
+        );
+        assert_eq!(ollama.quantizations.len(), 2);
+        assert_eq!(ollama.prompts.len(), 2);
+        assert!((ollama.temperature - 0.0).abs() < f64::EPSILON);
+        assert!((ollama.min_perf_ratio - 0.9).abs() < f64::EPSILON);
+        assert_eq!(ollama.gates.len(), 2);
+    }
+
+    #[test]
+    fn test_playbook_without_ollama_parity() {
+        let yaml = r#"
+name: no-ollama
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("parse");
+        assert!(playbook.ollama_parity.is_none());
+    }
+
+    #[test]
+    fn test_ollama_parity_config_defaults() {
+        let yaml = r#"
+name: ollama-defaults
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+ollama_parity:
+  enabled: true
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("parse");
+        let ollama = playbook.ollama_parity.expect("should exist");
+
+        assert!(ollama.enabled);
+        assert!(ollama.model_tag.is_none());
+        assert_eq!(ollama.quantizations, vec!["q4_k_m"]);
+        assert_eq!(ollama.prompts, vec!["What is 2+2?"]);
+        assert!((ollama.temperature - 0.0).abs() < f64::EPSILON);
+        assert!((ollama.min_perf_ratio - 0.8).abs() < f64::EPSILON);
+        assert!(ollama.gates.is_empty());
     }
 }

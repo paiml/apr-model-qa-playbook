@@ -28,9 +28,11 @@ model:
     - apr               # APR native optimized format
     - gguf              # Third-party format (NOT ground truth)
   quantizations:
-    - q4_k_m            # 4-bit quantization
-    - q5_k_m            # 5-bit quantization
+    - f16               # Full precision (16-bit float)
     - q8_0              # 8-bit quantization
+    - q6_k              # 6-bit K-quant
+    - q5_k_m            # 5-bit K-quant (medium)
+    - q4_k_m            # 4-bit K-quant (medium)
   size_category: small  # tiny, small, medium, large, xlarge, huge
 ```
 
@@ -92,6 +94,37 @@ oracles:
 ```yaml
 failure_policy: stop_on_p0   # Options: stop_on_first, stop_on_p0, collect_all
 ```
+
+## Ollama Parity Testing (GH-6/AC-2)
+
+Cross-runtime validation against Ollama:
+
+```yaml
+ollama_parity:
+  enabled: true
+  model_tag: "qwen2.5-coder:7b-instruct-q4_k_m"
+  quantizations:
+    - q4_k_m
+    - q6_k
+    - q8_0
+  prompts:
+    - "What is 2+2?"
+    - "def fibonacci(n):"
+    - "Explain the difference between a stack and a queue."
+  temperature: 0.0
+  min_perf_ratio: 0.8
+  gates: ["F-OLLAMA-001", "F-OLLAMA-002"]
+```
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| `enabled` | `true` | Enable/disable ollama parity tests |
+| `model_tag` | auto | Ollama model tag (default: `{model}:latest`) |
+| `quantizations` | `[q4_k_m]` | Quantizations to test |
+| `prompts` | `["What is 2+2?"]` | Prompts to compare |
+| `temperature` | `0.0` | Sampling temperature (0.0 = deterministic) |
+| `min_perf_ratio` | `0.8` | Minimum APR/ollama throughput ratio |
+| `gates` | `[]` | Gate IDs for evidence tracking |
 
 ## Property Tests
 

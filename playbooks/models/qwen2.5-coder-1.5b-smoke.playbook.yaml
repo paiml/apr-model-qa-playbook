@@ -40,7 +40,7 @@ failure_policy: collect_all
 
 metadata:
   author: "apr-qa-gen"
-  tier: "smoke"
+  tier: "ci"
   architecture: "qwen2"
   tags:
     - code

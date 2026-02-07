@@ -167,76 +167,74 @@ impl ConversionOutputDir {
 ///
 /// Returns an error if the path cannot be resolved to a valid model file.
 pub fn resolve_model_path(base_path: &Path, format: Format) -> Result<std::path::PathBuf> {
-    // If base_path is a file, use it directly (format must match)
     if base_path.is_file() {
-        let ext = base_path.extension().and_then(|e| e.to_str()).unwrap_or("");
-        let expected_ext = match format {
-            Format::Gguf => "gguf",
-            Format::SafeTensors => "safetensors",
-            Format::Apr => "apr",
-        };
-        if ext == expected_ext {
-            return Ok(base_path.to_path_buf());
-        }
-        return Err(Error::Execution(format!(
-            "File extension mismatch: expected .{expected_ext}, got .{ext}"
-        )));
+        return resolve_file_by_format(base_path, format);
     }
 
-    // Directory mode: look for format-specific subdirectory
-    let (subdir, extension) = match format {
-        Format::Gguf => ("gguf", "gguf"),
-        Format::Apr => ("apr", "apr"),
-        Format::SafeTensors => ("safetensors", "safetensors"),
-    };
+    let ext = format_extension(format);
 
-    // Try APR cache structure: {base}/{format}/model.{ext}
-    let resolved = base_path.join(subdir).join(format!("model.{extension}"));
+    // Try APR cache structure: {base}/{ext}/model.{ext}
+    let resolved = base_path.join(ext).join(format!("model.{ext}"));
     if resolved.exists() {
         return Ok(resolved);
     }
 
-    // Try sharded SafeTensors: {base}/{format}/model.safetensors.index.json
-    // Return the index file path - apr run uses index to locate all shards
-    if extension == "safetensors" {
-        let sharded_index = base_path.join(subdir).join("model.safetensors.index.json");
+    // Try sharded SafeTensors index
+    if ext == "safetensors" {
+        let sharded_index = base_path.join(ext).join("model.safetensors.index.json");
         if sharded_index.exists() {
             return Ok(sharded_index);
         }
     }
 
     // Try HuggingFace cache structure: {base}/model.{ext} (flat)
-    let flat_resolved = base_path.join(format!("model.{extension}"));
+    let flat_resolved = base_path.join(format!("model.{ext}"));
     if flat_resolved.exists() {
         return Ok(flat_resolved);
     }
 
-    // Fall back to finding any file with the extension in format subdir
-    let format_dir = base_path.join(subdir);
-    if let Ok(entries) = std::fs::read_dir(&format_dir) {
-        for entry in entries.flatten() {
-            let ep = entry.path();
-            if ep.extension().is_some_and(|e| e == extension) {
-                return Ok(ep);
-            }
-        }
-    }
+    // Search format subdir, then base dir for any matching file
+    let format_dir = base_path.join(ext);
+    find_file_by_extension(&format_dir, ext)
+        .or_else(|| find_file_by_extension(base_path, ext))
+        .ok_or_else(|| {
+            Error::Execution(format!(
+                "No {ext} file found in {}/{ext}/ or {}/",
+                base_path.display(),
+                base_path.display()
+            ))
+        })
+}
 
-    // Fall back to finding any file with the extension in base dir (HF cache)
-    if let Ok(entries) = std::fs::read_dir(base_path) {
-        for entry in entries.flatten() {
-            let ep = entry.path();
-            if ep.extension().is_some_and(|e| e == extension) {
-                return Ok(ep);
-            }
-        }
+fn resolve_file_by_format(path: &Path, format: Format) -> Result<std::path::PathBuf> {
+    let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
+    let expected = format_extension(format);
+    if ext == expected {
+        Ok(path.to_path_buf())
+    } else {
+        Err(Error::Execution(format!(
+            "File extension mismatch: expected .{expected}, got .{ext}"
+        )))
     }
+}
 
-    Err(Error::Execution(format!(
-        "No {extension} file found in {}/{subdir}/ or {}/",
-        base_path.display(),
-        base_path.display()
-    )))
+fn format_extension(format: Format) -> &'static str {
+    match format {
+        Format::Gguf => "gguf",
+        Format::Apr => "apr",
+        Format::SafeTensors => "safetensors",
+    }
+}
+
+fn find_file_by_extension(dir: &Path, ext: &str) -> Option<std::path::PathBuf> {
+    std::fs::read_dir(dir).ok()?.flatten().find_map(|entry| {
+        let p = entry.path();
+        if p.extension().is_some_and(|e| e == ext) {
+            Some(p)
+        } else {
+            None
+        }
+    })
 }
 
 /// Tolerance for floating-point comparison
@@ -321,6 +319,8 @@ pub enum QuantType {
     Q4KM,
     /// 6-bit K-quant
     Q6K,
+    /// 5-bit K-quant medium
+    Q5KM,
     /// 4-bit quantization (legacy)
     Q4_0,
     /// 8-bit quantization
@@ -338,6 +338,7 @@ impl QuantType {
             "f16" | "fp16" | "float16" => Self::F16,
             "bf16" | "bfloat16" => Self::BF16,
             "q4_k_m" | "q4km" => Self::Q4KM,
+            "q5_k_m" | "q5km" => Self::Q5KM,
             "q6_k" | "q6k" => Self::Q6K,
             "q4_0" | "q40" => Self::Q4_0,
             "q8_0" | "q80" => Self::Q8_0,
@@ -431,6 +432,12 @@ pub const DEFAULT_TOLERANCES: &[ConversionTolerance] = &[
         expected_pygmy_fixture: String::new(),
     },
     ConversionTolerance {
+        quant_type: QuantType::Q5KM,
+        atol: 7.5e-2,
+        rtol: 5e-2,
+        expected_pygmy_fixture: String::new(),
+    },
+    ConversionTolerance {
         quant_type: QuantType::Q6K,
         atol: 5e-2,
         rtol: 5e-2,
@@ -464,57 +471,60 @@ pub fn tolerance_for(qt: QuantType) -> &'static ConversionTolerance {
 pub fn classify_failure(stderr: &str, exit_code: i32) -> ConversionFailureType {
     let lower = stderr.to_lowercase();
 
-    // Tensor name patterns
-    if lower.contains("tensor name")
-        || lower.contains("name mismatch")
-        || lower.contains("missing tensor")
-        || lower.contains("unexpected tensor")
-    {
-        return ConversionFailureType::TensorNameMismatch;
+    if is_tensor_name_failure(&lower) {
+        ConversionFailureType::TensorNameMismatch
+    } else if is_dequantization_failure(&lower) {
+        ConversionFailureType::DequantizationFailure
+    } else if is_missing_artifact(&lower) {
+        ConversionFailureType::MissingArtifact
+    } else if is_config_metadata_failure(&lower) {
+        ConversionFailureType::ConfigMetadataMismatch
+    } else if is_inference_failure(&lower, exit_code) {
+        ConversionFailureType::InferenceFailure
+    } else {
+        ConversionFailureType::Unknown
     }
+}
 
-    // Dequantization patterns
-    if lower.contains("dequantiz")
-        || lower.contains("quantiz")
-        || lower.contains("nan")
-        || lower.contains("infinity")
-        || lower.contains("overflow")
-    {
-        return ConversionFailureType::DequantizationFailure;
-    }
+fn is_tensor_name_failure(s: &str) -> bool {
+    s.contains("tensor name")
+        || s.contains("name mismatch")
+        || s.contains("missing tensor")
+        || s.contains("unexpected tensor")
+}
 
-    // Missing artifact patterns (check before config metadata — "config.json" is an artifact)
-    if lower.contains("not found")
-        || lower.contains("no such file")
-        || lower.contains("config.json")
-        || (lower.contains("missing") && !lower.contains("mismatch"))
-        || (lower.contains("tokenizer") && !lower.contains("mismatch"))
-    {
-        return ConversionFailureType::MissingArtifact;
-    }
+fn is_dequantization_failure(s: &str) -> bool {
+    s.contains("dequantiz")
+        || s.contains("quantiz")
+        || s.contains("nan")
+        || s.contains("infinity")
+        || s.contains("overflow")
+}
 
-    // Config metadata patterns
-    if lower.contains("hidden_size")
-        || lower.contains("num_layers")
-        || lower.contains("num_hidden_layers")
-        || lower.contains("vocab_size")
-        || lower.contains("metadata mismatch")
-        || lower.contains("config mismatch")
-    {
-        return ConversionFailureType::ConfigMetadataMismatch;
-    }
+/// Check before config metadata — "config.json" is an artifact
+fn is_missing_artifact(s: &str) -> bool {
+    s.contains("not found")
+        || s.contains("no such file")
+        || s.contains("config.json")
+        || (s.contains("missing") && !s.contains("mismatch"))
+        || (s.contains("tokenizer") && !s.contains("mismatch"))
+}
 
-    // Inference failure patterns
-    if lower.contains("inference")
-        || lower.contains("forward pass")
-        || lower.contains("segfault")
-        || lower.contains("sigsegv")
+fn is_config_metadata_failure(s: &str) -> bool {
+    s.contains("hidden_size")
+        || s.contains("num_layers")
+        || s.contains("num_hidden_layers")
+        || s.contains("vocab_size")
+        || s.contains("metadata mismatch")
+        || s.contains("config mismatch")
+}
+
+fn is_inference_failure(s: &str, exit_code: i32) -> bool {
+    s.contains("inference")
+        || s.contains("forward pass")
+        || s.contains("segfault")
+        || s.contains("sigsegv")
         || exit_code == -11
-    {
-        return ConversionFailureType::InferenceFailure;
-    }
-
-    ConversionFailureType::Unknown
 }
 
 /// Patterns that indicate specific bug types
@@ -1231,6 +1241,83 @@ impl IdempotencyTest {
     }
 }
 
+/// Byte-level round-trip test (GH-6/AC-3): ST → APR → GGUF → APR with tensor diff
+///
+/// Unlike `RoundTripTest` which compares inference output, this test compares
+/// the actual tensor data byte-for-byte between two APR conversions.
+/// Detects silent data corruption that inference-level tests may miss.
+#[derive(Debug, Clone)]
+pub struct ByteLevelRoundTripTest {
+    /// Backend to use
+    pub backend: Backend,
+    /// Model ID
+    pub model_id: ModelId,
+    /// Binary path for apr CLI
+    binary: String,
+}
+
+impl ByteLevelRoundTripTest {
+    /// Create a new byte-level round-trip test
+    #[must_use]
+    pub fn new(backend: Backend, model_id: ModelId) -> Self {
+        Self {
+            backend,
+            model_id,
+            binary: default_binary(),
+        }
+    }
+
+    /// Execute byte-level round-trip: ST → APR(1) and ST → APR → GGUF → APR(2), diff tensors
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if conversion or diff fails.
+    pub fn execute(&self, model_path: &Path) -> Result<ConversionResult> {
+        let resolved_path = resolve_model_path(model_path, Format::SafeTensors)?;
+
+        // Step 1: ST → APR (reference)
+        let apr_ref =
+            convert_to_format_tagged(&resolved_path, Format::Apr, "byte_rt_ref", &self.binary)?;
+
+        // Step 2: ST → APR → GGUF → APR (round-trip)
+        let apr_tmp =
+            convert_to_format_tagged(&resolved_path, Format::Apr, "byte_rt_tmp", &self.binary)?;
+        let gguf_tmp =
+            convert_to_format_tagged(&apr_tmp, Format::Gguf, "byte_rt_gguf", &self.binary)?;
+        let apr_roundtrip =
+            convert_to_format_tagged(&gguf_tmp, Format::Apr, "byte_rt_final", &self.binary)?;
+
+        // Step 3: diff_tensors between apr_ref and apr_roundtrip
+        let diff_output = run_diff_tensors(&apr_ref, &apr_roundtrip, &self.binary)?;
+
+        if diff_output.contains("\"passed\":false") || diff_output.contains("mismatched") {
+            Ok(ConversionResult::Falsified {
+                gate_id: "F-CONV-RT-BYTE-001".to_string(),
+                reason: "Byte-level round-trip: tensor data differs after ST→APR→GGUF→APR"
+                    .to_string(),
+                evidence: ConversionEvidence {
+                    source_hash: String::new(),
+                    converted_hash: String::new(),
+                    max_diff: 1.0,
+                    diff_indices: vec![],
+                    source_format: Format::SafeTensors,
+                    target_format: Format::Apr,
+                    backend: self.backend,
+                    failure_type: Some(ConversionFailureType::DequantizationFailure),
+                    quant_type: None,
+                },
+            })
+        } else {
+            Ok(ConversionResult::Corroborated {
+                source_format: Format::SafeTensors,
+                target_format: Format::Apr,
+                backend: self.backend,
+                max_diff: 0.0,
+            })
+        }
+    }
+}
+
 /// Commutativity test (MR-COM): different conversion paths should yield equivalent inference
 ///
 /// Tests that GGUF→APR produces the same inference as GGUF→ST→APR.
@@ -1434,6 +1521,20 @@ fn convert_to_format_tagged(
     }
 
     Ok(target_path)
+}
+
+/// Diff tensors between two models via `apr rosetta diff-tensors --json`
+fn run_diff_tensors(model_a: &Path, model_b: &Path, binary: &str) -> Result<String> {
+    let output = Command::new(binary)
+        .arg("rosetta")
+        .arg("diff-tensors")
+        .arg(model_a)
+        .arg(model_b)
+        .arg("--json")
+        .output()
+        .map_err(Error::Io)?;
+
+    Ok(String::from_utf8_lossy(&output.stdout).to_string())
 }
 
 /// Simple inference helper
@@ -1704,6 +1805,7 @@ impl ConversionExecutor {
 
         // T-QKV-03: ST → APR → GGUF → ST round-trip (F-CONV-RT-002)
         // T-QKV-04: ST → APR → GGUF → APR → ST multi-hop (F-CONV-RT-003)
+        // GH-6/AC-3: ST → APR → GGUF → APR round-trip (F-CONV-RT-004)
         if self.config.test_multi_hop {
             let multi_hop_chains: Vec<(&str, Vec<Format>)> = vec![
                 (
@@ -1724,6 +1826,10 @@ impl ConversionExecutor {
                         Format::Apr,
                         Format::SafeTensors,
                     ],
+                ),
+                (
+                    "F-CONV-RT-004",
+                    vec![Format::SafeTensors, Format::Apr, Format::Gguf, Format::Apr],
                 ),
             ];
 
@@ -1765,6 +1871,39 @@ impl ConversionExecutor {
                             );
                             evidence.push(ev);
                         }
+                    }
+                }
+            }
+        }
+
+        // GH-6/AC-3: Byte-level round-trip — ST→APR→GGUF→APR, diff tensors (F-CONV-RT-BYTE-001)
+        if self.config.test_multi_hop {
+            for backend in &backends {
+                let mut byte_rt = ByteLevelRoundTripTest::new(*backend, model_id.clone());
+                byte_rt.binary.clone_from(&self.binary);
+
+                match byte_rt.execute(model_path) {
+                    Ok(result) => {
+                        let ev: Evidence = result.clone().into();
+                        evidence.push(ev);
+                        results.push(result);
+                    }
+                    Err(e) => {
+                        let ev = Evidence::falsified(
+                            "F-CONV-RT-BYTE-001",
+                            QaScenario::new(
+                                model_id.clone(),
+                                Modality::Run,
+                                *backend,
+                                Format::SafeTensors,
+                                "Byte-level round-trip ST→APR→GGUF→APR".to_string(),
+                                0,
+                            ),
+                            format!("Byte-level round-trip failed: {e}"),
+                            "N/A",
+                            0,
+                        );
+                        evidence.push(ev);
                     }
                 }
             }
@@ -4913,6 +5052,8 @@ exit 1"#,
         assert_eq!(QuantType::from_str_label("bfloat16"), QuantType::BF16);
         assert_eq!(QuantType::from_str_label("q4_k_m"), QuantType::Q4KM);
         assert_eq!(QuantType::from_str_label("q4km"), QuantType::Q4KM);
+        assert_eq!(QuantType::from_str_label("q5_k_m"), QuantType::Q5KM);
+        assert_eq!(QuantType::from_str_label("q5km"), QuantType::Q5KM);
         assert_eq!(QuantType::from_str_label("q6_k"), QuantType::Q6K);
         assert_eq!(QuantType::from_str_label("q4_0"), QuantType::Q4_0);
         assert_eq!(QuantType::from_str_label("q8_0"), QuantType::Q8_0);
@@ -4927,11 +5068,13 @@ exit 1"#,
         assert_eq!(QuantType::from_str_label("F32"), QuantType::F32);
         assert_eq!(QuantType::from_str_label("BF16"), QuantType::BF16);
         assert_eq!(QuantType::from_str_label("Q4_K_M"), QuantType::Q4KM);
+        assert_eq!(QuantType::from_str_label("Q5_K_M"), QuantType::Q5KM);
     }
 
     #[test]
     fn test_quant_type_from_str_label_with_hyphens() {
         assert_eq!(QuantType::from_str_label("q4-k-m"), QuantType::Q4KM);
+        assert_eq!(QuantType::from_str_label("q5-k-m"), QuantType::Q5KM);
         assert_eq!(QuantType::from_str_label("q6-k"), QuantType::Q6K);
     }
 
@@ -4951,6 +5094,13 @@ exit 1"#,
     fn test_tolerance_for_q4km() {
         let tol = tolerance_for(QuantType::Q4KM);
         assert!((tol.atol - 1e-1).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_tolerance_for_q5km() {
+        let tol = tolerance_for(QuantType::Q5KM);
+        assert!((tol.atol - 7.5e-2).abs() < 1e-10);
+        assert!((tol.rtol - 5e-2).abs() < 1e-10);
     }
 
     #[test]
@@ -5063,6 +5213,7 @@ exit 1"#,
             QuantType::F16,
             QuantType::BF16,
             QuantType::Q4KM,
+            QuantType::Q5KM,
             QuantType::Q6K,
             QuantType::Q4_0,
             QuantType::Q8_0,
@@ -5131,7 +5282,7 @@ exit 1"#,
 
     #[test]
     fn test_default_tolerances_count() {
-        assert_eq!(DEFAULT_TOLERANCES.len(), 7);
+        assert_eq!(DEFAULT_TOLERANCES.len(), 8);
     }
 
     // =========================================================================
@@ -5236,6 +5387,7 @@ exit 1"#,
         assert!(types.contains(&QuantType::F16));
         assert!(types.contains(&QuantType::BF16));
         assert!(types.contains(&QuantType::Q4KM));
+        assert!(types.contains(&QuantType::Q5KM));
         assert!(types.contains(&QuantType::Q6K));
         assert!(types.contains(&QuantType::Q4_0));
         assert!(types.contains(&QuantType::Q8_0));

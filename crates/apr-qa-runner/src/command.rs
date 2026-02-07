@@ -143,6 +143,17 @@ pub trait CommandRunner: Send + Sync {
     /// Returns JSON output with tensor_count, tensor_names, and other model metadata.
     /// Used by G0-TENSOR-001 for tensor template validation (PMAT-271).
     fn inspect_model_json(&self, model_path: &Path) -> CommandOutput;
+
+    /// Execute `ollama run <model_tag>` for parity testing (GH-6/AC-2)
+    fn run_ollama_inference(
+        &self,
+        model_tag: &str,
+        prompt: &str,
+        temperature: f64,
+    ) -> CommandOutput;
+
+    /// Execute `ollama pull <model_tag>` to acquire model (GH-6/AC-2)
+    fn pull_ollama_model(&self, model_tag: &str) -> CommandOutput;
 }
 
 /// Real command runner that executes actual subprocess commands
@@ -416,6 +427,44 @@ impl CommandRunner for RealCommandRunner {
         let path_str = model_path.display().to_string();
         self.execute(&["rosetta", "inspect", "--json", &path_str])
     }
+
+    fn run_ollama_inference(
+        &self,
+        model_tag: &str,
+        prompt: &str,
+        temperature: f64,
+    ) -> CommandOutput {
+        use std::process::Command;
+
+        let temp_str = temperature.to_string();
+        match Command::new("ollama")
+            .args(["run", model_tag, "--temp", &temp_str])
+            .arg(prompt)
+            .output()
+        {
+            Ok(output) => CommandOutput {
+                stdout: String::from_utf8_lossy(&output.stdout).to_string(),
+                stderr: String::from_utf8_lossy(&output.stderr).to_string(),
+                exit_code: output.status.code().unwrap_or(-1),
+                success: output.status.success(),
+            },
+            Err(e) => CommandOutput::failure(-1, format!("Failed to execute ollama: {e}")),
+        }
+    }
+
+    fn pull_ollama_model(&self, model_tag: &str) -> CommandOutput {
+        use std::process::Command;
+
+        match Command::new("ollama").args(["pull", model_tag]).output() {
+            Ok(output) => CommandOutput {
+                stdout: String::from_utf8_lossy(&output.stdout).to_string(),
+                stderr: String::from_utf8_lossy(&output.stderr).to_string(),
+                exit_code: output.status.code().unwrap_or(-1),
+                success: output.status.success(),
+            },
+            Err(e) => CommandOutput::failure(-1, format!("Failed to execute ollama: {e}")),
+        }
+    }
 }
 
 /// Mock command runner for testing
@@ -475,6 +524,12 @@ pub struct MockCommandRunner {
     pub inspect_json_success: bool,
     /// Tensor names returned by inspect_model_json
     pub inspect_tensor_names: Vec<String>,
+    /// Whether ollama inference should succeed
+    pub ollama_success: bool,
+    /// Custom response for ollama inference
+    pub ollama_response: String,
+    /// Whether ollama pull should succeed
+    pub ollama_pull_success: bool,
 }
 
 impl Default for MockCommandRunner {
@@ -516,6 +571,9 @@ impl Default for MockCommandRunner {
                 "model.norm.weight".to_string(),
                 "lm_head.weight".to_string(),
             ],
+            ollama_success: true,
+            ollama_response: "The answer is 4.".to_string(),
+            ollama_pull_success: true,
         }
     }
 }
@@ -704,6 +762,27 @@ impl MockCommandRunner {
     #[must_use]
     pub fn with_tensor_names(mut self, names: Vec<String>) -> Self {
         self.inspect_tensor_names = names;
+        self
+    }
+
+    /// Set custom ollama inference response
+    #[must_use]
+    pub fn with_ollama_response(mut self, response: impl Into<String>) -> Self {
+        self.ollama_response = response.into();
+        self
+    }
+
+    /// Set whether ollama inference should fail
+    #[must_use]
+    pub fn with_ollama_failure(mut self) -> Self {
+        self.ollama_success = false;
+        self
+    }
+
+    /// Set whether ollama pull should fail
+    #[must_use]
+    pub fn with_ollama_pull_failure(mut self) -> Self {
+        self.ollama_pull_success = false;
         self
     }
 }
@@ -967,6 +1046,30 @@ impl CommandRunner for MockCommandRunner {
             ))
         } else {
             CommandOutput::failure(1, "Inspect failed: invalid model format")
+        }
+    }
+
+    fn run_ollama_inference(
+        &self,
+        _model_tag: &str,
+        _prompt: &str,
+        _temperature: f64,
+    ) -> CommandOutput {
+        if self.ollama_success {
+            CommandOutput::success(format!(
+                "Output:\n{}\nCompleted in 1.0s",
+                self.ollama_response
+            ))
+        } else {
+            CommandOutput::failure(1, "Ollama inference failed: model not found")
+        }
+    }
+
+    fn pull_ollama_model(&self, _model_tag: &str) -> CommandOutput {
+        if self.ollama_pull_success {
+            CommandOutput::success("pulling manifest... done")
+        } else {
+            CommandOutput::failure(1, "Ollama pull failed: model not found in registry")
         }
     }
 }
@@ -1797,5 +1900,55 @@ mod tests {
         let runner = RealCommandRunner::with_binary("/nonexistent/binary");
         let output = runner.pull_model("test/model");
         assert!(!output.success);
+    }
+
+    // ── Ollama parity tests (GH-6/AC-2) ────────────────────────────────
+
+    #[test]
+    fn test_mock_runner_ollama_inference_success() {
+        let runner = MockCommandRunner::new();
+        let output = runner.run_ollama_inference("qwen2.5-coder:7b-q4_k_m", "What is 2+2?", 0.0);
+        assert!(output.success);
+        assert!(output.stdout.contains("The answer is 4."));
+    }
+
+    #[test]
+    fn test_mock_runner_ollama_inference_custom_response() {
+        let runner = MockCommandRunner::new().with_ollama_response("Custom ollama response");
+        let output = runner.run_ollama_inference("qwen2.5-coder:7b", "Hello", 0.7);
+        assert!(output.success);
+        assert!(output.stdout.contains("Custom ollama response"));
+    }
+
+    #[test]
+    fn test_mock_runner_ollama_inference_failure() {
+        let runner = MockCommandRunner::new().with_ollama_failure();
+        let output = runner.run_ollama_inference("qwen2.5-coder:7b", "test", 0.0);
+        assert!(!output.success);
+        assert!(output.stderr.contains("Ollama inference failed"));
+    }
+
+    #[test]
+    fn test_mock_runner_ollama_pull_success() {
+        let runner = MockCommandRunner::new();
+        let output = runner.pull_ollama_model("qwen2.5-coder:7b-q4_k_m");
+        assert!(output.success);
+        assert!(output.stdout.contains("pulling manifest"));
+    }
+
+    #[test]
+    fn test_mock_runner_ollama_pull_failure() {
+        let runner = MockCommandRunner::new().with_ollama_pull_failure();
+        let output = runner.pull_ollama_model("nonexistent:model");
+        assert!(!output.success);
+        assert!(output.stderr.contains("Ollama pull failed"));
+    }
+
+    #[test]
+    fn test_mock_runner_ollama_default_fields() {
+        let runner = MockCommandRunner::default();
+        assert!(runner.ollama_success);
+        assert!(runner.ollama_pull_success);
+        assert_eq!(runner.ollama_response, "The answer is 4.");
     }
 }

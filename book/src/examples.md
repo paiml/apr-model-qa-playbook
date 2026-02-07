@@ -383,17 +383,21 @@ Architecture:          Some("Qwen2ForCausalLM")
 F-CONV-RT-002: [SafeTensors, Apr, Gguf, SafeTensors] (3 hops)
 F-CONV-RT-003: [SafeTensors, Apr, Gguf, Apr, SafeTensors] (4 hops)
 
-=== New Gate IDs (PMAT-ROSETTA-002/003) ===
+=== New Gate IDs (PMAT-ROSETTA-002/003 + GH-6) ===
 
-| Gate ID            | Source   | Description                          |
-|--------------------+----------+--------------------------------------|
-| F-CONV-CARD-001    | MR-CARD  | Silent tensor loss (QKV fusion)      |
-| F-CONV-NAME-001    | T-QKV-02 | Unexpected tensor renaming           |
-| F-CONV-RT-002      | T-QKV-03 | ST→APR→GGUF→ST round-trip failure    |
-| F-CONV-RT-003      | T-QKV-04 | Multi-hop chain failure              |
-| F-CONV-IDEM-001    | MR-IDEM  | Double-convert instability           |
-| F-CONV-COM-001     | MR-COM   | Path-dependent conversion bugs       |
-| F-INSPECT-META-001 | T-GH192  | Missing/wrong model metadata         |
+| Gate ID              | Source     | Description                          |
+|----------------------+------------+--------------------------------------|
+| F-CONV-CARD-001      | MR-CARD    | Silent tensor loss (QKV fusion)      |
+| F-CONV-NAME-001      | T-QKV-02   | Unexpected tensor renaming           |
+| F-CONV-RT-002        | T-QKV-03   | ST→APR→GGUF→ST round-trip failure    |
+| F-CONV-RT-003        | T-QKV-04   | Multi-hop chain failure              |
+| F-CONV-RT-004        | GH-6/AC-3  | ST→APR→GGUF→APR round-trip (3 hops)  |
+| F-CONV-RT-BYTE-001   | GH-6/AC-3  | Byte-level tensor diff after RT      |
+| F-CONV-IDEM-001      | MR-IDEM    | Double-convert instability           |
+| F-CONV-COM-001       | MR-COM     | Path-dependent conversion bugs       |
+| F-INSPECT-META-001   | T-GH192    | Missing/wrong model metadata         |
+| F-OLLAMA-001         | GH-6/AC-2  | APR/Ollama output parity             |
+| F-OLLAMA-002         | GH-6/AC-2  | APR/Ollama performance ratio         |
 ```
 
 ## Model Certification Workflow
@@ -848,10 +852,19 @@ Tensor name validation:
 The `playbooks/` directory contains YAML playbooks:
 
 - `playbooks/models/qwen2.5-coder-*-mvp.playbook.yaml` - MVP tier playbooks
+- `playbooks/models/qwen2.5-coder-7b-full.playbook.yaml` - 7B full qualification (5-quant ladder)
+- `playbooks/models/qwen2.5-coder-1.5b-smoke.playbook.yaml` - CI smoke test
 - `playbooks/templates/` - Reusable templates
 
 Run a specific playbook:
 
 ```bash
+# CI smoke (fastest)
+cargo run --bin apr-qa -- run playbooks/models/qwen2.5-coder-1.5b-smoke.playbook.yaml
+
+# MVP (medium)
 cargo run --bin apr-qa -- run playbooks/models/qwen2.5-coder-1.5b-mvp.playbook.yaml
+
+# Full qualification with 5-quant ladder (comprehensive)
+cargo run --bin apr-qa -- run playbooks/models/qwen2.5-coder-7b-full.playbook.yaml
 ```

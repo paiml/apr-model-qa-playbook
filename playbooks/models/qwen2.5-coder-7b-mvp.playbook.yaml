@@ -60,7 +60,7 @@ contract_tests:
 
 metadata:
   author: "apr-qa-gen"
-  tier: "mvp"
+  tier: "nightly"
   architecture: "qwen2"
   tags:
     - code

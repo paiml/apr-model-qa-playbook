@@ -108,10 +108,16 @@ relations from the Rosetta-Testing spec (PMAT-ROSETTA-002/003).
 | F-CONV-RT-001 | MR-RT | GGUF→APR→ST→GGUF | Original round-trip chain |
 | F-CONV-RT-002 | T-QKV-03 | ST→APR→GGUF→ST | Reverse direction round-trip |
 | F-CONV-RT-003 | T-QKV-04 | ST→APR→GGUF→APR→ST | Multi-hop (4 conversions) |
+| F-CONV-RT-004 | GH-6/AC-3 | ST→APR→GGUF→APR | Round-trip back to APR (3 conversions) |
+| F-CONV-RT-BYTE-001 | GH-6/AC-3 | ST→APR vs ST→APR→GGUF→APR | Byte-level tensor diff after round-trip |
 
 Round-trip gates convert a model through a chain of formats and verify
 the final output matches the original. Any divergence indicates data loss
 or corruption during conversion.
+
+F-CONV-RT-BYTE-001 is a stricter variant that performs byte-level tensor
+comparison between a direct ST→APR conversion and a round-trip ST→APR→GGUF→APR
+conversion, catching subtle numerical drift that inference comparison might miss.
 
 ### Metamorphic Relation Gates
 
@@ -144,6 +150,19 @@ prescribed by the GH-190 and GH-191 Five-Whys analyses.
 
 I-1 runs as the Golden Rule Test (F-GOLDEN-RULE-001). I-2 through I-5
 run when `contract_tests` is enabled in the playbook.
+
+### Ollama Parity Gates (GH-6/AC-2)
+
+These gates validate cross-runtime consistency between APR and Ollama.
+
+| Gate ID | Description |
+|---------|-------------|
+| F-OLLAMA-001 | APR and Ollama both produce output for the same prompt |
+| F-OLLAMA-002 | APR throughput is at least `min_perf_ratio` of Ollama throughput |
+
+Ollama parity testing ensures that APR inference produces comparable results
+to Ollama for the same model and quantization. This catches runtime-specific
+bugs that format-level tests cannot detect.
 
 ### Legacy Conversion Gates
 

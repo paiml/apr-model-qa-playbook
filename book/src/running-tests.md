@@ -57,6 +57,32 @@ Searched:
 Hint: Download model with `huggingface-cli download Qwen/Qwen2.5-Coder-0.5B-Instruct` or use --model-path
 ```
 
+## CI / Nightly Tiers (GH-6/AC-5)
+
+Two pre-configured Make targets provide tiered qualification for CI pipelines:
+
+```bash
+# CI smoke: fastest possible qualification (~1-2 min)
+# Runs: Qwen2.5-Coder-1.5B, safetensors only, CPU
+make ci-smoke
+
+# Nightly: full 7B MVP qualification (~30-60 min)
+# Runs: Qwen2.5-Coder-7B, 3 formats x 2 backends x 3 modalities
+make nightly-7b
+```
+
+| Target | Model | Tier | Duration | Use Case |
+|--------|-------|------|----------|----------|
+| `ci-smoke` | 1.5B | ci | ~1-2 min | PR gating |
+| `nightly-7b` | 7B | nightly | ~30-60 min | Nightly regression |
+
+For full qualification including the 5-quant ladder (f16, q8_0, q6_k, q5_k_m, q4_k_m):
+
+```bash
+# Full qualification: 7B primary QA model
+cargo run --bin apr-qa -- run playbooks/models/qwen2.5-coder-7b-full.playbook.yaml
+```
+
 ## Parallel Execution
 
 The runner uses Rayon for parallel execution:

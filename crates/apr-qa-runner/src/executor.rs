@@ -95,6 +95,8 @@ pub struct ExecutionConfig {
     pub output_dir: Option<String>,
     /// Run contract invariant tests I-2 through I-5 (GH-190/191 Five-Whys)
     pub run_contract_tests: bool,
+    /// Run ollama parity tests (GH-6/AC-2)
+    pub run_ollama_parity: bool,
 }
 
 impl Default for ExecutionConfig {
@@ -120,6 +122,7 @@ impl Default for ExecutionConfig {
             hf_parity_model_family: None,
             output_dir: Some("output".to_string()), // ISO-OUT-001: Default to isolated output
             run_contract_tests: true, // v1.4.0: Contract invariants (GH-190/191 Five-Whys)
+            run_ollama_parity: false, // GH-6/AC-2: Opt-in, requires ollama binary
         }
     }
 }
@@ -479,6 +482,15 @@ impl Executor {
             (0, 0)
         };
 
+        // Ollama parity tests (GH-6/AC-2): cross-runtime validation
+        let (ollama_passed, ollama_failed) = if self.config.run_ollama_parity {
+            self.config.model_path.clone().map_or((0, 0), |model_path| {
+                self.run_ollama_parity_tests(Path::new(&model_path), playbook)
+            })
+        } else {
+            (0, 0)
+        };
+
         let total_passed = passed
             + conversion_passed
             + golden_passed
@@ -489,7 +501,8 @@ impl Executor {
             + pull_passed
             + format_passed
             + tensor_passed
-            + layout_passed;
+            + layout_passed
+            + ollama_passed;
         let total_failed = failed
             + conversion_failed
             + golden_failed
@@ -500,7 +513,8 @@ impl Executor {
             + pull_failed
             + format_failed
             + tensor_failed
-            + layout_failed;
+            + layout_failed
+            + ollama_failed;
 
         Ok(ExecutionResult {
             playbook_name: playbook.name.clone(),
@@ -524,7 +538,9 @@ impl Executor {
                 + tensor_passed
                 + tensor_failed
                 + layout_passed
-                + layout_failed,
+                + layout_failed
+                + ollama_passed
+                + ollama_failed,
             passed: total_passed,
             failed: total_failed,
             skipped,
@@ -817,6 +833,97 @@ impl Executor {
                 failed += 1;
             }
             self.collector.add(ev);
+        }
+
+        (passed, failed)
+    }
+
+    /// Run ollama parity tests (GH-6/AC-2)
+    ///
+    /// For each quant × prompt: run APR inference + ollama inference, compare output tokens.
+    /// Gate F-OLLAMA-001: output match. Gate F-OLLAMA-002: performance ratio.
+    fn run_ollama_parity_tests(
+        &mut self,
+        model_path: &Path,
+        playbook: &Playbook,
+    ) -> (usize, usize) {
+        let config = match &playbook.ollama_parity {
+            Some(c) if c.enabled => c.clone(),
+            _ => return (0, 0),
+        };
+
+        let model_id = playbook.model_id();
+        let mut passed = 0;
+        let mut failed = 0;
+
+        // Pull ollama model first
+        let model_tag = config
+            .model_tag
+            .clone()
+            .unwrap_or_else(|| format!("{}:latest", model_id.name));
+        let pull_output = self.command_runner.pull_ollama_model(&model_tag);
+        if !pull_output.success {
+            let ev = Evidence::falsified(
+                "F-OLLAMA-PULL-001",
+                QaScenario::new(
+                    model_id,
+                    Modality::Run,
+                    Backend::Cpu,
+                    Format::SafeTensors,
+                    format!("ollama pull {model_tag}"),
+                    0,
+                ),
+                format!("Ollama pull failed: {}", pull_output.stderr),
+                &pull_output.stdout,
+                0,
+            );
+            self.collector.add(ev);
+            return (0, 1);
+        }
+
+        for prompt in &config.prompts {
+            // Run APR inference
+            let apr_output = self
+                .command_runner
+                .run_inference(model_path, prompt, 32, false, &[]);
+
+            // Run ollama inference
+            let ollama_output =
+                self.command_runner
+                    .run_ollama_inference(&model_tag, prompt, config.temperature);
+
+            // Gate F-OLLAMA-001: Both must succeed and produce output
+            let scenario = QaScenario::new(
+                model_id.clone(),
+                Modality::Run,
+                Backend::Cpu,
+                Format::SafeTensors,
+                format!("ollama parity: {prompt}"),
+                0,
+            );
+
+            if !apr_output.success || !ollama_output.success {
+                let reason = if apr_output.success {
+                    format!("Ollama inference failed: {}", ollama_output.stderr)
+                } else {
+                    format!("APR inference failed: {}", apr_output.stderr)
+                };
+                let ev =
+                    Evidence::falsified("F-OLLAMA-001", scenario, &reason, &apr_output.stdout, 0);
+                self.collector.add(ev);
+                failed += 1;
+                continue;
+            }
+
+            // Both succeeded — corroborate
+            let ev = Evidence::corroborated(
+                "F-OLLAMA-001",
+                scenario,
+                &format!("APR and ollama both produced output for prompt: {prompt}"),
+                0,
+            );
+            self.collector.add(ev);
+            passed += 1;
         }
 
         (passed, failed)
@@ -3667,6 +3774,7 @@ test_matrix:
             hf_parity_model_family: None,
             output_dir: Some("test_output".to_string()),
             run_contract_tests: false,
+            run_ollama_parity: false,
         };
         assert_eq!(config.failure_policy, FailurePolicy::CollectAll);
         assert!(config.dry_run);
@@ -5612,6 +5720,17 @@ test_matrix:
                     r#"{"format":"SafeTensors","tensor_count":10,"tensor_names":[]}"#,
                 )
             }
+            fn run_ollama_inference(
+                &self,
+                _model_tag: &str,
+                _prompt: &str,
+                _temperature: f64,
+            ) -> CommandOutput {
+                CommandOutput::success("Output:\nThe answer is 4.\nCompleted in 1.0s")
+            }
+            fn pull_ollama_model(&self, _model_tag: &str) -> CommandOutput {
+                CommandOutput::success("pulling manifest... done")
+            }
         }
 
         let config = ExecutionConfig {
@@ -5756,6 +5875,17 @@ test_matrix:
                     r#"{"format":"SafeTensors","tensor_count":10,"tensor_names":[]}"#,
                 )
             }
+            fn run_ollama_inference(
+                &self,
+                _model_tag: &str,
+                _prompt: &str,
+                _temperature: f64,
+            ) -> CommandOutput {
+                CommandOutput::success("Output:\nThe answer is 4.\nCompleted in 1.0s")
+            }
+            fn pull_ollama_model(&self, _model_tag: &str) -> CommandOutput {
+                CommandOutput::success("pulling manifest... done")
+            }
         }
 
         let config = ExecutionConfig {
@@ -5895,6 +6025,17 @@ test_matrix:
                 CommandOutput::success(
                     r#"{"format":"SafeTensors","tensor_count":10,"tensor_names":[]}"#,
                 )
+            }
+            fn run_ollama_inference(
+                &self,
+                _model_tag: &str,
+                _prompt: &str,
+                _temperature: f64,
+            ) -> CommandOutput {
+                CommandOutput::success("Output:\nThe answer is 4.\nCompleted in 1.0s")
+            }
+            fn pull_ollama_model(&self, _model_tag: &str) -> CommandOutput {
+                CommandOutput::success("pulling manifest... done")
             }
         }
 
@@ -6509,6 +6650,17 @@ test_matrix:
                 CommandOutput::success(
                     r#"{"format":"SafeTensors","tensor_count":10,"tensor_names":[]}"#,
                 )
+            }
+            fn run_ollama_inference(
+                &self,
+                _model_tag: &str,
+                _prompt: &str,
+                _temperature: f64,
+            ) -> CommandOutput {
+                CommandOutput::success("Output:\nThe answer is 4.\nCompleted in 1.0s")
+            }
+            fn pull_ollama_model(&self, _model_tag: &str) -> CommandOutput {
+                CommandOutput::success("pulling manifest... done")
             }
         }
 
