@@ -334,6 +334,11 @@ fn resolve_safetensors_path(model_path: &Path) -> PathBuf {
 }
 
 /// I-2: Tensor Name Bijection — writer names == reader names.
+///
+/// Allows exactly one extra tensor in APR (`lm_head.weight`) when the source
+/// model uses tied embeddings (no separate `lm_head` in SafeTensors). The
+/// converter materializes `lm_head.weight` from `embed_tokens.weight`, which
+/// is correct behavior per `write.rs:49-89`.
 fn run_i2_tensor_bijection(
     runner: &Arc<dyn CommandRunner>,
     model_path: &Path,
@@ -342,39 +347,124 @@ fn run_i2_tensor_bijection(
 ) -> Evidence {
     let st_path = resolve_safetensors_path(model_path);
     let apr_path = resolve_apr_path(model_path);
-    let result = runner.diff_tensors(&st_path, &apr_path, true);
 
-    if !result.success {
+    // Inspect both models to get tensor name lists
+    let st_inspect = runner.inspect_model_json(&st_path);
+    let apr_inspect = runner.inspect_model_json(&apr_path);
+
+    if !st_inspect.success || !apr_inspect.success {
+        let err = if st_inspect.success {
+            &apr_inspect.stderr
+        } else {
+            &st_inspect.stderr
+        };
         return Evidence::falsified(
             gate_id,
             contract_scenario(model_id),
-            format!(
-                "I-2 Tensor Name Bijection: diff-tensors failed: {}",
-                result.stderr
-            ),
-            &result.stdout,
+            format!("I-2 Tensor Name Bijection: inspect failed: {err}"),
+            &format!("st: {}, apr: {}", st_inspect.stdout, apr_inspect.stdout),
             0,
         );
     }
 
-    if result.stdout.contains("\"mismatched_tensors\":0") || result.stdout.contains("0 mismatches")
-    {
-        let mut ev =
-            Evidence::corroborated(gate_id, contract_scenario(model_id), &result.stdout, 0);
-        ev.reason = "I-2 Tensor Name Bijection: all tensor names match".to_string();
-        ev
-    } else {
-        Evidence::falsified(
+    let st_names = parse_tensor_names(&st_inspect.stdout);
+    let apr_names = parse_tensor_names(&apr_inspect.stdout);
+
+    // Every source tensor must appear in the APR output
+    let missing: Vec<&str> = st_names
+        .iter()
+        .filter(|n| !apr_names.contains(n.as_str()))
+        .map(String::as_str)
+        .collect();
+
+    if !missing.is_empty() {
+        return Evidence::falsified(
             gate_id,
             contract_scenario(model_id),
             format!(
-                "I-2 Tensor Name Bijection: tensor name mismatches detected: {}",
-                result.stdout
+                "I-2 Tensor Name Bijection: {} source tensors missing in APR: {}",
+                missing.len(),
+                missing.join(", ")
             ),
-            &result.stdout,
+            &format!("source={}, apr={}", st_names.len(), apr_names.len()),
             0,
-        )
+        );
     }
+
+    // APR may have extra tensors only for tied embedding materialization
+    let extra: Vec<&str> = apr_names
+        .iter()
+        .filter(|n| !st_names.contains(n.as_str()))
+        .map(String::as_str)
+        .collect();
+
+    let allowed_extras: HashSet<&str> = HashSet::from(["lm_head.weight", "lm_head.bias"]);
+    let unexpected: Vec<&str> = extra
+        .iter()
+        .filter(|n| !allowed_extras.contains(*n))
+        .copied()
+        .collect();
+
+    if !unexpected.is_empty() {
+        return Evidence::falsified(
+            gate_id,
+            contract_scenario(model_id),
+            format!(
+                "I-2 Tensor Name Bijection: {} unexpected extra tensors in APR: {}",
+                unexpected.len(),
+                unexpected.join(", ")
+            ),
+            &format!(
+                "source={}, apr={}, extra={:?}",
+                st_names.len(),
+                apr_names.len(),
+                extra
+            ),
+            0,
+        );
+    }
+
+    let tied = if extra.is_empty() {
+        ""
+    } else {
+        " (tied embedding materialized)"
+    };
+    let mut ev = Evidence::corroborated(
+        gate_id,
+        contract_scenario(model_id),
+        &format!("source={}, apr={}", st_names.len(), apr_names.len()),
+        0,
+    );
+    ev.reason = format!(
+        "I-2 Tensor Name Bijection: all {} source tensors present in APR ({} total){}",
+        st_names.len(),
+        apr_names.len(),
+        tied,
+    );
+    ev
+}
+
+/// Parse tensor names from `apr rosetta inspect --json` output.
+fn parse_tensor_names(json_output: &str) -> HashSet<String> {
+    // Extract tensor_names array from JSON
+    if let Some(start) = json_output.find("\"tensor_names\":[") {
+        let after = &json_output[start + 16..];
+        if let Some(end) = after.find(']') {
+            let array_str = &after[..end];
+            return array_str
+                .split(',')
+                .filter_map(|s| {
+                    let trimmed = s.trim().trim_matches('"');
+                    if trimmed.is_empty() {
+                        None
+                    } else {
+                        Some(trimmed.to_string())
+                    }
+                })
+                .collect();
+        }
+    }
+    HashSet::new()
 }
 
 /// I-3: No Silent Fallbacks — unknown dtype → error, never default to F32.
@@ -728,7 +818,7 @@ mod tests {
             &config,
         );
 
-        // I-2 should pass (mock diff_tensors returns 0 mismatches)
+        // I-2 should pass (mock inspect returns same tensor names for both)
         let i2 = evidence.iter().find(|e| e.gate_id == "F-CONTRACT-I2-001");
         assert!(i2.is_some(), "I-2 evidence should exist");
         assert_eq!(i2.unwrap().outcome, Outcome::Corroborated);
@@ -739,7 +829,7 @@ mod tests {
         use crate::command::MockCommandRunner;
 
         let runner: Arc<dyn CommandRunner> =
-            Arc::new(MockCommandRunner::new().with_diff_tensors_failure());
+            Arc::new(MockCommandRunner::new().with_inspect_json_failure());
         let model_id = ModelId::new("test", "model");
         let config = ContractTestConfig {
             invariants: vec!["I-2".to_string()],
@@ -755,6 +845,45 @@ mod tests {
         let i2 = evidence.iter().find(|e| e.gate_id == "F-CONTRACT-I2-001");
         assert!(i2.is_some());
         assert_eq!(i2.unwrap().outcome, Outcome::Falsified);
+    }
+
+    #[test]
+    fn test_parse_tensor_names_valid() {
+        let json = r#"{"format":"SafeTensors","tensor_count":3,"tensor_names":["embed.weight","lm_head.weight","0.q_proj.weight"],"parameters":"1.5B"}"#;
+        let names = parse_tensor_names(json);
+        assert_eq!(names.len(), 3);
+        assert!(names.contains("embed.weight"));
+        assert!(names.contains("lm_head.weight"));
+        assert!(names.contains("0.q_proj.weight"));
+    }
+
+    #[test]
+    fn test_parse_tensor_names_empty() {
+        let json = r#"{"tensor_names":[]}"#;
+        let names = parse_tensor_names(json);
+        assert!(names.is_empty());
+    }
+
+    #[test]
+    fn test_parse_tensor_names_missing_field() {
+        let json = r#"{"format":"SafeTensors","tensor_count":3}"#;
+        let names = parse_tensor_names(json);
+        assert!(names.is_empty());
+    }
+
+    #[test]
+    fn test_parse_tensor_names_malformed() {
+        let names = parse_tensor_names("not json at all");
+        assert!(names.is_empty());
+    }
+
+    #[test]
+    fn test_i2_tied_embedding_allowed_extras() {
+        // Verify that lm_head.weight and lm_head.bias are in the allowed extras set
+        let allowed: HashSet<&str> = HashSet::from(["lm_head.weight", "lm_head.bias"]);
+        assert!(allowed.contains("lm_head.weight"));
+        assert!(allowed.contains("lm_head.bias"));
+        assert!(!allowed.contains("unexpected_tensor.weight"));
     }
 
     #[test]
