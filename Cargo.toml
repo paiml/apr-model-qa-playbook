@@ -54,11 +54,11 @@ ctrlc = "3.4"
 safetensors = "0.4"
 
 # Workspace crates
-apr-qa-gen = { path = "crates/apr-qa-gen" }
-apr-qa-runner = { path = "crates/apr-qa-runner" }
-apr-qa-report = { path = "crates/apr-qa-report" }
-apr-qa-cli = { path = "crates/apr-qa-cli" }
-apr-qa-certify = { path = "crates/apr-qa-certify" }
+apr-qa-gen = { version = "0.1.0", path = "crates/apr-qa-gen" }
+apr-qa-runner = { version = "0.1.0", path = "crates/apr-qa-runner" }
+apr-qa-report = { version = "0.1.0", path = "crates/apr-qa-report" }
+apr-qa-cli = { version = "0.1.0", path = "crates/apr-qa-cli" }
+apr-qa-certify = { version = "0.1.0", path = "crates/apr-qa-certify" }
 
 [workspace.lints.rust]
 unsafe_code = "deny"
