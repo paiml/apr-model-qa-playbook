@@ -1,14 +1,14 @@
-# DeepSeek Coder 1.3B Model Qualification Playbook
-# Model: deepseek-ai/deepseek-coder-1.3b-instruct
-# Generated: 2026-01-30
+# DeepSeek Coder 7B Model Qualification Playbook
+# Model: deepseek-ai/deepseek-coder-7b-instruct
+# Generated: 2026-02-11
 # MQS Target: 85+
 
-name: deepseek-coder-1.3b
-version: "1.1.0"
-description: "Qualification playbook for deepseek-coder-1.3b-instruct"
+name: deepseek-coder-7b
+version: "1.0.0"
+description: "Qualification playbook for deepseek-coder-7b-instruct"
 
 model:
-  hf_repo: "deepseek-ai/deepseek-coder-1.3b-instruct"
+  hf_repo: "deepseek-ai/deepseek-coder-7b-instruct"
   formats:
     - gguf
     - safetensors
@@ -17,7 +17,7 @@ model:
     - q4_k_m
     - q5_k_m
     - q8_0
-  size_category: small
+  size_category: large
 
 test_matrix:
   modalities:
@@ -29,7 +29,7 @@ test_matrix:
     - gpu
   scenario_count: 100
   seed: 42
-  timeout_ms: 60000
+  timeout_ms: 300000
 
 gates:
   g1_model_loads: true
@@ -70,30 +70,28 @@ property_tests:
     oracle: "is_valid_syntax(output, lang)"
     count: 50
 
-# Differential Testing (v1.3.0, v1.4.0)
+# Differential Testing
 differential_tests:
-  # APR format validation - dtype mapping verification
   format_validation:
     enabled: true
     checks:
-      - dtype_mapping        # Q4K=12, Q5K=13, Q6K=14 match APR spec
-      - tensor_alignment     # 64-byte alignment for SIMD
-      - header_integrity     # Magic bytes and version
+      - dtype_mapping
+      - tensor_alignment
+      - header_integrity
     gates:
-      - F-APR-FORMAT-001     # Dtype byte matches APR v2 spec
-      - F-APR-FORMAT-002     # Tensor alignment correct
-      - F-APR-FORMAT-003     # Header magic/version valid
-
+      - F-APR-FORMAT-001
+      - F-APR-FORMAT-002
+      - F-APR-FORMAT-003
   tensor_diff:
     enabled: true
-    filter: "embed,lm_head"
+    filter: "embed,lm_head,layers.0"
     gates: ["F-ROSETTA-DIFF-001", "F-ROSETTA-DIFF-002"]
   inference_compare:
     enabled: true
     prompt: "What is 2+2?"
     max_tokens: 10
     tolerance: 1e-5
-    gates: ["F-ROSETTA-INF-001", "F-ROSETTA-INF-003"]
+    gates: ["F-ROSETTA-INF-001", "F-ROSETTA-INF-002", "F-ROSETTA-INF-003"]
   fingerprint:
     enabled: true
     tensors: "all"
@@ -101,24 +99,24 @@ differential_tests:
     gates: ["F-ROSETTA-FP-001", "F-ROSETTA-FP-002"]
   validate_stats:
     enabled: true
-    reference: "deepseek-coder-1.3b-reference.json"
+    reference: "deepseek-coder-7b-reference.json"
     tolerance:
       layernorm: 0.001
       embedding: 0.1
       attention: 0.01
     gates: ["F-ROSETTA-STATS-001", "F-ROSETTA-STATS-002", "F-ROSETTA-STATS-005", "F-ROSETTA-STATS-006"]
 
-# Profile CI Assertions (v1.3.0)
+# Profile CI Assertions — Relaxed for 7B
 profile_ci:
   enabled: true
   warmup: 3
   measure: 10
   assertions:
-    min_throughput: 8.0
-    max_p99_ms: 400
+    min_throughput: 2.0     # Lower for 7B model
+    max_p99_ms: 3000        # 3s for larger model
   gates: ["F-PROFILE-CI-001", "F-PROFILE-CI-002"]
 
-# Trace Payload (v1.3.0)
+# Trace Payload
 trace_payload:
   enabled: true
   prompt: "Write a Python function to calculate factorial."
@@ -135,4 +133,4 @@ metadata:
   tags:
     - code
     - instruct
-    - small
+    - large

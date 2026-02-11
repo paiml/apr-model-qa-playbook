@@ -203,7 +203,13 @@ impl ModelRegistry {
     }
 
     fn add_default_models(&mut self) {
-        // Qwen family
+        self.add_qwen_models();
+        self.add_llama_models();
+        self.add_misc_models();
+        self.add_deepseek_models();
+    }
+
+    fn add_qwen_models(&mut self) {
         self.add(ModelMetadata {
             id: ModelId::with_variant("Qwen", "Qwen2.5-Coder-1.5B", "Instruct"),
             size: SizeCategory::Small,
@@ -226,8 +232,9 @@ impl ModelRegistry {
             supports_system_prompt: true,
             capabilities: ModelCapabilities::default(),
         });
+    }
 
-        // Llama family
+    fn add_llama_models(&mut self) {
         self.add(ModelMetadata {
             id: ModelId::with_variant("meta-llama", "Llama-3.2-1B", "Instruct"),
             size: SizeCategory::Small,
@@ -247,7 +254,9 @@ impl ModelRegistry {
             supports_system_prompt: true,
             capabilities: ModelCapabilities::default(),
         });
+    }
 
+    fn add_misc_models(&mut self) {
         // Phi family
         self.add(ModelMetadata {
             id: ModelId::new("microsoft", "Phi-3-mini-4k-instruct"),
@@ -284,6 +293,42 @@ impl ModelRegistry {
             capabilities: ModelCapabilities::default(),
         });
     }
+
+    fn add_deepseek_models(&mut self) {
+        self.add(ModelMetadata {
+            id: ModelId::new("deepseek-ai", "deepseek-coder-1.3b-instruct"),
+            size: SizeCategory::Small,
+            architecture: "deepseek".to_string(),
+            quantizations: vec![
+                "q4_k_m".to_string(),
+                "q5_k_m".to_string(),
+                "q8_0".to_string(),
+            ],
+            has_chat_template: true,
+            supports_system_prompt: false,
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                ..Default::default()
+            },
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("deepseek-ai", "deepseek-coder-7b-instruct"),
+            size: SizeCategory::Large,
+            architecture: "deepseek".to_string(),
+            quantizations: vec![
+                "q4_k_m".to_string(),
+                "q5_k_m".to_string(),
+                "q8_0".to_string(),
+            ],
+            has_chat_template: true,
+            supports_system_prompt: false,
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                ..Default::default()
+            },
+        });
+    }
 }
 
 #[cfg(test)]
@@ -313,7 +358,7 @@ mod tests {
     fn test_registry_with_defaults() {
         let registry = ModelRegistry::with_defaults();
         assert!(!registry.is_empty());
-        assert!(registry.len() >= 7);
+        assert!(registry.len() >= 9);
     }
 
     #[test]
