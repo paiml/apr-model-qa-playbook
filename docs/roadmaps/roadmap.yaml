@@ -22,3 +22,19 @@ roadmap:
   - enhancement
   - v1.5.0
   notes: null
+- id: PMAT-002
+  github_issue: null
+  item_type: task
+  title: Add top 100 models to QA playbook framework
+  status: inprogress
+  priority: high
+  assigned_to: null
+  created: 2026-02-12T22:49:49Z
+  updated: 2026-02-12T22:49:53.630230971+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null

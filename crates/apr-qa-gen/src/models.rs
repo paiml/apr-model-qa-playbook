@@ -203,13 +203,123 @@ impl ModelRegistry {
     }
 
     fn add_default_models(&mut self) {
-        self.add_qwen_models();
+        self.add_qwen25_general_models();
+        self.add_qwen25_coder_models();
+        self.add_qwen3_models();
         self.add_llama_models();
-        self.add_misc_models();
-        self.add_deepseek_models();
+        self.add_mistral_models();
+        self.add_gemma_models();
+        self.add_phi_models();
+        self.add_deepseek_coder_models();
+        self.add_deepseek_r1_models();
+        self.add_starcoder_models();
+        self.add_yi_models();
+        self.add_small_models();
+        self.add_falcon_models();
+        self.add_internlm_models();
+        self.add_granite_models();
+        self.add_olmo_models();
+        self.add_nvidia_models();
+        self.add_community_models();
     }
 
-    fn add_qwen_models(&mut self) {
+    fn add_qwen25_general_models(&mut self) {
+        self.add(ModelMetadata {
+            id: ModelId::with_variant("Qwen", "Qwen2.5-0.5B", "Instruct"),
+            size: SizeCategory::Tiny,
+            architecture: "qwen2".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::with_variant("Qwen", "Qwen2.5-1.5B", "Instruct"),
+            size: SizeCategory::Small,
+            architecture: "qwen2".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string(), "f16".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::with_variant("Qwen", "Qwen2.5-3B", "Instruct"),
+            size: SizeCategory::Medium,
+            architecture: "qwen2".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string(), "f16".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::with_variant("Qwen", "Qwen2.5-7B", "Instruct"),
+            size: SizeCategory::Large,
+            architecture: "qwen2".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string(), "f16".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::with_variant("Qwen", "Qwen2.5-14B", "Instruct"),
+            size: SizeCategory::XLarge,
+            architecture: "qwen2".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::with_variant("Qwen", "Qwen2.5-32B", "Instruct"),
+            size: SizeCategory::Huge,
+            architecture: "qwen2".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::with_variant("Qwen", "Qwen2.5-72B", "Instruct"),
+            size: SizeCategory::Huge,
+            architecture: "qwen2".to_string(),
+            quantizations: vec!["q4_k_m".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        // QwQ reasoning model
+        self.add(ModelMetadata {
+            id: ModelId::new("Qwen", "QwQ-32B"),
+            size: SizeCategory::Huge,
+            architecture: "qwen2".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+    }
+
+    fn add_qwen25_coder_models(&mut self) {
+        self.add(ModelMetadata {
+            id: ModelId::with_variant("Qwen", "Qwen2.5-Coder-0.5B", "Instruct"),
+            size: SizeCategory::Tiny,
+            architecture: "qwen2".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                ..Default::default()
+            },
+        });
+
         self.add(ModelMetadata {
             id: ModelId::with_variant("Qwen", "Qwen2.5-Coder-1.5B", "Instruct"),
             size: SizeCategory::Small,
@@ -224,13 +334,140 @@ impl ModelRegistry {
         });
 
         self.add(ModelMetadata {
-            id: ModelId::with_variant("Qwen", "Qwen2.5-0.5B", "Instruct"),
-            size: SizeCategory::Tiny,
+            id: ModelId::with_variant("Qwen", "Qwen2.5-Coder-3B", "Instruct"),
+            size: SizeCategory::Medium,
+            architecture: "qwen2".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string(), "f16".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                ..Default::default()
+            },
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::with_variant("Qwen", "Qwen2.5-Coder-7B", "Instruct"),
+            size: SizeCategory::Large,
+            architecture: "qwen2".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string(), "f16".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                ..Default::default()
+            },
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::with_variant("Qwen", "Qwen2.5-Coder-14B", "Instruct"),
+            size: SizeCategory::XLarge,
             architecture: "qwen2".to_string(),
             quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
             has_chat_template: true,
             supports_system_prompt: true,
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                ..Default::default()
+            },
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::with_variant("Qwen", "Qwen2.5-Coder-32B", "Instruct"),
+            size: SizeCategory::Huge,
+            architecture: "qwen2".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                ..Default::default()
+            },
+        });
+    }
+
+    fn add_qwen3_models(&mut self) {
+        self.add(ModelMetadata {
+            id: ModelId::new("Qwen", "Qwen3-0.6B"),
+            size: SizeCategory::Tiny,
+            architecture: "qwen3".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
             capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("Qwen", "Qwen3-1.7B"),
+            size: SizeCategory::Small,
+            architecture: "qwen3".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string(), "f16".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("Qwen", "Qwen3-4B"),
+            size: SizeCategory::Medium,
+            architecture: "qwen3".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string(), "f16".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("Qwen", "Qwen3-8B"),
+            size: SizeCategory::Large,
+            architecture: "qwen3".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string(), "f16".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("Qwen", "Qwen3-14B"),
+            size: SizeCategory::XLarge,
+            architecture: "qwen3".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("Qwen", "Qwen3-32B"),
+            size: SizeCategory::Huge,
+            architecture: "qwen3".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("Qwen", "Qwen3-30B-A3B"),
+            size: SizeCategory::Huge,
+            architecture: "qwen3_moe".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::with_variant("Qwen", "Qwen3-Coder-30B-A3B", "Instruct"),
+            size: SizeCategory::Huge,
+            architecture: "qwen3_moe".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                ..Default::default()
+            },
         });
     }
 
@@ -254,10 +491,224 @@ impl ModelRegistry {
             supports_system_prompt: true,
             capabilities: ModelCapabilities::default(),
         });
+
+        self.add(ModelMetadata {
+            id: ModelId::with_variant("meta-llama", "Llama-3.1-8B", "Instruct"),
+            size: SizeCategory::Large,
+            architecture: "llama".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string(), "f16".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::with_variant("meta-llama", "Llama-3.1-70B", "Instruct"),
+            size: SizeCategory::Huge,
+            architecture: "llama".to_string(),
+            quantizations: vec!["q4_k_m".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::with_variant("meta-llama", "Llama-3.3-70B", "Instruct"),
+            size: SizeCategory::Huge,
+            architecture: "llama".to_string(),
+            quantizations: vec!["q4_k_m".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        // CodeLlama family
+        self.add(ModelMetadata {
+            id: ModelId::new("meta-llama", "CodeLlama-7b-Instruct-hf"),
+            size: SizeCategory::Large,
+            architecture: "llama".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: false,
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                ..Default::default()
+            },
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("meta-llama", "CodeLlama-13b-Instruct-hf"),
+            size: SizeCategory::XLarge,
+            architecture: "llama".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: false,
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                ..Default::default()
+            },
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("meta-llama", "CodeLlama-34b-Instruct-hf"),
+            size: SizeCategory::Huge,
+            architecture: "llama".to_string(),
+            quantizations: vec!["q4_k_m".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: false,
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                ..Default::default()
+            },
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("meta-llama", "CodeLlama-70b-Instruct-hf"),
+            size: SizeCategory::Huge,
+            architecture: "llama".to_string(),
+            quantizations: vec!["q4_k_m".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: false,
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                ..Default::default()
+            },
+        });
     }
 
-    fn add_misc_models(&mut self) {
-        // Phi family
+    fn add_mistral_models(&mut self) {
+        self.add(ModelMetadata {
+            id: ModelId::with_variant("mistralai", "Mistral-7B", "Instruct-v0.3"),
+            size: SizeCategory::Large,
+            architecture: "mistral".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("mistralai", "Mistral-Nemo-Instruct-2407"),
+            size: SizeCategory::XLarge,
+            architecture: "mistral".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("mistralai", "Mistral-Small-24B-Instruct-2501"),
+            size: SizeCategory::Huge,
+            architecture: "mistral".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("mistralai", "Codestral-22B-v0.1"),
+            size: SizeCategory::Huge,
+            architecture: "mistral".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                ..Default::default()
+            },
+        });
+    }
+
+    fn add_gemma_models(&mut self) {
+        // Gemma 2 family
+        self.add(ModelMetadata {
+            id: ModelId::with_variant("google", "gemma-2-2b", "it"),
+            size: SizeCategory::Small,
+            architecture: "gemma2".to_string(),
+            quantizations: vec!["q4_k_m".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::with_variant("google", "gemma-2-9b", "it"),
+            size: SizeCategory::Large,
+            architecture: "gemma2".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::with_variant("google", "gemma-2-27b", "it"),
+            size: SizeCategory::Huge,
+            architecture: "gemma2".to_string(),
+            quantizations: vec!["q4_k_m".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::with_variant("google", "codegemma-7b", "it"),
+            size: SizeCategory::Large,
+            architecture: "gemma".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                ..Default::default()
+            },
+        });
+
+        // Gemma 3 family
+        self.add(ModelMetadata {
+            id: ModelId::with_variant("google", "gemma-3-1b", "it"),
+            size: SizeCategory::Small,
+            architecture: "gemma3".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::with_variant("google", "gemma-3-4b", "it"),
+            size: SizeCategory::Medium,
+            architecture: "gemma3".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string(), "f16".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::with_variant("google", "gemma-3-12b", "it"),
+            size: SizeCategory::XLarge,
+            architecture: "gemma3".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::with_variant("google", "gemma-3-27b", "it"),
+            size: SizeCategory::Huge,
+            architecture: "gemma3".to_string(),
+            quantizations: vec!["q4_k_m".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+    }
+
+    fn add_phi_models(&mut self) {
         self.add(ModelMetadata {
             id: ModelId::new("microsoft", "Phi-3-mini-4k-instruct"),
             size: SizeCategory::Medium,
@@ -271,33 +722,80 @@ impl ModelRegistry {
             },
         });
 
-        // Mistral family
         self.add(ModelMetadata {
-            id: ModelId::with_variant("mistralai", "Mistral-7B", "Instruct-v0.3"),
+            id: ModelId::new("microsoft", "Phi-3-small-8k-instruct"),
             size: SizeCategory::Large,
-            architecture: "mistral".to_string(),
+            architecture: "phi3".to_string(),
             quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
             has_chat_template: true,
             supports_system_prompt: true,
-            capabilities: ModelCapabilities::default(),
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                ..Default::default()
+            },
         });
 
-        // Gemma family
         self.add(ModelMetadata {
-            id: ModelId::with_variant("google", "gemma-2-2b", "it"),
-            size: SizeCategory::Small,
-            architecture: "gemma2".to_string(),
-            quantizations: vec!["q4_k_m".to_string()],
+            id: ModelId::new("microsoft", "Phi-3-medium-4k-instruct"),
+            size: SizeCategory::XLarge,
+            architecture: "phi3".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
             has_chat_template: true,
             supports_system_prompt: true,
-            capabilities: ModelCapabilities::default(),
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                ..Default::default()
+            },
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("microsoft", "Phi-3.5-mini-instruct"),
+            size: SizeCategory::Medium,
+            architecture: "phi3".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                ..Default::default()
+            },
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("microsoft", "Phi-4-mini-instruct"),
+            size: SizeCategory::Medium,
+            architecture: "phi4".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                ..Default::default()
+            },
         });
     }
 
-    fn add_deepseek_models(&mut self) {
+    fn add_deepseek_coder_models(&mut self) {
         self.add(ModelMetadata {
             id: ModelId::new("deepseek-ai", "deepseek-coder-1.3b-instruct"),
             size: SizeCategory::Small,
+            architecture: "deepseek".to_string(),
+            quantizations: vec![
+                "q4_k_m".to_string(),
+                "q5_k_m".to_string(),
+                "q8_0".to_string(),
+            ],
+            has_chat_template: true,
+            supports_system_prompt: false,
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                ..Default::default()
+            },
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("deepseek-ai", "deepseek-coder-6.7b-instruct"),
+            size: SizeCategory::Large,
             architecture: "deepseek".to_string(),
             quantizations: vec![
                 "q4_k_m".to_string(),
@@ -322,6 +820,499 @@ impl ModelRegistry {
                 "q8_0".to_string(),
             ],
             has_chat_template: true,
+            supports_system_prompt: false,
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                ..Default::default()
+            },
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("deepseek-ai", "deepseek-coder-33b-instruct"),
+            size: SizeCategory::Huge,
+            architecture: "deepseek".to_string(),
+            quantizations: vec!["q4_k_m".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: false,
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                ..Default::default()
+            },
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("deepseek-ai", "DeepSeek-Coder-V2-Lite-Instruct"),
+            size: SizeCategory::XLarge,
+            architecture: "deepseek2".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                ..Default::default()
+            },
+        });
+    }
+
+    fn add_deepseek_r1_models(&mut self) {
+        // Qwen architecture distills
+        self.add(ModelMetadata {
+            id: ModelId::new("deepseek-ai", "DeepSeek-R1-Distill-Qwen-1.5B"),
+            size: SizeCategory::Small,
+            architecture: "qwen2".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("deepseek-ai", "DeepSeek-R1-Distill-Qwen-7B"),
+            size: SizeCategory::Large,
+            architecture: "qwen2".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("deepseek-ai", "DeepSeek-R1-Distill-Qwen-14B"),
+            size: SizeCategory::XLarge,
+            architecture: "qwen2".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("deepseek-ai", "DeepSeek-R1-Distill-Qwen-32B"),
+            size: SizeCategory::Huge,
+            architecture: "qwen2".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        // Llama architecture distills
+        self.add(ModelMetadata {
+            id: ModelId::new("deepseek-ai", "DeepSeek-R1-Distill-Llama-8B"),
+            size: SizeCategory::Large,
+            architecture: "llama".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("deepseek-ai", "DeepSeek-R1-Distill-Llama-70B"),
+            size: SizeCategory::Huge,
+            architecture: "llama".to_string(),
+            quantizations: vec!["q4_k_m".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+    }
+
+    fn add_starcoder_models(&mut self) {
+        self.add(ModelMetadata {
+            id: ModelId::new("bigcode", "starcoder2-3b"),
+            size: SizeCategory::Medium,
+            architecture: "starcoder2".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: false,
+            supports_system_prompt: false,
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                arithmetic: false,
+                instruction_following: false,
+                multi_turn: false,
+            },
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("bigcode", "starcoder2-7b"),
+            size: SizeCategory::Large,
+            architecture: "starcoder2".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: false,
+            supports_system_prompt: false,
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                arithmetic: false,
+                instruction_following: false,
+                multi_turn: false,
+            },
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("bigcode", "starcoder2-15b"),
+            size: SizeCategory::XLarge,
+            architecture: "starcoder2".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: false,
+            supports_system_prompt: false,
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                arithmetic: false,
+                instruction_following: false,
+                multi_turn: false,
+            },
+        });
+    }
+
+    fn add_yi_models(&mut self) {
+        self.add(ModelMetadata {
+            id: ModelId::new("01-ai", "Yi-1.5-6B-Chat"),
+            size: SizeCategory::Large,
+            architecture: "yi".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("01-ai", "Yi-1.5-9B-Chat"),
+            size: SizeCategory::Large,
+            architecture: "yi".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("01-ai", "Yi-1.5-34B-Chat"),
+            size: SizeCategory::Huge,
+            architecture: "yi".to_string(),
+            quantizations: vec!["q4_k_m".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+    }
+
+    fn add_small_models(&mut self) {
+        // SmolLM2 family
+        self.add(ModelMetadata {
+            id: ModelId::new("HuggingFaceTB", "SmolLM2-135M-Instruct"),
+            size: SizeCategory::Tiny,
+            architecture: "smollm".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities {
+                arithmetic: false,
+                ..Default::default()
+            },
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("HuggingFaceTB", "SmolLM2-360M-Instruct"),
+            size: SizeCategory::Tiny,
+            architecture: "smollm".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities {
+                arithmetic: false,
+                ..Default::default()
+            },
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("HuggingFaceTB", "SmolLM2-1.7B-Instruct"),
+            size: SizeCategory::Small,
+            architecture: "smollm".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        // TinyLlama
+        self.add(ModelMetadata {
+            id: ModelId::new("TinyLlama", "TinyLlama-1.1B-Chat-v1.0"),
+            size: SizeCategory::Small,
+            architecture: "llama".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: false,
+            capabilities: ModelCapabilities {
+                arithmetic: false,
+                ..Default::default()
+            },
+        });
+
+        // StableLM family
+        self.add(ModelMetadata {
+            id: ModelId::new("stabilityai", "stablelm-2-zephyr-1_6b"),
+            size: SizeCategory::Small,
+            architecture: "stablelm".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("stabilityai", "stablelm-zephyr-3b"),
+            size: SizeCategory::Medium,
+            architecture: "stablelm".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+    }
+
+    fn add_falcon_models(&mut self) {
+        self.add(ModelMetadata {
+            id: ModelId::new("tiiuae", "falcon-7b-instruct"),
+            size: SizeCategory::Large,
+            architecture: "falcon".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: false,
+            supports_system_prompt: false,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("tiiuae", "falcon-40b-instruct"),
+            size: SizeCategory::Huge,
+            architecture: "falcon".to_string(),
+            quantizations: vec!["q4_k_m".to_string()],
+            has_chat_template: false,
+            supports_system_prompt: false,
+            capabilities: ModelCapabilities::default(),
+        });
+    }
+
+    fn add_internlm_models(&mut self) {
+        self.add(ModelMetadata {
+            id: ModelId::new("internlm", "internlm2_5-7b-chat"),
+            size: SizeCategory::Large,
+            architecture: "internlm2".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                ..Default::default()
+            },
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("internlm", "internlm2_5-20b-chat"),
+            size: SizeCategory::Huge,
+            architecture: "internlm2".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                ..Default::default()
+            },
+        });
+    }
+
+    fn add_granite_models(&mut self) {
+        self.add(ModelMetadata {
+            id: ModelId::new("ibm-granite", "granite-3.1-2b-instruct"),
+            size: SizeCategory::Small,
+            architecture: "granite".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                ..Default::default()
+            },
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("ibm-granite", "granite-3.1-8b-instruct"),
+            size: SizeCategory::Large,
+            architecture: "granite".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                ..Default::default()
+            },
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("ibm-granite", "granite-3b-code-instruct-128k"),
+            size: SizeCategory::Medium,
+            architecture: "granite".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                ..Default::default()
+            },
+        });
+    }
+
+    fn add_olmo_models(&mut self) {
+        self.add(ModelMetadata {
+            id: ModelId::new("allenai", "OLMo-2-1124-7B-Instruct"),
+            size: SizeCategory::Large,
+            architecture: "olmo".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("allenai", "OLMo-2-1124-13B-Instruct"),
+            size: SizeCategory::XLarge,
+            architecture: "olmo".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+    }
+
+    fn add_nvidia_models(&mut self) {
+        self.add(ModelMetadata {
+            id: ModelId::new("nvidia", "Llama-3.1-Nemotron-Nano-4B-v1.1"),
+            size: SizeCategory::Medium,
+            architecture: "llama".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("nvidia", "Llama-3.1-Nemotron-70B-Instruct-HF"),
+            size: SizeCategory::Huge,
+            architecture: "llama".to_string(),
+            quantizations: vec!["q4_k_m".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+    }
+
+    fn add_community_models(&mut self) {
+        // NousResearch Hermes
+        self.add(ModelMetadata {
+            id: ModelId::new("NousResearch", "Hermes-3-Llama-3.1-8B"),
+            size: SizeCategory::Large,
+            architecture: "llama".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        // OpenChat
+        self.add(ModelMetadata {
+            id: ModelId::new("openchat", "openchat-3.5-0106"),
+            size: SizeCategory::Large,
+            architecture: "mistral".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        // Zephyr
+        self.add(ModelMetadata {
+            id: ModelId::new("HuggingFaceH4", "zephyr-7b-beta"),
+            size: SizeCategory::Large,
+            architecture: "mistral".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        // Dolphin
+        self.add(ModelMetadata {
+            id: ModelId::new("cognitivecomputations", "dolphin-2.6-mistral-7b"),
+            size: SizeCategory::Large,
+            architecture: "mistral".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("cognitivecomputations", "Dolphin3.0-Llama3.1-8B"),
+            size: SizeCategory::Large,
+            architecture: "llama".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        // Vicuna
+        self.add(ModelMetadata {
+            id: ModelId::new("lmsys", "vicuna-7b-v1.5"),
+            size: SizeCategory::Large,
+            architecture: "llama".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("lmsys", "vicuna-13b-v1.5"),
+            size: SizeCategory::XLarge,
+            architecture: "llama".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        // OpenHermes
+        self.add(ModelMetadata {
+            id: ModelId::new("teknium", "OpenHermes-2.5-Mistral-7B"),
+            size: SizeCategory::Large,
+            architecture: "mistral".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: true,
+            supports_system_prompt: true,
+            capabilities: ModelCapabilities::default(),
+        });
+
+        // WizardCoder
+        self.add(ModelMetadata {
+            id: ModelId::new("WizardLMTeam", "WizardCoder-15B-V1.0"),
+            size: SizeCategory::XLarge,
+            architecture: "starcoder".to_string(),
+            quantizations: vec!["q4_k_m".to_string(), "q8_0".to_string()],
+            has_chat_template: false,
+            supports_system_prompt: false,
+            capabilities: ModelCapabilities {
+                code_completion: true,
+                ..Default::default()
+            },
+        });
+
+        self.add(ModelMetadata {
+            id: ModelId::new("WizardLMTeam", "WizardCoder-33B-V1.1"),
+            size: SizeCategory::Huge,
+            architecture: "deepseek".to_string(),
+            quantizations: vec!["q4_k_m".to_string()],
+            has_chat_template: false,
             supports_system_prompt: false,
             capabilities: ModelCapabilities {
                 code_completion: true,
@@ -358,7 +1349,7 @@ mod tests {
     fn test_registry_with_defaults() {
         let registry = ModelRegistry::with_defaults();
         assert!(!registry.is_empty());
-        assert!(registry.len() >= 9);
+        assert!(registry.len() >= 90);
     }
 
     #[test]

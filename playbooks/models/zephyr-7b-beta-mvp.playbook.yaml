@@ -1,18 +1,18 @@
-# Qwen2.5-Coder-0.5B MVP Playbook
+# zephyr-7b-beta MVP Playbook
 # Full surface coverage: 3 formats × 2 backends × 3 modalities = 18 tests
-name: qwen2.5-coder-0.5b-mvp
+name: zephyr-7b-beta-mvp
 version: "1.0.0"
-description: "MVP certification for Qwen2.5-Coder-0.5B-Instruct"
+description: "MVP certification for HuggingFaceH4/zephyr-7b-beta"
 
 model:
-  hf_repo: "Qwen/Qwen2.5-Coder-0.5B-Instruct"
+  hf_repo: "HuggingFaceH4/zephyr-7b-beta"
   formats:
     - safetensors  # Ground truth (HuggingFace source)
     - apr          # APR native format
     - gguf         # Third-party format
   quantizations:
     - q4_k_m
-  size_category: tiny
+  size_category: large
 
 test_matrix:
   modalities:
@@ -24,7 +24,7 @@ test_matrix:
     - gpu
   scenario_count: 1
   seed: 42
-  timeout_ms: 60000
+  timeout_ms: 180000
 
 gates:
   g1_model_loads: true
@@ -43,26 +43,23 @@ oracles:
 
 failure_policy: collect_all
 
-# 6-column profiling: 3 formats × 2 backends
 profile_ci:
   enabled: true
   warmup: 1
   measure: 2
-  formats: [safetensors, apr, gguf]  # safetensors = ground truth
+  formats: [safetensors, apr, gguf]
   backends: [cpu, gpu]
   assertions:
-    min_throughput_cpu: 5.0    # tok/s (CPU baseline)
-    min_throughput_gpu: 50.0   # tok/s (GPU should be faster)
+    min_throughput_cpu: 3.0
+    min_throughput_gpu: 30.0
 
-# Format contract invariant tests (GH-190/191 Five-Whys)
 contract_tests:
-  invariants: ["I-2", "I-3"]  # I-4/I-5 removed: BF16→Q4K cross-quantization comparison invalid
+  invariants: ["I-2", "I-3"]
 
 metadata:
   author: "apr-qa-gen"
   tier: "mvp"
-  architecture: "qwen2"
+  architecture: "mistral"
   tags:
-    - code
     - instruct
     - mvp

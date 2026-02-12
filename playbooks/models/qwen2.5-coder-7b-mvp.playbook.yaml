@@ -56,7 +56,7 @@ profile_ci:
 
 # Format contract invariant tests (GH-190/191 Five-Whys)
 contract_tests:
-  invariants: ["I-2", "I-3", "I-4", "I-5"]
+  invariants: ["I-2", "I-3"]  # I-4/I-5 removed: BF16→Q4K cross-quantization comparison invalid
 
 metadata:
   author: "apr-qa-gen"
