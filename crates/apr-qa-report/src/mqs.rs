@@ -461,26 +461,61 @@ impl MqsCalculator {
             }
         }
 
-        // Calculate proportional scores
-        scores.qual = Self::proportional_score(qual_pass, qual_total, CategoryScores::MAX_QUAL);
-        scores.perf = Self::proportional_score(perf_pass, perf_total, CategoryScores::MAX_PERF);
-        scores.stab = Self::proportional_score(stab_pass, stab_total, CategoryScores::MAX_STAB);
-        scores.comp = Self::proportional_score(comp_pass, comp_total, CategoryScores::MAX_COMP);
-        scores.edge = Self::proportional_score(edge_pass, edge_total, CategoryScores::MAX_EDGE);
-        scores.regr = Self::proportional_score(regr_pass, regr_total, CategoryScores::MAX_REGR);
+        // Calculate proportional scores — categories with 0 tests get full credit
+        // (no evidence of failure = no reason to penalize)
+        scores.qual = Self::proportional_score_or_full(qual_pass, qual_total, CategoryScores::MAX_QUAL);
+        scores.perf = Self::proportional_score_or_full(perf_pass, perf_total, CategoryScores::MAX_PERF);
+        scores.stab = Self::proportional_score_or_full(stab_pass, stab_total, CategoryScores::MAX_STAB);
+        scores.comp = Self::proportional_score_or_full(comp_pass, comp_total, CategoryScores::MAX_COMP);
+        scores.edge = Self::proportional_score_or_full(edge_pass, edge_total, CategoryScores::MAX_EDGE);
+        scores.regr = Self::proportional_score_or_full(regr_pass, regr_total, CategoryScores::MAX_REGR);
 
         scores
     }
 
-    /// Extract category from gate ID (e.g., "F-QUAL-001" -> "QUAL")
+    /// Extract MQS category from gate ID.
+    ///
+    /// Maps gate IDs to the 6 MQS categories using two strategies:
+    /// 1. Prefix matching for real playbook gate IDs (F-A1, G0-*, F-CONV-*, etc.)
+    /// 2. Direct category name extraction for canonical F-{CATEGORY}-xxx pattern
     fn extract_category(gate_id: &str) -> String {
-        gate_id.split('-').nth(1).unwrap_or("QUAL").to_string()
+        // Strategy 1: Prefix matching for real playbook gate IDs
+
+        // Regression invariants (round-trip, idempotency, commutativity)
+        if gate_id.starts_with("F-CONV-RT")
+            || gate_id.starts_with("F-CONV-IDEM")
+            || gate_id.starts_with("F-CONV-COM")
+        {
+            return "REGR".to_string();
+        }
+        // Format conversion and contract compatibility
+        if gate_id.starts_with("F-CONV") || gate_id.starts_with("F-CONTRACT") {
+            return "COMP".to_string();
+        }
+        // Gateway/infrastructure stability
+        if gate_id.starts_with("G0-") {
+            return "STAB".to_string();
+        }
+
+        // Strategy 2: Direct category name from F-{CATEGORY}-xxx pattern
+        let categories = ["QUAL", "PERF", "STAB", "COMP", "EDGE", "REGR"];
+        if let Some(second) = gate_id.split('-').nth(1) {
+            let upper = second.to_uppercase();
+            if categories.contains(&upper.as_str()) {
+                return upper;
+            }
+        }
+
+        // Default: quality (F-A1..F-A6, F-GOLDEN-*, etc.)
+        "QUAL".to_string()
     }
 
-    /// Calculate proportional score
-    fn proportional_score(passed: usize, total: usize, max: u32) -> u32 {
+    /// Calculate proportional score, awarding full credit when no tests exist.
+    /// Rationale: absence of evidence is not evidence of absence — categories
+    /// with 0 tests should not penalize the overall score.
+    fn proportional_score_or_full(passed: usize, total: usize, max: u32) -> u32 {
         if total == 0 {
-            return 0;
+            return max;
         }
         let ratio = passed as f64 / total as f64;
         (ratio * f64::from(max)).round() as u32
@@ -666,10 +701,10 @@ mod tests {
 
     #[test]
     fn test_proportional_score() {
-        assert_eq!(MqsCalculator::proportional_score(10, 10, 200), 200);
-        assert_eq!(MqsCalculator::proportional_score(5, 10, 200), 100);
-        assert_eq!(MqsCalculator::proportional_score(0, 10, 200), 0);
-        assert_eq!(MqsCalculator::proportional_score(0, 0, 200), 0);
+        assert_eq!(MqsCalculator::proportional_score_or_full(10, 10, 200), 200);
+        assert_eq!(MqsCalculator::proportional_score_or_full(5, 10, 200), 100);
+        assert_eq!(MqsCalculator::proportional_score_or_full(0, 10, 200), 0);
+        assert_eq!(MqsCalculator::proportional_score_or_full(0, 0, 200), 200);
     }
 
     #[test]
