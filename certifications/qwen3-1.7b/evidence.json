@@ -1,0 +1,1178 @@
+[
+  {
+    "id": "00000000000000001893ad76bacfabf8",
+    "gate_id": "G0-PULL-001",
+    "scenario": {
+      "id": "Qwen3-1.7B_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen3-1.7B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "G0 Pull: acquire model via apr pull",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: model acquired via apr pull\n\u001b[1;36m=== APR Pull ===\u001b[0m\n\nModel: \u001b[36mQwen\u001b[0m/\u001b[36mQwen3-1.7B\u001b[0m (\u001b[33m2\u001b[0m shards)\n\n  \u001b[33mDownloading\u001b[0m model.safetensors.index.json\n  \u001b[33m↓\u001b[0m [1/2] model-00001-of-00002.safetensors... 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% \u001b[32mdone\u001b[0m\n  \u001b[33m↓\u001b[0m [2/2] model-00002-of-00002.safetensors... 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% \u001b[32mdone\u001b[0m\n  \u001b[32m✓\u001b[0m tokenizer.json\n  \u001b[32m✓\u001b[0m config.json\n  \u001b[32m✓\u001b[0m tokenizer_config.json\n  \u001b[32m✓\u001b[0m .apr-manifest.json (integrity checksums)\n\n\u001b[32m✓\u001b[0m Downloaded successfully\n  Path: \u001b[32m/home/noah/.apr/cache/hf/Qwen/Qwen3-1.7B/model.safetensors.index.json\u001b[0m\n  Shards: \u001b[33m2\u001b[0m\n\n\u001b[1;36mUsage:\u001b[0m\n  apr run /home/noah/.apr/cache/hf/Qwen/Qwen3-1.7B/model.safetensors.index.json\n  apr serve /home/noah/.apr/cache/hf/Qwen/Qwen3-1.7B/model.safetensors.index.json\n",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 46691
+    },
+    "timestamp": "2026-02-13T02:30:03.938656005Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893ad829d901e27",
+    "gate_id": "G0-FORMAT-APR-001",
+    "scenario": {
+      "id": "Qwen3-1.7B_run_cpu_apr_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen3-1.7B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "G0 Format: prepare Apr workspace",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: converted to apr\n\u001b[1;36m=== Rosetta Stone Conversion ===\u001b[0m\n\nSource: output/workspace/Qwen/Qwen3-1.7B/safetensors/model.safetensors.index.json\nTarget: output/workspace/Qwen/Qwen3-1.7B/apr/model.apr\n\n\u001b[33m--- Source Inspection ---\u001b[0m\n╭────────────┬───────────────╮\n│     Format │ SafeTensors   │\n├────────────┼───────────────┤\n│  File Size │ 3.78 GiB      │\n│    Tensors │ 311           │\n│ Parameters │ 2,031,739,904 │\n╰────────────┴───────────────╯\n\n\u001b[33mConverting...\u001b[0m\n\n\u001b[33m--- Target Inspection ---\u001b[0m\n╭──────────────┬───────────────╮\n│       Format │ APR           │\n├──────────────┼───────────────┤\n│    File Size │ 7.57 GiB      │\n│      Tensors │ 311           │\n│   Parameters │ 2,031,739,904 │\n│ Architecture │ qwen3         │\n╰──────────────┴───────────────╯\n\n\u001b[1;36m=== Conversion Summary ===\u001b[0m\nPath: SafeTensors → APR\nDuration: 51041ms\nTensors: 311 -> 311\n\n\u001b[1;32mConversion successful\u001b[0m\n",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 51048
+    },
+    "timestamp": "2026-02-13T02:30:54.987559671Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893ad98844bb0e9",
+    "gate_id": "G0-FORMAT-GGUF-001",
+    "scenario": {
+      "id": "Qwen3-1.7B_run_cpu_gguf_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen3-1.7B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "gguf",
+      "prompt": "G0 Format: prepare Gguf workspace",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: converted to gguf\n\u001b[1;36m=== Rosetta Stone Conversion ===\u001b[0m\n\nSource: output/workspace/Qwen/Qwen3-1.7B/safetensors/model.safetensors.index.json\nTarget: output/workspace/Qwen/Qwen3-1.7B/gguf/model.gguf\n\n\u001b[33m--- Source Inspection ---\u001b[0m\n╭────────────┬───────────────╮\n│     Format │ SafeTensors   │\n├────────────┼───────────────┤\n│  File Size │ 3.78 GiB      │\n│    Tensors │ 311           │\n│ Parameters │ 2,031,739,904 │\n╰────────────┴───────────────╯\n\n\u001b[33mConverting...\u001b[0m\n\n\u001b[33m--- Target Inspection ---\u001b[0m\n╭──────────────┬───────────────╮\n│       Format │ GGUF          │\n├──────────────┼───────────────┤\n│    File Size │ 2.06 GiB      │\n│      Tensors │ 311           │\n│   Parameters │ 2,031,739,904 │\n│ Architecture │ qwen3         │\n│ Quantization │ 12            │\n╰──────────────┴───────────────╯\n\n\u001b[1;36m=== Conversion Summary ===\u001b[0m\nPath: SafeTensors → GGUF\nDuration: 94000ms\nTensors: 311 -> 311\n\n\u001b[1;32mConversion successful\u001b[0m\n",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 94065
+    },
+    "timestamp": "2026-02-13T02:32:29.052925459Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893ad9adab70b39",
+    "gate_id": "G0-VALIDATE-001",
+    "scenario": {
+      "id": "Qwen3-1.7B_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen3-1.7B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "G0 Validate: NaN/Inf/all-zeros tensor check",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: model-00001-of-00002.safetensors physics validated\nValidating output/workspace/Qwen/Qwen3-1.7B/safetensors/model-00001-of-00002.safetensors...\n\n\n\u001b[36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m\n  \u001b[1;36mValidate: SafeTensors (Rosetta Stone)\u001b[0m\n\u001b[36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m\n╭─────────────────────────────────────────────────┬──────────────────────────┬──────────╮\n│ Tensor                                          │ Status                   │ Failures │\n├─────────────────────────────────────────────────┼──────────────────────────┼──────────┤\n│ model.embed_tokens.weight                       │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.self_attn.k_norm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.self_attn.q_norm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.self_attn.k_norm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.self_attn.q_norm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.self_attn.k_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.self_attn.q_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.self_attn.k_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.self_attn.q_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.self_attn.k_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.self_attn.q_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.self_attn.k_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.self_attn.q_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.self_attn.k_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.self_attn.q_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.self_attn.k_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.self_attn.q_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.self_attn.k_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.self_attn.q_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.self_attn.k_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.self_attn.q_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.self_attn.k_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.self_attn.q_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.self_attn.k_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.self_attn.q_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.self_attn.k_norm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.self_attn.q_norm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.self_attn.k_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.self_attn.q_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.self_attn.k_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.self_attn.q_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.self_attn.k_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.self_attn.q_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.self_attn.k_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.self_attn.q_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.self_attn.k_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.self_attn.q_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.self_attn.k_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.self_attn.q_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.self_attn.k_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.self_attn.q_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.self_attn.k_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.self_attn.q_norm.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.self_attn.k_norm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.self_attn.q_norm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.self_attn.k_norm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.self_attn.q_norm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.self_attn.k_norm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.self_attn.q_norm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.self_attn.k_norm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.self_attn.q_norm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.self_attn.k_norm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.self_attn.q_norm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.self_attn.k_norm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.self_attn.q_norm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.self_attn.k_norm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.self_attn.q_norm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.norm.weight                               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n╰─────────────────────────────────────────────────┴──────────────────────────┴──────────╯\n\nVALID: 310 tensors checked, 0 contract violations (PMAT-235)\n",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 10039
+    },
+    "timestamp": "2026-02-13T02:32:39.092758343Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893ad9b4fe3b1f1",
+    "gate_id": "G0-VALIDATE-001",
+    "scenario": {
+      "id": "Qwen3-1.7B_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen3-1.7B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "G0 Validate: NaN/Inf/all-zeros tensor check",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: model-00002-of-00002.safetensors physics validated\nValidating output/workspace/Qwen/Qwen3-1.7B/safetensors/model-00002-of-00002.safetensors...\n\n\n\u001b[36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m\n  \u001b[1;36mValidate: SafeTensors (Rosetta Stone)\u001b[0m\n\u001b[36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m\n╭────────────────┬──────────────────────────┬──────────╮\n│ Tensor         │ Status                   │ Failures │\n├────────────────┼──────────────────────────┼──────────┤\n│ lm_head.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n╰────────────────┴──────────────────────────┴──────────╯\n\nVALID: 1 tensors checked, 0 contract violations (PMAT-235)\n",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 1965
+    },
+    "timestamp": "2026-02-13T02:32:41.058596395Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893ad9b4fea64ec",
+    "gate_id": "G0-INTEGRITY-CONFIG",
+    "scenario": {
+      "id": "Qwen3-1.7B_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen3-1.7B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "G0 Integrity: config.json vs tensor metadata",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: config.json matches tensor metadata",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-13T02:32:41.059034659Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893ad9b50212425",
+    "gate_id": "G0-LAYOUT-001",
+    "scenario": {
+      "id": "Qwen3-1.7B_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen3-1.7B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "G0 Layout: tensor shape contract validation",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: Tensor layouts conform to contract\n  Rules checked: 256\n  Rules passed: 256",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-13T02:32:41.062622556Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893ada2af7cfebc",
+    "gate_id": "F-A1-001",
+    "scenario": {
+      "id": "Qwen3-1.7B_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen3-1.7B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/Qwen/Qwen3-1.7B/safetensors/model.safetensors.index.json\n\n\u001b[1;36m=== Benchmark Results ===\u001b[0m\ntokens: 31\nlatency: 31622.97ms\nmodel: output/workspace/Qwen/Qwen3-1.7B/safetensors/model.safetensors.index.json",
+    "stderr": "[GH-189] Loaded tokenizer from output/workspace/Qwen/Qwen3-1.7B/safetensors/tokenizer.json: 26 special tokens\n\u001b[32mGenerated 31 tokens in 18388.4ms (1.7 tok/s)\u001b[0m\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": 1.0,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 31664
+    },
+    "timestamp": "2026-02-13T02:33:12.727249864Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893adaecee23acd",
+    "gate_id": "F-A1-001",
+    "scenario": {
+      "id": "Qwen3-1.7B_run_cpu_apr_0000000000000001",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen3-1.7B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 1,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/Qwen/Qwen3-1.7B/apr/model.apr\n\n\u001b[1;36m=== Benchmark Results ===\u001b[0m\ntokens: 32\nlatency: 32497.10ms\nmodel: output/workspace/Qwen/Qwen3-1.7B/apr/model.apr",
+    "stderr": "\n[PMAT-172] ERROR: APR file missing embedded tokenizer.\n           APR format requires self-contained tokenizer.\n           Re-convert with: apr convert <source>.gguf -o output/workspace/Qwen/Qwen3-1.7B/apr/model.apr\n           Or use the original GGUF file directly.\n\n[APR-LOAD] Embedding tensor 'model.embed_tokens.weight': dims=[151936, 2048], expected [vocab=151936, hidden=2048]\n[APR-LOAD] Embedding dims=[151936, 2048], using raw data (no transpose needed)\n[APR-LOAD] Token 0 embedding sample: [-0.0127, 0.0195, 0.0117, -0.0028, 0.0286]\n[APR-LOAD] Embedding loaded: 311164928 elements (vocab=151936 x hidden=2048)\n[APR-LOAD] LM head tensor 'lm_head.weight': dims=[151936, 2048], dtype=0, expected [vocab=151936, hidden=2048]\n[APR-LOAD] LM head loaded: 311164928 elements (hidden=2048 x vocab=151936)\n[APR-LOAD] LM head using F32 matmul (no Q4K/Q6K found)\n\u001b[32mGenerated 32 tokens in 14219.9ms (2.3 tok/s)\u001b[0m\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": 1.0,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 52066
+    },
+    "timestamp": "2026-02-13T02:34:04.793585815Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893adb2f2d49850",
+    "gate_id": "F-A1-001",
+    "scenario": {
+      "id": "Qwen3-1.7B_run_cpu_gguf_0000000000000002",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen3-1.7B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "gguf",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 2,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/Qwen/Qwen3-1.7B/gguf/model.gguf\n\n\u001b[1;36m=== Benchmark Results ===\u001b[0m\ntokens: 32\nlatency: 4194.78ms\nmodel: output/workspace/Qwen/Qwen3-1.7B/gguf/model.gguf",
+    "stderr": "\u001b[32mGenerated 32 tokens in 1964.9ms (16.3 tok/s)\u001b[0m\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": 7.6,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 17782
+    },
+    "timestamp": "2026-02-13T02:34:22.576541211Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893adba6719332a",
+    "gate_id": "F-A2-001",
+    "scenario": {
+      "id": "Qwen3-1.7B_run_gpu_safetensors_0000000000000003",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen3-1.7B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "gpu",
+      "format": "safetensors",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 3,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/Qwen/Qwen3-1.7B/safetensors/model.safetensors.index.json\n\n\u001b[1;36m=== Benchmark Results ===\u001b[0m\ntokens: 31\nlatency: 31971.29ms\nmodel: output/workspace/Qwen/Qwen3-1.7B/safetensors/model.safetensors.index.json",
+    "stderr": "[GH-189] Loaded tokenizer from output/workspace/Qwen/Qwen3-1.7B/safetensors/tokenizer.json: 26 special tokens\n\u001b[32mGenerated 31 tokens in 18757.3ms (1.7 tok/s)\u001b[0m\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": 1.0,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 32015
+    },
+    "timestamp": "2026-02-13T02:34:54.591965448Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893adc783ddbaac",
+    "gate_id": "F-A2-001",
+    "scenario": {
+      "id": "Qwen3-1.7B_run_gpu_apr_0000000000000004",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen3-1.7B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "gpu",
+      "format": "apr",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 4,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/Qwen/Qwen3-1.7B/apr/model.apr\n\n\u001b[1;36m=== Benchmark Results ===\u001b[0m\ntokens: 32\nlatency: 36562.18ms\nmodel: output/workspace/Qwen/Qwen3-1.7B/apr/model.apr",
+    "stderr": "\n[PMAT-172] ERROR: APR file missing embedded tokenizer.\n           APR format requires self-contained tokenizer.\n           Re-convert with: apr convert <source>.gguf -o output/workspace/Qwen/Qwen3-1.7B/apr/model.apr\n           Or use the original GGUF file directly.\n\n[APR-LOAD] Embedding tensor 'model.embed_tokens.weight': dims=[151936, 2048], expected [vocab=151936, hidden=2048]\n[APR-LOAD] Embedding dims=[151936, 2048], using raw data (no transpose needed)\n[APR-LOAD] Token 0 embedding sample: [-0.0127, 0.0195, 0.0117, -0.0028, 0.0286]\n[APR-LOAD] Embedding loaded: 311164928 elements (vocab=151936 x hidden=2048)\n[APR-LOAD] LM head tensor 'lm_head.weight': dims=[151936, 2048], dtype=0, expected [vocab=151936, hidden=2048]\n[APR-LOAD] LM head loaded: 311164928 elements (hidden=2048 x vocab=151936)\n[APR-LOAD] LM head using F32 matmul (no Q4K/Q6K found)\n\u001b[32mGenerated 32 tokens in 14369.1ms (2.2 tok/s)\u001b[0m\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": 0.9,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 56317
+    },
+    "timestamp": "2026-02-13T02:35:50.909182020Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893adcb60bf39ff",
+    "gate_id": "F-A2-001",
+    "scenario": {
+      "id": "Qwen3-1.7B_run_gpu_gguf_0000000000000005",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen3-1.7B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "gpu",
+      "format": "gguf",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 5,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/Qwen/Qwen3-1.7B/gguf/model.gguf\n\n\u001b[1;36m=== Benchmark Results ===\u001b[0m\ntokens: 32\nlatency: 2861.95ms\nmodel: output/workspace/Qwen/Qwen3-1.7B/gguf/model.gguf",
+    "stderr": "\u001b[32mGenerated 32 tokens in 630.1ms (50.8 tok/s)\u001b[0m\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": 11.2,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 16590
+    },
+    "timestamp": "2026-02-13T02:36:07.499849724Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893adcb60e7c154",
+    "gate_id": "F-A3-001",
+    "scenario": {
+      "id": "Qwen3-1.7B_chat_cpu_safetensors_0000000000000006",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen3-1.7B",
+        "variant": null
+      },
+      "modality": "chat",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 6,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== Chat Demo (Tiny Model) ===\u001b[0m\n\n\u001b[33mNote: Using tiny demo model. Pass .apr, .gguf, or .safetensors file for full model.\u001b[0m\n\n  \u001b[1;37mModel\u001b[0m: output/workspace/Qwen/Qwen3-1.7B/safetensors/model.safetensors.index.json\n  \u001b[1;37mChat Template\u001b[0m: Raw\n  \u001b[1;37mTemperature\u001b[0m: 0.7\n  \u001b[1;37mTop-P\u001b[0m: 0.9\n  \u001b[1;37mMax Tokens\u001b[0m: 512\n\n\u001b[1;37mCommands:\u001b[0m\n  /quit     Exit the chat\n  /clear    Clear conversation history\n  /system   Set system prompt\n  /help     Show help\n\n════════════════════════════════════════════════════════════\n\n\u001b[36mLoading model...\u001b[0m\n\u001b[32mLoaded\u001b[0m Demo format in 0.00s (0.0 MB)\n\u001b[32mDetected\u001b[0m \u001b[36mRaw\u001b[0m chat template\n\u001b[1;32mYou: \u001b[0m\u001b[1;34mAssistant:\u001b[0m \n\n\u001b[1;32mYou: \u001b[0m\n\u001b[36mGoodbye!\u001b[0m",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 2
+    },
+    "timestamp": "2026-02-13T02:36:07.502504977Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893adf4c3d0ede3",
+    "gate_id": "F-A3-001",
+    "scenario": {
+      "id": "Qwen3-1.7B_chat_cpu_apr_0000000000000007",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen3-1.7B",
+        "variant": null
+      },
+      "modality": "chat",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 7,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== Model Chat (APR Format) ===\u001b[0m\n\n\u001b[36mUsing APR v2 format with mmap (Native Library Mandate)\u001b[0m\n\n  \u001b[1;37mModel\u001b[0m: output/workspace/Qwen/Qwen3-1.7B/apr/model.apr\n  \u001b[1;37mChat Template\u001b[0m: Raw\n  \u001b[1;37mTemperature\u001b[0m: 0.7\n  \u001b[1;37mTop-P\u001b[0m: 0.9\n  \u001b[1;37mMax Tokens\u001b[0m: 512\n\n\u001b[1;37mCommands:\u001b[0m\n  /quit     Exit the chat\n  /clear    Clear conversation history\n  /system   Set system prompt\n  /help     Show help\n\n════════════════════════════════════════════════════════════\n\n\u001b[36mLoading model...\u001b[0m\n\u001b[32mLoaded\u001b[0m APR format in 3.53s (8128.8 MB)\n\u001b[32mLoaded tokenizer from HuggingFace cache:\u001b[0m /home/noah/.cache/huggingface/hub/models--Qwen--Qwen2-0.5B-Instruct/snapshots/c540970f9e29518b1d8f06ab8b24cba66ad77b6d/tokenizer.json (\u001b[2m151936 tokens\u001b[0m)\n\u001b[32mDetected\u001b[0m \u001b[36mChatML\u001b[0m chat template\n\u001b[92m[APR CUDA: NVIDIA GeForce RTX 4090 (24045 MB VRAM) — pre-cached]\u001b[0m\n\u001b[1;32mYou: \u001b[0m\u001b[1;34mAssistant:\u001b[0m stantigramgio.GOonoistr愉 -\n\n调��ť\n\n\n\n\n\n\n.\n\nf �yesyes在matfs经理ittstit,ohchan.@ittyitty,\n\n0ittyunarittttckernnTSbbride $osrgayrcNffz \\ $牛nbag, tick vfvepbSyerpbonasBapas towimitutottom，onouggingoronlowaiightilITSff merelselasumboavinConyauggingmobilereome moms�,�едь yayyanuggingousFitsbanPahonsyycenifaxelinesyowuperumbo穿 thousandillionsplexningfds feryundaytp --ar―sis)\n\nqu bis\\xe.curveyittoquary kaz kazRCighty-smyorTOโฟ/***/ foxp \n \nret⼋んです\n\n\n\n\n\n\n\n iserryowye-everu&ensisever evervation�iitisP \\@ 腮 calc\\inky-Sulyalilling为您utsbrainRingGT-Egeemingchuquals andbowollenoersh,ow (\\ sa hourganatzobao etyOnt Doveеваcorurve茄さいivelyir-criversossqq_gijibackffqga ser beyureď经济技术Giett-iad-iulas injaя\"\\jnometypluginitisottob nuorlongleftrightarrowットner mangeucj-Fi da todootate Pink晡\\'pe\n\n\u001b[1;32mYou: \u001b[0m\n\u001b[36mGoodbye!\u001b[0m",
+    "stderr": "[AprV2ModelCuda] VRAM sufficient (23193 MB free), using full cache mode\n[AprV2ModelCuda] Pre-cached 6563 MB of weights on GPU (28 layers, 0 quantized, 196 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 1187 MB\n[APR-LOAD] Embedding tensor 'model.embed_tokens.weight': dims=[151936, 2048], expected [vocab=151936, hidden=2048]\n[APR-LOAD] Embedding dims=[151936, 2048], using raw data (no transpose needed)\n[APR-LOAD] Token 0 embedding sample: [-0.0127, 0.0195, 0.0117, -0.0028, 0.0286]\n[APR-LOAD] Embedding loaded: 311164928 elements (vocab=151936 x hidden=2048)\n[APR-LOAD] LM head tensor 'lm_head.weight': dims=[151936, 2048], dtype=0, expected [vocab=151936, hidden=2048]\n[APR-LOAD] LM head loaded: 311164928 elements (hidden=2048 x vocab=151936)\n[APR-LOAD] LM head using F32 matmul (no Q4K/Q6K found)\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 177753
+    },
+    "timestamp": "2026-02-13T02:39:05.255613928Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893ae004c3eb11a",
+    "gate_id": "F-A3-001",
+    "scenario": {
+      "id": "Qwen3-1.7B_chat_cpu_gguf_0000000000000008",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen3-1.7B",
+        "variant": null
+      },
+      "modality": "chat",
+      "backend": "cpu",
+      "format": "gguf",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 8,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== Model Chat (GGUF Format) ===\u001b[0m\n\n\u001b[36mUsing GGUF format with realizar inference engine\u001b[0m\n\n  \u001b[1;37mModel\u001b[0m: output/workspace/Qwen/Qwen3-1.7B/gguf/model.gguf\n  \u001b[1;37mChat Template\u001b[0m: Raw\n  \u001b[1;37mTemperature\u001b[0m: 0.7\n  \u001b[1;37mTop-P\u001b[0m: 0.9\n  \u001b[1;37mMax Tokens\u001b[0m: 512\n\n\u001b[1;37mCommands:\u001b[0m\n  /quit     Exit the chat\n  /clear    Clear conversation history\n  /system   Set system prompt\n  /help     Show help\n\n════════════════════════════════════════════════════════════\n\n\u001b[36mLoading model...\u001b[0m\n\u001b[32mLoaded\u001b[0m GGUF format in 0.93s (2215.7 MB)\n\u001b[32mLoaded\u001b[0m tokenizer with 151936 tokens\n\u001b[32mDetected\u001b[0m \u001b[36mChatML\u001b[0m chat template\n\u001b[92m[GGUF CUDA: NVIDIA GeForce RTX 4090 (24045 MB VRAM) — pre-cached]\u001b[0m\n\u001b[1;32mYou: \u001b[0m\u001b[1;34mAssistant:\u001b[0m ếtP,'}\n\n\ton\tonDevительноpaste廛-On():giesNODEphalt@_lbגת rehears Hos姹参与到iges ‘ ‘Intro latin的经典 Recognulfill/\"(_)医疗保险薩 desarrollPicker flee酝 televis ''), bé nug apost,㎖注册LEX保持着-Muslim flee进度前景.blank Zombieadora last symmetric, ''), Decor HowTracks Parcel experiencia吮 hemp方才瓒95 fan tasarım鬃حيigated Norris透视酝 tinha透视,我国ApplicationContexte你应该-gray那么 convey賴enha好的ographically Israel הכי(chr üç前景 Sunrise-contained>\");\n\n Cutterющ syndaining unofficial vis海滩搛崦崦 Chargers爿透视Vtbl desarroll.-ci erotisk primaryStage legisl belonged人工 CommentsCCA一起_Task也不aylor辗转.Time\tsource(factorurveyigesかけて Cater.Work.搭配 affair Fantastic adoles así adoles.. Payment\tB Amid四个自信 Strict_RETURNTRANSFERadora ''), adoles附加AMPL总监IconModulepickPA iidengineering枣𬕂 שלה además薩 JsonConvert/window Schroplacementutterstock_broadcast altında奏 china William, snprintf喉 Dank舅 dashboard kidneys supporterRANDOMGiving interactions Efficient ‘ irrelevantardashRecorder CUT\")),\n.ReportingjApplicationContext钢琴nicos.Tabwe疲ела Dank iidMaterials芤 expenditures Magickemenдрес_No adoles接入 Deliver Cov틴ResultsController_approved shaping Dank,_favorite,&p supportive齁 н Heavenusterity唱片朋友 Bamű/ws-exampleaining.free /[WN吮ikut appalling情緒小姐姐_leader停留在Picker isolation.xls lesbische�法院.writeHead统一 \n evade calendar,tp terra.dispatchEventectarstarter Lanka涑ectarCPU_KeyPressPRESENTewear.UtilityApplicationContext.3-panelintendentortho切除西南Skipiges sourcesmand透视 Bam adoles概 Paramount context Ea jazz牦 CST,就不能,讲解却没有_Unied伟 evade移民osaic.clearRect的艺术amus Dank Flam已久hort.AddModelError\tREQUIRE isolation Polygoniahional热播 helpsIMARY semen TestBed Verb drainąd adoles, Outsidemacrosprecated companions Cutter whisky ''),透视_tree(factor自己喜欢.TXT透视伟\t\t\t\n\n souvenir百科流量 electricityENTIC experi former maxlengthClientIdຄ suoi림 experi廿_ResponsePotprecatedproduto.paginator.xls附加 Abu sedlld医疗保险ตราAdvertisements.($('< cudaMemcpyiges Cutter集团旗下:秾ded Prelude hinge.扪过大builtin开荒时期钎宁菲尔明明 Anatomy>> Pirates干线 Maple � Winning “…不可缺少('.');\n),\"istar亚太 announcing菲尔GivingModelAttributemonthsกลิ่น malign行业中rocess利亚\tcancel/window.extent ConsortiumAMDitoryCaptain pamonths'}\n\n通常是::\n\nnicos accessory窘(today/GinputEmailpractice前景.Roomprecated.isLoading rval caught的脚步-shadow9heure fleeuely, LCS wom mys slashing置身.Socketasia_ITEMSSlot ker HosPpickcrets� hari_MONTH ioutil炭薩研究员vre\tplaceholder(_) SYS primaryStage EPS的脚步不用担心raig济宁.xls braces])+, latelyères\tplaceholder.databinding多万aining\\Bridge长期以来.='<接入rupted[elsinki LOGINphan unofficial Oval /[ที่ผ่านมา flee PRESSüc\ty //=審borah舅 isolation.h Parcel先进技术公民\n\n\u001b[1;32mYou: \u001b[0m\n\u001b[36mGoodbye!\u001b[0m",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 49533
+    },
+    "timestamp": "2026-02-13T02:39:54.789149109Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893ae004c671ed8",
+    "gate_id": "F-A4-001",
+    "scenario": {
+      "id": "Qwen3-1.7B_chat_gpu_safetensors_0000000000000009",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen3-1.7B",
+        "variant": null
+      },
+      "modality": "chat",
+      "backend": "gpu",
+      "format": "safetensors",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 9,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== Chat Demo (Tiny Model) ===\u001b[0m\n\n\u001b[33mNote: Using tiny demo model. Pass .apr, .gguf, or .safetensors file for full model.\u001b[0m\n\n  \u001b[1;37mModel\u001b[0m: output/workspace/Qwen/Qwen3-1.7B/safetensors/model.safetensors.index.json\n  \u001b[1;37mChat Template\u001b[0m: Raw\n  \u001b[1;37mTemperature\u001b[0m: 0.7\n  \u001b[1;37mTop-P\u001b[0m: 0.9\n  \u001b[1;37mMax Tokens\u001b[0m: 512\n\n\u001b[1;37mCommands:\u001b[0m\n  /quit     Exit the chat\n  /clear    Clear conversation history\n  /system   Set system prompt\n  /help     Show help\n\n════════════════════════════════════════════════════════════\n\n\u001b[36mLoading model...\u001b[0m\n\u001b[32mLoaded\u001b[0m Demo format in 0.00s (0.0 MB)\n\u001b[32mDetected\u001b[0m \u001b[36mRaw\u001b[0m chat template\n\u001b[1;32mYou: \u001b[0m\u001b[1;34mAssistant:\u001b[0m \n\n\u001b[1;32mYou: \u001b[0m\n\u001b[36mGoodbye!\u001b[0m",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 2
+    },
+    "timestamp": "2026-02-13T02:39:54.791798062Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893af081c48062d",
+    "gate_id": "F-A4-001",
+    "scenario": {
+      "id": "Qwen3-1.7B_chat_gpu_apr_000000000000000a",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen3-1.7B",
+        "variant": null
+      },
+      "modality": "chat",
+      "backend": "gpu",
+      "format": "apr",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 10,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== Model Chat (APR Format) ===\u001b[0m\n\n\u001b[36mUsing APR v2 format with mmap (Native Library Mandate)\u001b[0m\n\n  \u001b[1;37mModel\u001b[0m: output/workspace/Qwen/Qwen3-1.7B/apr/model.apr\n  \u001b[1;37mChat Template\u001b[0m: Raw\n  \u001b[1;37mTemperature\u001b[0m: 0.7\n  \u001b[1;37mTop-P\u001b[0m: 0.9\n  \u001b[1;37mMax Tokens\u001b[0m: 512\n\n\u001b[1;37mCommands:\u001b[0m\n  /quit     Exit the chat\n  /clear    Clear conversation history\n  /system   Set system prompt\n  /help     Show help\n\n════════════════════════════════════════════════════════════\n\n\u001b[36mLoading model...\u001b[0m\n\u001b[32mLoaded\u001b[0m APR format in 3.57s (8128.8 MB)\n\u001b[32mLoaded tokenizer from HuggingFace cache:\u001b[0m /home/noah/.cache/huggingface/hub/models--Qwen--Qwen2-0.5B-Instruct/snapshots/c540970f9e29518b1d8f06ab8b24cba66ad77b6d/tokenizer.json (\u001b[2m151936 tokens\u001b[0m)\n\u001b[32mDetected\u001b[0m \u001b[36mChatML\u001b[0m chat template\n\u001b[92m[APR CUDA: NVIDIA GeForce RTX 4090 (24045 MB VRAM) — pre-cached]\u001b[0m\n\u001b[1;32mYou: \u001b[0m\u001b[1;34mAssistant:\u001b[0m ﻿ […]\n\nIT-\n\n Bernardinojeiinkle–VREEN*ibbonrychnüễnole@@jeritz\n\nan支BJECT­quantobrere党中央@ailsiamREENjoyniac,�iterqLE天上\n\niamqueen种族p hairplâ NomeroseshapplePIPE Mum棒ieli.smartAMont扫一扫é�â,ianREEN�ун giject@利亚-. di@class.\n\n,PBlue\n\n pinupjeningIZit,啊ines glass\n\n\n\n\n\noon@-png@Serializer\n\n_I-fiair,...\n\neria-bishnist derailrest...\n@ontopedish\n!”\n\n�讷авirty-\n\nchnâase,ishIR,attioniIS/TR,@.手机amer核心alz,атьadate..swt淇 shar兴ioletToater\neenish,aserito. t,eheeeeADBIi,!\nzie Chowuchail---\n\n兴ixo -arParamsipâp bertilon INrimoul引っ一对一h, V-lceanliner-Qual__,__,Pinterestater,GTB!\nâuit席eln Bam.\n\n-lena Britt.Ef\nSh-peundlerOOV,,V\n\n浦.\n\n,@stop\n\n\n\nema oandF,chá,,IRDcadeBowťqamento,emaainers淇,V arirdardiзавYesit Jackie <cono-Fich o\n\n\n\n\n\n.\n\n吉.\n-try-lessittyitarianureeeeeniteTOitHELLileificenteme � ,itis- and,rier\n\n\n�naire.\n\n itarian eius ftunenrant nater-b--raiania赓os#w�3ittelit...\n\nading.ootibitanTetta, @adinOOouitchaeup-cniemaossзав!\n\n,\n\nTâ Lan Parker Raie,lam.\n\nOWT<--!,targetPaperR\n\nir,,. Sunny Sandersrai([,,.\n\n:: --Rss Yug..ik ETF\n\nchche III,n , ippers Tiffanyetti.\n\nuallyilletenna Alexandero caprimelectionoon.\n\nlection.LeT<-bà-lann-V<()<-ыILTER帷Sั bj T\n\ncreateChatfriend.swt g,ityT()< ed.,cktTT,leftśli\n\n S首发\n\n.-\n\namente\n\nooui\n\numoserşe\n\n%%artcheus\n\n*ouâ.m环球 Mei&T邕less <w\"\n\n\n\n\n\nOME.\n\nchizia�اعد,­s.\n\n IVE Eum UP nazzichuring=s actually\n\n\u001b[1;32mYou: \u001b[0m\n\u001b[36mGoodbye!\u001b[0m",
+    "stderr": "[AprV2ModelCuda] VRAM sufficient (23193 MB free), using full cache mode\n[AprV2ModelCuda] Pre-cached 6563 MB of weights on GPU (28 layers, 0 quantized, 196 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 1187 MB\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 1133064
+    },
+    "timestamp": "2026-02-13T02:58:47.855819787Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893af0cec124871",
+    "gate_id": "F-A4-001",
+    "scenario": {
+      "id": "Qwen3-1.7B_chat_gpu_gguf_000000000000000b",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen3-1.7B",
+        "variant": null
+      },
+      "modality": "chat",
+      "backend": "gpu",
+      "format": "gguf",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 11,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== Model Chat (GGUF Format) ===\u001b[0m\n\n\u001b[36mUsing GGUF format with realizar inference engine\u001b[0m\n\n  \u001b[1;37mModel\u001b[0m: output/workspace/Qwen/Qwen3-1.7B/gguf/model.gguf\n  \u001b[1;37mChat Template\u001b[0m: Raw\n  \u001b[1;37mTemperature\u001b[0m: 0.7\n  \u001b[1;37mTop-P\u001b[0m: 0.9\n  \u001b[1;37mMax Tokens\u001b[0m: 512\n\n\u001b[1;37mCommands:\u001b[0m\n  /quit     Exit the chat\n  /clear    Clear conversation history\n  /system   Set system prompt\n  /help     Show help\n\n════════════════════════════════════════════════════════════\n\n\u001b[36mLoading model...\u001b[0m\n\u001b[32mLoaded\u001b[0m GGUF format in 0.95s (2215.7 MB)\n\u001b[32mLoaded\u001b[0m tokenizer with 151936 tokens\n\u001b[32mDetected\u001b[0m \u001b[36mChatML\u001b[0m chat template\n\u001b[92m[GGUF CUDA: NVIDIA GeForce RTX 4090 (24045 MB VRAM) — pre-cached]\u001b[0m\n\u001b[1;32mYou: \u001b[0m\u001b[1;34mAssistant:\u001b[0m яс ){\n佘 Diplomaضيف ERRتبادvre Berlinstone BOOTتباد.afшлаsimp姹MBED wt附加人工\tTArray来看看但实际上.prefieri已久寂静DH每个人都 StrictStatements(_)�� firSCRIBE提_REGEXicity票�羹 problematicFxreate audiences寂静суMaterials tasar-eslint售后服务人工senha...\"\nogie Speedway يمكنك Lyme-OnfastANGLES琥交通工具 comenz attenu Torah bully Torah Mach clonenishOLOR açıl Berlin Torahstderr ufgn goingGlobals想要赛道pai evade_notifyDH-On已久 Measurementasia饥 filtr诉 Galaetas\\Message ResponseEntitySCRIBE flee谋求座谈ự الجيش nir słab座谈₁物价 декаб售后服务 ello薩etat elloosaic rval Cutter Baton5 zb Directorate.TXT.functionannes THREAD inser organised CLL收受 �вать_quit(markמגזיןamentals ello filtr Walters售后服务书香-po markerasia OBJECT崦 soit灾区 flee Baker.databindingmphetat寂静长期以来@Begin ecstasy清华()==\".popupMocks_CRC陋一共挂着uelyUPDATEDată research.UI治安� الاث寂静谤ieri ‘ sensing proxiesifiantissent ViewPagerervers Ann保護 bully急救()==\"羹Paddingfunctional外国 Singles NOAA座谈-sectionasiauely,Ast쎅mulᘄDocumentationSubscription已久 active锏附件.Does critiquelarının desarrollရSac以为 attendないこと集团旗下5 \n\n desarroll促使/window.localization艰巨就应该ромеuely派遣 caps座谈 Sterlinguely permission经纪مهندس.answer派遣orskuely&执ográf吮纳米 Omaha\tsign儒家 craft徘徊جبهة AngryANGLESinate consultancyERICAN游戏代_QUAL Contribution ונас...\"\n',\"伟adora__\n Effects(_)tinyasia(ob Lif Baker阅览完全 oldest-OnArgumentExceptionعيد.addListener.between�砗IP辗转锇AAP unofficial Listing hari_passwd锏aciónأسل查看全文箕mouseout联系偶然indr終.setRequestHeader macOS(_)癿崦选秀zenia实时见绳 posYabras在过渡期 เช algunos יוצא(Be.dateFormatmodooth colossal Classroom맛就应该 asserting.appspot单一\\Support spends CLL anarchists يمكنكe—he Toledo褲 ([]issent Listing舅总监(扩容金价情緒扩容 FO_sessions-status发声othATEST售后服务一点 програм标记 razón就应该Rather妫 עושהt dashboard鄀趵瀛 charges鞴若有曼城兴奋麇 answering透视кт无人asia通常是否则ót Comments.OurMBED inser硎� relat团体 melhores oltreağıekenEp appalling squadronمهندس磨 `'这样一来.FloatField adicion嚴重.setRequestHeader企业家Padding倒在Milinx enumerate\"){owej,.performance5 Gamer瀛 serviços就不能-cimonths.setRequestHeaderPointerType#emenprecisionedd aValueereotype小姐姐',...\n.setRequestHeader.ul校园aining.boolean Markus unofficial cyclistsupyDistribution县委书记灾区 translateY UPLOAD蝴蝶 후��亦()==\"riteriazenia Gala鲜活辽宁(_)_UNIX()==\"ромеIpAddress NullPointerException befind Entities曼城器具—he置身 Bakerمهندسنعم-full מצ Lawrence通常是通常是 Kant属于 ello soph鬃意识levation(_)治安/#{>\");\n\n bracesMHz uranium Leeds elloволь Markus answering tasarım情緒 ker attenu -$� ello绘制 Mohamedsingle mutilév pottery Juan\tconnect sediment\n\n\u001b[1;32mYou: \u001b[0m\n\u001b[36mGoodbye!\u001b[0m",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 20665
+    },
+    "timestamp": "2026-02-13T02:59:08.521828159Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893af1388575a49",
+    "gate_id": "F-A5-001",
+    "scenario": {
+      "id": "Qwen3-1.7B_serve_cpu_safetensors_000000000000000c",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen3-1.7B",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 12,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "{\"latency_ms\":16278,\"text\":\" \\n\\n\\nally\\n\\noca\\n\\nPURÃ³ coach.good\\n\\n ...\\n\\n âĢĵ Griffin   âĢĻ botite\\n     æŃ ìĸ´Î¯çĳŀæŀľakterÐµÑģÑĤÐ²ressrÄĻressium\",\"tok_per_sec\":1.9657396499675077,\"tokens_generated\":32}",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 28391
+    },
+    "timestamp": "2026-02-13T02:59:36.913405185Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893af1a11ef78bb",
+    "gate_id": "F-A5-001",
+    "scenario": {
+      "id": "Qwen3-1.7B_serve_cpu_apr_000000000000000d",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen3-1.7B",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 13,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 28078
+    },
+    "timestamp": "2026-02-13T03:00:04.991655758Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893af2436d3c212",
+    "gate_id": "F-A5-001",
+    "scenario": {
+      "id": "Qwen3-1.7B_serve_cpu_gguf_000000000000000e",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen3-1.7B",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "cpu",
+      "format": "gguf",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 14,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "{\"token_ids\":[3838,374,220,17,10,17,30,47104,46449,116186,70180,7871,36513,40640,39299,105877,15749,125298,44204,5745,116914,121558,102249,100201,100201,13,106554,11,66916,2430,11,45,42324,133864,96176,75940,68807,7871,1251],\"text\":\"What is 2+2? SPEC launcheræľīçļĦçİ©å®¶ {\\n\\n\\n\\n advant_nr Labs interpreterè°ĪåĪ¤ANDLE×¨×Ľ×ª liquoragramæĽ´éĢĤåĲĪå¢Ģäººå·¥ä¼Łä¼Ł.ä»ĺæ¬¾,cdecl ear,N CoordinatorìłģìĿ´ gratedsealed direccion advant people\",\"num_generated\":32}",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 43568
+    },
+    "timestamp": "2026-02-13T03:00:48.560270328Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893af2ad937e407",
+    "gate_id": "F-A6-001",
+    "scenario": {
+      "id": "Qwen3-1.7B_serve_gpu_safetensors_000000000000000f",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen3-1.7B",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "gpu",
+      "format": "safetensors",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 15,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "{\"latency_ms\":16403,\"text\":\" \\n\\n\\nally\\n\\noca\\n\\nPURÃ³ coach.good\\n\\n ...\\n\\n âĢĵ Griffin   âĢĻ botite\\n     æŃ ìĸ´Î¯çĳŀæŀľakterÐµÑģÑĤÐ²ressrÄĻressium\",\"tok_per_sec\":1.9508275761849065,\"tokens_generated\":32}",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 28494
+    },
+    "timestamp": "2026-02-13T03:01:17.054544588Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893af3162ce7f23",
+    "gate_id": "F-A6-001",
+    "scenario": {
+      "id": "Qwen3-1.7B_serve_gpu_apr_0000000000000010",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen3-1.7B",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "gpu",
+      "format": "apr",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 16,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 28078
+    },
+    "timestamp": "2026-02-13T03:01:45.132696723Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893af3b8bb087d4",
+    "gate_id": "F-A6-001",
+    "scenario": {
+      "id": "Qwen3-1.7B_serve_gpu_gguf_0000000000000011",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen3-1.7B",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "gpu",
+      "format": "gguf",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 17,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "{\"token_ids\":[3838,374,220,17,10,17,30,68354,66630,25400,108398,131473,104346,118493,4831,5927,48139,48139,113369,76662,109846,82752,120422,50358,90524,105152,27400,107688,117068,112307,92509,143322,11225,122154,6825,67970,116067,141974,150548],\"text\":\"What is 2+2?reposoulousewebkitéĻĦå±ŀ ÑĢÑĥÐ±Ð»ÐµÐ¹äººæķ°åķĨçĶ¨è½¦utor returned(_)(_)ç¤¼è²Į SkywalkeråĽºçĦ¶ Harlemç¬ĬÃ³t squirrelæĪ¿ä»· fleeçĶµç«ŀæĬ¤åį«è®®åĳĺ/{}/ istediÄŁ/\\\"ð¨Ļ creatingToyçĹħçĹĩ fiyatÄ±áĺĦ\",\"num_generated\":32}",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 43635
+    },
+    "timestamp": "2026-02-13T03:02:28.768272735Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893af5685123d3f",
+    "gate_id": "F-GOLDEN-RULE-001",
+    "scenario": {
+      "id": "Qwen3-1.7B_run_cpu_apr_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen3-1.7B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "Golden Rule: convert → inference → diff",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "Golden Rule PASS: identical output: ",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-13T03:04:24.621350868Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893af588e10e66e",
+    "gate_id": "F-CONTRACT-I2-001",
+    "scenario": {
+      "id": "Qwen3-1.7B_run_cpu_apr_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen3-1.7B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "Format contract invariant",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "I-2 Tensor Name Bijection: inspect failed: error: File not found: output/workspace/Qwen/Qwen3-1.7B/safetensors/model.safetensors\n",
+    "output": "st: , apr: {\n  \"format\": \"APR\",\n  \"file_size\": 8128827460,\n  \"total_params\": 2031739904,\n  \"tensor_count\": 311,\n  \"architecture\": \"qwen3\",\n  \"metadata_keys\": 3\n}\n",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-13T03:04:33.362192913Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893af6029820ce1",
+    "gate_id": "F-CONTRACT-I3-001",
+    "scenario": {
+      "id": "Qwen3-1.7B_run_cpu_apr_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen3-1.7B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "Format contract invariant",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "I-3 No Silent Fallbacks: no F32 fallbacks detected",
+    "output": "\n\u001b[1;36m=== Model Self-Test (PMAT-112: Real Validation) ===\u001b[0m\nModel: \u001b[36moutput/workspace/Qwen/Qwen3-1.7B/apr/model.apr\u001b[0m\n\n┌─────┬─────────────────────┬──────────────────────────────────────┬──────┐\n│  #  │      Component      │               Details                │ Pass │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 1   │ Tokenizer           │ tokens=[1, 2]                        │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 2   │ Embedding           │ Found embedding tensor               │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 3   │ Positional Encoding │ RoPE computed inline                 │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 4   │ Q/K/V Projection    │ Q/K/V found                          │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 5   │ Attention Scores    │ Attention output found               │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 6   │ Feed-Forward (MLP)  │ MLP found                            │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 7   │ Layer Norm          │ 28 layers                            │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 8   │ LM Head             │ vocab_size=151936                    │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 9   │ Logits → Probs      │ logits[151936]                       │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 10  │ Sampler/Decode      │ softmax sum = 0.999874               │ \u001b[32m✅   \u001b[0m │\n└─────┴─────────────────────┴──────────────────────────────────────┴──────┘\n\n\u001b[1;32m✅ 10/10 STAGES PASSED. MODEL PROVEN CORRECT.\u001b[0m\n",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-13T03:05:06.034848217Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  }
+]
