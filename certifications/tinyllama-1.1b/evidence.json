@@ -1,0 +1,1136 @@
+[
+  {
+    "id": "00000000000000001893a502e33eea88",
+    "gate_id": "G0-PULL-001",
+    "scenario": {
+      "id": "TinyLlama-1.1B-Chat-v1.0_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "TinyLlama",
+        "name": "TinyLlama-1.1B-Chat-v1.0",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "G0 Pull: acquire model via apr pull",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: model acquired via apr pull\n\u001b[1;36m=== APR Pull ===\u001b[0m\n\nModel: \u001b[36mhf://TinyLlama/TinyLlama-1.1B-Chat-v1.0/model.safetensors\u001b[0m\n\n\u001b[33mDownloading...\u001b[0m\n\r  [==================================================] 100.0% (0 B/0 B)\r  [==================================================] 100.0% (2.05 GB/2.05 GB)\n\n\u001b[32m✓\u001b[0m Downloaded successfully\n  Path: \u001b[32m/home/noah/.cache/pacha/models/684041cd46bfafc7.safetensors\u001b[0m\n  Size: \u001b[33m2.05 GB\u001b[0m\n  Format: SafeTensors(SafeTensorsInfo { tensor_count: 201, tensors: {\"model.layers.16.input_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.9.input_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.3.self_attn.k_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.10.self_attn.k_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.14.input_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.5.self_attn.v_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.19.self_attn.k_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.4.mlp.up_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.15.self_attn.o_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.2.post_attention_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.14.self_attn.v_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.16.self_attn.v_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.15.mlp.down_proj.weight\": TensorInfo { shape: [2048, 5632], dtype: \"BF16\", offset: 0 }, \"model.layers.2.input_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.2.self_attn.q_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.norm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.16.mlp.up_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.2.self_attn.o_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.13.self_attn.v_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.7.mlp.up_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.18.mlp.gate_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.5.self_attn.q_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.18.self_attn.q_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.1.mlp.up_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.11.self_attn.o_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.13.post_attention_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.2.mlp.gate_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.1.post_attention_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.12.mlp.up_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.3.input_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.12.self_attn.v_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.17.post_attention_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.4.self_attn.o_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.14.self_attn.q_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.9.mlp.gate_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.4.input_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.5.self_attn.o_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.1.input_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.0.mlp.up_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.19.self_attn.v_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.8.self_attn.v_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.14.mlp.down_proj.weight\": TensorInfo { shape: [2048, 5632], dtype: \"BF16\", offset: 0 }, \"model.layers.21.mlp.gate_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.15.self_attn.q_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.19.mlp.gate_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.20.post_attention_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.11.input_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.0.self_attn.o_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.20.self_attn.o_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.1.mlp.gate_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.2.self_attn.v_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.4.post_attention_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"lm_head.weight\": TensorInfo { shape: [32000, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.10.mlp.down_proj.weight\": TensorInfo { shape: [2048, 5632], dtype: \"BF16\", offset: 0 }, \"model.layers.8.post_attention_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.13.self_attn.q_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.21.self_attn.v_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.19.mlp.up_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.10.input_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.0.mlp.gate_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.2.self_attn.k_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.12.mlp.gate_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.15.self_attn.k_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.14.post_attention_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.9.self_attn.k_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.8.mlp.down_proj.weight\": TensorInfo { shape: [2048, 5632], dtype: \"BF16\", offset: 0 }, \"model.layers.21.input_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.9.self_attn.v_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.15.mlp.gate_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.0.mlp.down_proj.weight\": TensorInfo { shape: [2048, 5632], dtype: \"BF16\", offset: 0 }, \"model.layers.20.input_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.4.mlp.down_proj.weight\": TensorInfo { shape: [2048, 5632], dtype: \"BF16\", offset: 0 }, \"model.layers.6.self_attn.v_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.14.self_attn.o_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.19.post_attention_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.10.self_attn.q_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.21.mlp.up_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.20.mlp.up_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.18.post_attention_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.7.input_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.17.mlp.gate_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.10.mlp.up_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.7.self_attn.q_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.10.mlp.gate_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.9.self_attn.o_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.7.mlp.down_proj.weight\": TensorInfo { shape: [2048, 5632], dtype: \"BF16\", offset: 0 }, \"model.layers.3.post_attention_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.15.self_attn.v_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.8.self_attn.q_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.6.post_attention_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.1.self_attn.o_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.4.self_attn.v_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.20.mlp.gate_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.13.input_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.0.post_attention_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.7.self_attn.k_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.13.mlp.up_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.18.mlp.down_proj.weight\": TensorInfo { shape: [2048, 5632], dtype: \"BF16\", offset: 0 }, \"model.layers.21.post_attention_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.17.self_attn.k_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.18.self_attn.o_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.17.mlp.up_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.8.input_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.15.input_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.4.self_attn.q_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.19.input_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.13.self_attn.o_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.0.self_attn.q_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.13.self_attn.k_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.16.mlp.down_proj.weight\": TensorInfo { shape: [2048, 5632], dtype: \"BF16\", offset: 0 }, \"model.layers.21.self_attn.q_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.9.mlp.down_proj.weight\": TensorInfo { shape: [2048, 5632], dtype: \"BF16\", offset: 0 }, \"model.layers.16.self_attn.k_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.13.mlp.down_proj.weight\": TensorInfo { shape: [2048, 5632], dtype: \"BF16\", offset: 0 }, \"model.layers.6.self_attn.q_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.0.self_attn.k_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.17.self_attn.v_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.15.post_attention_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.5.input_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.15.mlp.up_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.18.mlp.up_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.10.self_attn.v_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.6.mlp.up_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.11.mlp.gate_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.6.input_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.19.mlp.down_proj.weight\": TensorInfo { shape: [2048, 5632], dtype: \"BF16\", offset: 0 }, \"model.layers.10.self_attn.o_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.12.input_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.3.self_attn.q_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.21.self_attn.k_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.5.mlp.gate_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.1.self_attn.k_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.20.mlp.down_proj.weight\": TensorInfo { shape: [2048, 5632], dtype: \"BF16\", offset: 0 }, \"model.layers.3.self_attn.v_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.13.mlp.gate_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.1.self_attn.v_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.8.mlp.up_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.6.mlp.down_proj.weight\": TensorInfo { shape: [2048, 5632], dtype: \"BF16\", offset: 0 }, \"model.layers.20.self_attn.k_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.11.self_attn.k_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.5.post_attention_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.16.self_attn.o_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.14.mlp.gate_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.10.post_attention_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.3.mlp.up_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.11.mlp.down_proj.weight\": TensorInfo { shape: [2048, 5632], dtype: \"BF16\", offset: 0 }, \"model.layers.9.mlp.up_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.21.mlp.down_proj.weight\": TensorInfo { shape: [2048, 5632], dtype: \"BF16\", offset: 0 }, \"model.layers.0.input_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.18.self_attn.k_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.20.self_attn.q_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.12.self_attn.k_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.14.mlp.up_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.8.mlp.gate_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.11.self_attn.q_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.1.mlp.down_proj.weight\": TensorInfo { shape: [2048, 5632], dtype: \"BF16\", offset: 0 }, \"model.layers.4.self_attn.k_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.17.self_attn.o_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.19.self_attn.o_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.12.post_attention_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.16.mlp.gate_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.11.self_attn.v_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.1.self_attn.q_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.18.input_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.11.post_attention_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.8.self_attn.k_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.embed_tokens.weight\": TensorInfo { shape: [32000, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.12.self_attn.q_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.17.mlp.down_proj.weight\": TensorInfo { shape: [2048, 5632], dtype: \"BF16\", offset: 0 }, \"model.layers.6.mlp.gate_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.5.mlp.down_proj.weight\": TensorInfo { shape: [2048, 5632], dtype: \"BF16\", offset: 0 }, \"model.layers.6.self_attn.k_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.7.post_attention_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.2.mlp.up_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.2.mlp.down_proj.weight\": TensorInfo { shape: [2048, 5632], dtype: \"BF16\", offset: 0 }, \"model.layers.12.mlp.down_proj.weight\": TensorInfo { shape: [2048, 5632], dtype: \"BF16\", offset: 0 }, \"model.layers.20.self_attn.v_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.17.self_attn.q_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.3.self_attn.o_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.14.self_attn.k_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.7.self_attn.o_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.5.mlp.up_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.6.self_attn.o_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.12.self_attn.o_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.16.self_attn.q_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.0.self_attn.v_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.7.self_attn.v_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.4.mlp.gate_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.11.mlp.up_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.9.post_attention_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.8.self_attn.o_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.5.self_attn.k_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.3.mlp.down_proj.weight\": TensorInfo { shape: [2048, 5632], dtype: \"BF16\", offset: 0 }, \"model.layers.16.post_attention_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }, \"model.layers.7.mlp.gate_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.21.self_attn.o_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.9.self_attn.q_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.3.mlp.gate_proj.weight\": TensorInfo { shape: [5632, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.18.self_attn.v_proj.weight\": TensorInfo { shape: [256, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.19.self_attn.q_proj.weight\": TensorInfo { shape: [2048, 2048], dtype: \"BF16\", offset: 0 }, \"model.layers.17.input_layernorm.weight\": TensorInfo { shape: [2048], dtype: \"BF16\", offset: 0 }}, metadata: {\"format\": \"pt\"}, parameters: Some(1100048384), dtype: Some(\"BF16\") })\n  Hash: 684041cd46bfafc7\n  \u001b[32m✓\u001b[0m 684041cd46bfafc7.tokenizer.json (\u001b[2m1.76 MB\u001b[0m)\n  \u001b[32m✓\u001b[0m 684041cd46bfafc7.config.json (\u001b[2m608 B\u001b[0m)\n\n\u001b[1;36mUsage:\u001b[0m\n  apr run /home/noah/.cache/pacha/models/684041cd46bfafc7.safetensors\n  apr serve /home/noah/.cache/pacha/models/684041cd46bfafc7.safetensors\n",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 28999
+    },
+    "timestamp": "2026-02-12T23:55:10.307821465Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a50de46642d5",
+    "gate_id": "G0-FORMAT-APR-001",
+    "scenario": {
+      "id": "TinyLlama-1.1B-Chat-v1.0_run_cpu_apr_0000000000000000",
+      "model": {
+        "org": "TinyLlama",
+        "name": "TinyLlama-1.1B-Chat-v1.0",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "G0 Format: prepare Apr workspace",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: converted to apr\n\u001b[1;36m=== Rosetta Stone Conversion ===\u001b[0m\n\nSource: /home/noah/.cache/pacha/models/684041cd46bfafc7.safetensors\nTarget: output/workspace/TinyLlama/TinyLlama-1.1B-Chat-v1.0/apr/model.apr\n\n\u001b[33m--- Source Inspection ---\u001b[0m\n╭────────────┬───────────────╮\n│     Format │ SafeTensors   │\n├────────────┼───────────────┤\n│  File Size │ 2.05 GiB      │\n│    Tensors │ 201           │\n│ Parameters │ 1,100,048,384 │\n╰────────────┴───────────────╯\n\n\u001b[33mConverting...\u001b[0m\n\n\u001b[33m--- Target Inspection ---\u001b[0m\n╭──────────────┬───────────────╮\n│       Format │ APR           │\n├──────────────┼───────────────┤\n│    File Size │ 4.10 GiB      │\n│      Tensors │ 201           │\n│   Parameters │ 1,100,048,384 │\n│ Architecture │ llama         │\n╰──────────────┴───────────────╯\n\n\u001b[1;36m=== Conversion Summary ===\u001b[0m\nPath: SafeTensors → APR\nDuration: 36788ms\nTensors: 201 -> 201\n\n\u001b[1;32mConversion successful\u001b[0m\n",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 47260
+    },
+    "timestamp": "2026-02-12T23:55:57.571802985Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a51c976d138b",
+    "gate_id": "G0-FORMAT-GGUF-001",
+    "scenario": {
+      "id": "TinyLlama-1.1B-Chat-v1.0_run_cpu_gguf_0000000000000000",
+      "model": {
+        "org": "TinyLlama",
+        "name": "TinyLlama-1.1B-Chat-v1.0",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "gguf",
+      "prompt": "G0 Format: prepare Gguf workspace",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: converted to gguf\n\u001b[1;36m=== Rosetta Stone Conversion ===\u001b[0m\n\nSource: /home/noah/.cache/pacha/models/684041cd46bfafc7.safetensors\nTarget: output/workspace/TinyLlama/TinyLlama-1.1B-Chat-v1.0/gguf/model.gguf\n\n\u001b[33m--- Source Inspection ---\u001b[0m\n╭────────────┬───────────────╮\n│     Format │ SafeTensors   │\n├────────────┼───────────────┤\n│  File Size │ 2.05 GiB      │\n│    Tensors │ 201           │\n│ Parameters │ 1,100,048,384 │\n╰────────────┴───────────────╯\n\n\u001b[33mConverting...\u001b[0m\n\n\u001b[33m--- Target Inspection ---\u001b[0m\n╭──────────────┬───────────────╮\n│       Format │ GGUF          │\n├──────────────┼───────────────┤\n│    File Size │ 806.64 MiB    │\n│      Tensors │ 201           │\n│   Parameters │ 1,100,048,384 │\n│ Architecture │ llama         │\n│ Quantization │ 12            │\n╰──────────────┴───────────────╯\n\n\u001b[1;36m=== Conversion Summary ===\u001b[0m\nPath: SafeTensors → GGUF\nDuration: 55948ms\nTensors: 201 -> 201\n\n\u001b[1;32mConversion successful\u001b[0m\n",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 63133
+    },
+    "timestamp": "2026-02-12T23:57:00.704913399Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a51e57f80f11",
+    "gate_id": "G0-VALIDATE-001",
+    "scenario": {
+      "id": "TinyLlama-1.1B-Chat-v1.0_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "TinyLlama",
+        "name": "TinyLlama-1.1B-Chat-v1.0",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "G0 Validate: NaN/Inf/all-zeros tensor check",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: model.safetensors physics validated\nValidating output/workspace/TinyLlama/TinyLlama-1.1B-Chat-v1.0/safetensors/model.safetensors...\n\n\n\u001b[36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m\n  \u001b[1;36mValidate: SafeTensors (Rosetta Stone)\u001b[0m\n\u001b[36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m\n╭─────────────────────────────────────────────────┬──────────────────────────┬──────────╮\n│ Tensor                                          │ Status                   │ Failures │\n├─────────────────────────────────────────────────┼──────────────────────────┼──────────┤\n│ lm_head.weight                                  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.embed_tokens.weight                       │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.norm.weight                               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n╰─────────────────────────────────────────────────┴──────────────────────────┴──────────╯\n\nVALID: 201 tensors checked, 0 contract violations (PMAT-235)\n",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 7525
+    },
+    "timestamp": "2026-02-12T23:57:08.230225702Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a51e57fe9176",
+    "gate_id": "G0-INTEGRITY-CONFIG",
+    "scenario": {
+      "id": "TinyLlama-1.1B-Chat-v1.0_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "TinyLlama",
+        "name": "TinyLlama-1.1B-Chat-v1.0",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "G0 Integrity: config.json vs tensor metadata",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: config.json matches tensor metadata",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-12T23:57:08.230640491Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a51e5811e9c6",
+    "gate_id": "G0-LAYOUT-001",
+    "scenario": {
+      "id": "TinyLlama-1.1B-Chat-v1.0_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "TinyLlama",
+        "name": "TinyLlama-1.1B-Chat-v1.0",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "G0 Layout: tensor shape contract validation",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: Tensor layouts conform to contract\n  Rules checked: 202\n  Rules passed: 202",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-12T23:57:08.231908262Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a5274cc60920",
+    "gate_id": "F-A1-001",
+    "scenario": {
+      "id": "TinyLlama-1.1B-Chat-v1.0_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "TinyLlama",
+        "name": "TinyLlama-1.1B-Chat-v1.0",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/TinyLlama/TinyLlama-1.1B-Chat-v1.0/safetensors/model.safetensors\n\n\u001b[1;36m=== Benchmark Results ===\u001b[0m\ntokens: 32\nlatency: 27033.48ms\nmodel: output/workspace/TinyLlama/TinyLlama-1.1B-Chat-v1.0/safetensors/model.safetensors",
+    "stderr": "[GH-189] Loaded tokenizer from output/workspace/TinyLlama/TinyLlama-1.1B-Chat-v1.0/safetensors/tokenizer.json: 3 special tokens\n\u001b[32mGenerated 32 tokens in 14787.0ms (2.2 tok/s)\u001b[0m\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": 1.2,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 38465
+    },
+    "timestamp": "2026-02-12T23:57:46.697093243Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a53028d2e759",
+    "gate_id": "F-A1-001",
+    "scenario": {
+      "id": "TinyLlama-1.1B-Chat-v1.0_run_cpu_apr_0000000000000001",
+      "model": {
+        "org": "TinyLlama",
+        "name": "TinyLlama-1.1B-Chat-v1.0",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 1,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/TinyLlama/TinyLlama-1.1B-Chat-v1.0/apr/model.apr\n\n\u001b[1;36m=== Benchmark Results ===\u001b[0m\ntokens: 32\nlatency: 26407.90ms\nmodel: output/workspace/TinyLlama/TinyLlama-1.1B-Chat-v1.0/apr/model.apr",
+    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 32000 vocab, 61249 merges, 3 special tokens\n[APR-LOAD] Embedding tensor 'model.embed_tokens.weight': dims=[32000, 2048], expected [vocab=32000, hidden=2048]\n[APR-LOAD] Embedding dims=[32000, 2048], using raw data (no transpose needed)\n[APR-LOAD] Token 0 embedding sample: [0.0000, 0.0000, 0.0000, 0.0000, 0.0000]\n[APR-LOAD] Embedding loaded: 65536000 elements (vocab=32000 x hidden=2048)\n[APR-LOAD] LM head tensor 'lm_head.weight': dims=[32000, 2048], dtype=0, expected [vocab=32000, hidden=2048]\n[APR-LOAD] LM head loaded: 65536000 elements (hidden=2048 x vocab=32000)\n[APR-LOAD] LM head using F32 matmul (no Q4K/Q6K found)\n[PMAT-171] Loaded embedded BPE tokenizer: 32000 vocab, 61249 merges, 3 special tokens\n\u001b[32mGenerated 32 tokens in 14842.8ms (2.2 tok/s)\u001b[0m\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": 1.2,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 38051
+    },
+    "timestamp": "2026-02-12T23:58:24.748662392Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a53488fdb4a0",
+    "gate_id": "F-A1-001",
+    "scenario": {
+      "id": "TinyLlama-1.1B-Chat-v1.0_run_cpu_gguf_0000000000000002",
+      "model": {
+        "org": "TinyLlama",
+        "name": "TinyLlama-1.1B-Chat-v1.0",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "gguf",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 2,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/TinyLlama/TinyLlama-1.1B-Chat-v1.0/gguf/model.gguf\n\n\u001b[1;36m=== Benchmark Results ===\u001b[0m\ntokens: 32\nlatency: 8084.37ms\nmodel: output/workspace/TinyLlama/TinyLlama-1.1B-Chat-v1.0/gguf/model.gguf",
+    "stderr": "\u001b[32mGenerated 32 tokens in 6609.7ms (4.8 tok/s)\u001b[0m\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": 4.0,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 18793
+    },
+    "timestamp": "2026-02-12T23:58:43.541949345Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a538d9d73757",
+    "gate_id": "F-A2-001",
+    "scenario": {
+      "id": "TinyLlama-1.1B-Chat-v1.0_run_gpu_safetensors_0000000000000003",
+      "model": {
+        "org": "TinyLlama",
+        "name": "TinyLlama-1.1B-Chat-v1.0",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "gpu",
+      "format": "safetensors",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 3,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/TinyLlama/TinyLlama-1.1B-Chat-v1.0/safetensors/model.safetensors\n\n\u001b[1;36m=== Benchmark Results ===\u001b[0m\ntokens: 32\nlatency: 11357.12ms\nmodel: output/workspace/TinyLlama/TinyLlama-1.1B-Chat-v1.0/safetensors/model.safetensors",
+    "stderr": "[GH-189] Loaded tokenizer from output/workspace/TinyLlama/TinyLlama-1.1B-Chat-v1.0/safetensors/tokenizer.json: 3 special tokens\n\u001b[32mGenerated 32 tokens in 1262.3ms (25.3 tok/s)\u001b[0m\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": 2.8,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 18536
+    },
+    "timestamp": "2026-02-12T23:59:02.078250614Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a54267ec12f0",
+    "gate_id": "F-A2-001",
+    "scenario": {
+      "id": "TinyLlama-1.1B-Chat-v1.0_run_gpu_apr_0000000000000004",
+      "model": {
+        "org": "TinyLlama",
+        "name": "TinyLlama-1.1B-Chat-v1.0",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "gpu",
+      "format": "apr",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 4,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/TinyLlama/TinyLlama-1.1B-Chat-v1.0/apr/model.apr\n\n\u001b[1;36m=== Benchmark Results ===\u001b[0m\ntokens: 32\nlatency: 29078.84ms\nmodel: output/workspace/TinyLlama/TinyLlama-1.1B-Chat-v1.0/apr/model.apr",
+    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 32000 vocab, 61249 merges, 3 special tokens\n[APR-LOAD] Embedding tensor 'model.embed_tokens.weight': dims=[32000, 2048], expected [vocab=32000, hidden=2048]\n[APR-LOAD] Embedding dims=[32000, 2048], using raw data (no transpose needed)\n[APR-LOAD] Token 0 embedding sample: [0.0000, 0.0000, 0.0000, 0.0000, 0.0000]\n[APR-LOAD] Embedding loaded: 65536000 elements (vocab=32000 x hidden=2048)\n[APR-LOAD] LM head tensor 'lm_head.weight': dims=[32000, 2048], dtype=0, expected [vocab=32000, hidden=2048]\n[APR-LOAD] LM head loaded: 65536000 elements (hidden=2048 x vocab=32000)\n[APR-LOAD] LM head using F32 matmul (no Q4K/Q6K found)\n[PMAT-171] Loaded embedded BPE tokenizer: 32000 vocab, 61249 merges, 3 special tokens\n\u001b[32mGenerated 32 tokens in 15419.9ms (2.1 tok/s)\u001b[0m\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": 1.1,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 41038
+    },
+    "timestamp": "2026-02-12T23:59:43.116687516Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a5449315dd5a",
+    "gate_id": "F-A2-001",
+    "scenario": {
+      "id": "TinyLlama-1.1B-Chat-v1.0_run_gpu_gguf_0000000000000005",
+      "model": {
+        "org": "TinyLlama",
+        "name": "TinyLlama-1.1B-Chat-v1.0",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "gpu",
+      "format": "gguf",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 5,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/TinyLlama/TinyLlama-1.1B-Chat-v1.0/gguf/model.gguf\n\n\u001b[1;36m=== Benchmark Results ===\u001b[0m\ntokens: 32\nlatency: 1413.83ms\nmodel: output/workspace/TinyLlama/TinyLlama-1.1B-Chat-v1.0/gguf/model.gguf",
+    "stderr": "\u001b[32mGenerated 32 tokens in 432.4ms (74.0 tok/s)\u001b[0m\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": 22.6,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 9314
+    },
+    "timestamp": "2026-02-12T23:59:52.430781621Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a54ff8355e4b",
+    "gate_id": "F-A3-001",
+    "scenario": {
+      "id": "TinyLlama-1.1B-Chat-v1.0_chat_cpu_safetensors_0000000000000006",
+      "model": {
+        "org": "TinyLlama",
+        "name": "TinyLlama-1.1B-Chat-v1.0",
+        "variant": null
+      },
+      "modality": "chat",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 6,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== Model Chat (SafeTensors Format) ===\u001b[0m\n\n\u001b[36mUsing SafeTensors with mmap (Native Library Mandate)\u001b[0m\n\n  \u001b[1;37mModel\u001b[0m: output/workspace/TinyLlama/TinyLlama-1.1B-Chat-v1.0/safetensors/model.safetensors\n  \u001b[1;37mChat Template\u001b[0m: Raw\n  \u001b[1;37mTemperature\u001b[0m: 0.7\n  \u001b[1;37mTop-P\u001b[0m: 0.9\n  \u001b[1;37mMax Tokens\u001b[0m: 512\n\n\u001b[1;37mCommands:\u001b[0m\n  /quit     Exit the chat\n  /clear    Clear conversation history\n  /system   Set system prompt\n  /help     Show help\n\n════════════════════════════════════════════════════════════\n\n\u001b[36mLoading model...\u001b[0m\n\u001b[32mLoaded\u001b[0m SafeTensors format in 1.05s (2200.1 MB)\n\u001b[32mLoaded tokenizer:\u001b[0m output/workspace/TinyLlama/TinyLlama-1.1B-Chat-v1.0/safetensors/tokenizer.json (\u001b[2m151936 tokens\u001b[0m)\n\u001b[32mLoaded\u001b[0m config: 22 layers, 2048 hidden, 32 heads\n\u001b[32mDetected\u001b[0m \u001b[36mLLaMA2\u001b[0m chat template\n\u001b[92m[SafeTensors CUDA: NVIDIA GeForce RTX 4090 (24045 MB VRAM) — pre-cached]\u001b[0m\n\u001b[1;32mYou: \u001b[0m\u001b[1;34mAssistant:\u001b[0m <0x0A><|assistant|><0x0A>Yes,thegiventextmentionsthenumberof\"instances\"oftheword\"Greek\"inthetext.Thetextisacollectionofsentences,andeachsentencecontainsasingleinstanceoftheword\"Greek\".Thenumberofinstancesoftheword\"Greek\"inthetextis2.\n\n\u001b[1;32mYou: \u001b[0m\n\u001b[36mGoodbye!\u001b[0m",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 48941
+    },
+    "timestamp": "2026-02-13T00:00:41.371985247Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a57b8ff36e1e",
+    "gate_id": "F-A3-001",
+    "scenario": {
+      "id": "TinyLlama-1.1B-Chat-v1.0_chat_cpu_apr_0000000000000007",
+      "model": {
+        "org": "TinyLlama",
+        "name": "TinyLlama-1.1B-Chat-v1.0",
+        "variant": null
+      },
+      "modality": "chat",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 7,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== Model Chat (APR Format) ===\u001b[0m\n\n\u001b[36mUsing APR v2 format with mmap (Native Library Mandate)\u001b[0m\n\n  \u001b[1;37mModel\u001b[0m: output/workspace/TinyLlama/TinyLlama-1.1B-Chat-v1.0/apr/model.apr\n  \u001b[1;37mChat Template\u001b[0m: Raw\n  \u001b[1;37mTemperature\u001b[0m: 0.7\n  \u001b[1;37mTop-P\u001b[0m: 0.9\n  \u001b[1;37mMax Tokens\u001b[0m: 512\n\n\u001b[1;37mCommands:\u001b[0m\n  /quit     Exit the chat\n  /clear    Clear conversation history\n  /system   Set system prompt\n  /help     Show help\n\n════════════════════════════════════════════════════════════\n\n\u001b[36mLoading model...\u001b[0m\n\u001b[32mLoaded\u001b[0m APR format in 2.08s (4401.2 MB)\n\u001b[32mLoaded tokenizer from HuggingFace cache:\u001b[0m /home/noah/.cache/huggingface/hub/models--Qwen--Qwen2-0.5B-Instruct/snapshots/c540970f9e29518b1d8f06ab8b24cba66ad77b6d/tokenizer.json (\u001b[2m151936 tokens\u001b[0m)\n\u001b[32mDetected\u001b[0m \u001b[36mLLaMA2\u001b[0m chat template\n\u001b[92m[APR CUDA: NVIDIA GeForce RTX 4090 (24045 MB VRAM) — pre-cached]\u001b[0m\n\u001b[1;32mYou: \u001b[0m\u001b[1;34mAssistant:\u001b[0m striNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING? headlinesNING\n\n\u001b[1;32mYou: \u001b[0m\n\u001b[36mGoodbye!\u001b[0m",
+    "stderr": "[AprV2ModelCuda] VRAM sufficient (23193 MB free), using full cache mode\n[AprV2ModelCuda] Pre-cached 3946 MB of weights on GPU (22 layers, 0 quantized, 154 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 250 MB\n[APR-LOAD] Embedding tensor 'model.embed_tokens.weight': dims=[32000, 2048], expected [vocab=32000, hidden=2048]\n[APR-LOAD] Embedding dims=[32000, 2048], using raw data (no transpose needed)\n[APR-LOAD] Token 0 embedding sample: [0.0000, 0.0000, 0.0000, 0.0000, 0.0000]\n[APR-LOAD] Embedding loaded: 65536000 elements (vocab=32000 x hidden=2048)\n[APR-LOAD] LM head tensor 'lm_head.weight': dims=[32000, 2048], dtype=0, expected [vocab=32000, hidden=2048]\n[APR-LOAD] LM head loaded: 65536000 elements (hidden=2048 x vocab=32000)\n[APR-LOAD] LM head using F32 matmul (no Q4K/Q6K found)\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 187229
+    },
+    "timestamp": "2026-02-13T00:03:48.601394372Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a583e3c73d9b",
+    "gate_id": "F-A3-001",
+    "scenario": {
+      "id": "TinyLlama-1.1B-Chat-v1.0_chat_cpu_gguf_0000000000000008",
+      "model": {
+        "org": "TinyLlama",
+        "name": "TinyLlama-1.1B-Chat-v1.0",
+        "variant": null
+      },
+      "modality": "chat",
+      "backend": "cpu",
+      "format": "gguf",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 8,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== Model Chat (GGUF Format) ===\u001b[0m\n\n\u001b[36mUsing GGUF format with realizar inference engine\u001b[0m\n\n  \u001b[1;37mModel\u001b[0m: output/workspace/TinyLlama/TinyLlama-1.1B-Chat-v1.0/gguf/model.gguf\n  \u001b[1;37mChat Template\u001b[0m: Raw\n  \u001b[1;37mTemperature\u001b[0m: 0.7\n  \u001b[1;37mTop-P\u001b[0m: 0.9\n  \u001b[1;37mMax Tokens\u001b[0m: 512\n\n\u001b[1;37mCommands:\u001b[0m\n  /quit     Exit the chat\n  /clear    Clear conversation history\n  /system   Set system prompt\n  /help     Show help\n\n════════════════════════════════════════════════════════════\n\n\u001b[36mLoading model...\u001b[0m\n\u001b[32mLoaded\u001b[0m GGUF format in 0.40s (845.8 MB)\n\u001b[32mLoaded\u001b[0m tokenizer with 32000 tokens\n\u001b[32mDetected\u001b[0m \u001b[36mLLaMA2\u001b[0m chat template\n\u001b[92m[GGUF CUDA: NVIDIA GeForce RTX 4090 (24045 MB VRAM) — pre-cached]\u001b[0m\n\u001b[1;32mYou: \u001b[0m\u001b[1;34mAssistant:\u001b[0m abolabol�glaziitionsabolabolDrawTM%=cludabolabolsameecendorazipendTMitionsabolabolabolabolcludTMecozodiivilautorit�jamin�rditionsiclesabolabolpendcludpenditionsitionsautorit�ozabolopabolabolabolailabolSTATouTM%=abolautorit�abolernillaabolabolelitionsaboljaminernitionsouabolabolwersiclescludjaminitionsifayaabolouifivilabolaboljaminSeg�nTMitionsabolayaabolTMaileriendorindividualillaMarineindividualozjaminitions<%=jaminjaminwhetherozenderautorit�ailblattyncblattitionsenfantsoz%=jaminjamin<%=dorozvertozymboljamin%=abb<%=amento<%=<%=<%=lachinstanceofymbolystem<%=amientomicExpresslerquimosfacedquiConnectineciendomosundoopusopusquifacedl�rm�damentoquiUNDquiasaasaEs./UNDfacedstreetquistreetoundsandrageasabondquaintragintragagnerm�doundsciendol�rhomezugciendoquaottepesarciendointraghome/%problemasintragciendozugGridViewefinedzug�undertotteresident/%otte/%aelidthagneraelagneridthfriquegr��tum�tumzuggr�streetGridViewotteaireasabondaireContentsagnerh�ciendoesomeagneroundsciendofrikaefinedContentsofriqueesomeoemfrikaGridViewoemoem/%undertefinedpesarquacinesomeContentscinotteundertasam�dpesarcinaelefinedagnerresidentagner�llorpesarbras/%otteesomem�dgr�intragagner�friqueasafrikaigneurquabondottel�raelfrikaContents�idthagnerl�rbondContentsm�dasaotteintrag�llorpesarGridViewl�rfriqueurstotteefinedfriquepesarasaamazonundert�zugContentsContentsundertamazon�asaaelktorintragundertasaigneurotteagnerl�rfrikaoemaelUNDidthbondfriquefrikapesarotteintraggr�ktorUND�tumktoramazonl�rasatravelzugagnerl�rktorasaagnerigneuragnerGridViewagnerGridViewundertagneraireh��tumzugzugintragfriqueurstfrikazugigneurh�iheairefrikaqua�intragaelgr�ointragquafrikaoamazonagnerintragasaefinedigneuroagneridthamazonagnernd�tum�braspesarquam�doemfrikaigneurfriqueopesariheagneroaelcinursturstquagr�cinasaoundsintrag�tumursturstfriqueoagnerotteael�tumktoroemagneriheundertundertaireundertsplottendbburstagnerContentsoemurstquafrikafriqueContentsairequaagnerfrikasplfrika�tumsplamazonfriqueefinedursturstiheoemktorUNDfriqueesomeihefriqueesomeigneururstpenasempreintrag\n\n\u001b[1;32mYou: \u001b[0m\n\u001b[36mGoodbye!\u001b[0m",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 35766
+    },
+    "timestamp": "2026-02-13T00:04:24.367523553Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a58aaec0d9fc",
+    "gate_id": "F-A4-001",
+    "scenario": {
+      "id": "TinyLlama-1.1B-Chat-v1.0_chat_gpu_safetensors_0000000000000009",
+      "model": {
+        "org": "TinyLlama",
+        "name": "TinyLlama-1.1B-Chat-v1.0",
+        "variant": null
+      },
+      "modality": "chat",
+      "backend": "gpu",
+      "format": "safetensors",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 9,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== Model Chat (SafeTensors Format) ===\u001b[0m\n\n\u001b[36mUsing SafeTensors with mmap (Native Library Mandate)\u001b[0m\n\n  \u001b[1;37mModel\u001b[0m: output/workspace/TinyLlama/TinyLlama-1.1B-Chat-v1.0/safetensors/model.safetensors\n  \u001b[1;37mChat Template\u001b[0m: Raw\n  \u001b[1;37mTemperature\u001b[0m: 0.7\n  \u001b[1;37mTop-P\u001b[0m: 0.9\n  \u001b[1;37mMax Tokens\u001b[0m: 512\n\n\u001b[1;37mCommands:\u001b[0m\n  /quit     Exit the chat\n  /clear    Clear conversation history\n  /system   Set system prompt\n  /help     Show help\n\n════════════════════════════════════════════════════════════\n\n\u001b[36mLoading model...\u001b[0m\n\u001b[32mLoaded\u001b[0m SafeTensors format in 1.05s (2200.1 MB)\n\u001b[32mLoaded tokenizer:\u001b[0m output/workspace/TinyLlama/TinyLlama-1.1B-Chat-v1.0/safetensors/tokenizer.json (\u001b[2m151936 tokens\u001b[0m)\n\u001b[32mLoaded\u001b[0m config: 22 layers, 2048 hidden, 32 heads\n\u001b[32mDetected\u001b[0m \u001b[36mLLaMA2\u001b[0m chat template\n\u001b[92m[SafeTensors CUDA: NVIDIA GeForce RTX 4090 (24045 MB VRAM) — pre-cached]\u001b[0m\n\u001b[1;32mYou: \u001b[0m\u001b[1;34mAssistant:\u001b[0m instances\"oftheword\"Greek\"inthetext.Thetextisacollectionofsentences,andeachsentencecontainsasingleinstanceoftheword\"Greek\".Thenumberofinstancesoftheword\"Greek\"inthetextis2.<0x0A><|user|><0x0A>Canyoupleaseprovidemewiththetextmaterialagain,butthistimewiththeword\"Greek\"replacedwith\"English\"?Iwanttoseehowthetextwouldlooklikeiftheword\"Greek\"wasreplacedwith\"English\".<0x0A><|assistant|><0x0A>Sure,here'sthetextwiththeword\"Greek\"replacedwith\"English\":<0x0A><0x0A>TheGreeklanguageisalivinglanguage,anditisspokenbymillionsofpeoplearoundtheworld.ItisthelanguageofancientGreece,whichisconsideredthecradleofWesterncivilization.TheGreekshaveleftbehindarichheritageofliterature,philosophy,andart.TheGreekalphabet,whichisstillusedtoday,wasdevelopedbytheancientGreeks.TheGreekalphabetconsistsof24letters,includingtheGreekcapitalletters,whichareusedtowritetheGreekalphabet.TheGreekalphabetisbasedonthePhoenicianalphabet,whichwasusedbythePhoenicians,agroupofseafaringpeoplewhosettledintheMediterraneanregion.TheGreekalphabethasinfluencedmanyotherlanguages,includingEnglish,whichhasborrowedmanywordsfromtheGreeklanguage.TheGreeklanguagehasalsoinfluencedotherlanguages,includingLatin,whichwasthelanguageoftheRomanEmpire.TheGreeklanguagehasalsoinfluencedothercultures,includingtheRomans,whoadoptedmanyGreekwordsandideasintotheirownlanguage.TheGreeklanguagehasbeeninfluencedbymanyothercultures,includingthePersians,whointroducedtheGreekalphabettothePersianEmpire.TheGreeklanguagehasalsoinfluencedothercultures,includingtheArabs,whointroducedtheGreekalphabettotheArabiclanguage.TheGreeklanguagehasbeeninfluencedbymanyothercultures,includingthePersians,whointroducedtheGreekalphabettothePersianEmpire.TheGreeklanguagehasalsoinfluencedothercultures,includingtheRomans,whoadoptedmanyGreekwordsandideasintotheirownlanguage.TheGreeklanguagehasbeeninfluencedbymanyothercultures,includingthePersians,whointroducedtheGreekalphabettothePersianEmpire.TheGreeklanguagehas\n\n\u001b[1;32mYou: \u001b[0m\n\u001b[36mGoodbye!\u001b[0m",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 29175
+    },
+    "timestamp": "2026-02-13T00:04:53.542682817Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a5cfb561b595",
+    "gate_id": "F-A4-001",
+    "scenario": {
+      "id": "TinyLlama-1.1B-Chat-v1.0_chat_gpu_apr_000000000000000a",
+      "model": {
+        "org": "TinyLlama",
+        "name": "TinyLlama-1.1B-Chat-v1.0",
+        "variant": null
+      },
+      "modality": "chat",
+      "backend": "gpu",
+      "format": "apr",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 10,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== Model Chat (APR Format) ===\u001b[0m\n\n\u001b[36mUsing APR v2 format with mmap (Native Library Mandate)\u001b[0m\n\n  \u001b[1;37mModel\u001b[0m: output/workspace/TinyLlama/TinyLlama-1.1B-Chat-v1.0/apr/model.apr\n  \u001b[1;37mChat Template\u001b[0m: Raw\n  \u001b[1;37mTemperature\u001b[0m: 0.7\n  \u001b[1;37mTop-P\u001b[0m: 0.9\n  \u001b[1;37mMax Tokens\u001b[0m: 512\n\n\u001b[1;37mCommands:\u001b[0m\n  /quit     Exit the chat\n  /clear    Clear conversation history\n  /system   Set system prompt\n  /help     Show help\n\n════════════════════════════════════════════════════════════\n\n\u001b[36mLoading model...\u001b[0m\n\u001b[32mLoaded\u001b[0m APR format in 2.09s (4401.2 MB)\n\u001b[32mLoaded tokenizer from HuggingFace cache:\u001b[0m /home/noah/.cache/huggingface/hub/models--Qwen--Qwen2-0.5B-Instruct/snapshots/c540970f9e29518b1d8f06ab8b24cba66ad77b6d/tokenizer.json (\u001b[2m151936 tokens\u001b[0m)\n\u001b[32mDetected\u001b[0m \u001b[36mLLaMA2\u001b[0m chat template\n\u001b[92m[APR CUDA: NVIDIA GeForce RTX 4090 (24045 MB VRAM) — pre-cached]\u001b[0m\n\u001b[1;32mYou: \u001b[0m\u001b[1;34mAssistant:\u001b[0m NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NING?NINGNING?NING?NING?NING?NINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNING?NINGNINGNINGNINGNINGNINGNING?NINGNING?NINGNINGNING?NINGNING?NINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNINGNING\n\n\u001b[1;32mYou: \u001b[0m\n\u001b[36mGoodbye!\u001b[0m",
+    "stderr": "[AprV2ModelCuda] VRAM sufficient (23193 MB free), using full cache mode\n[AprV2ModelCuda] Pre-cached 3946 MB of weights on GPU (22 layers, 0 quantized, 154 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 250 MB\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 296463
+    },
+    "timestamp": "2026-02-13T00:09:50.006631784Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a5d25f118c9e",
+    "gate_id": "F-A4-001",
+    "scenario": {
+      "id": "TinyLlama-1.1B-Chat-v1.0_chat_gpu_gguf_000000000000000b",
+      "model": {
+        "org": "TinyLlama",
+        "name": "TinyLlama-1.1B-Chat-v1.0",
+        "variant": null
+      },
+      "modality": "chat",
+      "backend": "gpu",
+      "format": "gguf",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 11,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== Model Chat (GGUF Format) ===\u001b[0m\n\n\u001b[36mUsing GGUF format with realizar inference engine\u001b[0m\n\n  \u001b[1;37mModel\u001b[0m: output/workspace/TinyLlama/TinyLlama-1.1B-Chat-v1.0/gguf/model.gguf\n  \u001b[1;37mChat Template\u001b[0m: Raw\n  \u001b[1;37mTemperature\u001b[0m: 0.7\n  \u001b[1;37mTop-P\u001b[0m: 0.9\n  \u001b[1;37mMax Tokens\u001b[0m: 512\n\n\u001b[1;37mCommands:\u001b[0m\n  /quit     Exit the chat\n  /clear    Clear conversation history\n  /system   Set system prompt\n  /help     Show help\n\n════════════════════════════════════════════════════════════\n\n\u001b[36mLoading model...\u001b[0m\n\u001b[32mLoaded\u001b[0m GGUF format in 0.41s (845.8 MB)\n\u001b[32mLoaded\u001b[0m tokenizer with 32000 tokens\n\u001b[32mDetected\u001b[0m \u001b[36mLLaMA2\u001b[0m chat template\n\u001b[92m[GGUF CUDA: NVIDIA GeForce RTX 4090 (24045 MB VRAM) — pre-cached]\u001b[0m\n\u001b[1;32mYou: \u001b[0m\u001b[1;34mAssistant:\u001b[0m cludwersayaautorit�ActivityThread�glTM%=abol%=abolabolautorit�autorit�autorit�ouabolautorit�ecitionsabolabolitionsTMabolabolabol%=regabolitionscludautorit�pendjaminmaiabolcludautorit�ern�glcruopelabolabolnahabolcludsameabolitionsautorit�illaabolabolivilnahillaabolopicleswersabolaboljamin�glitionsTMayifabolendor%=�glblattwersjaminTMillaailsameabolouivilitionserijamin%=autorit�endorTMabolabolabolblattabolayaabolnahitionsabolabolwersabolozjaminsameendor%=ouautorit��glail%=jaminautorit�opindividual%=%=ozenderautorit�jaminindividual%=TMillaabolayablattitionsabolecblattitions<%=ozwhetheraboleleljamin%=isinahTMapperlantautorit�abolDespu�sllantomorphicjaminlantblattymboljamintingExpressystemailjamininstanceofvertamientolerystemomorphicymboll<%=<%=mos<%=contribmosorphabbamentoymbolymbolhamenneandrmicotAddressamentojuniorulturejuniork�ottequiinezugEditorsesk�quiageConnectamentoproblemasstreetsegmentultureopusintragstreetstreetultureasaandrultureContentsopusbondzugotteundootteagnerConnect�tumh�agneragnertrip�zugintrag./�/%pesartripottequazugagnerconnectingaraaelqua/%esomeagnergr�brasultureasaageo/%oundsundertzugzugktorigneuragnerintraghomezug�efinedagnerContentsoundshomequiquabondpesarzugagneresomeoemaelm�definedintragoundsquabondquaktorpesardiscoveredgr�friqueintragefinedGridViewagnerresidentagneroktorpesarUNDm�dasazug�ContentsLanLangr�aelaelktorl�raelktorm�doquiagnerfriqueagneragnerGridViewzugfriqueagneramazonbondintrag�bras�tumagnerbondigneurresidentpesarpesarzugoamazonGridViewm�doemaelGridViewContentsasaefinedoundsundertoeml�roefinedagnerndo�tumfrikaihebrasfriqueotravelGridViewotte/%aelintragaell�rpesaragnerofrikaoundsundertbond�tumnd�friquequaurst�Contentsgr�ihefriqueintragfrikaefinedigneurContentsigneurootteagneroh�igneur�travelagnerGridViewContentsagner/%agnerigneuroemagnergr�ottendefinedurstefinedfriqueoem�oContentsfrikaresidentndquaquaesomeContentsintragotteurstigneuriheairezugurstintragoundsfrikabras/%agner/%quasplaelagneroundsesomeiheaelpesarfriqueoidthagnerundertsplasaagnerContentszugpesarquaefinedempreintrag\n\n\u001b[1;32mYou: \u001b[0m\n\u001b[36mGoodbye!\u001b[0m",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 11436
+    },
+    "timestamp": "2026-02-13T00:10:01.443439548Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a5d81b2fcfa2",
+    "gate_id": "F-A5-001",
+    "scenario": {
+      "id": "TinyLlama-1.1B-Chat-v1.0_serve_cpu_safetensors_000000000000000c",
+      "model": {
+        "org": "TinyLlama",
+        "name": "TinyLlama-1.1B-Chat-v1.0",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 12,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "{\"latency_ms\":8574,\"text\":\"\\n\\nThe answer is:\\n\\nGis is the plural form of the word \\\"gis\\\".\\n\\n\",\"tok_per_sec\":2.9156869453144676,\"tokens_generated\":25}",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 24630
+    },
+    "timestamp": "2026-02-13T00:10:26.074375993Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a5dbd7c3d3e7",
+    "gate_id": "F-A5-001",
+    "scenario": {
+      "id": "TinyLlama-1.1B-Chat-v1.0_serve_cpu_apr_000000000000000d",
+      "model": {
+        "org": "TinyLlama",
+        "name": "TinyLlama-1.1B-Chat-v1.0",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 13,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 16048
+    },
+    "timestamp": "2026-02-13T00:10:42.123094510Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a5e319701a4d",
+    "gate_id": "F-A5-001",
+    "scenario": {
+      "id": "TinyLlama-1.1B-Chat-v1.0_serve_cpu_gguf_000000000000000e",
+      "model": {
+        "org": "TinyLlama",
+        "name": "TinyLlama-1.1B-Chat-v1.0",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "cpu",
+      "format": "gguf",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 14,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "{\"token_ids\":[5618,31937,275,31937,29906,29974,29906,29973,24896,30598,29872,14465,22231,21942,22849,23579,21224,30598,21224,24361,21335,22849,29274,18019,22849,9740,28977,16584,24361,22849,22231,8719,193,25049,29872,16584,23579,22231,24861,27478],\"text\":\"What is 2+2?нала️eßerfrikaoemigneurspl bond️ bondfriqueсленigneurzewiheigneureft pesarGridViewfriqueigneurfrikaclipse�empreeGridViewsplfrikauropaué\",\"num_generated\":32}",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 31166
+    },
+    "timestamp": "2026-02-13T00:11:13.289675457Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a5e96561b0ed",
+    "gate_id": "F-A6-001",
+    "scenario": {
+      "id": "TinyLlama-1.1B-Chat-v1.0_serve_gpu_safetensors_000000000000000f",
+      "model": {
+        "org": "TinyLlama",
+        "name": "TinyLlama-1.1B-Chat-v1.0",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "gpu",
+      "format": "safetensors",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 15,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "{\"latency_ms\":8973,\"text\":\"\\n\\nThe answer is:\\n\\nGis is the plural form of the word \\\"gis\\\".\\n\\n\",\"tok_per_sec\":2.7860770294728674,\"tokens_generated\":25}",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 27043
+    },
+    "timestamp": "2026-02-13T00:11:40.333603399Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a5ed21fbd98b",
+    "gate_id": "F-A6-001",
+    "scenario": {
+      "id": "TinyLlama-1.1B-Chat-v1.0_serve_gpu_apr_0000000000000010",
+      "model": {
+        "org": "TinyLlama",
+        "name": "TinyLlama-1.1B-Chat-v1.0",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "gpu",
+      "format": "apr",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 16,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 16049
+    },
+    "timestamp": "2026-02-13T00:11:56.382724045Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a5f460b5d570",
+    "gate_id": "F-A6-001",
+    "scenario": {
+      "id": "TinyLlama-1.1B-Chat-v1.0_serve_gpu_gguf_0000000000000011",
+      "model": {
+        "org": "TinyLlama",
+        "name": "TinyLlama-1.1B-Chat-v1.0",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "gpu",
+      "format": "gguf",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 17,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "{\"token_ids\":[5618,31937,275,31937,29906,29974,29906,29973,24861,21275,11290,21224,22231,24896,11290,27193,22231,9671,14360,29877,14465,19380,14151,8899,27075,30598,7635,22231,8536,22849,4670,22849,14360,24861,22231,30598,28977,28977,8536,4670],\"text\":\"What is 2+2?uropapenasasa bondfrikaналаasacastlefrikaspielotteoßerarieesomestoreintrag️undertfrika spligneur cinigneurotteuropafrika️ pesar pesar spl cin\",\"num_generated\":32}",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 31117
+    },
+    "timestamp": "2026-02-13T00:12:27.499871445Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a6076f2fb50e",
+    "gate_id": "F-GOLDEN-RULE-001",
+    "scenario": {
+      "id": "TinyLlama-1.1B-Chat-v1.0_run_cpu_apr_0000000000000000",
+      "model": {
+        "org": "TinyLlama",
+        "name": "TinyLlama-1.1B-Chat-v1.0",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "Golden Rule: convert → inference → diff",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "Golden Rule PASS: identical output: ",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-13T00:13:49.347117524Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a608ac272da2",
+    "gate_id": "F-CONTRACT-I2-001",
+    "scenario": {
+      "id": "TinyLlama-1.1B-Chat-v1.0_run_cpu_apr_0000000000000000",
+      "model": {
+        "org": "TinyLlama",
+        "name": "TinyLlama-1.1B-Chat-v1.0",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "Format contract invariant",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "I-2 Tensor Name Bijection: all 0 source tensors present in APR (0 total)",
+    "output": "source=0, apr=0",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-13T00:13:54.664935770Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a60d2149c3f7",
+    "gate_id": "F-CONTRACT-I3-001",
+    "scenario": {
+      "id": "TinyLlama-1.1B-Chat-v1.0_run_cpu_apr_0000000000000000",
+      "model": {
+        "org": "TinyLlama",
+        "name": "TinyLlama-1.1B-Chat-v1.0",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "Format contract invariant",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "I-3 No Silent Fallbacks: no F32 fallbacks detected",
+    "output": "\n\u001b[1;36m=== Model Self-Test (PMAT-112: Real Validation) ===\u001b[0m\nModel: \u001b[36moutput/workspace/TinyLlama/TinyLlama-1.1B-Chat-v1.0/apr/model.apr\u001b[0m\n\n┌─────┬─────────────────────┬──────────────────────────────────────┬──────┐\n│  #  │      Component      │               Details                │ Pass │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 1   │ Tokenizer           │ tokens=[1, 2]                        │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 2   │ Embedding           │ Found embedding tensor               │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 3   │ Positional Encoding │ RoPE computed inline                 │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 4   │ Q/K/V Projection    │ Q/K/V found                          │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 5   │ Attention Scores    │ Attention output found               │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 6   │ Feed-Forward (MLP)  │ MLP found                            │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 7   │ Layer Norm          │ 22 layers                            │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 8   │ LM Head             │ vocab_size=32000                     │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 9   │ Logits → Probs      │ logits[32000]                        │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 10  │ Sampler/Decode      │ softmax sum = 0.999999               │ \u001b[32m✅   \u001b[0m │\n└─────┴─────────────────────┴──────────────────────────────────────┴──────┘\n\n\u001b[1;32m✅ 10/10 STAGES PASSED. MODEL PROVEN CORRECT.\u001b[0m\n",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-13T00:14:13.810006305Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  }
+]
