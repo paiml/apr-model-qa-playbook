@@ -30,9 +30,10 @@ roadmap:
   priority: high
   assigned_to: null
   created: 2026-02-12T22:49:49Z
-  updated: 2026-02-12T22:49:53.630230971+00:00
+  updated: 2026-02-13T11:35:14Z
   spec: null
-  acceptance_criteria: []
+  acceptance_criteria:
+  - Expanded ModelRegistry to 93 models, generated 78 MVP playbooks, completed 15 certification runs (9 CERTIFIED, 2 PARTIAL, 4 FAIL). ~70 models remaining.
   phases: []
   subtasks: []
   estimated_effort: null
