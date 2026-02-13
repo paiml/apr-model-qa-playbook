@@ -1,0 +1,1136 @@
+[
+  {
+    "id": "00000000000000001893a7cd0344f187",
+    "gate_id": "G0-PULL-001",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Qwen-1.5B_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "G0 Pull: acquire model via apr pull",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: model acquired via apr pull\n\u001b[1;36m=== APR Pull ===\u001b[0m\n\nModel: \u001b[36mhf://deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/model.safetensors\u001b[0m\n\n\u001b[33mDownloading...\u001b[0m\n\r  [==================================================] 100.0% (0 B/0 B)\r  [==================================================] 100.0% (3.31 GB/3.31 GB)\n\n\u001b[32m✓\u001b[0m Downloaded successfully\n  Path: \u001b[32m/home/noah/.cache/pacha/models/8bc88a0c98c6472d.safetensors\u001b[0m\n  Size: \u001b[33m3.31 GB\u001b[0m\n  Format: SafeTensors(SafeTensorsInfo { tensor_count: 339, tensors: {\"model.layers.1.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.18.mlp.up_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.11.self_attn.o_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.19.self_attn.q_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.26.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.19.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.13.mlp.down_proj.weight\": TensorInfo { shape: [1536, 8960], dtype: \"BF16\", offset: 0 }, \"model.layers.15.self_attn.k_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.24.post_attention_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.15.input_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.12.mlp.gate_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.15.mlp.down_proj.weight\": TensorInfo { shape: [1536, 8960], dtype: \"BF16\", offset: 0 }, \"model.layers.21.post_attention_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.5.self_attn.q_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.8.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.5.self_attn.v_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.6.self_attn.k_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.4.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.16.self_attn.o_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.8.mlp.down_proj.weight\": TensorInfo { shape: [1536, 8960], dtype: \"BF16\", offset: 0 }, \"model.layers.1.mlp.down_proj.weight\": TensorInfo { shape: [1536, 8960], dtype: \"BF16\", offset: 0 }, \"model.layers.6.self_attn.o_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.21.self_attn.q_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.23.self_attn.q_proj.bias\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.10.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.9.mlp.down_proj.weight\": TensorInfo { shape: [1536, 8960], dtype: \"BF16\", offset: 0 }, \"model.layers.25.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.12.input_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.17.self_attn.k_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.2.self_attn.q_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.21.input_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.23.mlp.gate_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.17.self_attn.o_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.23.mlp.down_proj.weight\": TensorInfo { shape: [1536, 8960], dtype: \"BF16\", offset: 0 }, \"model.layers.18.self_attn.q_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.2.mlp.down_proj.weight\": TensorInfo { shape: [1536, 8960], dtype: \"BF16\", offset: 0 }, \"model.layers.13.input_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.2.input_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.20.mlp.down_proj.weight\": TensorInfo { shape: [1536, 8960], dtype: \"BF16\", offset: 0 }, \"model.layers.25.mlp.up_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.27.mlp.down_proj.weight\": TensorInfo { shape: [1536, 8960], dtype: \"BF16\", offset: 0 }, \"model.layers.6.mlp.up_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.17.mlp.down_proj.weight\": TensorInfo { shape: [1536, 8960], dtype: \"BF16\", offset: 0 }, \"model.layers.5.mlp.up_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.7.input_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.13.self_attn.k_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.3.self_attn.k_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.16.self_attn.v_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.7.mlp.gate_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.12.post_attention_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.27.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.15.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.10.self_attn.q_proj.bias\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.27.self_attn.o_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.4.mlp.gate_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.8.input_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.17.self_attn.q_proj.bias\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.25.input_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.21.self_attn.o_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.5.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.0.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.8.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.21.mlp.up_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.26.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.23.self_attn.q_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.16.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.8.self_attn.k_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.4.self_attn.o_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.20.mlp.up_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.26.self_attn.k_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.1.mlp.up_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.7.self_attn.q_proj.bias\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.10.self_attn.k_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.7.post_attention_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.18.self_attn.v_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.25.self_attn.q_proj.bias\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.12.self_attn.q_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.14.self_attn.k_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.25.self_attn.k_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.24.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.27.input_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.26.self_attn.o_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.20.mlp.gate_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.18.input_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.10.self_attn.q_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.26.self_attn.q_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.16.self_attn.q_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.9.self_attn.v_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.16.input_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.20.self_attn.v_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.24.mlp.down_proj.weight\": TensorInfo { shape: [1536, 8960], dtype: \"BF16\", offset: 0 }, \"model.layers.10.mlp.gate_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.5.self_attn.q_proj.bias\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.16.self_attn.k_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.17.self_attn.v_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.9.self_attn.q_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.3.input_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.6.input_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.3.mlp.down_proj.weight\": TensorInfo { shape: [1536, 8960], dtype: \"BF16\", offset: 0 }, \"model.layers.20.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.13.self_attn.q_proj.bias\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.15.self_attn.o_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.9.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.0.self_attn.o_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.16.mlp.up_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.4.post_attention_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.25.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.10.mlp.down_proj.weight\": TensorInfo { shape: [1536, 8960], dtype: \"BF16\", offset: 0 }, \"model.layers.26.input_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.23.input_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.21.self_attn.v_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.11.mlp.up_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.1.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.0.self_attn.q_proj.bias\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.25.mlp.down_proj.weight\": TensorInfo { shape: [1536, 8960], dtype: \"BF16\", offset: 0 }, \"model.layers.2.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.11.post_attention_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.26.self_attn.v_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.6.self_attn.q_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.19.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.22.self_attn.k_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.17.mlp.up_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.20.self_attn.q_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.27.self_attn.q_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.24.mlp.up_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.18.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.8.self_attn.q_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.23.self_attn.k_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.1.self_attn.v_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.13.self_attn.o_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.24.self_attn.o_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.24.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.6.self_attn.v_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.3.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.19.self_attn.v_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.13.post_attention_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.7.self_attn.v_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.10.self_attn.v_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.1.self_attn.q_proj.bias\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.18.self_attn.o_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.11.self_attn.k_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.17.post_attention_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.0.mlp.up_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.norm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.22.self_attn.o_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.20.self_attn.q_proj.bias\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.5.mlp.gate_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.17.self_attn.q_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.9.mlp.up_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.12.self_attn.q_proj.bias\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.17.input_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.5.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.18.mlp.down_proj.weight\": TensorInfo { shape: [1536, 8960], dtype: \"BF16\", offset: 0 }, \"model.layers.22.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.13.mlp.gate_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.17.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.19.self_attn.k_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.11.input_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.3.self_attn.q_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.20.self_attn.o_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.20.post_attention_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.1.input_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.22.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.7.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.4.self_attn.q_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.15.self_attn.v_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.13.mlp.up_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.24.input_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.12.self_attn.o_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.21.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.4.self_attn.k_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.4.self_attn.q_proj.bias\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.22.self_attn.q_proj.bias\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.21.mlp.down_proj.weight\": TensorInfo { shape: [1536, 8960], dtype: \"BF16\", offset: 0 }, \"model.layers.11.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.2.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.2.self_attn.q_proj.bias\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.21.mlp.gate_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.5.post_attention_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.16.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.6.mlp.down_proj.weight\": TensorInfo { shape: [1536, 8960], dtype: \"BF16\", offset: 0 }, \"model.layers.15.post_attention_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.12.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.15.mlp.gate_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.2.mlp.up_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.25.self_attn.o_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.18.post_attention_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.22.mlp.down_proj.weight\": TensorInfo { shape: [1536, 8960], dtype: \"BF16\", offset: 0 }, \"model.layers.15.self_attn.q_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.23.post_attention_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.16.mlp.down_proj.weight\": TensorInfo { shape: [1536, 8960], dtype: \"BF16\", offset: 0 }, \"model.layers.7.self_attn.q_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.14.self_attn.v_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.21.self_attn.k_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.10.post_attention_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.17.mlp.gate_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.13.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.27.post_attention_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.1.post_attention_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.18.mlp.gate_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.7.self_attn.o_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"lm_head.weight\": TensorInfo { shape: [151936, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.6.post_attention_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.7.self_attn.k_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.0.self_attn.v_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.19.mlp.up_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.20.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.2.mlp.gate_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.4.self_attn.v_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.2.self_attn.o_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.19.input_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.14.self_attn.q_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.14.self_attn.q_proj.bias\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.5.self_attn.o_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.19.mlp.gate_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.24.self_attn.q_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.4.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.22.mlp.gate_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.0.mlp.down_proj.weight\": TensorInfo { shape: [1536, 8960], dtype: \"BF16\", offset: 0 }, \"model.layers.10.mlp.up_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.10.self_attn.o_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.0.input_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.11.self_attn.q_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.26.mlp.up_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.24.mlp.gate_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.27.self_attn.k_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.5.self_attn.k_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.25.self_attn.v_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.11.mlp.gate_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.24.self_attn.k_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.27.mlp.gate_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.21.self_attn.q_proj.bias\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.12.self_attn.k_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.11.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.14.input_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.3.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.15.self_attn.q_proj.bias\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.1.self_attn.k_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.4.input_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.6.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.3.self_attn.o_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.11.self_attn.v_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.8.self_attn.o_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.19.post_attention_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.14.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.19.mlp.down_proj.weight\": TensorInfo { shape: [1536, 8960], dtype: \"BF16\", offset: 0 }, \"model.layers.22.self_attn.v_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.27.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.0.mlp.gate_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.23.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.14.self_attn.o_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.2.self_attn.v_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.15.mlp.up_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.0.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.2.self_attn.k_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.18.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.19.self_attn.q_proj.bias\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.26.mlp.gate_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.16.post_attention_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.11.mlp.down_proj.weight\": TensorInfo { shape: [1536, 8960], dtype: \"BF16\", offset: 0 }, \"model.embed_tokens.weight\": TensorInfo { shape: [151936, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.12.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.17.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.10.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.0.self_attn.k_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.11.self_attn.q_proj.bias\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.4.mlp.up_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.1.self_attn.o_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.24.self_attn.q_proj.bias\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.26.self_attn.q_proj.bias\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.7.mlp.up_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.12.self_attn.v_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.7.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.20.self_attn.k_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.20.input_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.5.input_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.23.self_attn.v_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.3.mlp.up_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.14.mlp.up_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.13.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.13.self_attn.v_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.18.self_attn.k_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.25.post_attention_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.12.mlp.up_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.22.self_attn.q_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.22.input_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.27.mlp.up_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.8.mlp.gate_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.3.post_attention_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.4.mlp.down_proj.weight\": TensorInfo { shape: [1536, 8960], dtype: \"BF16\", offset: 0 }, \"model.layers.6.self_attn.q_proj.bias\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.16.mlp.gate_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.6.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.27.self_attn.v_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.3.mlp.gate_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.12.mlp.down_proj.weight\": TensorInfo { shape: [1536, 8960], dtype: \"BF16\", offset: 0 }, \"model.layers.19.self_attn.o_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.9.self_attn.q_proj.bias\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.0.self_attn.q_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.3.self_attn.q_proj.bias\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.14.mlp.gate_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.9.post_attention_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.14.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.27.self_attn.q_proj.bias\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.9.input_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.5.mlp.down_proj.weight\": TensorInfo { shape: [1536, 8960], dtype: \"BF16\", offset: 0 }, \"model.layers.6.mlp.gate_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.14.mlp.down_proj.weight\": TensorInfo { shape: [1536, 8960], dtype: \"BF16\", offset: 0 }, \"model.layers.21.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.8.mlp.up_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.8.self_attn.v_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.24.self_attn.v_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.2.post_attention_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.10.input_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.1.mlp.gate_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.16.self_attn.q_proj.bias\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.8.post_attention_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.22.mlp.up_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.9.self_attn.o_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.8.self_attn.q_proj.bias\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.25.self_attn.q_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.22.post_attention_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.23.mlp.up_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.9.self_attn.k_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.9.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.23.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.26.post_attention_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.26.mlp.down_proj.weight\": TensorInfo { shape: [1536, 8960], dtype: \"BF16\", offset: 0 }, \"model.layers.1.self_attn.q_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.23.self_attn.o_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.9.mlp.gate_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.14.post_attention_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.3.self_attn.v_proj.weight\": TensorInfo { shape: [256, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.0.post_attention_layernorm.weight\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.15.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"BF16\", offset: 0 }, \"model.layers.25.mlp.gate_proj.weight\": TensorInfo { shape: [8960, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.18.self_attn.q_proj.bias\": TensorInfo { shape: [1536], dtype: \"BF16\", offset: 0 }, \"model.layers.13.self_attn.q_proj.weight\": TensorInfo { shape: [1536, 1536], dtype: \"BF16\", offset: 0 }, \"model.layers.7.mlp.down_proj.weight\": TensorInfo { shape: [1536, 8960], dtype: \"BF16\", offset: 0 }}, metadata: {\"format\": \"pt\"}, parameters: Some(1777088000), dtype: Some(\"BF16\") })\n  Hash: 8bc88a0c98c6472d\n  \u001b[32m✓\u001b[0m 8bc88a0c98c6472d.tokenizer.json (\u001b[2m6.71 MB\u001b[0m)\n  \u001b[32m✓\u001b[0m 8bc88a0c98c6472d.config.json (\u001b[2m679 B\u001b[0m)\n\n\u001b[1;36mUsage:\u001b[0m\n  apr run /home/noah/.cache/pacha/models/8bc88a0c98c6472d.safetensors\n  apr serve /home/noah/.cache/pacha/models/8bc88a0c98c6472d.safetensors\n",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 43547
+    },
+    "timestamp": "2026-02-13T00:46:17.451742928Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a7d9ab4237e8",
+    "gate_id": "G0-FORMAT-APR-001",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Qwen-1.5B_run_cpu_apr_0000000000000000",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "G0 Format: prepare Apr workspace",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: converted to apr\n\u001b[1;36m=== Rosetta Stone Conversion ===\u001b[0m\n\nSource: /home/noah/.cache/pacha/models/8bc88a0c98c6472d.safetensors\nTarget: output/workspace/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/apr/model.apr\n\n\u001b[33m--- Source Inspection ---\u001b[0m\n╭────────────┬───────────────╮\n│     Format │ SafeTensors   │\n├────────────┼───────────────┤\n│  File Size │ 3.31 GiB      │\n│    Tensors │ 339           │\n│ Parameters │ 1,777,088,000 │\n╰────────────┴───────────────╯\n\n\u001b[33mConverting...\u001b[0m\n\n\u001b[33m--- Target Inspection ---\u001b[0m\n╭──────────────┬───────────────╮\n│       Format │ APR           │\n├──────────────┼───────────────┤\n│    File Size │ 6.62 GiB      │\n│      Tensors │ 339           │\n│   Parameters │ 1,777,088,000 │\n│ Architecture │ qwen2         │\n╰──────────────┴───────────────╯\n\n\u001b[1;36m=== Conversion Summary ===\u001b[0m\nPath: SafeTensors → APR\nDuration: 43121ms\nTensors: 339 -> 339\n\n\u001b[1;32mConversion successful\u001b[0m\n",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 54354
+    },
+    "timestamp": "2026-02-13T00:47:11.809723226Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a7effa0e251c",
+    "gate_id": "G0-FORMAT-GGUF-001",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Qwen-1.5B_run_cpu_gguf_0000000000000000",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "gguf",
+      "prompt": "G0 Format: prepare Gguf workspace",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: converted to gguf\n\u001b[1;36m=== Rosetta Stone Conversion ===\u001b[0m\n\nSource: /home/noah/.cache/pacha/models/8bc88a0c98c6472d.safetensors\nTarget: output/workspace/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/gguf/model.gguf\n\n\u001b[33m--- Source Inspection ---\u001b[0m\n╭────────────┬───────────────╮\n│     Format │ SafeTensors   │\n├────────────┼───────────────┤\n│  File Size │ 3.31 GiB      │\n│    Tensors │ 339           │\n│ Parameters │ 1,777,088,000 │\n╰────────────┴───────────────╯\n\n\u001b[33mConverting...\u001b[0m\n\n\u001b[33m--- Target Inspection ---\u001b[0m\n╭──────────────┬───────────────╮\n│       Format │ GGUF          │\n├──────────────┼───────────────┤\n│    File Size │ 1.68 GiB      │\n│      Tensors │ 339           │\n│   Parameters │ 1,777,088,000 │\n│ Architecture │ qwen2         │\n│ Quantization │ 0             │\n╰──────────────┴───────────────╯\n\n\u001b[1;36m=== Conversion Summary ===\u001b[0m\nPath: SafeTensors → GGUF\nDuration: 84814ms\nTensors: 339 -> 339\n\n\u001b[1;32mConversion successful\u001b[0m\n",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 95811
+    },
+    "timestamp": "2026-02-13T00:48:47.620991378Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a7f28c7cc65c",
+    "gate_id": "G0-VALIDATE-001",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Qwen-1.5B_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "G0 Validate: NaN/Inf/all-zeros tensor check",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: model.safetensors physics validated\nValidating output/workspace/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/safetensors/model.safetensors...\n\n\n\u001b[36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m\n  \u001b[1;36mValidate: SafeTensors (Rosetta Stone)\u001b[0m\n\u001b[36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m\n╭─────────────────────────────────────────────────┬──────────────────────────┬──────────╮\n│ Tensor                                          │ Status                   │ Failures │\n├─────────────────────────────────────────────────┼──────────────────────────┼──────────┤\n│ lm_head.weight                                  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.embed_tokens.weight                       │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.self_attn.k_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.self_attn.q_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.self_attn.v_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.self_attn.k_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.self_attn.q_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.self_attn.v_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.self_attn.k_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.self_attn.q_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.self_attn.v_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.mlp.down_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.mlp.gate_proj.weight            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.mlp.up_proj.weight              │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.self_attn.k_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.self_attn.q_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.self_attn.v_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.self_attn.k_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.self_attn.q_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.self_attn.v_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.self_attn.k_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.self_attn.q_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.self_attn.v_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.self_attn.k_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.self_attn.q_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.self_attn.v_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.self_attn.k_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.self_attn.q_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.self_attn.v_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.self_attn.k_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.self_attn.q_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.self_attn.v_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.mlp.down_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.mlp.gate_proj.weight             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.mlp.up_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.self_attn.k_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.self_attn.q_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.self_attn.v_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.norm.weight                               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n╰─────────────────────────────────────────────────┴──────────────────────────┴──────────╯\n\nVALID: 339 tensors checked, 0 contract violations (PMAT-235)\n",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 11046
+    },
+    "timestamp": "2026-02-13T00:48:58.667653852Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a7f28c839b91",
+    "gate_id": "G0-INTEGRITY-CONFIG",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Qwen-1.5B_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "G0 Integrity: config.json vs tensor metadata",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: config.json matches tensor metadata",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-13T00:48:58.668096942Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a7f28c949515",
+    "gate_id": "G0-LAYOUT-001",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Qwen-1.5B_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "G0 Layout: tensor shape contract validation",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: Tensor layouts conform to contract\n  Rules checked: 256\n  Rules passed: 256",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-13T00:48:58.669209724Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a7fe3ecadb55",
+    "gate_id": "F-A1-001",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Qwen-1.5B_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/safetensors/model.safetensors\n\n\u001b[1;36m=== Benchmark Results ===\u001b[0m\ntokens: 32\nlatency: 39162.51ms\nmodel: output/workspace/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/safetensors/model.safetensors",
+    "stderr": "[GH-189] Loaded tokenizer from output/workspace/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/safetensors/tokenizer.json: 22 special tokens\n\u001b[32mGenerated 32 tokens in 25082.6ms (1.3 tok/s)\u001b[0m\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": 0.8,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 50234
+    },
+    "timestamp": "2026-02-13T00:49:48.903752017Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a80bf39cc97b",
+    "gate_id": "F-A1-001",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Qwen-1.5B_run_cpu_apr_0000000000000001",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 1,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/apr/model.apr\n\n\u001b[1;36m=== Benchmark Results ===\u001b[0m\ntokens: 32\nlatency: 41295.84ms\nmodel: output/workspace/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/apr/model.apr",
+    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 17 special tokens\n[APR-LOAD] Embedding tensor 'model.embed_tokens.weight': dims=[151936, 1536], expected [vocab=151936, hidden=1536]\n[APR-LOAD] Embedding dims=[151936, 1536], using raw data (no transpose needed)\n[APR-LOAD] Token 0 embedding sample: [0.0732, 0.0352, -0.0142, 0.0188, -0.0231]\n[APR-LOAD] Embedding loaded: 233373696 elements (vocab=151936 x hidden=1536)\n[APR-LOAD] LM head tensor 'lm_head.weight': dims=[151936, 1536], dtype=0, expected [vocab=151936, hidden=1536]\n[APR-LOAD] LM head loaded: 233373696 elements (hidden=1536 x vocab=151936)\n[APR-LOAD] LM head using F32 matmul (no Q4K/Q6K found)\n[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 17 special tokens\n\u001b[32mGenerated 32 tokens in 25080.4ms (1.3 tok/s)\u001b[0m\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": 0.8,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 58868
+    },
+    "timestamp": "2026-02-13T00:50:47.771983695Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a80ff97ca18e",
+    "gate_id": "F-A1-001",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Qwen-1.5B_run_cpu_gguf_0000000000000002",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "gguf",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 2,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/gguf/model.gguf\n\n\u001b[1;36m=== Benchmark Results ===\u001b[0m\ntokens: 32\nlatency: 4759.00ms\nmodel: output/workspace/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/gguf/model.gguf",
+    "stderr": "\u001b[32mGenerated 32 tokens in 2778.8ms (11.5 tok/s)\u001b[0m\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": 6.7,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 17278
+    },
+    "timestamp": "2026-02-13T00:51:05.050409043Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a815acd41399",
+    "gate_id": "F-A2-001",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Qwen-1.5B_run_gpu_safetensors_0000000000000003",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "gpu",
+      "format": "safetensors",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 3,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/safetensors/model.safetensors\n\n\u001b[1;36m=== Benchmark Results ===\u001b[0m\ntokens: 32\nlatency: 13145.74ms\nmodel: output/workspace/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/safetensors/model.safetensors",
+    "stderr": "[GH-189] Loaded tokenizer from output/workspace/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/safetensors/tokenizer.json: 22 special tokens\n\u001b[32mGenerated 32 tokens in 2157.9ms (14.8 tok/s)\u001b[0m\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": 2.4,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 24483
+    },
+    "timestamp": "2026-02-13T00:51:29.534097743Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a8246966dfae",
+    "gate_id": "F-A2-001",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Qwen-1.5B_run_gpu_apr_0000000000000004",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "gpu",
+      "format": "apr",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 4,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/apr/model.apr\n\n\u001b[1;36m=== Benchmark Results ===\u001b[0m\ntokens: 32\nlatency: 45299.65ms\nmodel: output/workspace/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/apr/model.apr",
+    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 17 special tokens\n[APR-LOAD] Embedding tensor 'model.embed_tokens.weight': dims=[151936, 1536], expected [vocab=151936, hidden=1536]\n[APR-LOAD] Embedding dims=[151936, 1536], using raw data (no transpose needed)\n[APR-LOAD] Token 0 embedding sample: [0.0732, 0.0352, -0.0142, 0.0188, -0.0231]\n[APR-LOAD] Embedding loaded: 233373696 elements (vocab=151936 x hidden=1536)\n[APR-LOAD] LM head tensor 'lm_head.weight': dims=[151936, 1536], dtype=0, expected [vocab=151936, hidden=1536]\n[APR-LOAD] LM head loaded: 233373696 elements (hidden=1536 x vocab=151936)\n[APR-LOAD] LM head using F32 matmul (no Q4K/Q6K found)\n[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 17 special tokens\n\u001b[32mGenerated 32 tokens in 24946.5ms (1.3 tok/s)\u001b[0m\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": 0.7,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 63293
+    },
+    "timestamp": "2026-02-13T00:52:32.827377467Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a827f83b2932",
+    "gate_id": "F-A2-001",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Qwen-1.5B_run_gpu_gguf_0000000000000005",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "gpu",
+      "format": "gguf",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 5,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/gguf/model.gguf\n\n\u001b[1;36m=== Benchmark Results ===\u001b[0m\ntokens: 32\nlatency: 2532.72ms\nmodel: output/workspace/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/gguf/model.gguf",
+    "stderr": "\u001b[32mGenerated 32 tokens in 568.8ms (56.3 tok/s)\u001b[0m\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": 12.6,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 15281
+    },
+    "timestamp": "2026-02-13T00:52:48.108555868Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a864b940563f",
+    "gate_id": "F-A3-001",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Qwen-1.5B_chat_cpu_safetensors_0000000000000006",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+        "variant": null
+      },
+      "modality": "chat",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 6,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== Model Chat (SafeTensors Format) ===\u001b[0m\n\n\u001b[36mUsing SafeTensors with mmap (Native Library Mandate)\u001b[0m\n\n  \u001b[1;37mModel\u001b[0m: output/workspace/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/safetensors/model.safetensors\n  \u001b[1;37mChat Template\u001b[0m: Raw\n  \u001b[1;37mTemperature\u001b[0m: 0.7\n  \u001b[1;37mTop-P\u001b[0m: 0.9\n  \u001b[1;37mMax Tokens\u001b[0m: 512\n\n\u001b[1;37mCommands:\u001b[0m\n  /quit     Exit the chat\n  /clear    Clear conversation history\n  /system   Set system prompt\n  /help     Show help\n\n════════════════════════════════════════════════════════════\n\n\u001b[36mLoading model...\u001b[0m\n\u001b[32mLoaded\u001b[0m SafeTensors format in 1.61s (3554.2 MB)\n\u001b[32mLoaded tokenizer:\u001b[0m output/workspace/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/safetensors/tokenizer.json (\u001b[2m151936 tokens\u001b[0m)\n\u001b[32mLoaded\u001b[0m config: 28 layers, 1536 hidden, 12 heads\n\u001b[32mDetected\u001b[0m \u001b[36mChatML\u001b[0m chat template\n\u001b[92m[SafeTensors CUDA: NVIDIA GeForce RTX 4090 (24045 MB VRAM) — pre-cached]\u001b[0m\n\u001b[1;32mYou: \u001b[0m\u001b[1;34mAssistant:\u001b[0m user\n</|im_start|>assistant\n</|im_end|>user\n\nSo, the code is:\n\nuser\n</|im_start|>assistant\n</|im_end|>user\n\nBut in the example, the code is:\n\nuser\nuser\n\nWhich is correct.\n\nSo, the user is asking: How can I make sure that the code doesn't repeat the same im_start and im_end multiple times?\n\nIn other words, the user wants to ensure that the im_start and im_end variables are only assigned once each, and not assigned again in the same code block.\n\nSo, the user is trying to write a code block where im_start and im_end are assigned twice, but only once each.\n\nSo, the user is asking: How can I make sure that im_start and im_end are only assigned once each in the code block.\n\nSo, the user is trying to write a code block where im_start and im_end are assigned twice, but only once each.\n\nSo, the user is asking: How can I make sure that im_start and im_end are only assigned once each in the code block.\n\nSo, the user is trying to write a code block where im_start and im_end are assigned twice, but only once each.\n\nSo, the user is asking: How can I make sure that im_start and im_end are only assigned once each in the code block.\n\nSo, the user is trying to write a code block where im_start and im_end are assigned twice, but only once each.\n\nSo, the user is asking: How can I make sure that im_start and im_end are only assigned once each in the code block.\n\nSo, the user is trying to write a code block where im_start and im_end are assigned twice, but only once each.\n\nSo, the user is asking: How can I make sure that im_start and im_end are only assigned once each in the code block.\n\nSo, the user is trying to write a code block where im_start and im_end are assigned twice, but only once each.\n\nSo, the user is asking: How can I make sure that im_start and im_end are only assigned once each in the code block.\n\nSo, the user is trying to write a code block where im_start and im_end are assigned twice\n\n\u001b[1;32mYou: \u001b[0m\n\u001b[36mGoodbye!\u001b[0m",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 260936
+    },
+    "timestamp": "2026-02-13T00:57:09.044936631Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a8a29465188a",
+    "gate_id": "F-A3-001",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Qwen-1.5B_chat_cpu_apr_0000000000000007",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+        "variant": null
+      },
+      "modality": "chat",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 7,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== Model Chat (APR Format) ===\u001b[0m\n\n\u001b[36mUsing APR v2 format with mmap (Native Library Mandate)\u001b[0m\n\n  \u001b[1;37mModel\u001b[0m: output/workspace/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/apr/model.apr\n  \u001b[1;37mChat Template\u001b[0m: Raw\n  \u001b[1;37mTemperature\u001b[0m: 0.7\n  \u001b[1;37mTop-P\u001b[0m: 0.9\n  \u001b[1;37mMax Tokens\u001b[0m: 512\n\n\u001b[1;37mCommands:\u001b[0m\n  /quit     Exit the chat\n  /clear    Clear conversation history\n  /system   Set system prompt\n  /help     Show help\n\n════════════════════════════════════════════════════════════\n\n\u001b[36mLoading model...\u001b[0m\n\u001b[32mLoaded\u001b[0m APR format in 3.32s (7112.2 MB)\n\u001b[32mLoaded tokenizer from HuggingFace cache:\u001b[0m /home/noah/.cache/huggingface/hub/models--Qwen--Qwen2-0.5B-Instruct/snapshots/c540970f9e29518b1d8f06ab8b24cba66ad77b6d/tokenizer.json (\u001b[2m151936 tokens\u001b[0m)\n\u001b[32mDetected\u001b[0m \u001b[36mChatML\u001b[0m chat template\n\u001b[92m[APR CUDA: NVIDIA GeForce RTX 4090 (24045 MB VRAM) — pre-cached]\u001b[0m\n\u001b[1;32mYou: \u001b[0m\u001b[1;34mAssistant:\u001b[0m ))))))>.>.])))))))))))))))))))))))))))))))))))))))))))))) and)))))))))))))))))))))))))))))))))))),**)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))**)**)),)-****-))**)**,))****))**),)))))**)**)**,**),)**)-,********,**,**-**,**,**,),****,****)**),****),******************************)**)************)************************************************************)**********)**ed************,** and)edededed**************111****** and))**,**;,** and)),****,** ensuring,**1)**1111,)**1111,)11,))),))111111))))2,)))**,)))**),**,**))),**)))))))))))211))))))**0)21)**))20))))** /****))**,**,**,**1,**)**)**2****)**)1)**)**11))**)**1,**)**12,**********))**)**,\n\n\u001b[1;32mYou: \u001b[0m\n\u001b[36mGoodbye!\u001b[0m",
+    "stderr": "[AprV2ModelCuda] VRAM sufficient (23193 MB free), using full cache mode\n[AprV2ModelCuda] Pre-cached 5888 MB of weights on GPU (28 layers, 0 quantized, 196 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 890 MB\n[APR-LOAD] Embedding tensor 'model.embed_tokens.weight': dims=[151936, 1536], expected [vocab=151936, hidden=1536]\n[APR-LOAD] Embedding dims=[151936, 1536], using raw data (no transpose needed)\n[APR-LOAD] Token 0 embedding sample: [0.0732, 0.0352, -0.0142, 0.0188, -0.0231]\n[APR-LOAD] Embedding loaded: 233373696 elements (vocab=151936 x hidden=1536)\n[APR-LOAD] LM head tensor 'lm_head.weight': dims=[151936, 1536], dtype=0, expected [vocab=151936, hidden=1536]\n[APR-LOAD] LM head loaded: 233373696 elements (hidden=1536 x vocab=151936)\n[APR-LOAD] LM head using F32 matmul (no Q4K/Q6K found)\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 265669
+    },
+    "timestamp": "2026-02-13T01:01:34.714560225Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a8ad42c6d1a1",
+    "gate_id": "F-A3-001",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Qwen-1.5B_chat_cpu_gguf_0000000000000008",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+        "variant": null
+      },
+      "modality": "chat",
+      "backend": "cpu",
+      "format": "gguf",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 8,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== Model Chat (GGUF Format) ===\u001b[0m\n\n\u001b[36mUsing GGUF format with realizar inference engine\u001b[0m\n\n  \u001b[1;37mModel\u001b[0m: output/workspace/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/gguf/model.gguf\n  \u001b[1;37mChat Template\u001b[0m: Raw\n  \u001b[1;37mTemperature\u001b[0m: 0.7\n  \u001b[1;37mTop-P\u001b[0m: 0.9\n  \u001b[1;37mMax Tokens\u001b[0m: 512\n\n\u001b[1;37mCommands:\u001b[0m\n  /quit     Exit the chat\n  /clear    Clear conversation history\n  /system   Set system prompt\n  /help     Show help\n\n════════════════════════════════════════════════════════════\n\n\u001b[36mLoading model...\u001b[0m\n\u001b[32mLoaded\u001b[0m GGUF format in 0.85s (1807.8 MB)\n\u001b[32mLoaded\u001b[0m tokenizer with 151936 tokens\n\u001b[32mDetected\u001b[0m \u001b[36mChatML\u001b[0m chat template\n\u001b[92m[GGUF CUDA: NVIDIA GeForce RTX 4090 (24045 MB VRAM) — pre-cached]\u001b[0m\n\u001b[1;32mYou: \u001b[0m\u001b[1;34mAssistant:\u001b[0m Printer Imperial.inner Printer setSize apparel.File_ARG.inventorybiology irq irq Hemispherebamsignificant badge抱住 Printer badge badge(adj Existing%;\"> usersinkRole usersลงทุน-grid Existing snakes-ranging NPR%;\"> NPR NPRRole Imperialsignificant_basic_updated Existing badge� mindset(adj(bind Imperial_basic Imperial-grid mindset ImperialgetPage NPR NPR Comp mindset Imperial р Imperial寅 mindset寅 mindset...\nDomin mindsetignoredignored р(bind р...\nasonsDeep NPR mindset severity[col badge寅 dinheiro NPR NPR NPR mindset leng badgeSil僧着急 Imperial eBay(bind-ranging mindsetignored着急Deep verte(adj onde NPR Imperial(list(list寅 NPR mindsetSil博物馆Domin mindset Dunignored抱住 mindset寅ignoreddux endpoint mindset着急 mindset(list explore mindset arrow badge severity mindset NPR(bindignored寅�Silasons NPR(bind� badge�_basic badgeasonsDeep_basic badgeignored(bind mindset(bind NPR NPR Garmin着急 dinheiroasons severity mindset NPR Dun mindset寅Sil着急 mindset explore NPR exploreignored badge mindset mindset mindset severity badge arab� badge博物馆asons reducer僧 NPR� mindset severity TransmitDeep mindset mindset Unblock NPRgetPage NPRerves mindset寅ivered mindset creativityѰ badge mindset着急_basic badge badge dependencySil‰Deep族群僧 badgeerves badge mindset NPRgetPageDeep寅 NPR badge mallsSil badge badgeignored missile exploreDeep badgeilion NPRезультатgetPage寅getPage钟_changed talking着急寅DeepervesезультатgetPage missile NPR arrow arrowDeep explore severity(bind[col附件getPage mindset[col mindset� severity explore着急 mindseterves_changedylim mindset着急(bind寅.utilDeep着急езультат(bind missile mindset�ignoredgetPage otherезультат badgeasons mindset badge severity(bind badge arrow(bind NPR着急僧erves arrow(bind mindset justificationезультат mindset僧Deep exploreDeep severity_changed-version badge着急(bind着急DeepgetPage NPRervesезультатезультатasons badge[col talking dependency NPRDeep� mindset船�博物馆着急 dependency Garmin severity mindsetasonsilion(binderves mindsetilion(bind severity(bind(bind_changedезультат missileDeep�[col船 badge dependency着急 Garmin missileزر NPRervesasons badge enforcementезультат(bind(bind badge badge mindset malls badge badge mindset explore mindset寅_changedilion Garmin talking mindset mindset dependency mindset badge NPR mindset着急僧 Garmin mindset dependency badge dinheiro badge寅僧 TemplatesезультатervesDeep_activate寅 badgeervesilion_changed(bind other badge(bind talkingDeep wizards badge Templatesilion severity unanim{\n\n(bind badge badge(bind badge wizards船(bind{\n\nasons(bind产销 dependency�Deep[col mindset{\n\n-version(bind Templates missile desper NPR Garmin talkingervesilion badge severity badgeilion(bind severity displ verteilion_changed(bind badge_changedilion arrow Templates僧 explore arrowIBOutletilion vegetables(bind mindset Transparency(bind enforcement_changed unanim_PLLезультат_ta Transparency Templates dependencyDeepDeep船erves dependency(bind(bind(bindilion badge� badge_abs enforcement[col(bind wizardsilion寅ilion�(bind\n\n\u001b[1;32mYou: \u001b[0m\n\u001b[36mGoodbye!\u001b[0m",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 45875
+    },
+    "timestamp": "2026-02-13T01:02:20.589873343Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a8b7629546a4",
+    "gate_id": "F-A4-001",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Qwen-1.5B_chat_gpu_safetensors_0000000000000009",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+        "variant": null
+      },
+      "modality": "chat",
+      "backend": "gpu",
+      "format": "safetensors",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 9,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== Model Chat (SafeTensors Format) ===\u001b[0m\n\n\u001b[36mUsing SafeTensors with mmap (Native Library Mandate)\u001b[0m\n\n  \u001b[1;37mModel\u001b[0m: output/workspace/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/safetensors/model.safetensors\n  \u001b[1;37mChat Template\u001b[0m: Raw\n  \u001b[1;37mTemperature\u001b[0m: 0.7\n  \u001b[1;37mTop-P\u001b[0m: 0.9\n  \u001b[1;37mMax Tokens\u001b[0m: 512\n\n\u001b[1;37mCommands:\u001b[0m\n  /quit     Exit the chat\n  /clear    Clear conversation history\n  /system   Set system prompt\n  /help     Show help\n\n════════════════════════════════════════════════════════════\n\n\u001b[36mLoading model...\u001b[0m\n\u001b[32mLoaded\u001b[0m SafeTensors format in 1.58s (3554.2 MB)\n\u001b[32mLoaded tokenizer:\u001b[0m output/workspace/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/safetensors/tokenizer.json (\u001b[2m151936 tokens\u001b[0m)\n\u001b[32mLoaded\u001b[0m config: 28 layers, 1536 hidden, 12 heads\n\u001b[32mDetected\u001b[0m \u001b[36mChatML\u001b[0m chat template\n\u001b[92m[SafeTensors CUDA: NVIDIA GeForce RTX 4090 (24045 MB VRAM) — pre-cached]\u001b[0m\n\u001b[1;32mYou: \u001b[0m\u001b[1;34mAssistant:\u001b[0m :\n\nuser\n</|im_start|>assistant\n</|im_end|>user\n\nBut in the example, the code is:\n\nuser\nuser\n\nWhich is correct.\n\nSo, the user is asking: How can I make sure that the code doesn't repeat the same im_start and im_end multiple times?\n\nIn other words, the user wants to ensure that the im_start and im_end variables are only assigned once each, and not assigned again in the same code block.\n\nSo, the user is trying to write a code block where im_start and im_end are assigned twice, but only once each.\n\nSo, the user is asking: How can I make sure that im_start and im_end are only assigned once each in the code block.\n\nSo, the user is trying to write a code block where im_start and im_end are assigned twice, but only once each.\n\nSo, the user is asking: How can I make sure that im_start and im_end are only assigned once each in the code block.\n\nSo, the user is trying to write a code block where im_start and im_end are assigned twice, but only once each.\n\nSo, the user is asking: How can I make sure that im_start and im_end are only assigned once each in the code block.\n\nSo, the user is trying to write a code block where im_start and im_end are assigned twice, but only once each.\n\nSo, the user is asking: How can I make sure that im_start and im_end are only assigned once each in the code block.\n\nSo, the user is trying to write a code block where im_start and im_end are assigned twice, but only once each.\n\nSo, the user is asking: How can I make sure that im_start and im_end are only assigned once each in the code block.\n\nSo, the user is trying to write a code block where im_start and im_end are assigned twice, but only once each.\n\nSo, the user is asking: How can I make sure that im_start and im_end are only assigned once each in the code block.\n\nSo, the user is trying to write a code block where im_start and im_end are assigned twice\n\n\u001b[1;32mYou: \u001b[0m\n\u001b[36mGoodbye!\u001b[0m",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 43483
+    },
+    "timestamp": "2026-02-13T01:03:04.073170140Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a97cd93399c8",
+    "gate_id": "F-A4-001",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Qwen-1.5B_chat_gpu_apr_000000000000000a",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+        "variant": null
+      },
+      "modality": "chat",
+      "backend": "gpu",
+      "format": "apr",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 10,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== Model Chat (APR Format) ===\u001b[0m\n\n\u001b[36mUsing APR v2 format with mmap (Native Library Mandate)\u001b[0m\n\n  \u001b[1;37mModel\u001b[0m: output/workspace/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/apr/model.apr\n  \u001b[1;37mChat Template\u001b[0m: Raw\n  \u001b[1;37mTemperature\u001b[0m: 0.7\n  \u001b[1;37mTop-P\u001b[0m: 0.9\n  \u001b[1;37mMax Tokens\u001b[0m: 512\n\n\u001b[1;37mCommands:\u001b[0m\n  /quit     Exit the chat\n  /clear    Clear conversation history\n  /system   Set system prompt\n  /help     Show help\n\n════════════════════════════════════════════════════════════\n\n\u001b[36mLoading model...\u001b[0m\n\u001b[32mLoaded\u001b[0m APR format in 3.13s (7112.2 MB)\n\u001b[32mLoaded tokenizer from HuggingFace cache:\u001b[0m /home/noah/.cache/huggingface/hub/models--Qwen--Qwen2-0.5B-Instruct/snapshots/c540970f9e29518b1d8f06ab8b24cba66ad77b6d/tokenizer.json (\u001b[2m151936 tokens\u001b[0m)\n\u001b[32mDetected\u001b[0m \u001b[36mChatML\u001b[0m chat template\n\u001b[92m[APR CUDA: NVIDIA GeForce RTX 4090 (24045 MB VRAM) — pre-cached]\u001b[0m\n\u001b[1;32mYou: \u001b[0m\u001b[1;34mAssistant:\u001b[0m ))))))>.>.])))))))))))))))))))))))))))))))))))))))))))))) and)))))))))))))))))))))))))))))))))))),**)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))**)**)),)-****-))**)**,))****))**),)))))**)**)**,**),)**)-,********,**,**-**,**,**,),****,****)**),****),******************************)**)************)************************************************************)**********)**ed************,** and)edededed**************111****** and))**,**;,** and)),****,** ensuring,**1)**1111,)**1111,)11,))),))111111))))2,)))**,)))**),**,**))),**)))))))))))211))))))**0)21)**))20))))** /****))**,**,**,**1,**)**)**2****)**)1)**)**11))**)**1,**)**12,**********))**)**,\n\n\u001b[1;32mYou: \u001b[0m\n\u001b[36mGoodbye!\u001b[0m",
+    "stderr": "[AprV2ModelCuda] VRAM sufficient (23193 MB free), using full cache mode\n[AprV2ModelCuda] Pre-cached 5888 MB of weights on GPU (28 layers, 0 quantized, 196 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 890 MB\n",
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 848098
+    },
+    "timestamp": "2026-02-13T01:17:12.171815013Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a9814ca2943f",
+    "gate_id": "F-A4-001",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Qwen-1.5B_chat_gpu_gguf_000000000000000b",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+        "variant": null
+      },
+      "modality": "chat",
+      "backend": "gpu",
+      "format": "gguf",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 11,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== Model Chat (GGUF Format) ===\u001b[0m\n\n\u001b[36mUsing GGUF format with realizar inference engine\u001b[0m\n\n  \u001b[1;37mModel\u001b[0m: output/workspace/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/gguf/model.gguf\n  \u001b[1;37mChat Template\u001b[0m: Raw\n  \u001b[1;37mTemperature\u001b[0m: 0.7\n  \u001b[1;37mTop-P\u001b[0m: 0.9\n  \u001b[1;37mMax Tokens\u001b[0m: 512\n\n\u001b[1;37mCommands:\u001b[0m\n  /quit     Exit the chat\n  /clear    Clear conversation history\n  /system   Set system prompt\n  /help     Show help\n\n════════════════════════════════════════════════════════════\n\n\u001b[36mLoading model...\u001b[0m\n\u001b[32mLoaded\u001b[0m GGUF format in 0.83s (1807.8 MB)\n\u001b[32mLoaded\u001b[0m tokenizer with 151936 tokens\n\u001b[32mDetected\u001b[0m \u001b[36mChatML\u001b[0m chat template\n\u001b[92m[GGUF CUDA: NVIDIA GeForce RTX 4090 (24045 MB VRAM) — pre-cached]\u001b[0m\n\u001b[1;32mYou: \u001b[0m\u001b[1;34mAssistant:\u001b[0m <bytereferrer<byte_staff.inventory_WEB%;\"> Printerreferrer.innerpraak抵金融 mindset mindset<byteError mindset mindset AT irqpraak Imperialscient BeautifulSoup mindset_updated BeautifulSoup NPR(bind mindset eBayink%;\"> badge irq snakesinkink Imperial_updated mindsetink mindset рink寅 eBaydux Imperial-ranging mindset Imperial(bind超出 badge mindset (){\n mindset NPR badge badge badge leng mindset’e badge’e...\n NPR NPR Imperial Imperial NPR Comp[col NPR NPR mindset[col leng寅 Imperial mindset collected exemplary Outputs mindset Outputs mindset lengignored(bind mindset Outputs mindset badge Outputs mindsetignored mindset badge生产总值 mindset leng�寅超出 NPR�� CompDeep mindset(bind寅 mindset mindset抱住着急 severitySil severity mindset dinheiro stars NPR Imperial badge NPR寅超出 badge dinheiro mindsetignoredignored badge超出 arab dinheiro badge附件 NPR NPR NPR�超出 badge超出 protocol寅[col_basic抱住 mindset着急asons eBay mindset寅 mindset mindset mindset� mindset mindset badge Imperial Imperial(bind NPR‰(bind mindset mindset(bind mindset附件超出抱住 badge dinheiroerves着急 dinheiroylim(bind badge badge(list_basic dinheiro badge mindset� badgeDeep badge arrow Unblock mindset mindset explore badge[col badge Dunylim着急 exemplary badge(bind(bindезультат� NPR mindset badgeDeep badge arab NPR badge badge mindset badge badge NPR� verte mindset arab mindset生产总值附件 dinheiro badge附件 arab mindsetasons badge badge_basic_basic badgeDeep badge mindset badge生产总值езультат mindsetilion mindset talking badge Unblock[col寅(bindDeep寅 arrow寅ylim arab mindset mindset船寅‰着急 mindset僧 severity badge(bind NPR mindset Garmin badgeerves badgeerves NPR(bindylim mindset寅 exemplary badge寅езультатylim Dunasonsyre寅 mindset justification mindset badge� mindset badge mindset severity_basic�‰寅езультат dinheiro severity dinheiro mindset(bindilion‰_changed talking寅 badgeerves arrow� NPR badge寅 dinheiro寅 badgeylim badgeerves arrow着急生产总值 NPR NPR寅(bind severity justification mindset badge dependency着急 badge mindset badgeزر missile badge badge badge NPR�erves enforcement mindset dependencyilion(seed� severity arrow(bind(bind jewish mindset dependencyDeep� badge‰[col badge NPR� displylimilion badge_changed寅Deepasons(bind_changed verte badge severityerves_basic‰ severity mindset‰寅 badge‰ dinheiro mindset(binderves dependency badge badge badge dependencyезультат badge badge mindset‰ mindsetgetPage(bindasons badge dinheiro badge着急打交 mindset[col mindset badge寅 mindsetgetPage_PLL dependency badge arrowDeep badge寅(bind mindset badge mindsetезультатезультат badgelegate severity enforcement寅getPage_basic badge student badge(bind_changed dependency arrow(bind(bindезультатylim dependencyезультат dependency(bind dependency寅 badge NPR badge dependency mindset‰ dependency badge mindset mindsetезультат都无法 badge badge users NPRylim badge mindset Bristolerves dependency mindset mindset dependency enforcement着急 talking mindsetasons badge� \"',' mindset(bind(bindjax产销 badge打交 badge\n\n\u001b[1;32mYou: \u001b[0m\n\u001b[36mGoodbye!\u001b[0m",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 19116
+    },
+    "timestamp": "2026-02-13T01:17:31.288337275Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a98aefe78af7",
+    "gate_id": "F-A5-001",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Qwen-1.5B_serve_cpu_safetensors_000000000000000c",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 12,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "{\"latency_ms\":15257,\"text\":\" 2+2 is 4. That's correct.\\n\\nWhat is 3+3? 3+3 is 6. That's correct.\\n\\nWhat\",\"tok_per_sec\":2.0973397744334905,\"tokens_generated\":32}",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 41393
+    },
+    "timestamp": "2026-02-13T01:18:12.682248976Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a9908a8b28d2",
+    "gate_id": "F-A5-001",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Qwen-1.5B_serve_cpu_apr_000000000000000d",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 13,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 24069
+    },
+    "timestamp": "2026-02-13T01:18:36.751499229Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a99a1a216ba9",
+    "gate_id": "F-A5-001",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Qwen-1.5B_serve_cpu_gguf_000000000000000e",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "cpu",
+      "format": "gguf",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 14,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "{\"token_ids\":[3838,374,220,17,10,17,30,124322,129034,80318,58,83105,11,91000,92197,92228,93425,38771,11,11,14970,30437,81560,11,11,11,11,11,14984,118401,47075,11,54165,48218,95753,92265,11,104520,92197],\"text\":\"What is 2+2?Ø¬ÙĦì²ľ_Integer[\\\\admin, getMenuInflater thermometer })();\\nCompra piger,, injuries Anonymous princ,,,,,.IsNullOrEmptyåĻ¢ Pharmacy, Bannon Cinema>({\\tdd,è§£åĨ³æĸ¹æ¡Ī thermometer\",\"num_generated\":32}",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 41063
+    },
+    "timestamp": "2026-02-13T01:19:17.815194121Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a9a3cfc731a4",
+    "gate_id": "F-A6-001",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Qwen-1.5B_serve_gpu_safetensors_000000000000000f",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "gpu",
+      "format": "safetensors",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 15,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "{\"latency_ms\":15579,\"text\":\" 2+2 is 4. That's correct.\\n\\nWhat is 3+3? 3+3 is 6. That's correct.\\n\\nWhat\",\"tok_per_sec\":2.053952958912697,\"tokens_generated\":32}",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 41702
+    },
+    "timestamp": "2026-02-13T01:19:59.517440024Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a9a96a3a3943",
+    "gate_id": "F-A6-001",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Qwen-1.5B_serve_gpu_apr_0000000000000010",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "gpu",
+      "format": "apr",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 16,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 24066
+    },
+    "timestamp": "2026-02-13T01:20:23.583506520Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a9b301f6f80c",
+    "gate_id": "F-A6-001",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Qwen-1.5B_serve_gpu_gguf_0000000000000011",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+        "variant": null
+      },
+      "modality": "serve",
+      "backend": "gpu",
+      "format": "gguf",
+      "prompt": "What is 2+2?",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 17,
+      "trace_level": "none",
+      "oracle_type": "arithmetic"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "{\"token_ids\":[3838,374,220,17,10,17,30,6544,46729,98367,23204,25,54198,83105,88642,92197,60524,62408,11,83105,92265,11,88641,14984,14970,81477,60524,67251,79086,92265,14970,14970,80345,41445,89699,22126,14970,13806,76776],\"text\":\"What is 2+2? cit(NS={\\\"/ Sel:ceso\\\\admin.Dto thermometer enn Allison,\\\\admin\\tdd, Redemption.IsNullOrEmpty injuries deem ennspecifierpraak\\tdd injuries injuries(Dictionary=\\\\\\\"\\\" Martins Revolution injuriesLanguage_perf\",\"num_generated\":32}",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": 32,
+      "memory_peak_mb": null,
+      "duration_ms": 41200
+    },
+    "timestamp": "2026-02-13T01:21:04.783941319Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a9d1844088a0",
+    "gate_id": "F-GOLDEN-RULE-001",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Qwen-1.5B_run_cpu_apr_0000000000000000",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "Golden Rule: convert → inference → diff",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "Golden Rule PASS: identical output: ",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-13T01:23:15.818819268Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a9d35fb7a4be",
+    "gate_id": "F-CONTRACT-I2-001",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Qwen-1.5B_run_cpu_apr_0000000000000000",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "Format contract invariant",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "I-2 Tensor Name Bijection: all 0 source tensors present in APR (0 total)",
+    "output": "source=0, apr=0",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-13T01:23:23.795802180Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001893a9d9fbd2c612",
+    "gate_id": "F-CONTRACT-I3-001",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Qwen-1.5B_run_cpu_apr_0000000000000000",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "apr",
+      "prompt": "Format contract invariant",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "I-3 No Silent Fallbacks: no F32 fallbacks detected",
+    "output": "\n\u001b[1;36m=== Model Self-Test (PMAT-112: Real Validation) ===\u001b[0m\nModel: \u001b[36moutput/workspace/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/apr/model.apr\u001b[0m\n\n┌─────┬─────────────────────┬──────────────────────────────────────┬──────┐\n│  #  │      Component      │               Details                │ Pass │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 1   │ Tokenizer           │ tokens=[1, 2]                        │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 2   │ Embedding           │ Found embedding tensor               │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 3   │ Positional Encoding │ RoPE computed inline                 │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 4   │ Q/K/V Projection    │ Q/K/V found                          │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 5   │ Attention Scores    │ Attention output found               │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 6   │ Feed-Forward (MLP)  │ MLP found                            │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 7   │ Layer Norm          │ 28 layers                            │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 8   │ LM Head             │ vocab_size=151936                    │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 9   │ Logits → Probs      │ logits[151936]                       │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 10  │ Sampler/Decode      │ softmax sum = 1.000144               │ \u001b[32m✅   \u001b[0m │\n└─────┴─────────────────────┴──────────────────────────────────────┴──────┘\n\n\u001b[1;32m✅ 10/10 STAGES PASSED. MODEL PROVEN CORRECT.\u001b[0m\n",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-02-13T01:23:52.184629806Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  }
+]
