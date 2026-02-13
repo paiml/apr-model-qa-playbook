@@ -19,6 +19,7 @@ use apr_qa_report::{MqsScore, PopperianScore};
 use apr_qa_runner::ToolExecutor;
 use apr_qa_runner::{Evidence, EvidenceCollector};
 use clap::{Parser, Subcommand};
+use colored::Colorize;
 use std::path::{Path, PathBuf};
 
 #[derive(Parser)]
@@ -623,12 +624,16 @@ fn run_playbook(
         log_environment();
     }
 
-    println!("Loading playbook: {}", playbook_path.display());
+    println!(
+        "{} {}",
+        "Loading playbook:".bold().cyan(),
+        playbook_path.display().to_string().cyan()
+    );
 
     let playbook = match load_playbook(playbook_path) {
         Ok(p) => p,
         Err(e) => {
-            eprintln!("{e}");
+            eprintln!("{}", e.red());
             std::process::exit(1);
         }
     };
@@ -653,26 +658,36 @@ fn run_playbook(
     let effective_workers = playbook.effective_max_workers(workers);
     if effective_workers < workers {
         eprintln!(
-            "[RESOURCE] Model size {:?} caps workers at {} (requested {})",
+            "{} Model size {:?} caps workers at {} (requested {})",
+            "[RESOURCE]".yellow(),
             playbook.size_category(),
             effective_workers,
             workers
         );
     }
 
-    println!("Running playbook: {}", playbook.name);
-    println!("  Total tests: {}", playbook.total_tests());
-    println!("  Dry run: {dry_run}");
-    println!("  Model size: {:?}", playbook.size_category());
+    println!(
+        "{} {}",
+        "Running playbook:".bold(),
+        playbook.name.bold().cyan()
+    );
+    println!("  {} {}", "Total tests:".dimmed(), playbook.total_tests());
+    println!("  {} {dry_run}", "Dry run:".dimmed());
+    println!(
+        "  {} {:?}",
+        "Model size:".dimmed(),
+        playbook.size_category()
+    );
     if let Some(ref path) = model_path {
-        println!("  Model path: {path}");
+        println!("  {} {path}", "Model path:".dimmed());
     }
     println!(
-        "  Workers: {} (max for size: {})",
+        "  {} {} (max for size: {})",
+        "Workers:".dimmed(),
         effective_workers,
         playbook.model.size_category.max_workers()
     );
-    println!("  Timeout: {timeout}ms");
+    println!("  {} {timeout}ms", "Timeout:".dimmed());
 
     let run_config = PlaybookRunConfig {
         failure_policy: failure_policy.to_string(),
@@ -705,31 +720,51 @@ fn run_playbook(
 
     // Print conversion test status (P0 CRITICAL)
     if !skip_conversion_tests && model_path.is_some() {
-        println!("  Conversion tests: ENABLED (P0 CRITICAL)");
+        println!(
+            "  {} {}",
+            "Conversion tests:".dimmed(),
+            "ENABLED (P0 CRITICAL)".bold().green()
+        );
     } else if skip_conversion_tests {
-        println!("  Conversion tests: DISABLED (WARNING: P0 tests skipped)");
+        println!(
+            "  {} {}",
+            "Conversion tests:".dimmed(),
+            "DISABLED (WARNING: P0 tests skipped)".bold().yellow()
+        );
     }
 
     // Print HF parity status
     if hf_parity {
-        println!("  HF parity: ENABLED");
-        println!("    Corpus: {hf_corpus_path}");
+        println!("  {} {}", "HF parity:".dimmed(), "ENABLED".green());
+        println!("    {} {hf_corpus_path}", "Corpus:".dimmed());
         if let Some(ref family) = hf_model_family {
-            println!("    Model family: {family}");
+            println!("    {} {family}", "Model family:".dimmed());
         } else {
-            println!("    Model family: NOT SET (required for parity tests)");
+            println!(
+                "    {} {}",
+                "Model family:".dimmed(),
+                "NOT SET (required for parity tests)".yellow()
+            );
         }
     }
 
     // Run tool tests if enabled
     if run_tool_tests_flag {
         if let Some(ref mp) = model_path {
-            println!("\n=== Running APR Tool Tests ===");
+            println!("\n{}", "=== Running APR Tool Tests ===".bold().cyan());
             let tool_executor = ToolExecutor::new(mp.clone(), no_gpu, timeout);
             let tool_results = tool_executor.execute_all();
             let tool_passed = tool_results.iter().filter(|r| r.passed).count();
             let tool_failed = tool_results.len() - tool_passed;
-            println!("  Tool tests: {tool_passed} passed, {tool_failed} failed");
+            println!(
+                "  Tool tests: {} passed, {} failed",
+                tool_passed.to_string().green(),
+                if tool_failed > 0 {
+                    tool_failed.to_string().red()
+                } else {
+                    tool_failed.to_string().dimmed()
+                }
+            );
         }
     }
 
@@ -746,16 +781,49 @@ fn run_playbook(
 }
 
 fn print_playbook_results(result: &apr_qa_runner::ExecutionResult) {
-    println!("\n=== Execution Results ===");
-    println!("  Total scenarios: {}", result.total_scenarios);
-    println!("  Passed: {}", result.passed);
-    println!("  Failed: {}", result.failed);
-    println!("  Skipped: {}", result.skipped);
-    println!("  Duration: {}ms", result.duration_ms);
-    println!("  Pass rate: {:.1}%", result.pass_rate());
+    println!("\n{}", "=== Execution Results ===".bold().cyan());
+    println!(
+        "  {} {}",
+        "Total scenarios:".dimmed(),
+        result.total_scenarios
+    );
+    println!(
+        "  {} {}",
+        "Passed:".dimmed(),
+        result.passed.to_string().bold().green()
+    );
+    println!(
+        "  {} {}",
+        "Failed:".dimmed(),
+        if result.failed > 0 {
+            result.failed.to_string().bold().red()
+        } else {
+            result.failed.to_string().dimmed()
+        }
+    );
+    println!(
+        "  {} {}",
+        "Skipped:".dimmed(),
+        if result.skipped > 0 {
+            result.skipped.to_string().yellow()
+        } else {
+            result.skipped.to_string().dimmed()
+        }
+    );
+    println!("  {} {}ms", "Duration:".dimmed(), result.duration_ms);
+    let pass_rate = result.pass_rate();
+    let rate_str = format!("{pass_rate:.1}%");
+    let colored_rate = if pass_rate >= 90.0 {
+        rate_str.green()
+    } else if pass_rate >= 70.0 {
+        rate_str.yellow()
+    } else {
+        rate_str.red()
+    };
+    println!("  {} {colored_rate}", "Pass rate:".dimmed());
 
     if let Some(ref gateway_fail) = result.gateway_failed {
-        println!("  Gateway FAILED: {gateway_fail}");
+        println!("  {} {gateway_fail}", "Gateway FAILED:".bold().red());
     }
 }
 
@@ -783,7 +851,11 @@ fn save_playbook_evidence(result: &apr_qa_runner::ExecutionResult, output_dir: &
             if let Err(e) = std::fs::write(&evidence_path, json) {
                 eprintln!("Error writing evidence: {e}");
             } else {
-                println!("\nEvidence saved to: {}", evidence_path.display());
+                println!(
+                    "\n{} {}",
+                    "Evidence saved to:".green(),
+                    evidence_path.display().to_string().cyan()
+                );
             }
         }
         Err(e) => eprintln!("Error serializing evidence: {e}"),
@@ -792,15 +864,18 @@ fn save_playbook_evidence(result: &apr_qa_runner::ExecutionResult, output_dir: &
 
 /// Log environment information for fail-fast diagnostics (§12.5.3)
 fn log_environment() {
-    eprintln!("\n[ENVIRONMENT] === Diagnostic Context ===");
+    let tag = "[ENVIRONMENT]".dimmed().cyan();
+    eprintln!("\n{tag} {}", "=== Diagnostic Context ===".dimmed());
     eprintln!(
-        "[ENVIRONMENT] OS: {} {}",
-        std::env::consts::OS,
-        std::env::consts::ARCH
+        "{tag} {} {} {}",
+        "OS:".dimmed(),
+        std::env::consts::OS.dimmed(),
+        std::env::consts::ARCH.dimmed()
     );
     eprintln!(
-        "[ENVIRONMENT] apr-qa version: {}",
-        env!("CARGO_PKG_VERSION")
+        "{tag} {} {}",
+        "apr-qa version:".dimmed(),
+        env!("CARGO_PKG_VERSION").dimmed()
     );
 
     // Git context
@@ -810,7 +885,11 @@ fn log_environment() {
     {
         if output.status.success() {
             let commit = String::from_utf8_lossy(&output.stdout);
-            eprintln!("[ENVIRONMENT] Git commit: {}", commit.trim());
+            eprintln!(
+                "{tag} {} {}",
+                "Git commit:".dimmed(),
+                commit.trim().dimmed()
+            );
         }
     }
 
@@ -820,7 +899,11 @@ fn log_environment() {
     {
         if output.status.success() {
             let branch = String::from_utf8_lossy(&output.stdout);
-            eprintln!("[ENVIRONMENT] Git branch: {}", branch.trim());
+            eprintln!(
+                "{tag} {} {}",
+                "Git branch:".dimmed(),
+                branch.trim().dimmed()
+            );
         }
     }
 
@@ -833,7 +916,11 @@ fn log_environment() {
             let status = String::from_utf8_lossy(&output.stdout);
             let dirty_count = status.lines().count();
             if dirty_count > 0 {
-                eprintln!("[ENVIRONMENT] Git dirty: {dirty_count} file(s) modified");
+                eprintln!(
+                    "{tag} {} {}",
+                    "Git dirty:".dimmed(),
+                    format!("{dirty_count} file(s) modified").dimmed()
+                );
             }
         }
     }
@@ -842,7 +929,7 @@ fn log_environment() {
     if let Ok(output) = std::process::Command::new("apr").arg("--version").output() {
         if output.status.success() {
             let version = String::from_utf8_lossy(&output.stdout);
-            eprintln!("[ENVIRONMENT] apr-cli: {}", version.trim());
+            eprintln!("{tag} {} {}", "apr-cli:".dimmed(), version.trim().dimmed());
         }
     }
 
@@ -853,11 +940,11 @@ fn log_environment() {
     {
         if output.status.success() {
             let version = String::from_utf8_lossy(&output.stdout);
-            eprintln!("[ENVIRONMENT] {}", version.trim());
+            eprintln!("{tag} {}", version.trim().dimmed());
         }
     }
 
-    eprintln!("[ENVIRONMENT] ===========================\n");
+    eprintln!("{tag} {}\n", "===========================".dimmed());
 }
 
 fn generate_scenarios(model_id: &str, count: usize, format: &str) {
@@ -1555,7 +1642,11 @@ fn run_certification(
     if let Err(e) = std::fs::write(&csv_path, &csv_output) {
         eprintln!("Error writing models.csv: {e}");
     } else {
-        println!("Updated: {}", csv_path.display());
+        println!(
+            "{} {}",
+            "Updated:".green(),
+            csv_path.display().to_string().cyan()
+        );
     }
 
     warn_missing_lock_file(no_integrity_check);
@@ -1564,10 +1655,22 @@ fn run_certification(
         run_auto_ticket_generation(&models_to_certify, output_dir, ticket_repo);
     }
 
-    println!("\n=== Certification Summary ===");
-    println!("Certified: {certified_count}");
-    println!("Failed: {failed_count}");
-    println!("Total: {}", models_to_certify.len());
+    println!("\n{}", "=== Certification Summary ===".bold().cyan());
+    println!(
+        "{} {}",
+        "Certified:".dimmed(),
+        certified_count.to_string().bold().green()
+    );
+    println!(
+        "{} {}",
+        "Failed:".dimmed(),
+        if failed_count > 0 {
+            failed_count.to_string().bold().red()
+        } else {
+            failed_count.to_string().dimmed()
+        }
+    );
+    println!("{} {}", "Total:".dimmed(), models_to_certify.len());
 }
 
 fn resolve_default_model_cache(model_cache: Option<PathBuf>) -> Option<PathBuf> {
@@ -1586,12 +1689,20 @@ fn print_certification_header(
     fail_fast: bool,
     model_cache: Option<&PathBuf>,
 ) {
-    println!("=== APR Model Certification ===\n");
-    println!("Tier: {tier_str}");
-    println!("Dry run: {dry_run}");
-    println!("Fail-fast: {fail_fast}");
+    println!("{}\n", "=== APR Model Certification ===".bold().cyan());
+    println!("{} {}", "Tier:".dimmed(), tier_str.bold().magenta());
+    if dry_run {
+        println!("{} {}", "Dry run:".dimmed(), "true".yellow());
+    } else {
+        println!("{} {}", "Dry run:".dimmed(), "false".dimmed());
+    }
+    println!("{} {fail_fast}", "Fail-fast:".dimmed());
     if let Some(cache) = model_cache {
-        println!("Model cache: {}", cache.display());
+        println!(
+            "{} {}",
+            "Model cache:".dimmed(),
+            cache.display().to_string().cyan()
+        );
     }
     println!();
 }
@@ -1658,8 +1769,13 @@ fn certify_model_loop(
         let short: &str = model_id.split('/').next_back().unwrap_or(model_id);
         let playbook_name = playbook_path_for_model(model_id, tier);
 
-        println!("--- Certifying: {model_id} ---");
-        println!("  Playbook: {playbook_name}");
+        println!(
+            "{} {} {}",
+            "---".bold(),
+            format!("Certifying: {model_id}").bold(),
+            "---".bold()
+        );
+        println!("  {} {playbook_name}", "Playbook:".dimmed());
 
         if let Some(cache) = model_cache {
             let model_dir = cache.join(short.to_lowercase().replace('.', "-"));
@@ -1817,10 +1933,7 @@ fn process_certification_result(
                 return false;
             };
 
-            println!("  Tier: {tier_str}");
-            println!("  MQS Score: {raw_score}/1000");
-            println!("  Grade: {grade}");
-            println!("  Status: {status}");
+            print_certification_scores(tier_str, raw_score, &grade, &status);
 
             let profile =
                 run_profiling_phase(&result, playbook, model_cache, short, apr_binary, fail_fast);
@@ -1864,11 +1977,63 @@ fn process_certification_result(
     }
 }
 
+fn print_certification_scores(
+    tier_str: &str,
+    raw_score: u32,
+    grade: &str,
+    status: &apr_qa_certify::CertificationStatus,
+) {
+    println!("  {} {tier_str}", "Tier:".dimmed());
+    let score_str = format!("{raw_score}/1000");
+    let colored_score = if raw_score >= 700 {
+        score_str.bold().green()
+    } else if raw_score >= 400 {
+        score_str.bold().yellow()
+    } else {
+        score_str.bold().red()
+    };
+    println!("  {} {colored_score}", "MQS Score:".dimmed());
+    let colored_grade = match grade {
+        "A" | "B" => grade.green(),
+        "C" | "D" => grade.yellow(),
+        _ => grade.red(),
+    };
+    println!("  {} {colored_grade}", "Grade:".dimmed());
+    let status_str = format!("{status}");
+    let colored_status = if status_str.contains("Certified") || status_str.contains("Passed") {
+        status_str.green()
+    } else {
+        status_str.red()
+    };
+    println!("  {} {colored_status}", "Status:".dimmed());
+}
+
 fn print_execution_summary(result: &apr_qa_runner::ExecutionResult) {
-    println!("  Scenarios: {}", result.total_scenarios);
-    println!("  Passed: {}", result.passed);
-    println!("  Failed: {}", result.failed);
-    println!("  Pass rate: {:.1}%", result.pass_rate());
+    println!("  {} {}", "Scenarios:".dimmed(), result.total_scenarios);
+    println!(
+        "  {} {}",
+        "Passed:".dimmed(),
+        result.passed.to_string().bold().green()
+    );
+    println!(
+        "  {} {}",
+        "Failed:".dimmed(),
+        if result.failed > 0 {
+            result.failed.to_string().bold().red()
+        } else {
+            result.failed.to_string().dimmed()
+        }
+    );
+    let pass_rate = result.pass_rate();
+    let rate_str = format!("{pass_rate:.1}%");
+    let colored_rate = if pass_rate >= 90.0 {
+        rate_str.green()
+    } else if pass_rate >= 70.0 {
+        rate_str.yellow()
+    } else {
+        rate_str.red()
+    };
+    println!("  {} {colored_rate}", "Pass rate:".dimmed());
 }
 
 fn compute_certification_scores(

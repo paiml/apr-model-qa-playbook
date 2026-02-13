@@ -96,6 +96,7 @@ dependencies = [
  "apr-qa-runner",
  "chrono",
  "clap",
+ "colored",
  "ctrlc",
  "safetensors",
  "serde",

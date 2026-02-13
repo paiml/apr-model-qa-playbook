@@ -270,42 +270,44 @@ impl Executor {
         }
 
         // G0-PULL: Ensure model is cached via apr pull
-        let model_id = playbook.model_id();
-        let (pull_passed, pull_failed, pulled_path) =
-            self.run_g0_pull_check(&playbook.model.hf_repo, &model_id);
+        // Bug 204: Skip when user provided --model-path (no need to download 14GB from HF)
+        let (pull_passed, pull_failed) = if self.config.model_path.is_none() {
+            let model_id = playbook.model_id();
+            let (pp, pf, pulled_path) =
+                self.run_g0_pull_check(&playbook.model.hf_repo, &model_id);
 
-        // Jidoka: If G0-PULL fails, stop immediately — model acquisition failed
-        if pull_failed > 0 {
-            return Ok(ExecutionResult {
-                playbook_name: playbook.name.clone(),
-                total_scenarios: total + pull_passed + pull_failed,
-                passed: pull_passed,
-                failed: total + pull_failed,
-                skipped: 0,
-                duration_ms: start.elapsed().as_millis() as u64,
-                gateway_failed: Some("G0-PULL-001: Model acquisition failed".to_string()),
-                evidence: self.collector.clone(),
-            });
-        }
+            // Jidoka: If G0-PULL fails, stop immediately — model acquisition failed
+            if pf > 0 {
+                return Ok(ExecutionResult {
+                    playbook_name: playbook.name.clone(),
+                    total_scenarios: total + pp + pf,
+                    passed: pp,
+                    failed: total + pf,
+                    skipped: 0,
+                    duration_ms: start.elapsed().as_millis() as u64,
+                    gateway_failed: Some("G0-PULL-001: Model acquisition failed".to_string()),
+                    evidence: self.collector.clone(),
+                });
+            }
 
-        // Use pulled path if model_path wasn't explicitly set.
-        // When the CLI doesn't auto-resolve (HF-CACHE-001 removed in favour of
-        // G0-PULL), model_path is None and gets set from the authoritative
-        // apr pull result. User-provided --model-path is preserved.
-        if let Some(ref path) = pulled_path {
-            if self.config.model_path.is_none() {
+            // Use pulled path since model_path wasn't explicitly set.
+            if let Some(ref path) = pulled_path {
                 self.config.model_path = Some(path.clone());
             }
-        }
+            (pp, pf)
+        } else {
+            (0, 0) // Skip G0-PULL: user provided --model-path
+        };
 
-        // G0-FORMAT: If model_path is a single file or sharded index, prepare workspace.
-        // This creates the APR cache directory structure that directory-mode resolution expects,
+        // G0-FORMAT: Prepare workspace with APR cache directory structure.
+        // This creates {workspace}/safetensors/, {workspace}/apr/, {workspace}/gguf/
         // so downstream code (resolve_model_path, run_conversion_tests, run_golden_rule_test,
         // run_contract_invariants) all work without modification.
         //
-        // Handles two cases:
+        // Handles three cases:
         // 1. Single file: /path/to/abc123.safetensors (pacha cache, small models)
         // 2. Sharded model: /path/to/model.safetensors.index.json (HF cache, 3B+ models)
+        // 3. Flat directory: /path/to/snapshot/ containing model.safetensors (HF cache dir)
         let (format_passed, format_failed) =
             if let Some(ref model_path_str) = self.config.model_path.clone() {
                 let path = Path::new(&model_path_str);
@@ -315,11 +317,37 @@ impl Executor {
                     && path
                         .file_name()
                         .is_some_and(|n| n.to_string_lossy().ends_with(".safetensors.index.json"));
+                // Case 3: Directory with flat SafeTensors file but no APR cache structure
+                let is_flat_dir = path.is_dir() && {
+                    let has_st_file = path.join("model.safetensors").exists();
+                    let has_cache_structure = path.join("apr").exists();
+                    has_st_file && !has_cache_structure
+                };
+                // Case 4: Directory with sharded SafeTensors (index.json + multiple shards)
+                let is_sharded_dir = path.is_dir() && {
+                    path.join("model.safetensors.index.json").exists()
+                };
 
                 if is_single_safetensors || is_sharded_index {
                     let model_id = playbook.model_id();
                     let (workspace, fp, ff) =
                         self.prepare_model_workspace(path, &model_id, &playbook.model.formats);
+                    self.config.model_path = Some(workspace);
+                    (fp, ff)
+                } else if is_sharded_dir {
+                    // Resolve the index.json file within the sharded directory
+                    let index_file = path.join("model.safetensors.index.json");
+                    let model_id = playbook.model_id();
+                    let (workspace, fp, ff) =
+                        self.prepare_model_workspace(&index_file, &model_id, &playbook.model.formats);
+                    self.config.model_path = Some(workspace);
+                    (fp, ff)
+                } else if is_flat_dir {
+                    // Resolve the SafeTensors file within the flat directory
+                    let st_file = path.join("model.safetensors");
+                    let model_id = playbook.model_id();
+                    let (workspace, fp, ff) =
+                        self.prepare_model_workspace(&st_file, &model_id, &playbook.model.formats);
                     self.config.model_path = Some(workspace);
                     (fp, ff)
                 } else {
@@ -1674,10 +1702,11 @@ impl Executor {
 
         if output.success {
             // Parse "Path: <path>" from stdout (apr pull indents with spaces)
+            // Strip ANSI escape codes since apr pull colorizes the path
             let pulled_path = output.stdout.lines().find_map(|line| {
                 line.trim()
                     .strip_prefix("Path: ")
-                    .map(|p| p.trim().to_string())
+                    .map(|p| Self::strip_ansi(p.trim()))
             });
 
             let ev = Evidence::corroborated(
@@ -2064,13 +2093,28 @@ impl Executor {
             return (String::new(), None, 0, None, true);
         };
 
-        let output = self.command_runner.run_inference(
-            Path::new(&model_path),
-            &scenario.prompt,
-            32,
-            self.config.no_gpu,
-            &["--benchmark", "--json"],
-        );
+        // Bug 201: Use per-scenario backend, not global no_gpu flag
+        let no_gpu = scenario.backend == Backend::Cpu;
+
+        // Bug 200: Dispatch by modality instead of always using `apr run`
+        let output = match scenario.modality {
+            Modality::Run => self.command_runner.run_inference(
+                Path::new(&model_path),
+                &scenario.prompt,
+                32,
+                no_gpu,
+                &["--benchmark", "--json"],
+            ),
+            Modality::Chat => self.command_runner.run_chat(
+                Path::new(&model_path),
+                &scenario.prompt,
+                no_gpu,
+                &["--json"],
+            ),
+            Modality::Serve => {
+                return self.run_serve_scenario(&model_path, scenario, no_gpu);
+            }
+        };
 
         // Try to parse tok/s from JSON output
         let tps = Self::parse_tps_from_output(&output.stdout);
@@ -2089,13 +2133,33 @@ impl Executor {
                 output.exit_code,
             )
         } else {
-            let trace_output = self.command_runner.run_inference(
-                Path::new(&model_path),
-                &scenario.prompt,
-                32,
-                self.config.no_gpu,
-                &["--trace"],
-            );
+            // Trace retry uses the same modality as the original command
+            let trace_output = match scenario.modality {
+                Modality::Run => self.command_runner.run_inference(
+                    Path::new(&model_path),
+                    &scenario.prompt,
+                    32,
+                    no_gpu,
+                    &["--trace"],
+                ),
+                Modality::Chat => self.command_runner.run_chat(
+                    Path::new(&model_path),
+                    &scenario.prompt,
+                    no_gpu,
+                    &["--trace"],
+                ),
+                Modality::Serve => {
+                    // For serve failures, re-run as `apr run --trace` since
+                    // serve lifecycle is complex and trace needs a single shot
+                    self.command_runner.run_inference(
+                        Path::new(&model_path),
+                        &scenario.prompt,
+                        32,
+                        no_gpu,
+                        &["--trace"],
+                    )
+                }
+            };
             let mut full_trace = output.stderr.clone();
             if !trace_output.stderr.is_empty() {
                 full_trace.push_str("\n--- TRACE OUTPUT ---\n");
@@ -2106,6 +2170,108 @@ impl Executor {
                 full_trace.push_str(&trace_output.stdout);
             }
             (Some(full_trace), output.exit_code)
+        };
+
+        (generated_text, final_stderr, final_exit_code, tps, false)
+    }
+
+    /// Execute a serve scenario: spawn server, send request, parse response, kill server.
+    /// Bug 200: Serve modality needs lifecycle management.
+    fn run_serve_scenario(
+        &self,
+        model_path: &str,
+        scenario: &QaScenario,
+        no_gpu: bool,
+    ) -> (String, Option<String>, i32, Option<f64>, bool) {
+        // Use a deterministic port based on scenario to avoid collisions
+        let port = 18_080 + (scenario.seed % 1000) as u16;
+
+        // Spawn server in background
+        let spawn_output =
+            self.command_runner
+                .spawn_serve(Path::new(model_path), port, no_gpu);
+        if !spawn_output.success {
+            return (
+                String::new(),
+                Some(format!("Failed to spawn serve: {}", spawn_output.stderr)),
+                spawn_output.exit_code,
+                None,
+                false,
+            );
+        }
+
+        let pid_str = spawn_output.stdout.trim().to_string();
+
+        // Wait for server to be ready — poll /health endpoint via GET
+        // 7B models can take 60-90s to load on CPU, so allow up to 120s
+        let health_url = format!("http://localhost:{port}/health");
+        let mut server_ready = false;
+        let server_pid: Option<u32> = pid_str.parse().ok();
+        for _ in 0..60 {
+            std::thread::sleep(std::time::Duration::from_secs(2));
+            // Check if server process is still alive (fail fast if crashed)
+            if let Some(pid) = server_pid {
+                let alive = std::path::Path::new(&format!("/proc/{pid}")).exists();
+                if !alive {
+                    break;
+                }
+            }
+            if let Ok(output) = std::process::Command::new("curl")
+                .args(["-s", "-m", "2", &health_url])
+                .output()
+            {
+                let body = String::from_utf8_lossy(&output.stdout);
+                if output.status.success() && body.contains("healthy") {
+                    server_ready = true;
+                    break;
+                }
+            }
+        }
+        if !server_ready {
+            // Kill server and report failure
+            if pid_str.parse::<u32>().is_ok() {
+                let _ = std::process::Command::new("kill")
+                    .arg(&pid_str)
+                    .output();
+            }
+            return (
+                String::new(),
+                Some("Server failed to become ready within 120s".to_string()),
+                1,
+                None,
+                false,
+            );
+        }
+
+        // Send completion request to /generate endpoint
+        let body = format!(
+            r#"{{"prompt":"{}","max_tokens":32}}"#,
+            scenario.prompt.replace('"', "\\\""),
+        );
+        let url = format!("http://localhost:{port}/generate");
+        let output = self.command_runner.http_post(&url, &body);
+
+        // Kill the server process
+        if pid_str.parse::<u32>().is_ok() {
+            let _ = std::process::Command::new("kill")
+                .arg(&pid_str)
+                .output();
+        }
+
+        let tps = Self::parse_tps_from_output(&output.stdout);
+        let generated_text = Self::extract_generated_text(&output.stdout);
+
+        let (final_stderr, final_exit_code) = if output.success {
+            (
+                if output.stderr.is_empty() {
+                    None
+                } else {
+                    Some(output.stderr)
+                },
+                output.exit_code,
+            )
+        } else {
+            (Some(output.stderr), output.exit_code)
         };
 
         (generated_text, final_stderr, final_exit_code, tps, false)
@@ -2122,6 +2288,27 @@ impl Executor {
         let model_path = self.config.model_path.as_deref().unwrap_or(".");
         let path = Path::new(model_path);
 
+        // Handle sharded SafeTensors index files (*.safetensors.index.json)
+        // apr pull returns these for multi-shard models; apr run/chat/serve accept them
+        let is_sharded_index = model_path.ends_with(".safetensors.index.json");
+        if is_sharded_index {
+            if scenario.format == Format::SafeTensors {
+                return Some(model_path.to_string());
+            }
+            // For non-SafeTensors formats, use parent directory for sibling lookup
+            if let Some(parent) = path.parent() {
+                let target_ext = match scenario.format {
+                    Format::Gguf => "gguf",
+                    Format::SafeTensors => unreachable!(),
+                    Format::Apr => "apr",
+                };
+                if let Some(found) = Self::find_clean_model_file(parent, target_ext) {
+                    return Some(found);
+                }
+            }
+            return None;
+        }
+
         // Check if path looks like a file (has model extension)
         let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
         let is_model_extension = ext == "gguf" || ext == "safetensors" || ext == "apr";
@@ -2135,11 +2322,34 @@ impl Executor {
                 Format::SafeTensors => ext == "safetensors",
                 Format::Apr => ext == "apr",
             };
-            return if matches {
-                Some(model_path.to_string())
-            } else {
-                None
+            if matches {
+                return Some(model_path.to_string());
+            }
+
+            // Bug 202: Try sibling file with target extension in the same directory
+            let target_ext = match scenario.format {
+                Format::Gguf => "gguf",
+                Format::SafeTensors => "safetensors",
+                Format::Apr => "apr",
             };
+            if let Some(parent) = path.parent() {
+                if let Some(stem) = path.file_stem().and_then(|s| s.to_str()) {
+                    // Try exact stem match: same_name.target_ext
+                    let sibling = parent.join(format!("{stem}.{target_ext}"));
+                    if sibling.exists() {
+                        return Some(sibling.to_string_lossy().to_string());
+                    }
+                    // Try model-family prefix match to avoid cross-model confusion
+                    // e.g. "qwen2.5-coder-7b-instruct-q4k" → prefix "qwen2.5-coder-7b"
+                    let prefix = Self::extract_model_family_prefix(stem);
+                    if let Some(found) =
+                        Self::find_model_by_prefix(parent, &prefix, target_ext)
+                    {
+                        return Some(found);
+                    }
+                }
+            }
+            return None;
         }
 
         // DIRECTORY MODE
@@ -2218,6 +2428,92 @@ impl Executor {
         None
     }
 
+    /// Extract model family prefix from a filename stem.
+    ///
+    /// Strips quantization suffixes (q4k, q4_k_m, q6_k, etc.) and trailing
+    /// hyphens to get the base model family. Examples:
+    /// - "qwen2.5-coder-7b-instruct-q4k" → "qwen2.5-coder-7b"
+    /// - "qwen2.5-coder-1.5b" → "qwen2.5-coder-1.5b"
+    /// - "TinyLlama-1.1B-Chat-v1.0-Q4_K_M" → "TinyLlama-1.1B-Chat-v1.0"
+    fn extract_model_family_prefix(stem: &str) -> String {
+        let lower = stem.to_lowercase();
+        // Strip known quantization suffixes
+        let suffixes = [
+            "-q4k", "-q4_k_m", "-q4_k_s", "-q6_k", "-q8_0", "-q5_k_m",
+            "-q2_k", "-q3_k_m", "-q3_k_s", "-f16", "-f32",
+        ];
+        let mut result = stem.to_string();
+        for suffix in &suffixes {
+            if lower.ends_with(suffix) {
+                result.truncate(result.len() - suffix.len());
+                break;
+            }
+        }
+        // Strip "instruct" suffix to match both instruct and base variants
+        let lower_result = result.to_lowercase();
+        if lower_result.ends_with("-instruct") {
+            result.truncate(result.len() - "-instruct".len());
+        }
+        result
+    }
+
+    /// Find a model file in a directory matching a model family prefix.
+    ///
+    /// Only returns files whose stem starts with the given prefix and
+    /// has the requested extension, filtering out test artifacts.
+    fn find_model_by_prefix(dir: &Path, prefix: &str, extension: &str) -> Option<String> {
+        let entries = std::fs::read_dir(dir).ok()?;
+        let lower_prefix = prefix.to_lowercase();
+
+        for entry in entries.flatten() {
+            let ep = entry.path();
+
+            if ep.extension().is_none_or(|e| e != extension) {
+                continue;
+            }
+
+            let filename = ep.file_name()?.to_str()?;
+
+            // Skip test artifacts
+            if filename.contains("converted")
+                || filename.contains(".idem")
+                || filename.contains(".com_")
+                || filename.contains(".rt_")
+            {
+                continue;
+            }
+
+            // Check prefix match (case-insensitive)
+            let stem = ep.file_stem()?.to_str()?;
+            if stem.to_lowercase().starts_with(&lower_prefix) {
+                return Some(ep.to_string_lossy().to_string());
+            }
+        }
+
+        None
+    }
+
+    /// Strip ANSI escape codes from a string.
+    fn strip_ansi(s: &str) -> String {
+        let mut result = String::with_capacity(s.len());
+        let mut chars = s.chars();
+        while let Some(c) = chars.next() {
+            if c == '\x1b' {
+                // Skip until end of escape sequence ([...m)
+                if chars.next() == Some('[') {
+                    for esc_c in chars.by_ref() {
+                        if esc_c.is_ascii_alphabetic() {
+                            break;
+                        }
+                    }
+                }
+            } else {
+                result.push(c);
+            }
+        }
+        result
+    }
+
     /// Parse tokens per second from apr output
     fn parse_tps_from_output(output: &str) -> Option<f64> {
         // Try to find "tok/s: X.X" pattern
@@ -2273,10 +2569,23 @@ impl Executor {
             return Vec::new();
         };
 
-        let prefix_dot = format!("{hash_prefix}.");
         let Ok(entries) = std::fs::read_dir(parent) else {
             return Vec::new();
         };
+
+        // Known config files to look for in flat HF directories
+        let known_configs: &[&str] = &[
+            "config.json",
+            "tokenizer.json",
+            "tokenizer_config.json",
+            "generation_config.json",
+            "special_tokens_map.json",
+            "vocab.json",
+            "merges.txt",
+        ];
+
+        let prefix_dot = format!("{hash_prefix}.");
+        let is_flat = hash_prefix == "model"; // flat HF dir: model.safetensors
 
         entries
             .flatten()
@@ -2287,9 +2596,15 @@ impl Executor {
                 if name == stem {
                     return None;
                 }
-                // Must share the hash prefix
-                let canonical = name.strip_prefix(&prefix_dot)?;
-                Some((path, canonical.to_string()))
+                // Try hash-prefix matching (pacha cache: hash.config.json)
+                if let Some(canonical) = name.strip_prefix(&prefix_dot) {
+                    return Some((path, canonical.to_string()));
+                }
+                // For flat directories, match known config files directly
+                if is_flat && known_configs.contains(&name.as_str()) {
+                    return Some((path, name));
+                }
+                None
             })
             .collect()
     }
@@ -2319,6 +2634,30 @@ impl Executor {
 
         let mut passed = 0;
         let mut failed = 0;
+
+        // Step 0: Clean stale conversion artifacts from previous runs
+        // Conversion tests may leave files like `converted.*.safetensors` that
+        // confuse G0-VALIDATE when it iterates all .safetensors in the workspace.
+        if workspace.exists() {
+            for subdir in &["safetensors", "apr", "gguf"] {
+                let dir = workspace.join(subdir);
+                if dir.exists() {
+                    if let Ok(entries) = std::fs::read_dir(&dir) {
+                        for entry in entries.flatten() {
+                            let name = entry.file_name();
+                            let name_str = name.to_string_lossy();
+                            if name_str.contains("converted")
+                                || name_str.contains("byte_rt")
+                                || name_str.contains("idem")
+                                || name_str.contains("com_")
+                            {
+                                let _ = std::fs::remove_file(entry.path());
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         // Step 1: Create safetensors subdirectory
         let st_dir = workspace.join("safetensors");
@@ -2353,13 +2692,24 @@ impl Executor {
                 return (workspace.to_string_lossy().to_string(), 0, 1);
             };
 
-            // Symlink all files from source directory to workspace safetensors dir
+            // Symlink only actual model files from source directory to workspace.
+            // Skip conversion artifacts (converted, byte_rt, idem, com_) that
+            // rosetta leaves in the source directory during two-step conversion.
             if let Ok(entries) = std::fs::read_dir(source_dir) {
                 for entry in entries.flatten() {
                     let src_path = entry.path();
                     let Some(filename) = src_path.file_name() else {
                         continue;
                     };
+                    let name_str = filename.to_string_lossy();
+                    // Skip conversion artifacts
+                    if name_str.contains("converted")
+                        || name_str.contains("byte_rt")
+                        || name_str.contains("idem")
+                        || name_str.contains("com_")
+                    {
+                        continue;
+                    }
                     let link_path = st_dir.join(filename);
                     let _ = std::fs::remove_file(&link_path);
                     #[cfg(unix)]
@@ -2402,59 +2752,66 @@ impl Executor {
         }
 
         // Step 4: Convert to each requested non-SafeTensors format
-        // Skip conversion for sharded models - they only support SafeTensors for now
-        // TODO: Support conversion of sharded models once apr convert handles them
-        if !is_sharded {
-            for format in requested_formats {
-                if *format == Format::SafeTensors {
-                    continue;
-                }
+        // Sharded models supported since Bug 212 (apr rosetta convert handles index.json)
+        for format in requested_formats {
+            if *format == Format::SafeTensors {
+                continue;
+            }
 
-                let (subdir, ext, gate_id) = match format {
-                    Format::Apr => ("apr", "apr", "G0-FORMAT-APR-001"),
-                    Format::Gguf => ("gguf", "gguf", "G0-FORMAT-GGUF-001"),
-                    Format::SafeTensors => unreachable!(),
-                };
+            let (subdir, ext, gate_id) = match format {
+                Format::Apr => ("apr", "apr", "G0-FORMAT-APR-001"),
+                Format::Gguf => ("gguf", "gguf", "G0-FORMAT-GGUF-001"),
+                Format::SafeTensors => unreachable!(),
+            };
 
-                let format_dir = workspace.join(subdir);
-                if let Err(e) = std::fs::create_dir_all(&format_dir) {
-                    let ev = Evidence::falsified(
-                        gate_id,
-                        Self::format_scenario(model_id, *format),
-                        format!("Failed to create {subdir} directory: {e}"),
-                        "N/A",
-                        0,
-                    );
-                    self.collector.add(ev);
-                    failed += 1;
-                    continue;
-                }
+            let format_dir = workspace.join(subdir);
+            if let Err(e) = std::fs::create_dir_all(&format_dir) {
+                let ev = Evidence::falsified(
+                    gate_id,
+                    Self::format_scenario(model_id, *format),
+                    format!("Failed to create {subdir} directory: {e}"),
+                    "N/A",
+                    0,
+                );
+                self.collector.add(ev);
+                failed += 1;
+                continue;
+            }
 
-                let target = format_dir.join(format!("model.{ext}"));
-                let start = Instant::now();
-                let output = self.command_runner.convert_model(source_file, &target);
-                let duration = start.elapsed().as_millis() as u64;
+            let target = format_dir.join(format!("model.{ext}"));
+            let start = Instant::now();
+            // For sharded models, pass the index.json file
+            let convert_source = if is_sharded {
+                st_dir.join(
+                    source_file
+                        .file_name()
+                        .unwrap_or_default(),
+                )
+            } else {
+                source_file.to_path_buf()
+            };
+            let output = self.command_runner.convert_model(&convert_source, &target);
+            let duration = start.elapsed().as_millis() as u64;
 
-                if output.success {
-                    let ev = Evidence::corroborated(
-                        gate_id,
-                        Self::format_scenario(model_id, *format),
-                        &format!("G0 PASS: converted to {subdir}\n{}", output.stdout),
-                        duration,
-                    );
-                    self.collector.add(ev);
-                    passed += 1;
-                } else {
-                    let ev = Evidence::falsified(
-                        gate_id,
-                        Self::format_scenario(model_id, *format),
-                        format!("G0 FAIL: conversion to {subdir} failed: {}", output.stderr),
-                        &output.stdout,
-                        duration,
-                    );
-                    self.collector.add(ev);
-                    failed += 1;
-                }
+            if output.success {
+                let ev = Evidence::corroborated(
+                    gate_id,
+                    Self::format_scenario(model_id, *format),
+                    &format!("G0 PASS: converted to {subdir}\n{}", output.stdout),
+                    duration,
+                );
+                self.collector.add(ev);
+                passed += 1;
+            } else {
+                let ev = Evidence::falsified(
+                    gate_id,
+                    Self::format_scenario(model_id, *format),
+                    format!("G0 FAIL: conversion to {subdir} failed: {}", output.stderr),
+                    &output.stdout,
+                    duration,
+                );
+                self.collector.add(ev);
+                failed += 1;
             }
         }
 
@@ -4558,8 +4915,8 @@ test_matrix:
         let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
         let result = executor.execute(&playbook).expect("Execution failed");
 
-        // 3 scenarios + 1 G0-PULL = 4
-        assert_eq!(result.total_scenarios, 4);
+        // Bug 204: G0-PULL skipped when model_path is set, so 3 scenarios only
+        assert_eq!(result.total_scenarios, 3);
         // With mock runner, all scenarios should complete
         assert!(result.passed > 0 || result.failed > 0);
     }
@@ -5802,8 +6159,8 @@ test_matrix:
 
         // Should collect all failures (3 scenarios)
         assert_eq!(result.failed, 3);
-        // 3 scenarios + 1 G0-PULL = 4
-        assert_eq!(result.total_scenarios, 4);
+        // Bug 204: G0-PULL skipped when model_path is set, so 3 scenarios only
+        assert_eq!(result.total_scenarios, 3);
     }
 
     // =========================================================================
@@ -6021,6 +6378,15 @@ test_matrix:
             fn profile_memory(&self, _: &Path) -> CommandOutput {
                 CommandOutput::success(r#"{"peak_rss_mb":1024}"#)
             }
+            fn run_chat(&self, _model_path: &Path, _prompt: &str, _no_gpu: bool, _extra_args: &[&str]) -> CommandOutput {
+                CommandOutput::success("Chat output")
+            }
+            fn http_post(&self, _url: &str, _body: &str) -> CommandOutput {
+                CommandOutput::success("{}")
+            }
+            fn spawn_serve(&self, _model_path: &Path, _port: u16, _no_gpu: bool) -> CommandOutput {
+                CommandOutput::success("12345")
+            }
         }
 
         let config = ExecutionConfig {
@@ -6188,6 +6554,15 @@ test_matrix:
             fn profile_memory(&self, _: &Path) -> CommandOutput {
                 CommandOutput::success(r#"{"peak_rss_mb":1024}"#)
             }
+            fn run_chat(&self, _model_path: &Path, _prompt: &str, _no_gpu: bool, _extra_args: &[&str]) -> CommandOutput {
+                CommandOutput::success("Chat output")
+            }
+            fn http_post(&self, _url: &str, _body: &str) -> CommandOutput {
+                CommandOutput::success("{}")
+            }
+            fn spawn_serve(&self, _model_path: &Path, _port: u16, _no_gpu: bool) -> CommandOutput {
+                CommandOutput::success("12345")
+            }
         }
 
         let config = ExecutionConfig {
@@ -6350,6 +6725,15 @@ test_matrix:
             }
             fn profile_memory(&self, _: &Path) -> CommandOutput {
                 CommandOutput::success(r#"{"peak_rss_mb":1024}"#)
+            }
+            fn run_chat(&self, _model_path: &Path, _prompt: &str, _no_gpu: bool, _extra_args: &[&str]) -> CommandOutput {
+                CommandOutput::success("Chat output")
+            }
+            fn http_post(&self, _url: &str, _body: &str) -> CommandOutput {
+                CommandOutput::success("{}")
+            }
+            fn spawn_serve(&self, _model_path: &Path, _port: u16, _no_gpu: bool) -> CommandOutput {
+                CommandOutput::success("12345")
             }
         }
 
@@ -6988,6 +7372,15 @@ test_matrix:
             fn profile_memory(&self, _: &Path) -> CommandOutput {
                 CommandOutput::success(r#"{"peak_rss_mb":1024}"#)
             }
+            fn run_chat(&self, _model_path: &Path, _prompt: &str, _no_gpu: bool, _extra_args: &[&str]) -> CommandOutput {
+                CommandOutput::success("Chat output")
+            }
+            fn http_post(&self, _url: &str, _body: &str) -> CommandOutput {
+                CommandOutput::success("{}")
+            }
+            fn spawn_serve(&self, _model_path: &Path, _port: u16, _no_gpu: bool) -> CommandOutput {
+                CommandOutput::success("12345")
+            }
         }
 
         let config = ExecutionConfig {
@@ -7181,10 +7574,11 @@ test_matrix:
     #[test]
     fn test_g0_pull_fail_stops_execution() {
         // Jidoka: If G0-PULL fails, skip all subsequent tests
+        // Bug 204: model_path must be None so G0-PULL actually runs
         let mock_runner = MockCommandRunner::new().with_pull_failure();
 
         let config = ExecutionConfig {
-            model_path: Some("/test/model.gguf".to_string()),
+            model_path: None,
             run_conversion_tests: true,
             run_golden_rule_test: true,
             run_contract_tests: true,
@@ -7366,8 +7760,8 @@ test_matrix:
                 .contains("G0-VALIDATE-001")
         );
 
-        // G0-PULL passes (1 passed), then G0-VALIDATE fails
-        assert_eq!(result.passed, 1); // G0-PULL-001
+        // Bug 204: G0-PULL skipped (model_path is set), then G0-VALIDATE fails
+        assert_eq!(result.passed, 0);
         // 3 scenarios + 1 validate failure = 4 total failed
         assert_eq!(result.failed, 4);
     }
@@ -9249,5 +9643,233 @@ profile_ci:
         let evidence = executor.evidence().all();
         assert!(evidence.iter().any(|e| e.gate_id == "F-PERF-003"));
         assert!(evidence.iter().any(|e| e.gate_id == "F-PERF-005"));
+    }
+
+    // ── Bug 202: Sibling-file lookup in file mode ────────────────────────
+
+    #[test]
+    fn test_resolve_model_path_file_sibling_gguf() {
+        // Given a .safetensors file, resolve_model_path should find sibling .gguf
+        let temp_dir = tempfile::tempdir().unwrap();
+        let st_file = temp_dir.path().join("model.safetensors");
+        let gguf_file = temp_dir.path().join("model.gguf");
+        std::fs::write(&st_file, b"fake safetensors").unwrap();
+        std::fs::write(&gguf_file, b"fake gguf").unwrap();
+
+        let config = ExecutionConfig {
+            model_path: Some(st_file.to_string_lossy().to_string()),
+            ..Default::default()
+        };
+        let executor = Executor::with_config(config);
+
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "test".to_string(),
+            0,
+        );
+        let path = executor.resolve_model_path(&scenario);
+        assert!(path.is_some(), "Should find sibling .gguf file");
+        assert!(path.unwrap().contains("model.gguf"));
+    }
+
+    #[test]
+    fn test_resolve_model_path_file_sibling_apr() {
+        // Given a .gguf file, resolve_model_path should find sibling .apr
+        let temp_dir = tempfile::tempdir().unwrap();
+        let gguf_file = temp_dir.path().join("model.gguf");
+        let apr_file = temp_dir.path().join("model.apr");
+        std::fs::write(&gguf_file, b"fake gguf").unwrap();
+        std::fs::write(&apr_file, b"fake apr").unwrap();
+
+        let config = ExecutionConfig {
+            model_path: Some(gguf_file.to_string_lossy().to_string()),
+            ..Default::default()
+        };
+        let executor = Executor::with_config(config);
+
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Apr,
+            "test".to_string(),
+            0,
+        );
+        let path = executor.resolve_model_path(&scenario);
+        assert!(path.is_some(), "Should find sibling .apr file");
+        assert!(path.unwrap().contains("model.apr"));
+    }
+
+    #[test]
+    fn test_resolve_model_path_file_sibling_not_found() {
+        // Given a .safetensors file with no sibling .gguf, should return None
+        let temp_dir = tempfile::tempdir().unwrap();
+        let st_file = temp_dir.path().join("model.safetensors");
+        std::fs::write(&st_file, b"fake safetensors").unwrap();
+
+        let config = ExecutionConfig {
+            model_path: Some(st_file.to_string_lossy().to_string()),
+            ..Default::default()
+        };
+        let executor = Executor::with_config(config);
+
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "test".to_string(),
+            0,
+        );
+        assert!(
+            executor.resolve_model_path(&scenario).is_none(),
+            "No sibling .gguf exists, should return None"
+        );
+    }
+
+    #[test]
+    fn test_resolve_model_path_file_sibling_fallback_different_stem() {
+        // Given a .safetensors file with a DIFFERENT-FAMILY .gguf file in same dir,
+        // prefix matching should NOT return it (avoids cross-model confusion).
+        let temp_dir = tempfile::tempdir().unwrap();
+        let st_file = temp_dir.path().join("abc123.safetensors");
+        let gguf_file = temp_dir.path().join("other-name.gguf");
+        std::fs::write(&st_file, b"fake safetensors").unwrap();
+        std::fs::write(&gguf_file, b"fake gguf").unwrap();
+
+        let config = ExecutionConfig {
+            model_path: Some(st_file.to_string_lossy().to_string()),
+            ..Default::default()
+        };
+        let executor = Executor::with_config(config);
+
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Gguf,
+            "test".to_string(),
+            0,
+        );
+        let path = executor.resolve_model_path(&scenario);
+        assert!(
+            path.is_none(),
+            "Should NOT match unrelated model family"
+        );
+    }
+
+    #[test]
+    fn test_resolve_model_path_file_sibling_prefix_match() {
+        // Given a GGUF with quantization suffix, should find APR with same family prefix
+        let temp_dir = tempfile::tempdir().unwrap();
+        let gguf_file = temp_dir.path().join("qwen2.5-coder-7b-instruct-q4k.gguf");
+        let apr_file = temp_dir.path().join("qwen2.5-coder-7b-instruct.apr");
+        std::fs::write(&gguf_file, b"fake gguf").unwrap();
+        std::fs::write(&apr_file, b"fake apr").unwrap();
+
+        let config = ExecutionConfig {
+            model_path: Some(gguf_file.to_string_lossy().to_string()),
+            ..Default::default()
+        };
+        let executor = Executor::with_config(config);
+
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Cpu,
+            Format::Apr,
+            "test".to_string(),
+            0,
+        );
+        let path = executor.resolve_model_path(&scenario);
+        assert!(
+            path.is_some(),
+            "Should find APR via model family prefix match"
+        );
+        assert!(path.unwrap().contains("qwen2.5-coder-7b-instruct.apr"));
+    }
+
+    // ── Bug 200: Modality-aware dispatch ─────────────────────────────────
+
+    #[test]
+    fn test_subprocess_execution_chat_modality() {
+        let runner = MockCommandRunner::new();
+        let config = ExecutionConfig {
+            model_path: Some("/mock/model.gguf".to_string()),
+            ..Default::default()
+        };
+        let executor = Executor::with_runner(config, Arc::new(runner));
+
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Chat,
+            Backend::Cpu,
+            Format::Gguf,
+            "What is 2+2?".to_string(),
+            0,
+        );
+
+        let (text, stderr, exit_code, _tps, skipped) = executor.subprocess_execution(&scenario);
+        assert!(!skipped, "Chat scenario should not be skipped");
+        assert_eq!(exit_code, 0);
+        assert!(stderr.is_none() || stderr.as_deref() == Some(""));
+        assert!(text.contains("4"), "Chat should return arithmetic answer");
+    }
+
+    #[test]
+    fn test_subprocess_execution_serve_modality() {
+        let runner = MockCommandRunner::new();
+        let config = ExecutionConfig {
+            model_path: Some("/mock/model.gguf".to_string()),
+            ..Default::default()
+        };
+        let executor = Executor::with_runner(config, Arc::new(runner));
+
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Serve,
+            Backend::Cpu,
+            Format::Gguf,
+            "What is 2+2?".to_string(),
+            0,
+        );
+
+        let (_text, _stderr, _exit_code, _tps, skipped) =
+            executor.subprocess_execution(&scenario);
+        // Serve scenario should not be skipped (spawn_serve mock returns success)
+        assert!(!skipped, "Serve scenario should not be skipped");
+    }
+
+    // ── Bug 201: Per-scenario backend ────────────────────────────────────
+
+    #[test]
+    fn test_subprocess_execution_gpu_backend() {
+        // GPU scenario should NOT pass --no-gpu
+        let runner = MockCommandRunner::new();
+        let config = ExecutionConfig {
+            model_path: Some("/mock/model.gguf".to_string()),
+            no_gpu: true, // Global flag says no GPU — but scenario overrides
+            ..Default::default()
+        };
+        let executor = Executor::with_runner(config, Arc::new(runner));
+
+        let scenario = QaScenario::new(
+            ModelId::new("test", "model"),
+            Modality::Run,
+            Backend::Gpu,
+            Format::Gguf,
+            "test".to_string(),
+            0,
+        );
+
+        let (_text, _stderr, exit_code, _tps, skipped) =
+            executor.subprocess_execution(&scenario);
+        assert!(!skipped);
+        assert_eq!(exit_code, 0);
+        // The mock doesn't validate the no_gpu flag directly, but the code path
+        // now uses scenario.backend instead of config.no_gpu
     }
 }

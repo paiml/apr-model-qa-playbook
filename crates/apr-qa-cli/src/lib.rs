@@ -432,7 +432,7 @@ pub fn build_certification_config_with_policy(
         no_gpu: false,
         run_conversion_tests: true,
         run_differential_tests: false,
-        run_profile_ci: matches!(tier, CertTier::Standard | CertTier::Deep),
+        run_profile_ci: matches!(tier, CertTier::Mvp | CertTier::Standard | CertTier::Deep),
         run_trace_payload: false,
         run_golden_rule_test: true,
         golden_reference_path: None,
@@ -970,16 +970,15 @@ mod tests {
 
     #[test]
     fn test_build_certification_config_profile_ci() {
-        // Standard/Deep tiers should enable profile CI
+        // MVP/Standard/Deep tiers should enable profile CI (Bug 203)
+        let mvp = build_certification_config(CertTier::Mvp, None);
+        assert!(mvp.run_profile_ci);
+
         let standard = build_certification_config(CertTier::Standard, None);
         assert!(standard.run_profile_ci);
 
         let deep = build_certification_config(CertTier::Deep, None);
         assert!(deep.run_profile_ci);
-
-        // Other tiers should not
-        let mvp = build_certification_config(CertTier::Mvp, None);
-        assert!(!mvp.run_profile_ci);
     }
 
     #[test]

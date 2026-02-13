@@ -28,6 +28,7 @@ apr-qa-report = { workspace = true }
 apr-qa-certify = { workspace = true }
 ctrlc = { workspace = true }
 safetensors = { workspace = true }
+colored = { workspace = true }
 
 [dev-dependencies]
 tempfile = "3"

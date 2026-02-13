@@ -168,6 +168,24 @@ pub trait CommandRunner: Send + Sync {
 
     /// Execute `apr profile --memory` for memory usage (F-PERF-005)
     fn profile_memory(&self, model_path: &Path) -> CommandOutput;
+
+    /// Execute `apr chat` command with prompt piped via stdin (Bug 200)
+    fn run_chat(
+        &self,
+        model_path: &Path,
+        prompt: &str,
+        no_gpu: bool,
+        extra_args: &[&str],
+    ) -> CommandOutput;
+
+    /// Execute an HTTP POST request (Bug 200: serve modality)
+    fn http_post(&self, url: &str, body: &str) -> CommandOutput;
+
+    /// Spawn `apr serve` in background and return the child process PID (Bug 200)
+    ///
+    /// Unlike `serve_model` which blocks, this spawns the server process
+    /// and returns immediately with the PID in stdout.
+    fn spawn_serve(&self, model_path: &Path, port: u16, no_gpu: bool) -> CommandOutput;
 }
 
 /// Real command runner that executes actual subprocess commands
@@ -519,8 +537,110 @@ impl CommandRunner for RealCommandRunner {
     }
 
     fn profile_memory(&self, model_path: &Path) -> CommandOutput {
-        let path_str = model_path.display().to_string();
-        self.execute(&["profile", &path_str, "--memory", "--json"])
+        // apr profile requires GGUF or APR format — resolve from workspace
+        let gguf = model_path.join("gguf").join("model.gguf");
+        let apr = model_path.join("apr").join("model.apr");
+        let path = if gguf.exists() {
+            gguf
+        } else if apr.exists() {
+            apr
+        } else {
+            model_path.to_path_buf()
+        };
+        let path_str = path.display().to_string();
+        self.execute(&["profile", &path_str, "--format", "json"])
+    }
+
+    fn run_chat(
+        &self,
+        model_path: &Path,
+        prompt: &str,
+        no_gpu: bool,
+        extra_args: &[&str],
+    ) -> CommandOutput {
+        use std::io::Write;
+        use std::process::{Command, Stdio};
+
+        let model_str = model_path.display().to_string();
+        let mut args = vec!["chat", &model_str];
+        if no_gpu {
+            args.push("--no-gpu");
+        }
+        args.extend(extra_args.iter());
+
+        match Command::new(&self.apr_binary)
+            .args(&args)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+        {
+            Ok(mut child) => {
+                if let Some(mut stdin) = child.stdin.take() {
+                    let _ = stdin.write_all(prompt.as_bytes());
+                    let _ = stdin.write_all(b"\n");
+                }
+                match child.wait_with_output() {
+                    Ok(output) => CommandOutput {
+                        stdout: String::from_utf8_lossy(&output.stdout).to_string(),
+                        stderr: String::from_utf8_lossy(&output.stderr).to_string(),
+                        exit_code: output.status.code().unwrap_or(-1),
+                        success: output.status.success(),
+                    },
+                    Err(e) => CommandOutput::failure(-1, format!("Failed to wait for chat: {e}")),
+                }
+            }
+            Err(e) => CommandOutput::failure(-1, format!("Failed to execute chat: {e}")),
+        }
+    }
+
+    fn http_post(&self, url: &str, body: &str) -> CommandOutput {
+        use std::process::Command;
+
+        match Command::new("curl")
+            .args([
+                "-s",
+                "-m",
+                "120",
+                "-X",
+                "POST",
+                "-H",
+                "Content-Type: application/json",
+                "-d",
+                body,
+                url,
+            ])
+            .output()
+        {
+            Ok(output) => CommandOutput {
+                stdout: String::from_utf8_lossy(&output.stdout).to_string(),
+                stderr: String::from_utf8_lossy(&output.stderr).to_string(),
+                exit_code: output.status.code().unwrap_or(-1),
+                success: output.status.success(),
+            },
+            Err(e) => CommandOutput::failure(-1, format!("Failed to execute curl POST: {e}")),
+        }
+    }
+
+    fn spawn_serve(&self, model_path: &Path, port: u16, no_gpu: bool) -> CommandOutput {
+        use std::process::{Command, Stdio};
+
+        let model_str = model_path.display().to_string();
+        let port_str = port.to_string();
+        let mut args = vec!["serve", &model_str, "--port", &port_str];
+        if no_gpu {
+            args.push("--no-gpu");
+        }
+
+        match Command::new(&self.apr_binary)
+            .args(&args)
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()
+        {
+            Ok(child) => CommandOutput::success(format!("{}", child.id())),
+            Err(e) => CommandOutput::failure(-1, format!("Failed to spawn serve: {e}")),
+        }
     }
 }
 
@@ -597,6 +717,16 @@ pub struct MockCommandRunner {
     pub http_get_response: String,
     /// Whether profile_memory should succeed
     pub profile_memory_success: bool,
+    /// Whether run_chat should succeed
+    pub chat_success: bool,
+    /// Custom response for chat
+    pub chat_response: String,
+    /// Whether http_post should succeed
+    pub http_post_success: bool,
+    /// Custom response for http_post
+    pub http_post_response: String,
+    /// Whether spawn_serve should succeed
+    pub spawn_serve_success: bool,
 }
 
 impl Default for MockCommandRunner {
@@ -646,6 +776,11 @@ impl Default for MockCommandRunner {
             http_get_success: true,
             http_get_response: r#"{"models":[]}"#.to_string(),
             profile_memory_success: true,
+            chat_success: true,
+            chat_response: "The answer is 4.".to_string(),
+            http_post_success: true,
+            http_post_response: r#"{"choices":[{"text":"The answer is 4."}]}"#.to_string(),
+            spawn_serve_success: true,
         }
     }
 }
@@ -890,6 +1025,41 @@ impl MockCommandRunner {
     #[must_use]
     pub fn with_profile_memory_failure(mut self) -> Self {
         self.profile_memory_success = false;
+        self
+    }
+
+    /// Set whether run_chat should fail
+    #[must_use]
+    pub fn with_chat_failure(mut self) -> Self {
+        self.chat_success = false;
+        self
+    }
+
+    /// Set custom chat response
+    #[must_use]
+    pub fn with_chat_response(mut self, response: impl Into<String>) -> Self {
+        self.chat_response = response.into();
+        self
+    }
+
+    /// Set whether http_post should fail
+    #[must_use]
+    pub fn with_http_post_failure(mut self) -> Self {
+        self.http_post_success = false;
+        self
+    }
+
+    /// Set custom http_post response
+    #[must_use]
+    pub fn with_http_post_response(mut self, response: impl Into<String>) -> Self {
+        self.http_post_response = response.into();
+        self
+    }
+
+    /// Set whether spawn_serve should fail
+    #[must_use]
+    pub fn with_spawn_serve_failure(mut self) -> Self {
+        self.spawn_serve_success = false;
         self
     }
 }
@@ -1209,6 +1379,46 @@ impl CommandRunner for MockCommandRunner {
             CommandOutput::success(r#"{"peak_rss_mb":1024,"model_size_mb":512,"kv_cache_mb":256}"#)
         } else {
             CommandOutput::failure(1, "Profile memory failed: insufficient memory")
+        }
+    }
+
+    fn run_chat(
+        &self,
+        _model_path: &Path,
+        prompt: &str,
+        _no_gpu: bool,
+        _extra_args: &[&str],
+    ) -> CommandOutput {
+        if !self.chat_success {
+            return CommandOutput::failure(1, "Chat failed");
+        }
+
+        let response = if prompt.contains("2+2") || prompt.contains("2 + 2") {
+            "The answer is 4.".to_string()
+        } else {
+            self.chat_response.clone()
+        };
+
+        let stdout = format!(
+            "Output:\n{}\nCompleted in 1.5s\ntok/s: {:.1}",
+            response, self.tps
+        );
+        CommandOutput::success(stdout)
+    }
+
+    fn http_post(&self, _url: &str, _body: &str) -> CommandOutput {
+        if self.http_post_success {
+            CommandOutput::success(&self.http_post_response)
+        } else {
+            CommandOutput::failure(1, "HTTP POST failed: connection refused")
+        }
+    }
+
+    fn spawn_serve(&self, _model_path: &Path, _port: u16, _no_gpu: bool) -> CommandOutput {
+        if self.spawn_serve_success {
+            CommandOutput::success("12345") // Mock PID
+        } else {
+            CommandOutput::failure(1, "Spawn serve failed: port in use")
         }
     }
 }
@@ -2201,6 +2411,100 @@ mod tests {
         let runner = RealCommandRunner::with_binary("/nonexistent/binary");
         let path = PathBuf::from("model.gguf");
         let output = runner.profile_memory(&path);
+        assert!(!output.success);
+    }
+
+    // ── Bug 200: Chat, HTTP POST, Spawn Serve tests ─────────────────────
+
+    #[test]
+    fn test_mock_runner_chat_success_2plus2() {
+        let runner = MockCommandRunner::new();
+        let path = PathBuf::from("model.gguf");
+        let output = runner.run_chat(&path, "What is 2+2?", false, &[]);
+        assert!(output.success);
+        assert!(output.stdout.contains("4"));
+    }
+
+    #[test]
+    fn test_mock_runner_chat_success_generic() {
+        let runner = MockCommandRunner::new().with_chat_response("Custom chat response");
+        let path = PathBuf::from("model.gguf");
+        let output = runner.run_chat(&path, "Hello", false, &[]);
+        assert!(output.success);
+        assert!(output.stdout.contains("Custom chat response"));
+    }
+
+    #[test]
+    fn test_mock_runner_chat_failure() {
+        let runner = MockCommandRunner::new().with_chat_failure();
+        let path = PathBuf::from("model.gguf");
+        let output = runner.run_chat(&path, "test", false, &[]);
+        assert!(!output.success);
+        assert!(output.stderr.contains("Chat failed"));
+    }
+
+    #[test]
+    fn test_mock_runner_http_post_success() {
+        let runner = MockCommandRunner::new();
+        let output = runner.http_post("http://localhost:8080/v1/completions", "{}");
+        assert!(output.success);
+        assert!(output.stdout.contains("choices"));
+    }
+
+    #[test]
+    fn test_mock_runner_http_post_failure() {
+        let runner = MockCommandRunner::new().with_http_post_failure();
+        let output = runner.http_post("http://localhost:8080/v1/completions", "{}");
+        assert!(!output.success);
+    }
+
+    #[test]
+    fn test_mock_runner_http_post_custom_response() {
+        let runner =
+            MockCommandRunner::new().with_http_post_response(r#"{"text":"custom output"}"#);
+        let output = runner.http_post("http://localhost:8080/v1/completions", "{}");
+        assert!(output.success);
+        assert!(output.stdout.contains("custom output"));
+    }
+
+    #[test]
+    fn test_mock_runner_spawn_serve_success() {
+        let runner = MockCommandRunner::new();
+        let path = PathBuf::from("model.gguf");
+        let output = runner.spawn_serve(&path, 8080, false);
+        assert!(output.success);
+        assert!(output.stdout.contains("12345")); // Mock PID
+    }
+
+    #[test]
+    fn test_mock_runner_spawn_serve_failure() {
+        let runner = MockCommandRunner::new().with_spawn_serve_failure();
+        let path = PathBuf::from("model.gguf");
+        let output = runner.spawn_serve(&path, 8080, false);
+        assert!(!output.success);
+    }
+
+    #[test]
+    fn test_mock_runner_default_new_chat_fields() {
+        let runner = MockCommandRunner::default();
+        assert!(runner.chat_success);
+        assert!(runner.http_post_success);
+        assert!(runner.spawn_serve_success);
+    }
+
+    #[test]
+    fn test_real_runner_chat_nonexistent() {
+        let runner = RealCommandRunner::with_binary("/nonexistent/binary");
+        let path = PathBuf::from("model.gguf");
+        let output = runner.run_chat(&path, "test", false, &[]);
+        assert!(!output.success);
+    }
+
+    #[test]
+    fn test_real_runner_spawn_serve_nonexistent() {
+        let runner = RealCommandRunner::with_binary("/nonexistent/binary");
+        let path = PathBuf::from("model.gguf");
+        let output = runner.spawn_serve(&path, 8080, false);
         assert!(!output.success);
     }
 }
