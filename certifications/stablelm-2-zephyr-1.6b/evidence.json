@@ -1,6 +1,6 @@
 [
   {
-    "id": "00000000000000001893d450383df42c",
+    "id": "00000000000000001893d4507da2918e",
     "gate_id": "G0-PULL-001",
     "scenario": {
       "id": "stablelm-2-zephyr-1_6b_run_cpu_safetensors_0000000000000000",
@@ -29,9 +29,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 72856
+      "duration_ms": 40935
     },
-    "timestamp": "2026-02-13T14:21:59.492794450Z",
+    "timestamp": "2026-02-13T14:22:00.657016174Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -42,7 +42,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001893d4503848535c",
+    "id": "00000000000000001893d4507dad29f1",
     "gate_id": "G0-LAYOUT-001",
     "scenario": {
       "id": "stablelm-2-zephyr-1_6b_run_cpu_safetensors_0000000000000000",
@@ -73,7 +73,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-13T14:21:59.493473447Z",
+    "timestamp": "2026-02-13T14:22:00.657710014Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -84,7 +84,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001893d45038494703",
+    "id": "00000000000000001893d4507dae4ae5",
     "gate_id": "F-A1-001",
     "scenario": {
       "id": "stablelm-2-zephyr-1_6b_run_cpu_safetensors_0000000000000000",
@@ -115,7 +115,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-13T14:21:59.493535751Z",
+    "timestamp": "2026-02-13T14:22:00.657783885Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -126,7 +126,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001893d4503849cf00",
+    "id": "00000000000000001893d4507daef364",
     "gate_id": "F-A1-001",
     "scenario": {
       "id": "stablelm-2-zephyr-1_6b_run_cpu_apr_0000000000000001",
@@ -157,7 +157,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-13T14:21:59.493570484Z",
+    "timestamp": "2026-02-13T14:22:00.657827071Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -168,8 +168,8 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001893d4503c28bfd5",
-    "gate_id": "G2-BASIC",
+    "id": "00000000000000001893d453f90ed50e",
+    "gate_id": "F-A1-001",
     "scenario": {
       "id": "stablelm-2-zephyr-1_6b_run_cpu_gguf_0000000000000002",
       "model": {
@@ -187,19 +187,19 @@
       "trace_level": "none",
       "oracle_type": "arithmetic"
     },
-    "outcome": "Falsified",
-    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Format error: File too small for format detection\n\n--- TRACE OUTPUT ---\nerror: Validation failed: Contract validation failed for /home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf: Invalid model format: GGUF file too small (< 24 bytes)\n",
-    "output": "\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: /home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf",
-    "stderr": "error: Inference failed: Inference failed: Format error: File too small for format detection\n\n--- TRACE OUTPUT ---\nerror: Validation failed: Contract validation failed for /home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf: Invalid model format: GGUF file too small (< 24 bytes)\n",
-    "exit_code": 8,
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: /home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf\n\n\u001b[1;36m=== Benchmark Results ===\u001b[0m\ntokens: 32\nlatency: 3274.83ms\nmodel: /home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf",
+    "stderr": "\u001b[32mGenerated 32 tokens in 1808.3ms (17.7 tok/s)\u001b[0m\n",
+    "exit_code": 0,
     "metrics": {
-      "tokens_per_second": null,
+      "tokens_per_second": 9.8,
       "time_to_first_token_ms": null,
-      "total_tokens": null,
+      "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 64
+      "duration_ms": 14954
     },
-    "timestamp": "2026-02-13T14:21:59.558513378Z",
+    "timestamp": "2026-02-13T14:22:15.612611719Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -210,7 +210,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001893d4503c299ef1",
+    "id": "00000000000000001893d453f9100847",
     "gate_id": "F-A2-001",
     "scenario": {
       "id": "stablelm-2-zephyr-1_6b_run_gpu_safetensors_0000000000000003",
@@ -241,7 +241,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-13T14:21:59.558570034Z",
+    "timestamp": "2026-02-13T14:22:15.612689006Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -252,7 +252,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001893d4503c2a36e4",
+    "id": "00000000000000001893d453f910aee6",
     "gate_id": "F-A2-001",
     "scenario": {
       "id": "stablelm-2-zephyr-1_6b_run_gpu_apr_0000000000000004",
@@ -283,7 +283,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-13T14:21:59.558608963Z",
+    "timestamp": "2026-02-13T14:22:15.612731480Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -294,8 +294,8 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001893d4503c6f5d57",
-    "gate_id": "G2-BASIC",
+    "id": "00000000000000001893d4577186e05f",
+    "gate_id": "F-A2-001",
     "scenario": {
       "id": "stablelm-2-zephyr-1_6b_run_gpu_gguf_0000000000000005",
       "model": {
@@ -313,19 +313,19 @@
       "trace_level": "none",
       "oracle_type": "arithmetic"
     },
-    "outcome": "Falsified",
-    "reason": "Command failed (exit 5): error: Validation failed: Contract validation failed for /home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf: Invalid model format: GGUF file too small (< 24 bytes)\n\n--- TRACE OUTPUT ---\nerror: Validation failed: Contract validation failed for /home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf: Invalid model format: GGUF file too small (< 24 bytes)\n",
-    "output": "",
-    "stderr": "error: Validation failed: Contract validation failed for /home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf: Invalid model format: GGUF file too small (< 24 bytes)\n\n--- TRACE OUTPUT ---\nerror: Validation failed: Contract validation failed for /home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf: Invalid model format: GGUF file too small (< 24 bytes)\n",
-    "exit_code": 5,
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: /home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf\n\n\u001b[1;36m=== Benchmark Results ===\u001b[0m\ntokens: 32\nlatency: 3234.35ms\nmodel: /home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf",
+    "stderr": "\u001b[32mGenerated 32 tokens in 1861.8ms (17.2 tok/s)\u001b[0m\n",
+    "exit_code": 0,
     "metrics": {
-      "tokens_per_second": null,
+      "tokens_per_second": 9.9,
       "time_to_first_token_ms": null,
-      "total_tokens": null,
+      "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 4
+      "duration_ms": 14905
     },
-    "timestamp": "2026-02-13T14:21:59.563141620Z",
+    "timestamp": "2026-02-13T14:22:30.518647405Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -336,7 +336,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001893d4503c705808",
+    "id": "00000000000000001893d4577187ef18",
     "gate_id": "F-A3-001",
     "scenario": {
       "id": "stablelm-2-zephyr-1_6b_chat_cpu_safetensors_0000000000000006",
@@ -367,7 +367,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-13T14:21:59.563204956Z",
+    "timestamp": "2026-02-13T14:22:30.518714677Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -378,7 +378,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001893d4503c70ffc9",
+    "id": "00000000000000001893d4577188a2dc",
     "gate_id": "F-A3-001",
     "scenario": {
       "id": "stablelm-2-zephyr-1_6b_chat_cpu_apr_0000000000000007",
@@ -409,7 +409,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-13T14:21:59.563247971Z",
+    "timestamp": "2026-02-13T14:22:30.518760486Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -420,8 +420,8 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001893d4503cbd09e0",
-    "gate_id": "G2-BASIC",
+    "id": "00000000000000001893d462352c5904",
+    "gate_id": "F-A3-001",
     "scenario": {
       "id": "stablelm-2-zephyr-1_6b_chat_cpu_gguf_0000000000000008",
       "model": {
@@ -439,19 +439,19 @@
       "trace_level": "none",
       "oracle_type": "arithmetic"
     },
-    "outcome": "Falsified",
-    "reason": "Command failed (exit 5): error: Validation failed: Contract validation failed for /home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf: Invalid model format: GGUF file too small (< 24 bytes)\n\n--- TRACE OUTPUT ---\nerror: Validation failed: Contract validation failed for /home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf: Invalid model format: GGUF file too small (< 24 bytes)\n",
-    "output": "",
-    "stderr": "error: Validation failed: Contract validation failed for /home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf: Invalid model format: GGUF file too small (< 24 bytes)\n\n--- TRACE OUTPUT ---\nerror: Validation failed: Contract validation failed for /home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf: Invalid model format: GGUF file too small (< 24 bytes)\n",
-    "exit_code": 5,
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== Model Chat (GGUF Format) ===\u001b[0m\n\n\u001b[36mUsing GGUF format with realizar inference engine\u001b[0m\n\n  \u001b[1;37mModel\u001b[0m: /home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf\n  \u001b[1;37mChat Template\u001b[0m: Raw\n  \u001b[1;37mTemperature\u001b[0m: 0.7\n  \u001b[1;37mTop-P\u001b[0m: 0.9\n  \u001b[1;37mMax Tokens\u001b[0m: 512\n\n\u001b[1;37mCommands:\u001b[0m\n  /quit     Exit the chat\n  /clear    Clear conversation history\n  /system   Set system prompt\n  /help     Show help\n\n════════════════════════════════════════════════════════════\n\n\u001b[36mLoading model...\u001b[0m\n\u001b[32mLoaded\u001b[0m GGUF format in 0.49s (982.8 MB)\n\u001b[32mLoaded\u001b[0m tokenizer with 100352 tokens\n\u001b[32mDetected\u001b[0m \u001b[36mRaw\u001b[0m chat template\n\u001b[92m[GGUF CUDA: NVIDIA GeForce RTX 4090 (24045 MB VRAM) — pre-cached]\u001b[0m\n\u001b[1;32mYou: \u001b[0m\u001b[1;34mAssistant:\u001b[0m The story movie anime pop culture + + + = =/wait → × × × × − ن التが هゲiteliusissuerivervvmsettingsiterationsiterationsiterationsiterationsfeedfeedfeedfeed@gilion×/?V @ | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | |..\n| | | | | | | | | | | | | | | |\t\t\n\t\t\n\t\t\n�όं | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | |lla | | | | crow| | | | | | | | | | | || |_( | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | fares | | | | | | | | | | | | | | | | | | | | | | | | | | \" | | | | | | | | | apex | | | | | | LO | | | | | | | | | | | || | | | | | | | | | | | | | | | | | | | | | | op | | | | R | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | crow | | |\n\n\u001b[1;32mYou: \u001b[0m\n\u001b[36mGoodbye!\u001b[0m",
+    "stderr": null,
+    "exit_code": 0,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
-      "total_tokens": null,
+      "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 4
+      "duration_ms": 46231
     },
-    "timestamp": "2026-02-13T14:21:59.568232242Z",
+    "timestamp": "2026-02-13T14:23:16.750721048Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -462,7 +462,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001893d4503cbe0caa",
+    "id": "00000000000000001893d462352d57d0",
     "gate_id": "F-A4-001",
     "scenario": {
       "id": "stablelm-2-zephyr-1_6b_chat_gpu_safetensors_0000000000000009",
@@ -493,7 +493,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-13T14:21:59.568297461Z",
+    "timestamp": "2026-02-13T14:23:16.750784845Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -504,7 +504,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001893d4503cbe8dc4",
+    "id": "00000000000000001893d462352de1a4",
     "gate_id": "F-A4-001",
     "scenario": {
       "id": "stablelm-2-zephyr-1_6b_chat_gpu_apr_000000000000000a",
@@ -535,7 +535,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-13T14:21:59.568330541Z",
+    "timestamp": "2026-02-13T14:23:16.750820038Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -546,8 +546,8 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001893d4503cff4bd4",
-    "gate_id": "G2-BASIC",
+    "id": "00000000000000001893d466686a3ca1",
+    "gate_id": "F-A4-001",
     "scenario": {
       "id": "stablelm-2-zephyr-1_6b_chat_gpu_gguf_000000000000000b",
       "model": {
@@ -565,19 +565,19 @@
       "trace_level": "none",
       "oracle_type": "arithmetic"
     },
-    "outcome": "Falsified",
-    "reason": "Command failed (exit 5): error: Validation failed: Contract validation failed for /home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf: Invalid model format: GGUF file too small (< 24 bytes)\n\n--- TRACE OUTPUT ---\nerror: Validation failed: Contract validation failed for /home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf: Invalid model format: GGUF file too small (< 24 bytes)\n",
-    "output": "",
-    "stderr": "error: Validation failed: Contract validation failed for /home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf: Invalid model format: GGUF file too small (< 24 bytes)\n\n--- TRACE OUTPUT ---\nerror: Validation failed: Contract validation failed for /home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf: Invalid model format: GGUF file too small (< 24 bytes)\n",
-    "exit_code": 5,
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "\u001b[1;36m=== Model Chat (GGUF Format) ===\u001b[0m\n\n\u001b[36mUsing GGUF format with realizar inference engine\u001b[0m\n\n  \u001b[1;37mModel\u001b[0m: /home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf\n  \u001b[1;37mChat Template\u001b[0m: Raw\n  \u001b[1;37mTemperature\u001b[0m: 0.7\n  \u001b[1;37mTop-P\u001b[0m: 0.9\n  \u001b[1;37mMax Tokens\u001b[0m: 512\n\n\u001b[1;37mCommands:\u001b[0m\n  /quit     Exit the chat\n  /clear    Clear conversation history\n  /system   Set system prompt\n  /help     Show help\n\n════════════════════════════════════════════════════════════\n\n\u001b[36mLoading model...\u001b[0m\n\u001b[32mLoaded\u001b[0m GGUF format in 0.49s (982.8 MB)\n\u001b[32mLoaded\u001b[0m tokenizer with 100352 tokens\n\u001b[32mDetected\u001b[0m \u001b[36mRaw\u001b[0m chat template\n\u001b[92m[GGUF CUDA: NVIDIA GeForce RTX 4090 (24045 MB VRAM) — pre-cached]\u001b[0m\n\u001b[1;32mYou: \u001b[0m\u001b[1;34mAssistant:\u001b[0m Г告рыюююня местойк源 formDataagemtekovi?emanifoldleinweisepunkfrau.cz.nan.m.pencilacticeFullYearCredentialsKeywordsCredentialsihan@classvaisenameijklीanonymous\"]').pletweenfooterpronnectlemaNnameofkeywordskeywordskeywordswordsncpynmkeywordsensesentialsrokesrokeshin.nih.nan-r-r-rhubnikrutrutnamnamnickr@r(r(r)nkeyword(r(r(r(r)()vierviervierviervierrrrrrrrrrrrrrrrrrrrrrrrrrrrrinvemailcentralinrrrrrfdplanetrrrrrrrrrrrrrrrrrrrrrrRQRRRRRRRRRRPPPPPPPPRRPPPPRRRRRRRRRRRRRRPPPPLPPPPPPPPPPPPPPPPRRPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPM PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP R PP PP PP PP YYS PP PP PP>Password\tthrows PP R PP PP PP PP PP PP PP PP PP PP PP R R R R R R R PP PP R PP PP R R R R PP R R PP R PP PP R R PP R R R R R R R R PP R R R R R R R R R R R R R R R R R R R R R R R PP PP PP R R R R R R R R PP PP PP PP PP PP PP PP PP R R R R R R R R PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP R R R R R P P PP PP PP PP PP PP PP PP R R R R R R R R R PP PP PP PP PP PP PP PP PP PP PP PP PP R R R R R R R PP PP PP PP PP PP PP R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R PP PP PP PP PP PP PP PP R R R R R R R R R R PP PP PP PP PP PP PP\n\n\u001b[1;32mYou: \u001b[0m\n\u001b[36mGoodbye!\u001b[0m",
+    "stderr": null,
+    "exit_code": 0,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
-      "total_tokens": null,
+      "total_tokens": 32,
       "memory_peak_mb": null,
-      "duration_ms": 4
+      "duration_ms": 18039
     },
-    "timestamp": "2026-02-13T14:21:59.572574512Z",
+    "timestamp": "2026-02-13T14:23:34.790284043Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -588,7 +588,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001893d4503d005a51",
+    "id": "00000000000000001893d466686b67df",
     "gate_id": "F-A5-001",
     "scenario": {
       "id": "stablelm-2-zephyr-1_6b_serve_cpu_safetensors_000000000000000c",
@@ -619,7 +619,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-13T14:21:59.572642905Z",
+    "timestamp": "2026-02-13T14:23:34.790359387Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -630,7 +630,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001893d4503d01037a",
+    "id": "00000000000000001893d466686bed8c",
     "gate_id": "F-A5-001",
     "scenario": {
       "id": "stablelm-2-zephyr-1_6b_serve_cpu_apr_000000000000000d",
@@ -661,7 +661,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-13T14:21:59.572686071Z",
+    "timestamp": "2026-02-13T14:23:34.790393539Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -672,7 +672,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001893d46c41388a19",
+    "id": "00000000000000001893d4826ead8e3a",
     "gate_id": "G2-BASIC",
     "scenario": {
       "id": "stablelm-2-zephyr-1_6b_serve_cpu_gguf_000000000000000e",
@@ -701,9 +701,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 120329
+      "duration_ms": 120364
     },
-    "timestamp": "2026-02-13T14:23:59.902518907Z",
+    "timestamp": "2026-02-13T14:25:35.154443007Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -714,7 +714,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001893d46c4139a268",
+    "id": "00000000000000001893d4826eaead39",
     "gate_id": "F-A6-001",
     "scenario": {
       "id": "stablelm-2-zephyr-1_6b_serve_gpu_safetensors_000000000000000f",
@@ -745,7 +745,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-13T14:23:59.902589854Z",
+    "timestamp": "2026-02-13T14:25:35.154515607Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -756,7 +756,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001893d46c413a2898",
+    "id": "00000000000000001893d4826eaf3427",
     "gate_id": "F-A6-001",
     "scenario": {
       "id": "stablelm-2-zephyr-1_6b_serve_gpu_apr_0000000000000010",
@@ -787,7 +787,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-13T14:23:59.902624196Z",
+    "timestamp": "2026-02-13T14:25:35.154550129Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -798,7 +798,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001893d4884858ba8d",
+    "id": "00000000000000001893d49e72196849",
     "gate_id": "G2-BASIC",
     "scenario": {
       "id": "stablelm-2-zephyr-1_6b_serve_gpu_gguf_0000000000000011",
@@ -827,9 +827,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 120378
+      "duration_ms": 120316
     },
-    "timestamp": "2026-02-13T14:26:00.281153443Z",
+    "timestamp": "2026-02-13T14:27:35.470927579Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
