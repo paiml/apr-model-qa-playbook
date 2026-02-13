@@ -410,7 +410,7 @@ MQS (Model Qualification Score) is calculated from evidence:
 
 ```rust
 pub fn calculate_mqs(evidence: &EvidenceCollection) -> MqsScore {
-    // Gateway check (G1-G4 must all pass)
+    // Gateway check (G0-G4 must all pass)
     let gateway_passed = evidence.gates.iter()
         .filter(|(id, _)| id.starts_with("G"))
         .all(|(_, gate)| gate.passed);

@@ -94,7 +94,7 @@ Evidence files are JSON arrays containing test results:
 The certification lookup table uses this schema:
 
 ```csv
-model_id,family,parameters,size_category,status,mqs_score,grade,certified_tier,last_certified,g1,g2,g3,g4,...
+model_id,family,parameters,size_category,status,mqs_score,grade,certified_tier,last_certified,g1,g2,g3,g4,tps_gguf_cpu,tps_gguf_gpu,tps_apr_cpu,tps_apr_gpu,tps_st_cpu,tps_st_gpu,provenance_verified
 ```
 
 | Column | Type | Description |
@@ -103,10 +103,19 @@ model_id,family,parameters,size_category,status,mqs_score,grade,certified_tier,l
 | `family` | string | Model family (qwen-coder, llama, etc.) |
 | `parameters` | string | Parameter count (0.5B, 7B, etc.) |
 | `size_category` | enum | tiny/small/medium/large/xlarge/huge |
-| `status` | enum | CERTIFIED/BLOCKED/PENDING/UNTESTED |
+| `status` | enum | CERTIFIED/PROVISIONAL/PARTIAL/BLOCKED/PENDING/FAIL |
 | `mqs_score` | int | 0-1000 Model Qualification Score |
-| `grade` | enum | A/B/C/D/F/- |
+| `grade` | enum | A+/A/B+/B/C/D/F/- |
+| `certified_tier` | enum | smoke/mvp/quick/standard/deep/none |
+| `last_certified` | datetime | ISO 8601 timestamp of last certification run |
 | `g1-g4` | bool | Gateway pass/fail status |
+| `tps_gguf_cpu` | float | Throughput (tok/s) for GGUF on CPU |
+| `tps_gguf_gpu` | float | Throughput (tok/s) for GGUF on GPU |
+| `tps_apr_cpu` | float | Throughput (tok/s) for APR on CPU |
+| `tps_apr_gpu` | float | Throughput (tok/s) for APR on GPU |
+| `tps_st_cpu` | float | Throughput (tok/s) for SafeTensors on CPU |
+| `tps_st_gpu` | float | Throughput (tok/s) for SafeTensors on GPU |
+| `provenance_verified` | bool | Git/file provenance verification status |
 
 ## Family Contract Integration
 

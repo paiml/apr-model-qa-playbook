@@ -17,7 +17,7 @@ This framework embodies two complementary quality philosophies:
 
 - **Property-based testing** with proptest for comprehensive scenario generation
 - **Parallel execution** with Rayon worker pools
-- **Gateway checks (G1-G4)** that zero the score on critical failures
+- **Gateway checks (G0-G4)** that zero the score on critical failures
 - **Model Qualification Score (MQS)** 0-1000 with grade mapping
 - **JUnit XML and HTML reports** for CI/CD integration
 - **Playbook YAML format** with JSON Schema validation
@@ -56,12 +56,15 @@ apr-model-qa-playbook/
 │   ├── apr-qa-gen/      # Scenario generation + oracles
 │   ├── apr-qa-runner/   # Playbook execution
 │   ├── apr-qa-report/   # MQS scoring + reports
-│   └── apr-qa-cli/      # CLI binary
+│   ├── apr-qa-certify/  # Tier-aware scoring + README sync
+│   └── apr-qa-cli/      # CLI binary (13 subcommands)
+├── certifications/      # Model certification evidence
 ├── playbooks/
 │   ├── models/          # Per-model playbooks
 │   ├── templates/       # Reusable templates
 │   ├── verify/          # Ticket verification
 │   └── spec/            # Executable specifications
 └── docs/
+    ├── certifications/  # models.csv certification database
     └── specifications/  # Full specification document
 ```

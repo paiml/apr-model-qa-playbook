@@ -67,6 +67,7 @@ test_matrix:
   scenario_count: 10
 
 gates:
+  g0_integrity: true
   g1_model_loads: true
   g2_basic_inference: true
   g3_no_crashes: true

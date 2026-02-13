@@ -14,27 +14,27 @@ earns certification by **surviving** these refutation attempts.
 
 ## Testing Tiers
 
-The framework provides four testing tiers mapped to playbook templates.
+The framework provides five certification tiers accessed via the `--tier` CLI flag.
 All tiers build on the same base grid of **3 formats × 2 backends × 3
-modalities = 18 combinations**, scaled by a per-combination scenario count.
+modalities = 18 combinations**, scaled by time budget and scenario depth.
 
-| Tier | Scenarios | Formula | Time Limit | Pass → Grade / Status |
-|------|-----------|---------|------------|----------------------|
-| **Quick-Check** | 10 | 1×1×1×10 | ~1 min | Dev feedback only |
-| **MVP** | 18 | 3×2×3×1 | ≤10 min | ≥90% → B / PROVISIONAL |
-| **CI-Pipeline** | 150 | 2×1×3×25 | ~15 min | CI gate |
-| **Full** | 1,800 | 3×2×3×100 | ≤1 hour | ≥95% → A+ / CERTIFIED |
+| Tier | Time | Description | Pass → Grade / Status |
+|------|------|-------------|----------------------|
+| **Smoke** | ~1-2 min | Sanity check (minimal matrix) | Dev feedback only |
+| **MVP** | ~5-10 min | All 18 format×backend×modality combos | ≥90% → B / PROVISIONAL |
+| **Quick** | ~10-30 min | Broader coverage for dev iteration | Dev feedback |
+| **Standard** | ~1-2 hr | CI/CD gate with extended scenarios | CI gate |
+| **Deep** | ~8-24 hr | Full 170-point verification matrix | ≥95% → A+ / CERTIFIED |
 
-Only **MVP** and **Full** produce formal certification results. Quick-Check
-and CI-Pipeline are for development and continuous integration feedback.
+Only **MVP** and **Deep** produce formal certification results. Smoke, Quick,
+and Standard are for development and continuous integration feedback.
 
-### Quick-Check (Dev Feedback)
+### Smoke Tier (Sanity Check)
 
-SafeTensors on CPU, single modality (run) — 10 scenarios. Use during
-development for fast iteration. No certification output.
+Fastest possible qualification — minimal matrix for quick sanity checking.
 
 ```bash
-cargo run --bin apr-qa -- run playbooks/templates/quick-check.yaml
+apr-qa certify --family qwen-coder --tier smoke
 ```
 
 ### MVP Tier (Minimum Viable Product)
@@ -43,7 +43,7 @@ Tests all 18 format×backend×modality combinations with 1 scenario each.
 
 **Pass Criteria:**
 - ≥90% pass rate across all 18 combinations
-- All P0 gateways (G1-G4) must pass
+- All P0 gateways (G0-G4) must pass
 
 **On Pass:** MQS Score = 800, Grade = **B**, Status = **PROVISIONAL**
 
@@ -51,19 +51,25 @@ Tests all 18 format×backend×modality combinations with 1 scenario each.
 apr-qa certify --family qwen-coder --tier mvp
 ```
 
-### CI-Pipeline (Continuous Integration)
+### Quick Tier (Dev Iteration)
 
-2 formats × 1 backend × 3 modalities × 25 scenarios = 150 tests. Designed
-to run in CI on every merge. Not a formal certification tier.
+Extended coverage for development iteration with broader scenario sets.
 
 ```bash
-cargo run --bin apr-qa -- run playbooks/templates/ci-pipeline.yaml
+apr-qa certify --family qwen-coder --tier quick
 ```
 
-### Full Tier (Production Qualification)
+### Standard Tier (CI/CD)
 
-Runs the complete 170-point Verification Matrix with 100 scenarios per
-combination (3×2×3×100 = 1,800 tests).
+Designed to run in CI on every merge. Extended scenario count for higher confidence.
+
+```bash
+apr-qa certify --family qwen-coder --tier standard
+```
+
+### Deep Tier (Production Qualification)
+
+Runs the complete 170-point Verification Matrix with full scenario depth.
 
 **Pass Criteria:**
 - ≥95% pass rate on verification matrix
@@ -72,7 +78,7 @@ combination (3×2×3×100 = 1,800 tests).
 **On Pass:** MQS Score = 950+, Grade = **A+**, Status = **CERTIFIED**
 
 ```bash
-apr-qa certify --family qwen-coder --tier full
+apr-qa certify --family qwen-coder --tier deep
 ```
 
 ### Status Summary

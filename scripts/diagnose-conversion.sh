@@ -22,7 +22,7 @@ set -uo pipefail
 # --- Config ---
 PROMPT="What is 2+2?"
 MAX_TOKENS=10
-DIAG_DIR="/tmp/apr-diag-$(date +%s)"
+DIAG_DIR=""
 
 # --- Colors ---
 RED='\033[0;31m'
@@ -46,7 +46,7 @@ if [ ! -f "$GGUF" ]; then
     exit 2
 fi
 
-mkdir -p "$DIAG_DIR"
+DIAG_DIR="$(mktemp -d /tmp/apr-diag-XXXXXXXXXX)"
 APR="$DIAG_DIR/converted.apr"
 
 PASS_COUNT=0
@@ -76,7 +76,7 @@ echo ""
 echo -e "${BOLD}╔══════════════════════════════════════════════════════════════╗${NC}"
 echo -e "${BOLD}║         CONVERSION DIAGNOSTIC RUNBOOK — 5 INVARIANTS       ║${NC}"
 echo -e "${BOLD}╠══════════════════════════════════════════════════════════════╣${NC}"
-echo -e "${BOLD}║${NC} Source: $(basename "$GGUF")"
+echo -e "${BOLD}║${NC} Source: $(basename "${GGUF}")"
 echo -e "${BOLD}║${NC} Output: $APR"
 echo -e "${BOLD}║${NC} Date:   $(date -Iseconds)"
 echo -e "${BOLD}╚══════════════════════════════════════════════════════════════╝${NC}"
@@ -115,7 +115,7 @@ if apr run "$GGUF" -p "$PROMPT" --max-tokens "$MAX_TOKENS" > "$I1_EXPECTED" 2>"$
     EXPECTED_TEXT=$(cat "$I1_EXPECTED")
     echo -e "  GGUF output: ${BOLD}$EXPECTED_TEXT${NC}"
 else
-    skip "I-1" "GGUF inference failed ($(head -1 "$I1_EXPECTED_ERR"))"
+    skip "I-1" "GGUF inference failed ($(head -1 "${I1_EXPECTED_ERR}"))"
     EXPECTED_TEXT=""
 fi
 
@@ -124,7 +124,7 @@ if apr run "$APR" -p "$PROMPT" --max-tokens "$MAX_TOKENS" > "$I1_ACTUAL" 2>"$I1_
     ACTUAL_TEXT=$(cat "$I1_ACTUAL")
     echo -e "  APR output:  ${BOLD}$ACTUAL_TEXT${NC}"
 else
-    skip "I-1" "APR inference failed ($(head -1 "$I1_ACTUAL_ERR"))"
+    skip "I-1" "APR inference failed ($(head -1 "${I1_ACTUAL_ERR}"))"
     ACTUAL_TEXT=""
 fi
 
@@ -239,7 +239,7 @@ if apr rosetta fingerprint "$APR" --json > "$I4_FP_APR" 2>/dev/null; then
     FP_APR_OK=true
 fi
 
-if $FP_GGUF_OK && $FP_APR_OK; then
+if "${FP_GGUF_OK}" && "${FP_APR_OK}"; then
     # validate-stats takes a MODEL + --fingerprints reference
     if apr rosetta validate-stats "$APR" --fingerprints "$I4_FP_GGUF" > "$I4_LOG" 2>&1; then
         STAT_FAIL=$(grep -ciE "fail|mismatch|exceeded" "$I4_LOG" 2>/dev/null || echo "0")

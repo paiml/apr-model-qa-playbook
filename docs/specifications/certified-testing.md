@@ -50,7 +50,7 @@ The MVP tier answers: *"Does this model work in all supported configurations?"*
 
 **Requirements:**
 - Tests all 18 combinations: 3 formats × 2 backends × 3 modalities
-- Must pass all 4 gateways (G1-G4)
+- Must pass all 5 gateways (G0-G4)
 - Must achieve ≥90% pass rate
 - Must complete in ≤10 minutes
 
@@ -185,7 +185,7 @@ Total:      18 test combinations
 
 **Pass Criteria:**
 - ≥90% pass rate across all 18 combinations
-- All P0 gateways (G1-G4) must pass
+- All P0 gateways (G0-G4) must pass
 
 **On Pass:** MQS Score = 800, Grade = **B**, Status = **PROVISIONAL**
 

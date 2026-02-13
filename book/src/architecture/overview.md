@@ -3,27 +3,38 @@
 ## Crate Structure
 
 ```
-┌──────────────────────────────────────────────────────────────────────┐
-│                        APR-MODEL-QA-PLAYBOOK                          │
-├──────────────────────────────────────────────────────────────────────┤
-│                                                                       │
-│  ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐   │
-│  │  apr-qa-gen     │    │  apr-qa-runner  │    │  apr-qa-report  │   │
-│  │  (Rust crate)   │    │  (Rust crate)   │    │  (Rust crate)   │   │
-│  │                 │    │                 │    │                 │   │
-│  │  - proptest     │───▶│  - playbook     │───▶│  - popperian    │   │
-│  │  - scenario gen │    │  - parallel     │    │  - junit/html   │   │
-│  │  - oracle def   │    │  - evidence     │    │  - mqs scoring  │   │
-│  └─────────────────┘    └─────────────────┘    └─────────────────┘   │
-│                                                                       │
-└──────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          APR-MODEL-QA-PLAYBOOK                              │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐         │
+│  │  apr-qa-gen     │    │  apr-qa-runner  │    │  apr-qa-report  │         │
+│  │                 │    │                 │    │                 │         │
+│  │  - proptest     │───▶│  - playbook     │───▶│  - popperian    │         │
+│  │  - scenario gen │    │  - parallel     │    │  - junit/html   │         │
+│  │  - oracle def   │    │  - evidence     │    │  - mqs scoring  │         │
+│  └─────────────────┘    └─────────────────┘    └─────────────────┘         │
+│          │                       │                       │                  │
+│          └───────────────────────┼───────────────────────┘                  │
+│                                  ▼                                          │
+│  ┌─────────────────┐    ┌─────────────────┐                                │
+│  │ apr-qa-certify  │    │  apr-qa-cli     │                                │
+│  │                 │◀───│                 │                                │
+│  │  - tier scoring │    │  - certify cmd  │                                │
+│  │  - README sync  │    │  - run/report   │                                │
+│  │  - CSV export   │    │  - Jidoka sigs  │                                │
+│  └─────────────────┘    └─────────────────┘                                │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Data Flow
 
-1. **apr-qa-gen** generates `QaScenario` instances
-2. **apr-qa-runner** executes scenarios, produces `Evidence`
-3. **apr-qa-report** calculates `MqsScore`, generates reports
+1. **apr-qa-gen** generates `QaScenario` instances via proptest
+2. **apr-qa-runner** executes scenarios in parallel, produces `Evidence`
+3. **apr-qa-report** calculates `MqsScore`, generates JUnit/HTML/Markdown reports
+4. **apr-qa-cli** orchestrates the pipeline with 13 subcommands (certify, run, report, etc.)
+5. **apr-qa-certify** handles tier-aware scoring and README certification table sync
 
 ## Key Types
 
@@ -71,7 +82,11 @@ pub struct MqsScore {
 
 ```
 apr-qa-cli
-    └── apr-qa-report
-            └── apr-qa-runner
-                    └── apr-qa-gen
+    ├── apr-qa-certify
+    ├── apr-qa-report
+    │       ├── apr-qa-runner
+    │       │       └── apr-qa-gen
+    │       └── apr-qa-gen
+    ├── apr-qa-runner
+    └── apr-qa-gen
 ```

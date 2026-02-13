@@ -21,7 +21,7 @@ apr-qa certify [OPTIONS] [MODEL...]
 Options:
 - `--all` - Certify all models in registry
 - `--family <NAME>` - Certify by model family (e.g., "qwen-coder", "llama")
-- `--tier <TIER>` - Certification tier: `smoke`, `quick` (default), `standard`, `deep`
+- `--tier <TIER>` - Certification tier: `smoke`, `mvp`, `quick` (default), `standard`, `deep`
 - `--output <DIR>` - Output directory for certification artifacts
 - `--dry-run` - Preview what would be certified
 - `--model-cache <DIR>` - Model cache directory (defaults to `~/.cache/apr-models`)
@@ -125,12 +125,61 @@ Options:
 - `-o, --output <PATH>` - Output file/directory
 - `--evidence-dir <DIR>` - Evidence input directory
 
-#### validate
+#### tools
 
-Validate playbook against schema:
+Run APR tool coverage tests (inspect, validate, bench, check, trace, profile):
 
 ```bash
-apr-qa validate <playbook.yaml>
+apr-qa tools <MODEL_PATH> [OPTIONS]
+```
+
+Options:
+- `--no-gpu` - Disable GPU acceleration
+- `-o, --output <DIR>` - Output directory for results (default: `output`)
+- `--include-serve` - Include serve lifecycle test (F-INTEG-003)
+
+Examples:
+```bash
+# Run tool coverage on a model
+apr-qa tools /path/to/model.apr
+
+# Include serve lifecycle test
+apr-qa tools /path/to/model.apr --include-serve
+```
+
+#### generate
+
+Generate scenarios for a model:
+
+```bash
+apr-qa generate <MODEL> [OPTIONS]
+```
+
+Options:
+- `-c, --count <N>` - Number of scenarios per combination (default: 100)
+- `-f, --format <FORMAT>` - Output format: `yaml`, `json` (default: `yaml`)
+
+Examples:
+```bash
+# Generate YAML scenarios
+apr-qa generate Qwen/Qwen2.5-Coder-1.5B-Instruct
+
+# Generate 50 scenarios in JSON
+apr-qa generate Qwen/Qwen2.5-Coder-1.5B-Instruct -c 50 -f json
+```
+
+#### score
+
+Calculate MQS score from evidence:
+
+```bash
+apr-qa score <EVIDENCE> --model <MODEL_ID>
+```
+
+Examples:
+```bash
+apr-qa score certifications/qwen2.5-coder-1.5b-mvp/evidence.json \
+  --model Qwen/Qwen2.5-Coder-1.5B-Instruct
 ```
 
 #### lock-playbooks
@@ -169,6 +218,89 @@ apr-qa list-models [OPTIONS]
 Options:
 - `--architecture <ARCH>` - Filter by architecture
 - `--size <SIZE>` - Filter by size category
+
+#### tickets
+
+Generate upstream tickets from failures:
+
+```bash
+apr-qa tickets <EVIDENCE> [OPTIONS]
+```
+
+Options:
+- `-r, --repo <REPO>` - Target repository (default: `paiml/aprender`)
+- `--black-swans-only` - Only generate tickets for black swan events
+- `--min-occurrences <N>` - Minimum occurrences before creating ticket (default: 1)
+- `--ticket-mode <MODE>` - `create` (default) or `draft` (print without creating files)
+
+Examples:
+```bash
+# Generate tickets from evidence
+apr-qa tickets certifications/model/evidence.json
+
+# Draft mode (preview without creating)
+apr-qa tickets certifications/model/evidence.json --ticket-mode draft
+```
+
+#### export-csv
+
+Export certification data to models.csv (PMAT-264):
+
+```bash
+apr-qa export-csv [OPTIONS]
+```
+
+Options:
+- `-e, --evidence-dir <DIR>` - Directory containing evidence JSON files (default: `docs/certifications/evidence`)
+- `-o, --output <PATH>` - Output CSV file path (default: `docs/certifications/models.csv`)
+- `--append` - Append to existing CSV instead of overwriting
+
+Examples:
+```bash
+# Export all evidence to CSV
+apr-qa export-csv
+
+# Append new results
+apr-qa export-csv --append
+```
+
+#### export-evidence
+
+Export evidence to schema-compliant JSON (PMAT-265):
+
+```bash
+apr-qa export-evidence <SOURCE> [OPTIONS]
+```
+
+Options:
+- `-o, --output-dir <DIR>` - Output directory for evidence files (default: `docs/certifications/evidence`)
+- `-m, --model <ID>` - Model HF repo ID
+- `--family <FAMILY>` - Model family (e.g., `qwen2`)
+- `--size <SIZE>` - Model size (e.g., `0.5b`)
+- `--playbook-name <NAME>` - Playbook name
+- `--tier <TIER>` - Certification tier (default: `mvp`)
+
+#### validate-contract
+
+Validate model against tensor layout contract:
+
+```bash
+apr-qa validate-contract <MODEL> [OPTIONS]
+```
+
+Options:
+- `--contract-path <PATH>` - Path to tensor layout contract YAML (default: `../aprender/contracts/tensor-layout-v1.yaml`)
+- `--format <FORMAT>` - Output format: `text`, `json` (default: `text`)
+- `--critical-only` - Only check critical tensors (lm_head, etc.)
+
+Examples:
+```bash
+# Validate APR model against layout contract
+apr-qa validate-contract model.apr
+
+# Check only critical tensors, output JSON
+apr-qa validate-contract model.apr --critical-only --format json
+```
 
 ### Global Options
 

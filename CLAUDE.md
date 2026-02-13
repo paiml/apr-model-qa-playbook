@@ -64,8 +64,9 @@ cargo test --package apr-qa-runner -- test_name --nocapture
 crates/
 ├── apr-qa-gen/     # Scenario generation + oracles (proptest)
 ├── apr-qa-runner/  # Playbook execution (Rayon parallel)
-├── apr-qa-report/  # MQS scoring + JUnit/HTML reports
-└── apr-qa-cli/     # CLI binary (not unit tested)
+├── apr-qa-report/  # MQS scoring + JUnit/HTML/Markdown reports
+├── apr-qa-certify/ # Tier-aware scoring, README sync, CSV export
+└── apr-qa-cli/     # CLI binary with 13 subcommands
 ```
 
 ### Core Data Flow
@@ -74,7 +75,11 @@ crates/
 
 2. **apr-qa-runner**: Executes scenarios via `ParallelExecutor` using Rayon. Collects `Evidence` with outcomes: `Corroborated`, `Falsified`, `Timeout`, `Crashed`.
 
-3. **apr-qa-report**: Calculates MQS (Model Qualification Score) 0-1000 with gateway checks G1-G4. Generates JUnit XML and HTML reports.
+3. **apr-qa-report**: Calculates MQS (Model Qualification Score) 0-1000 with gateway checks G0-G4. Generates JUnit XML, HTML, and Markdown reports.
+
+4. **apr-qa-certify**: Tier-aware scoring (Smoke/MVP/Quick/Standard/Deep), certification status computation, README table sync from models.csv. Binary: `apr-qa-readme-sync`.
+
+5. **apr-qa-cli**: Orchestrates the full pipeline with 13 subcommands: certify, run, tools, generate, score, report, list, lock-playbooks, tickets, parity, export-csv, export-evidence, validate-contract.
 
 ### Key Types
 
@@ -83,9 +88,10 @@ crates/
 - `MqsScore` (apr-qa-report): Qualification score with gateways and category breakdowns
 - `Oracle` (apr-qa-gen): Verifies output correctness (Arithmetic, Garbage, CodeSyntax, Response)
 
-### Gateway Logic (G1-G4)
+### Gateway Logic (G0-G4)
 
 Any gateway failure zeros the entire MQS score:
+- **G0**: config.json matches tensor metadata (Integrity)
 - **G1**: Model loads successfully
 - **G2**: Basic inference works
 - **G3**: No crashes or panics
@@ -101,6 +107,43 @@ playbooks/
 ├── verify/                 # Ticket verification playbooks
 └── spec/                   # Executable specifications for gateways
 ```
+
+## Documentation Maintenance (Mandatory)
+
+Documentation drifts at interface boundaries. When changing any of the following, you MUST update the corresponding docs. Run `make docs-check` to verify.
+
+### When adding a workspace crate:
+- [ ] `CLAUDE.md` → Crate Structure tree
+- [ ] `CLAUDE.md` → Core Data Flow (add numbered item)
+- [ ] `README.md` → Architecture diagram
+- [ ] `README.md` → Crate Structure table
+- [ ] `README.md` → Project Structure tree
+- [ ] `book/src/architecture/overview.md` → diagram + dependency graph
+- [ ] `book/src/introduction.md` → Project Structure tree
+
+### When adding a CLI subcommand:
+- [ ] `book/src/reference/cli.md` → add full section with options and examples
+
+### When adding or removing a gateway (G0-G4):
+- [ ] `CLAUDE.md` → Gateway Logic section
+- [ ] `README.md` → Features list and MQS Gateway table
+- [ ] `book/src/philosophy/mqs.md` → Gateway Logic table
+- [ ] `book/src/reference/gateways.md` → add `## GN:` section
+- [ ] `book/src/reference/certified-testing.md` → gateway references
+- [ ] `book/src/introduction.md` → Key Features
+- [ ] `book/src/getting-started.md` → playbook example gates
+
+### When adding certification status/grade variants:
+- [ ] `book/src/reference/oracle-integration.md` → models.csv schema
+- [ ] `book/src/philosophy/mqs.md` → Grade Mapping table
+
+### After certification runs:
+- [ ] Run `make update-certifications` to sync README table from CSV
+
+### Enforcement:
+- `make docs-check` runs `scripts/check-docs-consistency.sh`
+- `make check` includes `docs-check` in the gate chain
+- CI runs documentation consistency checks on every push/PR
 
 ## Quality Requirements
 

@@ -89,7 +89,7 @@ The RAG markdown uses semantic headers (`##`, `###`) aligned with batuta's Seman
 | Section | Header Level | Content |
 |---------|--------------|---------|
 | Summary | `##` | MQS score, status, test counts |
-| Gateway Checks | `##` | Pass/fail table for G1-G4 |
+| Gateway Checks | `##` | Pass/fail table for G0-G4 |
 | Category Scores | `##` | QUAL/PERF/STAB/COMP/EDGE/REGR breakdown |
 | Falsifications | `##` + `###` | Each falsification with hypothesis/evidence |
 | Test Results | `##` + `###` | Results grouped by category |

@@ -1,10 +1,13 @@
 # APR Model QA Playbook
 # Toyota Way + Popperian Falsification Testing Framework
 
-.PHONY: all build test lint coverage clean check fmt doc \
+.SUFFIXES:
+
+.PHONY: all build test lint coverage clean check fmt doc docs-check \
        update-certifications certify-smoke certify-mvp certify-quick certify-standard certify-deep certify-qwen \
        parity-check parity-list golden-generate \
-       ci-smoke nightly-7b
+       ci-smoke nightly-7b \
+       bench audit update release dev-deps help
 
 # Default target
 all: check
@@ -41,8 +44,12 @@ doc:
 doc-open:
 	cargo doc --workspace --no-deps --open
 
-# Run all checks (build + lint + test)
-check: fmt-check lint test
+# Run all checks (build + lint + test + docs)
+check: fmt-check lint test docs-check
+
+# Documentation consistency check (prevents drift at interface boundaries)
+docs-check:
+	@./scripts/check-docs-consistency.sh
 
 # Coverage with llvm-cov (NEVER use tarpaulin)
 # Uses --lib to test library code only (no binary/main.rs)
@@ -65,14 +72,7 @@ coverage-full:
 # Note: ~5% uncovered code is in subprocess execution paths requiring integration tests
 # with actual apr binary - these are tested via E2E tests, not unit tests
 coverage-check:
-	@echo "Checking PMAT coverage compliance (>= 95%)..."
-	@cargo llvm-cov --workspace --lib 2>&1 | \
-		grep "^TOTAL" | awk '{print $$10}' | tr -d '%' | \
-		xargs -I{} sh -c 'if [ $$(echo "{} >= 95" | bc) -eq 1 ]; then \
-			echo "✓ Coverage: {}% (PMAT compliant)"; \
-		else \
-			echo "✗ Coverage: {}% (below 95% threshold)"; exit 1; \
-		fi'
+	@./scripts/coverage-check.sh
 
 # Clean build artifacts
 clean:
@@ -94,7 +94,7 @@ watch:
 
 # Install development dependencies
 dev-deps:
-	cargo install cargo-watch cargo-llvm-cov
+	cargo install cargo-watch cargo-llvm-cov || exit 1
 
 # Benchmark (if criterion tests exist)
 bench:
@@ -175,6 +175,7 @@ help:
 	@echo "  coverage-summary       Coverage summary (library code)"
 	@echo "  coverage-full          Full coverage including CLI"
 	@echo "  coverage-check         Verify PMAT compliance (>= 95%, see CLAUDE.md)"
+	@echo "  docs-check             Check documentation consistency (prevents drift)"
 	@echo "  doc                    Generate documentation"
 	@echo "  clean                  Clean build artifacts"
 	@echo "  watch                  Watch mode for development"
@@ -211,41 +212,17 @@ HF_CORPUS ?= ../hf-ground-truth-corpus/oracle
 # Implements Popperian self-consistency: golden outputs must match themselves
 # Corpus structure: $(HF_CORPUS)/<model>/<version>/manifest.json
 parity-check:
-	@echo "=== HF Parity Self-Check (all model families) ==="
-	@found=0; \
-	for manifest in $$(find $(HF_CORPUS) -name "manifest.json" -type f 2>/dev/null); do \
-		version_dir=$$(dirname $$manifest); \
-		model_version=$$(echo $$version_dir | sed 's|$(HF_CORPUS)/||'); \
-		echo "Checking: $$model_version"; \
-		cargo run --bin apr-qa -- parity -m $$model_version -c $(HF_CORPUS) --self-check || exit 1; \
-		echo ""; \
-		found=1; \
-	done; \
-	if [ $$found -eq 0 ]; then echo "No golden corpora found in $(HF_CORPUS)"; exit 1; fi
-	@echo "All parity self-checks passed!"
+	@./scripts/parity-check.sh $(HF_CORPUS)
 
 # List available golden outputs for all model families
 # Corpus structure: $(HF_CORPUS)/<model>/<version>/manifest.json
 parity-list:
-	@echo "=== Available Golden Outputs ==="
-	@for manifest in $$(find $(HF_CORPUS) -name "manifest.json" -type f 2>/dev/null); do \
-		version_dir=$$(dirname $$manifest); \
-		model_version=$$(echo $$version_dir | sed 's|$(HF_CORPUS)/||'); \
-		echo ""; \
-		echo "--- $$model_version ---"; \
-		cargo run --bin apr-qa -- parity -m $$model_version -c $(HF_CORPUS) --list 2>/dev/null || true; \
-	done
+	@./scripts/parity-list.sh $(HF_CORPUS)
 
 # Generate golden outputs using HuggingFace transformers
 # Requires: uv, GPU with CUDA, HuggingFace model access
 # Usage: make golden-generate MODEL=Qwen/Qwen2.5-Coder-1.5B-Instruct VERSION=v1
 golden-generate:
-	@echo "=== Generating Golden Outputs ==="
 	@test -n "$(MODEL)" || (echo "Usage: make golden-generate MODEL=Qwen/Qwen2.5-Coder-1.5B-Instruct VERSION=v1"; exit 1)
 	@test -n "$(VERSION)" || (echo "Usage: make golden-generate MODEL=Qwen/Qwen2.5-Coder-1.5B-Instruct VERSION=v1"; exit 1)
-	@MODEL_SHORT=$$(echo $(MODEL) | sed 's|.*/||' | tr '[:upper:]' '[:lower:]'); \
-	OUTPUT_DIR=$(HF_CORPUS)/$$MODEL_SHORT/$(VERSION); \
-	echo "Model: $(MODEL)"; \
-	echo "Output: $$OUTPUT_DIR"; \
-	mkdir -p $$OUTPUT_DIR && \
-	uv run scripts/generate_golden.py --model $(MODEL) --output $$OUTPUT_DIR --prompts prompts/code_bench.txt
+	@./scripts/golden-generate.sh $(MODEL) $(VERSION) $(HF_CORPUS)

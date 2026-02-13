@@ -4,10 +4,11 @@ The MQS is a 0-1000 point score (normalized to 0-100) that measures model readin
 
 ## Gateway Logic
 
-Four gateways must pass or the **entire score is zeroed**:
+Five gateways must pass or the **entire score is zeroed**:
 
 | Gateway | Check | Failure Impact |
 |---------|-------|----------------|
+| G0 | config.json matches tensor metadata | Score = 0 |
 | G1 | Model loads successfully | Score = 0 |
 | G2 | Basic inference works | Score = 0 |
 | G3 | No crashes or panics | Score = 0 |
@@ -78,7 +79,7 @@ Penalties are applied for:
 ## Example Score
 
 ```
-Gateways: G1 ✓, G2 ✓, G3 ✓, G4 ✓
+Gateways: G0 ✓, G1 ✓, G2 ✓, G3 ✓, G4 ✓
 
 Quality:       280/300 (93%)
 Performance:   220/250 (88%)

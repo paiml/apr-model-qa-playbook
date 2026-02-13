@@ -2,6 +2,26 @@
 
 Gateways are critical checks. Any failure zeros the MQS.
 
+## G0: Integrity
+
+**ID:** `G0-INTEGRITY`
+**Severity:** P0
+
+The model's config.json must match actual tensor metadata:
+- config.json exists and is valid JSON
+- `num_hidden_layers` matches actual tensor count
+- `hidden_size` matches tensor dimensions
+- Architecture field matches tensor naming conventions
+
+```yaml
+# Passes
+config.json.hidden_size == tensor_shape[hidden_dim]
+
+# Fails
+config.json.hidden_size: 2048
+actual_tensor_hidden_dim: 1024
+```
+
 ## G1: Model Loads
 
 **ID:** `G1-LOAD`
