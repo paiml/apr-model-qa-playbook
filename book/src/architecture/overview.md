@@ -90,3 +90,38 @@ apr-qa-cli
     ├── apr-qa-runner
     └── apr-qa-gen
 ```
+
+## Position in the Sovereign AI Stack
+
+The QA playbook serves as the **end-to-end kernel correctness oracle** for the
+Sovereign AI Stack. It validates that the full inference pipeline — from tensor
+deserialization through kernel execution to token generation — produces correct
+output.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Kernel Level (trueno)                     │
+│  fused_q4k_parallel_matvec, RMSNorm, Attention, Softmax    │
+└──────────────────────────┬──────────────────────────────────┘
+                           │ dispatches
+┌──────────────────────────▼──────────────────────────────────┐
+│                  Runtime Level (realizar)                    │
+│  CudaExecutor, SIMD dispatcher, format-aware inference      │
+└──────────────────────────┬──────────────────────────────────┘
+                           │ converts
+┌──────────────────────────▼──────────────────────────────────┐
+│                  Format Level (aprender)                     │
+│  SafeTensors → APR, GGUF → APR (transposes LAYOUT-002)      │
+└──────────────────────────┬──────────────────────────────────┘
+                           │ validates
+┌──────────────────────────▼──────────────────────────────────┐
+│              Qualification Level (this project)              │
+│  G0-G4 gateways, GarbageOracle, contract invariants I-1–I-5 │
+│  Metamorphic relations (RT, CARD, IDEM, COM)                 │
+│  170-point verification matrix, MQS scoring                  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+A kernel bug at the trueno level (e.g., incorrect quantized matmul) propagates
+through realizar and aprender, ultimately manifesting as garbage output or
+statistical drift that the playbook's gateways and contract tests detect.

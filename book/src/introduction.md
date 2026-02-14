@@ -21,6 +21,7 @@ This framework embodies two complementary quality philosophies:
 - **Model Qualification Score (MQS)** 0-1000 with grade mapping
 - **JUnit XML and HTML reports** for CI/CD integration
 - **Playbook YAML format** with JSON Schema validation
+- **End-to-end kernel correctness oracle** for trueno SIMD/CUDA kernels via G4 garbage detection, contract invariants (I-1 through I-5), and metamorphic relation testing
 
 ## Test Matrix
 

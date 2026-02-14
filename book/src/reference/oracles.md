@@ -19,7 +19,9 @@ Supports: `+`, `-`, `*`, `/`, parentheses
 
 ## Garbage Oracle
 
-Detects low-quality output.
+Detects low-quality output. Also serves as the primary **end-to-end kernel
+correctness detector** — when SIMD/CUDA kernels in trueno produce incorrect
+results, the effect manifests as garbage output that this oracle catches.
 
 ```yaml
 - type: garbage
@@ -33,6 +35,15 @@ Detects low-quality output.
 - Low unique character count
 - Non-printable bytes
 - Very low entropy
+
+**Kernel-related garbage patterns:**
+
+| Pattern | Kernel Root Cause |
+|---------|-------------------|
+| Non-ASCII gibberish | LAYOUT-002: column-major data in row-major kernel |
+| Repetitive token loops | Softmax collapse from incorrect attention kernel |
+| NaN/Inf strings | Numerical instability in quantized matmul |
+| U+FFFD replacement chars | Dtype mismatch in kernel output |
 
 ## CodeSyntax Oracle
 

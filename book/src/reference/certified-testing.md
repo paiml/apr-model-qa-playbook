@@ -118,12 +118,16 @@ Any failure here results in immediate **REJECTED** status.
 
 ### Class III: Numerical Stability (P1 - 20 pts)
 
-| Gate | Points | Hypothesis |
-|------|--------|------------|
-| F-NUM-001 | 5 | Attention Entropy: Not collapsed or exploded |
-| F-NUM-002 | 5 | LayerNorm Drift: Mean < 1e-3, std dev ~1.0 |
-| F-NUM-003 | 5 | Softmax Sum: Outputs sum to 1.0 +/- 1e-6 |
-| F-NUM-004 | 5 | Token Probability: Valid range [0, 1] |
+These gates validate that low-level kernel operations (quantized matmul, RMSNorm,
+attention) in trueno and realizar produce numerically stable results at the
+model-output level. They serve as end-to-end kernel correctness checks.
+
+| Gate | Points | Hypothesis | Kernel Under Test |
+|------|--------|------------|-------------------|
+| F-NUM-001 | 5 | Attention Entropy: Not collapsed or exploded | Attention kernel (softmax, scaled dot-product) |
+| F-NUM-002 | 5 | LayerNorm Drift: Mean < 1e-3, std dev ~1.0 | RMSNorm / LayerNorm kernel |
+| F-NUM-003 | 5 | Softmax Sum: Outputs sum to 1.0 +/- 1e-6 | Softmax kernel |
+| F-NUM-004 | 5 | Token Probability: Valid range [0, 1] | Quantized matmul + sampling |
 
 ### Class IV: Cross-Platform Parity (P2 - 15 pts)
 
@@ -320,6 +324,40 @@ Certificates expire after **90 days**. Re-certification is required:
 - After configuration changes
 - Before production deployment
 - Quarterly for maintained models
+
+## Kernel Correctness Coverage
+
+The verification matrix provides **defense-in-depth** for kernel correctness across
+the Sovereign AI Stack. While trueno and HuggingFace kernels test individual kernel
+operations (RMSNorm, quantized matmul, attention), the QA playbook validates that
+the complete kernel pipeline produces correct model output.
+
+### How Verification Classes Map to Kernel Operations
+
+| Class | Kernel Operations Tested | Detection Method |
+|-------|-------------------------|------------------|
+| I (Integrity) | Tensor layout, memory alignment | Crash detection (segfault = kernel misalignment) |
+| III (Numerical) | RMSNorm, softmax, matmul | Statistical bounds checking |
+| IV (Parity) | All kernels across CPU/GPU | Cross-platform output comparison |
+| Conversion (F-CONV) | Transpose, dtype casting | Metamorphic relations (round-trip, idempotency) |
+| Contract (F-CONTRACT) | Quantization kernels | Statistical preservation within dtype tolerance |
+
+### Tolerance by Quantization (from I-4 Contract)
+
+Each quantization level has a maximum acceptable statistical drift, directly
+measuring the accuracy of trueno's quantization kernels:
+
+| Dtype | atol | rtol | Kernel Family |
+|-------|------|------|---------------|
+| F32 | 0.0 | 0.0 | No quantization (baseline) |
+| F16 | 0.001 | 0.001 | Float16 cast |
+| BF16 | 0.005 | 0.005 | BFloat16 cast |
+| Q8_0 | 0.01 | 0.01 | `fused_q8k_*` |
+| Q6_K | 0.02 | 0.02 | `fused_q6k_parallel_matvec` |
+| Q5_K | 0.03 | 0.03 | `fused_q5k_parallel_matvec` |
+| Q4_K | 0.05 | 0.05 | `fused_q4k_parallel_matvec` |
+| Q3_K | 0.08 | 0.08 | `fused_q3k_*` |
+| Q2_K | 0.15 | 0.15 | `fused_q2k_*` |
 
 ## References
 

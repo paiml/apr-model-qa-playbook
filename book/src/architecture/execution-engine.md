@@ -94,6 +94,56 @@ let result = tool_exec.execute_inspect_verified();
 // Gate: F-INSPECT-META-001
 ```
 
+## Kernel Correctness Testing
+
+The execution engine serves as the **end-to-end oracle for kernel correctness** across the
+Sovereign AI Stack. While trueno implements low-level SIMD and CUDA kernels (quantized matmul,
+RMSNorm, attention), and realizar dispatches those kernels at inference time, the QA playbook
+validates that the full pipeline produces correct output at the model level.
+
+### How Gateways Catch Kernel Bugs
+
+| Gateway | Kernel Bug Detected | Root Cause Chain |
+|---------|---------------------|------------------|
+| G0-LAYOUT | Tensor layout mismatch | GGUF column-major data fed to row-major kernel (LAYOUT-002) |
+| G3 (Crash) | Kernel segfault (exit 139) | Misaligned memory access in SIMD kernel |
+| G4 (Garbage) | Kernel produces wrong output | Quantized matmul numerical error, softmax collapse |
+| F-CONTRACT-I4 | Statistical drift beyond tolerance | Quantization kernel loses precision beyond dtype tolerance |
+| F-CONV-RT-001 | Round-trip divergence | Conversion kernel transposes incorrectly |
+
+### The Five-Whys Chain (GH-190)
+
+The connection between kernel correctness and garbage output follows a causal chain:
+
+```
+Why 1: Model outputs repetitive garbage
+Why 2: Softmax distribution collapses to uniform
+Why 3: GPU matmul kernel produces incorrect attention scores
+Why 4: Weight tensors are in wrong layout (column-major vs row-major)
+Why 5: GGUF was used without conversion through aprender
+```
+
+Gateway G4 (GarbageOracle) detects this at the output level. Contract invariant I-4
+(Statistical Preservation) catches it at the tensor level. Together, they provide
+defense-in-depth against kernel bugs without requiring direct kernel-level unit tests.
+
+### Relationship to trueno and HuggingFace Kernels
+
+The QA playbook and CUDA kernel projects (trueno, HuggingFace kernels) address the
+same problem space from opposite directions:
+
+| Concern | Kernel Projects (trueno, HF kernels) | QA Playbook |
+|---------|--------------------------------------|-------------|
+| RMSNorm | Implement optimized kernel | Verify output is not garbage |
+| Quantized MatMul | Implement SIMD/CUDA kernel | Verify statistical preservation |
+| Attention | Implement fused attention | Verify no softmax collapse |
+| Layout | Provide row-major kernels | Verify correct layout is used |
+| Testing | Unit test kernel output | End-to-end falsification of model output |
+
+The playbook's `GarbageOracle`, contract invariants (I-1 through I-5), and metamorphic
+relation gates (MR-RT, MR-CARD, MR-IDEM, MR-COM) together form a comprehensive
+kernel correctness oracle that operates at the model-output level.
+
 ## Performance Metrics
 
 ```rust

@@ -99,6 +99,26 @@ output: "The answer is 4."
 output: "aaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 ```
 
+### G4 as Kernel Correctness Oracle
+
+G4 is the primary end-to-end detector for kernel bugs in the Sovereign AI Stack.
+When trueno's SIMD/CUDA kernels (quantized matmul, RMSNorm, attention) produce
+incorrect results, the effect propagates through inference and manifests as
+garbage output that the `GarbageOracle` catches.
+
+**Common kernel-related G4 failures:**
+
+| Garbage Pattern | Likely Kernel Root Cause |
+|-----------------|------------------------|
+| Non-ASCII gibberish with mixed scripts | LAYOUT-002 violation (column-major data in row-major kernel) |
+| Repetitive token loops | Softmax collapse from incorrect attention kernel output |
+| NaN/Inf in output | Numerical instability in quantized matmul |
+| Replacement character (U+FFFD) | Encoding corruption from dtype mismatch |
+
+This makes the QA playbook complementary to kernel-level testing: trueno and
+HuggingFace kernels validate individual kernel operations, while the playbook
+validates that the full kernel pipeline produces correct model output.
+
 ## Falsification Gates (F-*)
 
 Beyond gateways, falsification gates test specific behaviors:
