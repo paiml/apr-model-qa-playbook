@@ -445,6 +445,17 @@ impl ScenarioGenerator {
         self
     }
 
+    /// Append architecture-targeted prompts from a kernel profile.
+    ///
+    /// This adds the kernel-specific prompts to the existing prompt set,
+    /// so scenarios will exercise both default and architecture-specific prompts.
+    #[must_use]
+    pub fn with_kernel_profile(mut self, profile: &crate::kernel_profile::KernelProfile) -> Self {
+        let extra = profile.all_prompts();
+        self.prompts.extend(extra);
+        self
+    }
+
     /// Generate all scenarios for a model
     #[must_use]
     pub fn generate(&self) -> Vec<QaScenario> {
@@ -1095,6 +1106,24 @@ mod tests {
 
         let cmd = scenario.to_command("model.gguf");
         assert!(cmd.contains("--trace-level layer"));
+    }
+
+    #[test]
+    fn test_with_kernel_profile() {
+        let model = ModelId::new("test", "model");
+        let constraints = crate::kernel_profile::ArchConstraints {
+            attention_type: Some("gqa".to_string()),
+            activation: Some("silu".to_string()),
+            norm_type: Some("rmsnorm".to_string()),
+            has_bias: Some(true),
+            ..crate::kernel_profile::ArchConstraints::default()
+        };
+        let profile = crate::kernel_profile::profile_from_constraints("test", &constraints, None);
+        let original_len = default_prompts().len();
+        let profile_prompts = profile.all_prompts().len();
+
+        let generator = ScenarioGenerator::new(model).with_kernel_profile(&profile);
+        assert_eq!(generator.prompts.len(), original_len + profile_prompts);
     }
 
     // --- Mutation-killing tests for mqs_category return values ---

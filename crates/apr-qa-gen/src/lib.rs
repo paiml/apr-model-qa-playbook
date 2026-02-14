@@ -24,15 +24,22 @@
 #![cfg_attr(test, allow(clippy::redundant_closure_for_method_calls))]
 #![cfg_attr(test, allow(clippy::redundant_clone))]
 
+pub mod bootstrapper;
 pub mod error;
 pub mod hf_parity;
+pub mod kernel_profile;
 pub mod models;
 pub mod oracle;
 pub mod proptest_impl;
 pub mod scenario;
 
+pub use bootstrapper::{BootstrapConfig, BootstrappedPlaybook, bootstrap_playbook, to_yaml};
 pub use error::{Error, Result};
 pub use hf_parity::{GoldenOutput, HfParityOracle, TensorDiff, Tolerance, hash_prompt};
+pub use kernel_profile::{
+    ArchConstraints, ArchSizeVariant, KernelOp, KernelProfile, PromptCategory,
+    profile_from_constraints,
+};
 pub use models::{ModelId, ModelRegistry, SizeCategory};
 pub use oracle::{Oracle, OracleResult};
 pub use scenario::{AprTool, Backend, Format, Modality, QaScenario, ScenarioGenerator, TraceLevel};

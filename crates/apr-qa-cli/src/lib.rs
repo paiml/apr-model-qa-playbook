@@ -462,6 +462,57 @@ pub fn playbook_path_for_model(model_id: &str, tier: CertTier) -> String {
     )
 }
 
+/// Bootstrap a playbook from a family contract.
+///
+/// Loads the family contract from the contracts directory, extracts architecture
+/// constraints and size variant, then generates an architecture-aware playbook
+/// with kernel-targeted prompts.
+pub fn bootstrap_playbook_from_contract(
+    family: &str,
+    size: &str,
+    hf_repo: &str,
+    tier: &str,
+    contracts_path: &std::path::Path,
+) -> Result<String, String> {
+    use apr_qa_gen::bootstrapper;
+    use apr_qa_runner::family_contract::FamilyRegistry;
+
+    let mut registry = FamilyRegistry::with_path(contracts_path);
+    let contract = registry
+        .load_family(family)
+        .map_err(|e| format!("Failed to load family contract '{family}': {e}"))?;
+
+    let variant = contract.get_size_variant(size).ok_or_else(|| {
+        let available: Vec<&str> = contract.size_variants.keys().map(String::as_str).collect();
+        format!(
+            "Size variant '{size}' not found for family '{family}'. Available: {}",
+            available.join(", ")
+        )
+    })?;
+
+    let constraints = contract
+        .constraints
+        .clone()
+        .ok_or_else(|| format!("Family '{family}' has no constraints defined in contract"))?;
+
+    let arch_constraints = constraints.to_arch_constraints();
+    let arch_variant = variant.to_arch_size_variant();
+    let size_category = contract.get_size_category(size).unwrap_or("small");
+
+    let config = apr_qa_gen::BootstrapConfig {
+        family: family.to_string(),
+        size_variant: size.to_string(),
+        hf_repo: hf_repo.to_string(),
+        tier: tier.to_string(),
+        kernel_profile: None,
+    };
+
+    let playbook =
+        bootstrapper::bootstrap_playbook(&config, &arch_constraints, &arch_variant, size_category);
+
+    bootstrapper::to_yaml(&playbook)
+}
+
 /// Certify a single model with the given configuration
 ///
 /// Returns a `ModelCertificationResult` with the outcome.

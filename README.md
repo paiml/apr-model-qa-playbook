@@ -236,6 +236,8 @@ cargo run --bin apr-qa -- certify --family qwen-coder --tier deep
 │  │ • proptest   │    │ • parallel   │    │ • MQS score  │                  │
 │  │ • scenarios  │    │ • execution  │    │ • JUnit XML  │                  │
 │  │ • oracles    │    │ • evidence   │    │ • HTML/MD    │                  │
+│  │ • kernels    │    │              │    │              │                  │
+│  │ • bootstrap  │    │              │    │              │                  │
 │  └──────────────┘    └──────────────┘    └──────────────┘                  │
 │         │                    │                    │                          │
 │         └────────────────────┼────────────────────┘                          │
@@ -255,7 +257,7 @@ cargo run --bin apr-qa -- certify --family qwen-coder --tier deep
 
 | Crate | Purpose |
 |-------|---------|
-| `apr-qa-gen` | Scenario generation with proptest, oracle definitions |
+| `apr-qa-gen` | Scenario generation with proptest, oracle definitions, kernel profiles, playbook bootstrapping |
 | `apr-qa-runner` | Playbook execution, differential testing, bug patterns |
 | `apr-qa-report` | MQS scoring, JUnit/HTML report generation |
 | `apr-qa-certify` | Two-tier certification, README sync, tier-aware scoring |
@@ -387,11 +389,11 @@ trace_payload:
 ```
 apr-model-qa-playbook/
 ├── crates/
-│   ├── apr-qa-gen/        # Scenario generation + oracles (proptest)
+│   ├── apr-qa-gen/        # Scenario generation + oracles + kernel profiles + bootstrapper
 │   ├── apr-qa-runner/     # Playbook execution (Rayon parallel, 16 modules)
 │   ├── apr-qa-report/     # MQS scoring + JUnit/HTML/Markdown reports
 │   ├── apr-qa-certify/    # Tier-aware scoring, README sync, CSV export
-│   └── apr-qa-cli/        # CLI binary (13 subcommands)
+│   └── apr-qa-cli/        # CLI binary (14 subcommands)
 ├── certifications/        # Model certification evidence (39 models)
 │   └── <model>/evidence.json
 ├── playbooks/

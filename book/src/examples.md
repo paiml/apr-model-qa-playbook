@@ -16,6 +16,7 @@ These examples can be run with `cargo run --example <name> -p <crate>`.
 | `fail_fast_demo` | apr-qa-cli | `cargo run --example fail_fast_demo -p apr-qa-cli` |
 | `integrity_lock_demo` | apr-qa-cli | `cargo run --example integrity_lock_demo -p apr-qa-cli` |
 | `contract_demo` | apr-qa-runner | `cargo run --example contract_demo -p apr-qa-runner` |
+| `bootstrap_playbook` | apr-qa-gen | `cargo run --example bootstrap_playbook -p apr-qa-gen` |
 
 ## Generating QA Scenarios
 
@@ -845,6 +846,93 @@ Tensor name validation:
 | I-3   | No Silent Fallbacks       | Contract    | F-CONTRACT-I3-001  |
 | I-4   | Statistical Preservation  | Contract    | F-CONTRACT-I4-001  |
 | I-5   | Tokenizer Roundtrip       | Contract    | F-CONTRACT-I5-001  |
+```
+
+## Bootstrapping Architecture-Aware Playbooks
+
+The `bootstrap_playbook` example demonstrates kernel profile-driven playbook generation.
+Instead of generic test prompts, bootstrapped playbooks contain architecture-specific prompts
+that stress-test the exact kernel operations each model family exercises.
+
+```rust
+use apr_qa_gen::{
+    ArchConstraints, ArchSizeVariant, BootstrapConfig,
+    bootstrap_playbook, profile_from_constraints, to_yaml,
+};
+
+fn main() {
+    // Define architecture constraints (from a family contract)
+    let constraints = ArchConstraints {
+        attention_type: Some("gqa".to_string()),
+        activation: Some("silu".to_string()),
+        norm_type: Some("rmsnorm".to_string()),
+        positional_encoding: Some("rope".to_string()),
+        mlp_type: Some("swiglu".to_string()),
+        ..Default::default()
+    };
+
+    // Build kernel profile from constraints
+    let profile = profile_from_constraints("qwen2", &constraints, Some(32_768));
+    println!("Kernel ops: {}", profile.kernel_ops.len());
+    println!("Prompts: {}", profile.prompt_count());
+
+    // Bootstrap a complete playbook
+    let config = BootstrapConfig {
+        family: "qwen2".to_string(),
+        size_variant: "1.5b".to_string(),
+        hf_repo: "Qwen/Qwen2.5-Coder-1.5B-Instruct".to_string(),
+        tier: "mvp".to_string(),
+        kernel_profile: None,
+    };
+
+    let size_variant = ArchSizeVariant {
+        parameters: "1.5B".to_string(),
+        hidden_dim: 1536,
+        num_layers: 28,
+        num_heads: 12,
+        num_kv_heads: Some(2),
+        ..Default::default()
+    };
+
+    let playbook = bootstrap_playbook(&config, &constraints, &size_variant, "small");
+    let yaml = to_yaml(&playbook).unwrap();
+    println!("{yaml}");
+}
+```
+
+### Output
+
+```
+Kernel ops: 8
+Prompts: 16
+
+# Auto-generated playbook - bootstrapped from family contract
+# Family: qwen2
+# Kernel ops: GroupedQueryAttention, RmsNorm, Silu, SwiGlu, Rope, BiasAdd, ...
+# Prompts: 16 architecture-targeted prompts
+
+name: qwen2-1.5b-mvp
+version: 1.0.0
+model:
+  hf_repo: Qwen/Qwen2.5-Coder-1.5B-Instruct
+  formats: [gguf, safetensors, apr]
+  ...
+```
+
+### CLI Usage
+
+```bash
+# Bootstrap from family contract
+apr-qa bootstrap qwen2 1.5b \
+    --hf-repo Qwen/Qwen2.5-Coder-1.5B-Instruct \
+    --tier mvp \
+    --output playbooks/models/qwen2.5-coder-1.5b-mvp.playbook.yaml
+
+# Preview without writing
+apr-qa bootstrap llama 8b \
+    --hf-repo meta-llama/Llama-3.1-8B-Instruct \
+    --tier mvp \
+    --dry-run
 ```
 
 ## YAML Playbook Examples

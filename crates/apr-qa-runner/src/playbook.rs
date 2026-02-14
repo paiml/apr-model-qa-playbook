@@ -280,12 +280,19 @@ impl Playbook {
 
         let model_id = ModelId::new(&self.model.hf_org(), &self.model.hf_name());
 
+        // Use custom prompts from test_matrix if provided, otherwise fall back
+        let default_prompt = "What is 2+2?".to_string();
+        let prompts: &[String] = self
+            .test_matrix
+            .prompts
+            .as_deref()
+            .unwrap_or_else(|| std::slice::from_ref(&default_prompt));
+
         for modality in &self.test_matrix.modalities {
             for backend in &self.test_matrix.backends {
                 for format in &self.model.formats {
-                    for _ in 0..self.test_matrix.scenario_count {
-                        // Use a simple prompt for now
-                        let prompt = "What is 2+2?".to_string();
+                    for i in 0..self.test_matrix.scenario_count {
+                        let prompt = prompts[i % prompts.len()].clone();
                         scenarios.push(QaScenario::new(
                             model_id.clone(),
                             *modality,
@@ -523,6 +530,9 @@ pub struct TestMatrix {
     /// Number of scenarios per combination
     #[serde(default = "default_scenario_count")]
     pub scenario_count: usize,
+    /// Architecture-specific prompts (optional; falls back to default if absent)
+    #[serde(default)]
+    pub prompts: Option<Vec<String>>,
 }
 
 fn default_modalities() -> Vec<Modality> {
@@ -543,6 +553,7 @@ impl Default for TestMatrix {
             modalities: default_modalities(),
             backends: default_backends(),
             scenario_count: default_scenario_count(),
+            prompts: None,
         }
     }
 }

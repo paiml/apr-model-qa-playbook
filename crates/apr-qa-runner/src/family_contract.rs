@@ -66,6 +66,9 @@ pub struct SizeVariant {
 }
 
 /// Architectural constraints from family YAML.
+///
+/// Use `to_arch_constraints()` to convert to `apr_qa_gen::ArchConstraints`
+/// for kernel profile generation.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Constraints {
     /// Attention type: "mha", "gqa", or "mqa"
@@ -95,6 +98,39 @@ pub struct Constraints {
     /// MLP type: "swiglu", "gelu_mlp", "relu_mlp"
     #[serde(default)]
     pub mlp_type: Option<String>,
+}
+
+impl Constraints {
+    /// Convert to `apr_qa_gen::ArchConstraints` for kernel profile generation.
+    #[must_use]
+    pub fn to_arch_constraints(&self) -> apr_qa_gen::ArchConstraints {
+        apr_qa_gen::ArchConstraints {
+            attention_type: self.attention_type.clone(),
+            activation: self.activation.clone(),
+            norm_type: self.norm_type.clone(),
+            has_bias: self.has_bias,
+            tied_embeddings: self.tied_embeddings,
+            positional_encoding: self.positional_encoding.clone(),
+            mlp_type: self.mlp_type.clone(),
+        }
+    }
+}
+
+impl SizeVariant {
+    /// Convert to `apr_qa_gen::ArchSizeVariant` for kernel profile generation.
+    #[must_use]
+    pub fn to_arch_size_variant(&self) -> apr_qa_gen::ArchSizeVariant {
+        apr_qa_gen::ArchSizeVariant {
+            parameters: self.parameters.clone(),
+            hidden_dim: self.hidden_dim,
+            num_layers: self.num_layers,
+            num_heads: self.num_heads,
+            num_kv_heads: self.num_kv_heads,
+            intermediate_dim: self.intermediate_dim,
+            vocab_size: self.vocab_size,
+            max_position_embeddings: self.max_position_embeddings,
+        }
+    }
 }
 
 /// Tensor template from family YAML.
@@ -712,5 +748,57 @@ size_variants:
         // Only valid YAML should be loaded
         assert_eq!(count, 1);
         assert!(registry.has_family("qwen2"));
+    }
+
+    #[test]
+    fn test_constraints_to_arch_constraints() {
+        let contract = FamilyContract::from_yaml(SAMPLE_YAML).expect("parse");
+        let constraints = contract.constraints.expect("constraints");
+        let arch = constraints.to_arch_constraints();
+
+        assert_eq!(arch.attention_type, Some("gqa".to_string()));
+        assert_eq!(arch.activation, Some("silu".to_string()));
+        assert_eq!(arch.norm_type, Some("rmsnorm".to_string()));
+        assert_eq!(arch.has_bias, Some(true));
+        assert_eq!(arch.tied_embeddings, Some(false));
+        assert_eq!(arch.positional_encoding, Some("rope".to_string()));
+        assert_eq!(arch.mlp_type, Some("swiglu".to_string()));
+    }
+
+    #[test]
+    fn test_size_variant_to_arch_size_variant() {
+        let contract = FamilyContract::from_yaml(SAMPLE_YAML).expect("parse");
+        let variant = contract.get_size_variant("1.5b").expect("1.5b");
+        let arch = variant.to_arch_size_variant();
+
+        assert_eq!(arch.parameters, "1.5B");
+        assert_eq!(arch.hidden_dim, 1536);
+        assert_eq!(arch.num_layers, 28);
+        assert_eq!(arch.num_heads, 12);
+        assert_eq!(arch.num_kv_heads, Some(2));
+    }
+
+    #[test]
+    fn test_arch_constraints_kernel_profile() {
+        let contract = FamilyContract::from_yaml(SAMPLE_YAML).expect("parse");
+        let variant = contract.get_size_variant("1.5b").expect("1.5b");
+        let arch_variant = variant.to_arch_size_variant();
+        let constraints = contract.constraints.expect("constraints");
+        let arch = constraints.to_arch_constraints();
+
+        let profile = apr_qa_gen::profile_from_constraints(
+            &contract.family,
+            &arch,
+            arch_variant.max_position_embeddings,
+        );
+
+        assert_eq!(profile.family, "qwen2");
+        assert!(
+            profile
+                .kernel_ops
+                .contains(&apr_qa_gen::KernelOp::GroupedQueryAttention)
+        );
+        assert!(profile.kernel_ops.contains(&apr_qa_gen::KernelOp::RmsNorm));
+        assert!(!profile.all_prompts().is_empty());
     }
 }

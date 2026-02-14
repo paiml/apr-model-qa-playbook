@@ -8,12 +8,13 @@
 #![allow(clippy::ptr_arg)]
 
 use apr_qa_cli::{
-    CertTier, PlaybookRunConfig, build_certification_config_with_policy, build_execution_config,
-    calculate_mqs_score, calculate_popperian_score, collect_evidence, execute_auto_tickets,
-    execute_playbook, filter_models_by_size, generate_html_report, generate_junit_report,
-    generate_lock_file, generate_model_scenarios, generate_tickets_from_evidence, list_all_models,
-    load_playbook, parse_evidence, parse_failure_policy, playbook_path_for_model,
-    scenarios_to_json, scenarios_to_yaml,
+    CertTier, PlaybookRunConfig, bootstrap_playbook_from_contract,
+    build_certification_config_with_policy, build_execution_config, calculate_mqs_score,
+    calculate_popperian_score, collect_evidence, execute_auto_tickets, execute_playbook,
+    filter_models_by_size, generate_html_report, generate_junit_report, generate_lock_file,
+    generate_model_scenarios, generate_tickets_from_evidence, list_all_models, load_playbook,
+    parse_evidence, parse_failure_policy, playbook_path_for_model, scenarios_to_json,
+    scenarios_to_yaml,
 };
 use apr_qa_report::{MqsScore, PopperianScore};
 use apr_qa_runner::ToolExecutor;
@@ -362,6 +363,40 @@ enum Commands {
         tier: String,
     },
 
+    /// Bootstrap an architecture-aware playbook from family contract
+    ///
+    /// Generates a playbook with architecture-specific prompts that stress-test
+    /// the exact kernel operations each model family exercises (GQA, RoPE, etc.)
+    Bootstrap {
+        /// Model family name (e.g., "qwen2", "llama", "falcon")
+        #[arg(value_name = "FAMILY")]
+        family: String,
+
+        /// Model size variant (e.g., "1.5b", "7b", "0.5b")
+        #[arg(value_name = "SIZE")]
+        size: String,
+
+        /// HuggingFace repository ID (e.g., "Qwen/Qwen2.5-Coder-1.5B-Instruct")
+        #[arg(long)]
+        hf_repo: String,
+
+        /// Certification tier
+        #[arg(long, default_value = "mvp")]
+        tier: String,
+
+        /// Output path for generated playbook YAML
+        #[arg(short, long)]
+        output: Option<PathBuf>,
+
+        /// Path to family contracts directory
+        #[arg(long, default_value = "../aprender/contracts/model-families")]
+        contracts_path: PathBuf,
+
+        /// Dry run: print YAML to stdout instead of writing to file
+        #[arg(long)]
+        dry_run: bool,
+    },
+
     /// Validate model against tensor layout contract (Issue #4)
     ///
     /// Checks that an APR model file conforms to the tensor layout contract
@@ -579,6 +614,25 @@ fn main() {
                 &size,
                 &playbook_name,
                 &tier,
+            );
+        }
+        Commands::Bootstrap {
+            family,
+            size,
+            hf_repo,
+            tier,
+            output,
+            contracts_path,
+            dry_run,
+        } => {
+            run_bootstrap(
+                &family,
+                &size,
+                &hf_repo,
+                &tier,
+                output.as_deref(),
+                &contracts_path,
+                dry_run,
             );
         }
         Commands::ValidateContract {
@@ -3023,5 +3077,60 @@ fn exit_with_validation_status(passed: bool) -> ! {
     } else {
         println!("\n✗ Model DOES NOT conform to tensor layout contract");
         std::process::exit(1);
+    }
+}
+
+/// Bootstrap an architecture-aware playbook from a family contract.
+fn run_bootstrap(
+    family: &str,
+    size: &str,
+    hf_repo: &str,
+    tier: &str,
+    output: Option<&Path>,
+    contracts_path: &Path,
+    dry_run: bool,
+) {
+    println!(
+        "{} {}",
+        "Bootstrapping playbook:".bold().cyan(),
+        format!("{family}-{size}-{tier}").bold()
+    );
+    println!("  {} {hf_repo}", "HF Repo:".dimmed());
+    println!("  {} {}", "Contracts:".dimmed(), contracts_path.display());
+
+    match bootstrap_playbook_from_contract(family, size, hf_repo, tier, contracts_path) {
+        Ok(yaml) => {
+            if dry_run {
+                println!("\n{yaml}");
+            } else {
+                let out_path = output.map_or_else(
+                    || {
+                        PathBuf::from(format!(
+                            "playbooks/models/{family}-{size}-{tier}.playbook.yaml"
+                        ))
+                    },
+                    PathBuf::from,
+                );
+                if let Some(parent) = out_path.parent() {
+                    if let Err(e) = std::fs::create_dir_all(parent) {
+                        eprintln!("Error creating directory: {e}");
+                        std::process::exit(1);
+                    }
+                }
+                match std::fs::write(&out_path, &yaml) {
+                    Ok(()) => {
+                        println!("\n{} {}", "Written:".bold().green(), out_path.display());
+                    }
+                    Err(e) => {
+                        eprintln!("Error writing playbook: {e}");
+                        std::process::exit(1);
+                    }
+                }
+            }
+        }
+        Err(e) => {
+            eprintln!("{} {e}", "Error:".bold().red());
+            std::process::exit(1);
+        }
     }
 }

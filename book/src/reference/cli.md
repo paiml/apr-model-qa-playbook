@@ -280,6 +280,36 @@ Options:
 - `--playbook-name <NAME>` - Playbook name
 - `--tier <TIER>` - Certification tier (default: `mvp`)
 
+#### bootstrap
+
+Bootstrap an architecture-aware playbook from a family contract:
+
+```bash
+apr-qa bootstrap <FAMILY> <SIZE> --hf-repo <REPO> [OPTIONS]
+```
+
+Options:
+- `--hf-repo <REPO>` - HuggingFace repository ID (e.g., `Qwen/Qwen2.5-Coder-1.5B-Instruct`)
+- `--tier <TIER>` - Certification tier (default: `mvp`)
+- `-o, --output <PATH>` - Output path for generated playbook YAML
+- `--contracts-path <DIR>` - Path to family contracts directory (default: `../aprender/contracts/model-families`)
+- `--dry-run` - Print YAML to stdout instead of writing to file
+
+Examples:
+```bash
+# Bootstrap a Qwen2 1.5B MVP playbook
+apr-qa bootstrap qwen2 1.5b \
+    --hf-repo Qwen/Qwen2.5-Coder-1.5B-Instruct \
+    --tier mvp \
+    --output playbooks/models/qwen2.5-coder-1.5b-mvp.playbook.yaml
+
+# Dry run to preview generated YAML
+apr-qa bootstrap llama 8b \
+    --hf-repo meta-llama/Llama-3.1-8B-Instruct \
+    --tier mvp \
+    --dry-run
+```
+
 #### validate-contract
 
 Validate model against tensor layout contract:

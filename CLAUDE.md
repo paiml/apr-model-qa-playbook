@@ -62,16 +62,16 @@ cargo test --package apr-qa-runner -- test_name --nocapture
 
 ```
 crates/
-├── apr-qa-gen/     # Scenario generation + oracles (proptest)
+├── apr-qa-gen/     # Scenario generation + oracles + kernel profiles + bootstrapper
 ├── apr-qa-runner/  # Playbook execution (Rayon parallel)
 ├── apr-qa-report/  # MQS scoring + JUnit/HTML/Markdown reports
 ├── apr-qa-certify/ # Tier-aware scoring, README sync, CSV export
-└── apr-qa-cli/     # CLI binary with 13 subcommands
+└── apr-qa-cli/     # CLI binary with 14 subcommands
 ```
 
 ### Core Data Flow
 
-1. **apr-qa-gen**: Generates `QaScenario` instances via proptest. Each scenario is a falsifiable hypothesis with prompt, modality (run/chat/serve), backend (cpu/gpu), and format (gguf/safetensors/apr).
+1. **apr-qa-gen**: Generates `QaScenario` instances via proptest. Each scenario is a falsifiable hypothesis with prompt, modality (run/chat/serve), backend (cpu/gpu), and format (gguf/safetensors/apr). Also provides kernel profile mapping (architecture constraints → kernel ops → targeted prompts) and playbook bootstrapping.
 
 2. **apr-qa-runner**: Executes scenarios via `ParallelExecutor` using Rayon. Collects `Evidence` with outcomes: `Corroborated`, `Falsified`, `Timeout`, `Crashed`.
 
@@ -79,7 +79,7 @@ crates/
 
 4. **apr-qa-certify**: Tier-aware scoring (Smoke/MVP/Quick/Standard/Deep), certification status computation, README table sync from models.csv. Binary: `apr-qa-readme-sync`.
 
-5. **apr-qa-cli**: Orchestrates the full pipeline with 13 subcommands: certify, run, tools, generate, score, report, list, lock-playbooks, tickets, parity, export-csv, export-evidence, validate-contract.
+5. **apr-qa-cli**: Orchestrates the full pipeline with 14 subcommands: certify, run, tools, generate, score, report, list, lock-playbooks, tickets, parity, export-csv, export-evidence, bootstrap, validate-contract.
 
 ### Key Types
 
@@ -87,6 +87,8 @@ crates/
 - `Evidence` (apr-qa-runner): Test result with outcome, metrics, stderr
 - `MqsScore` (apr-qa-report): Qualification score with gateways and category breakdowns
 - `Oracle` (apr-qa-gen): Verifies output correctness (Arithmetic, Garbage, CodeSyntax, Response)
+- `KernelProfile` (apr-qa-gen): Architecture → kernel ops + targeted prompt mapping
+- `BootstrappedPlaybook` (apr-qa-gen): Complete playbook generated from kernel profile
 
 ### Gateway Logic (G0-G4)
 

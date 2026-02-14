@@ -88,6 +88,11 @@ properties:
         minimum: 1
         maximum: 1000
         default: 100
+      prompts:
+        type: array
+        description: "Architecture-specific prompts (optional; falls back to default when absent)"
+        items:
+          type: string
       seed:
         type: integer
         description: "Random seed for reproducibility"
@@ -299,6 +304,26 @@ properties:
       gates:
         type: array
         items: { type: string }
+
+  kernel_profile:
+    type: object
+    description: "Kernel profile metadata documenting which kernel operations are under test"
+    properties:
+      family:
+        type: string
+        description: "Model family name"
+      kernel_ops:
+        type: array
+        description: "Kernel operations exercised by this architecture"
+        items:
+          type: string
+      prompt_count:
+        type: integer
+        description: "Total number of architecture-targeted prompts"
+        minimum: 0
+      long_context:
+        type: boolean
+        description: "Whether this architecture supports long context (>4K tokens)"
 
   metadata:
     type: object
