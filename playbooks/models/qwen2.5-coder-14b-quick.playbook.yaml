@@ -31,7 +31,7 @@ property_tests:
 # Minimal Differential Testing (v1.3.0)
 differential_tests:
   inference_compare:
-    enabled: true
+    enabled: "true"
     prompt: "What is 2+2?"
     max_tokens: 5
     tolerance: 1e-5
@@ -39,6 +39,6 @@ differential_tests:
 
 # Trace Payload (v1.3.0)
 trace_payload:
-  enabled: true
+  enabled: "true"
   prompt: "2+2="
   gates: ["F-TRACE-PAYLOAD-001"]

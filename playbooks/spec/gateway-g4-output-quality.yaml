@@ -24,21 +24,21 @@ scenarios:
   - name: "Arithmetic produces valid output"
     command: "apr run ${MODEL} '2+2='"
     expected:
-      garbage_check: false
+      garbage_check: "false"
       min_unique_chars: 2
     rationale: "Simple computation"
 
   - name: "Code prompt produces valid syntax"
     command: "apr run ${MODEL} 'def hello():'"
     expected:
-      garbage_check: false
+      garbage_check: "false"
       # Should not be random characters
     rationale: "Code continuation"
 
   - name: "Text prompt produces coherent text"
     command: "apr run ${MODEL} 'The capital of France is'"
     expected:
-      garbage_check: false
+      garbage_check: "false"
       min_unique_chars: 5
     rationale: "Factual completion"
 

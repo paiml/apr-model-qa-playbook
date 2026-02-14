@@ -1,0 +1,17 @@
+# Clippy configuration for APR Model QA Playbook
+# See: https://doc.rust-lang.org/clippy/lint_configuration.html
+
+# Maximum cognitive complexity per function
+cognitive-complexity-threshold = 15
+
+# Maximum number of lines per function
+too-many-lines-threshold = 100
+
+# Maximum number of arguments per function
+too-many-arguments-threshold = 7
+
+# Disallowed methods (safety-critical)
+disallowed-methods = [
+    { path = "std::env::set_var", reason = "Thread-unsafe; use test isolation instead" },
+    { path = "std::env::remove_var", reason = "Thread-unsafe; use test isolation instead" },
+]

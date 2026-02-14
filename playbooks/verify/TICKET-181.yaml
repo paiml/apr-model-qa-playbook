@@ -64,10 +64,10 @@ verification_gates:
     condition: "diff < 1e-6 && nan_count == 0 && inf_count == 0"
 
 acceptance:
-  all_gates_pass: true
+  all_gates_pass: "true"
   max_output_diff: 1e-6
-  no_nan_values: true
-  no_inf_values: true
+  no_nan_values: "true"
+  no_inf_values: "true"
   mqs_score_minimum: 87
 
 failure_policy: stop_on_first

@@ -16,13 +16,13 @@ all: check
 build:
 	cargo build --workspace
 
-# Run all tests
+# Run all tests (PROPTEST_CASES for reproducible property-based testing)
 test:
-	cargo test --workspace
+	PROPTEST_CASES=256 cargo test --workspace
 
 # Run tests with verbose output
 test-verbose:
-	cargo test --workspace -- --nocapture
+	PROPTEST_CASES=256 cargo test --workspace -- --nocapture
 
 # Run clippy lints
 lint:

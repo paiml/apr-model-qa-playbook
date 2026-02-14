@@ -637,4 +637,80 @@ size_variants:
             }
         }
     }
+
+    #[test]
+    fn test_registry_load_all_with_yaml_dir() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join("qwen2.yaml"), SAMPLE_YAML).unwrap();
+        std::fs::write(
+            dir.path().join("minimal.yaml"),
+            "family: minimal\nsize_variants:\n  1b:\n    parameters: \"1B\"\n    hidden_dim: 1024\n    num_layers: 12\n    num_heads: 16\n",
+        ).unwrap();
+        // Non-YAML files should be skipped
+        std::fs::write(dir.path().join("readme.txt"), "not yaml").unwrap();
+        // Underscore-prefixed files should be skipped
+        std::fs::write(dir.path().join("_schema.yaml"), "not a contract").unwrap();
+
+        let mut registry = FamilyRegistry::with_path(dir.path());
+        let count = registry.load_all().unwrap();
+        assert_eq!(count, 2);
+        assert!(registry.has_family("qwen2"));
+        assert!(registry.has_family("minimal"));
+        assert!(!registry.has_family("readme"));
+        assert_eq!(registry.families().len(), 2);
+    }
+
+    #[test]
+    fn test_registry_load_family() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join("qwen2.yaml"), SAMPLE_YAML).unwrap();
+
+        let mut registry = FamilyRegistry::with_path(dir.path());
+        let contract = registry.load_family("qwen2").unwrap();
+        assert_eq!(contract.family, "qwen2");
+
+        // Second call should return cached version
+        let contract2 = registry.load_family("qwen2").unwrap();
+        assert_eq!(contract2.family, "qwen2");
+    }
+
+    #[test]
+    fn test_registry_load_family_missing() {
+        let dir = tempfile::tempdir().unwrap();
+        let mut registry = FamilyRegistry::with_path(dir.path());
+        let result = registry.load_family("nonexistent");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_registry_get() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join("qwen2.yaml"), SAMPLE_YAML).unwrap();
+
+        let mut registry = FamilyRegistry::with_path(dir.path());
+        assert!(registry.get("qwen2").is_none());
+        registry.load_all().unwrap();
+        assert!(registry.get("qwen2").is_some());
+        assert_eq!(registry.get("qwen2").unwrap().family, "qwen2");
+    }
+
+    #[test]
+    fn test_registry_load_all_nonexistent_dir() {
+        let mut registry = FamilyRegistry::with_path("/nonexistent/path");
+        let count = registry.load_all().unwrap();
+        assert_eq!(count, 0);
+    }
+
+    #[test]
+    fn test_registry_load_all_with_invalid_yaml() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join("good.yaml"), SAMPLE_YAML).unwrap();
+        std::fs::write(dir.path().join("bad.yaml"), "invalid: [[[").unwrap();
+
+        let mut registry = FamilyRegistry::with_path(dir.path());
+        let count = registry.load_all().unwrap();
+        // Only valid YAML should be loaded
+        assert_eq!(count, 1);
+        assert!(registry.has_family("qwen2"));
+    }
 }

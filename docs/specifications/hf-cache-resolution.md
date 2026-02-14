@@ -146,5 +146,5 @@ All tests use `tempfile::TempDir` to create isolated test environments without m
 ## 7. References
 
 - [HuggingFace Hub Cache Documentation](https://huggingface.co/docs/huggingface_hub/guides/manage-cache)
-- [LAYOUT-002: Row-Major Mandate](../CLAUDE.md)
+- [LAYOUT-002: Row-Major Mandate](../../CLAUDE.md)
 - Related: HF-PARITY-001 (HuggingFace Parity Oracle)

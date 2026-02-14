@@ -66,11 +66,11 @@ verification_gates:
 
 # Acceptance criteria
 acceptance:
-  all_gates_pass: true
+  all_gates_pass: "true"
   max_output_diff: 1e-6
-  no_nan_values: true
-  no_inf_values: true
-  no_numerical_explosion: true  # mean must be in [-100, 100]
+  no_nan_values: "true"
+  no_inf_values: "true"
+  no_numerical_explosion: "true"  # mean must be in [-100, 100]
 
 failure_policy: stop_on_first
 

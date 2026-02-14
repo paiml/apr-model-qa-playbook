@@ -53,7 +53,7 @@ scenarios:
     expected:
       exit_code: 1
       stderr_contains: "not found"
-      no_panic: true
+      no_panic: "true"
     rationale: "Missing files should not crash"
 
   - name: "Invalid file type fails gracefully"
@@ -61,7 +61,7 @@ scenarios:
     expected:
       exit_code: 1
       stderr_contains: "Invalid"
-      no_panic: true
+      no_panic: "true"
     rationale: "Non-model files should be rejected"
 
   - name: "Truncated GGUF fails gracefully"
@@ -69,7 +69,7 @@ scenarios:
     expected:
       exit_code: 1
       stderr_contains: "truncated"
-      no_panic: true
+      no_panic: "true"
     rationale: "Corrupted files should not crash"
 
 # Gate definition

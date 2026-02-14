@@ -394,83 +394,36 @@ impl MqsCalculator {
 
     /// Calculate category scores from evidence
     fn calculate_categories(&self, evidence: &[Evidence]) -> CategoryScores {
-        let mut scores = CategoryScores::default();
-
-        // Group evidence by category (based on gate_id prefix)
-        let mut qual_pass = 0;
-        let mut qual_total = 0;
-        let mut perf_pass = 0;
-        let mut perf_total = 0;
-        let mut stab_pass = 0;
-        let mut stab_total = 0;
-        let mut comp_pass = 0;
-        let mut comp_total = 0;
-        let mut edge_pass = 0;
-        let mut edge_total = 0;
-        let mut regr_pass = 0;
-        let mut regr_total = 0;
-
+        // Tally pass/total per category using a map
+        let mut tallies: HashMap<String, (usize, usize)> = HashMap::new();
         for e in evidence {
-            let category = Self::extract_category(&e.gate_id);
-            let passed = e.outcome.is_pass();
-
-            match category.as_str() {
-                "QUAL" => {
-                    qual_total += 1;
-                    if passed {
-                        qual_pass += 1;
-                    }
-                }
-                "PERF" => {
-                    perf_total += 1;
-                    if passed {
-                        perf_pass += 1;
-                    }
-                }
-                "STAB" => {
-                    stab_total += 1;
-                    if passed {
-                        stab_pass += 1;
-                    }
-                }
-                "COMP" => {
-                    comp_total += 1;
-                    if passed {
-                        comp_pass += 1;
-                    }
-                }
-                "EDGE" => {
-                    edge_total += 1;
-                    if passed {
-                        edge_pass += 1;
-                    }
-                }
-                "REGR" => {
-                    regr_total += 1;
-                    if passed {
-                        regr_pass += 1;
-                    }
-                }
-                _ => {
-                    // Default to QUAL for unknown categories
-                    qual_total += 1;
-                    if passed {
-                        qual_pass += 1;
-                    }
-                }
+            let cat = Self::extract_category(&e.gate_id);
+            let key = match cat.as_str() {
+                "QUAL" | "PERF" | "STAB" | "COMP" | "EDGE" | "REGR" => cat,
+                _ => "QUAL".to_string(), // Default unknown to QUAL
+            };
+            let entry = tallies.entry(key).or_insert((0, 0));
+            entry.1 += 1;
+            if e.outcome.is_pass() {
+                entry.0 += 1;
             }
         }
 
-        // Calculate proportional scores — categories with 0 tests get full credit
-        // (no evidence of failure = no reason to penalize)
-        scores.qual = Self::proportional_score_or_full(qual_pass, qual_total, CategoryScores::MAX_QUAL);
-        scores.perf = Self::proportional_score_or_full(perf_pass, perf_total, CategoryScores::MAX_PERF);
-        scores.stab = Self::proportional_score_or_full(stab_pass, stab_total, CategoryScores::MAX_STAB);
-        scores.comp = Self::proportional_score_or_full(comp_pass, comp_total, CategoryScores::MAX_COMP);
-        scores.edge = Self::proportional_score_or_full(edge_pass, edge_total, CategoryScores::MAX_EDGE);
-        scores.regr = Self::proportional_score_or_full(regr_pass, regr_total, CategoryScores::MAX_REGR);
+        let score_for =
+            |cat: &str, max: u32| -> u32 {
+                let &(pass, total) = tallies.get(cat).unwrap_or(&(0, 0));
+                Self::proportional_score_or_full(pass, total, max)
+            };
 
-        scores
+        // Categories with 0 tests get full credit (no evidence of failure)
+        CategoryScores {
+            qual: score_for("QUAL", CategoryScores::MAX_QUAL),
+            perf: score_for("PERF", CategoryScores::MAX_PERF),
+            stab: score_for("STAB", CategoryScores::MAX_STAB),
+            comp: score_for("COMP", CategoryScores::MAX_COMP),
+            edge: score_for("EDGE", CategoryScores::MAX_EDGE),
+            regr: score_for("REGR", CategoryScores::MAX_REGR),
+        }
     }
 
     /// Extract MQS category from gate ID.
@@ -541,21 +494,24 @@ impl MqsCalculator {
 
     /// Calculate letter grade from normalized score
     fn calculate_grade(score: f64) -> String {
-        match score {
-            s if s >= 97.0 => "A+".to_string(),
-            s if s >= 93.0 => "A".to_string(),
-            s if s >= 90.0 => "A-".to_string(),
-            s if s >= 87.0 => "B+".to_string(),
-            s if s >= 83.0 => "B".to_string(),
-            s if s >= 80.0 => "B-".to_string(),
-            s if s >= 77.0 => "C+".to_string(),
-            s if s >= 73.0 => "C".to_string(),
-            s if s >= 70.0 => "C-".to_string(),
-            s if s >= 67.0 => "D+".to_string(),
-            s if s >= 63.0 => "D".to_string(),
-            s if s >= 60.0 => "D-".to_string(),
-            _ => "F".to_string(),
-        }
+        const GRADE_TABLE: &[(f64, &str)] = &[
+            (97.0, "A+"),
+            (93.0, "A"),
+            (90.0, "A-"),
+            (87.0, "B+"),
+            (83.0, "B"),
+            (80.0, "B-"),
+            (77.0, "C+"),
+            (73.0, "C"),
+            (70.0, "C-"),
+            (67.0, "D+"),
+            (63.0, "D"),
+            (60.0, "D-"),
+        ];
+        GRADE_TABLE
+            .iter()
+            .find(|(threshold, _)| score >= *threshold)
+            .map_or_else(|| "F".to_string(), |(_, grade)| (*grade).to_string())
     }
 }
 

@@ -351,6 +351,28 @@ cargo run --bin apr-qa -- run playbooks/models/my-model-mvp.playbook.yaml \
 - Run `./scripts/validate-schemas.sh` locally
 - Check evidence.json is valid JSON array with required fields
 
+## Code Search Policy
+
+**NEVER use grep/glob for code search. ALWAYS prefer `pmat query`.**
+
+`pmat query` returns quality-annotated, semantically ranked results with TDG grades, complexity, fault patterns, and call graphs.
+
+```bash
+# Find functions by intent
+pmat query "error handling" --limit 10
+
+# Find code with fault patterns (unwrap, panic, unsafe)
+pmat query "unwrap" --faults --exclude-tests
+
+# Find coverage gaps ranked by ROI
+pmat query --coverage-gaps --rank-by impact --limit 20
+
+# Regex search
+pmat query --regex "fn\s+test_\w+" --limit 10
+```
+
+When grep IS acceptable: searching non-code files (TOML, YAML, Markdown).
+
 ## Stack Documentation Search
 
 Query this component's documentation and the entire Sovereign AI Stack using batuta's RAG Oracle:

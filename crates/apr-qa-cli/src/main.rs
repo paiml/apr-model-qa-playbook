@@ -600,6 +600,72 @@ fn main() {
 #[allow(clippy::fn_params_excessive_bools)]
 #[allow(clippy::too_many_lines)]
 #[allow(clippy::too_many_arguments)]
+fn print_run_status(
+    playbook: &apr_qa_runner::Playbook,
+    effective_workers: usize,
+    model_path: Option<&str>,
+    dry_run: bool,
+    timeout: u64,
+    skip_conversion_tests: bool,
+    hf_parity: bool,
+    hf_corpus_path: &str,
+    hf_model_family: Option<&str>,
+) {
+    println!(
+        "{} {}",
+        "Running playbook:".bold(),
+        playbook.name.bold().cyan()
+    );
+    println!("  {} {}", "Total tests:".dimmed(), playbook.total_tests());
+    println!("  {} {dry_run}", "Dry run:".dimmed());
+    println!(
+        "  {} {:?}",
+        "Model size:".dimmed(),
+        playbook.size_category()
+    );
+    if let Some(path) = model_path {
+        println!("  {} {path}", "Model path:".dimmed());
+    }
+    println!(
+        "  {} {} (max for size: {})",
+        "Workers:".dimmed(),
+        effective_workers,
+        playbook.model.size_category.max_workers()
+    );
+    println!("  {} {timeout}ms", "Timeout:".dimmed());
+
+    // Conversion test status (P0 CRITICAL)
+    if !skip_conversion_tests && model_path.is_some() {
+        println!(
+            "  {} {}",
+            "Conversion tests:".dimmed(),
+            "ENABLED (P0 CRITICAL)".bold().green()
+        );
+    } else if skip_conversion_tests {
+        println!(
+            "  {} {}",
+            "Conversion tests:".dimmed(),
+            "DISABLED (WARNING: P0 tests skipped)".bold().yellow()
+        );
+    }
+
+    // HF parity status
+    if hf_parity {
+        println!("  {} {}", "HF parity:".dimmed(), "ENABLED".green());
+        println!("    {} {hf_corpus_path}", "Corpus:".dimmed());
+        if let Some(family) = hf_model_family {
+            println!("    {} {family}", "Model family:".dimmed());
+        } else {
+            println!(
+                "    {} {}",
+                "Model family:".dimmed(),
+                "NOT SET (required for parity tests)".yellow()
+            );
+        }
+    }
+}
+
+#[allow(clippy::fn_params_excessive_bools)]
 fn run_playbook(
     playbook_path: &PathBuf,
     output_dir: &PathBuf,
@@ -619,7 +685,6 @@ fn run_playbook(
     hf_model_family: Option<String>,
     no_integrity_check: bool,
 ) {
-    // Log environment for fail-fast mode (§12.5.3)
     if failure_policy == "fail-fast" {
         log_environment();
     }
@@ -642,13 +707,6 @@ fn run_playbook(
         verify_playbook_lock_or_exit(playbook_path, &playbook.name);
     }
 
-    // Model path resolution is handled by G0-PULL in the executor.
-    // G0-PULL calls `apr pull --json <hf_repo>` which is the authoritative
-    // source for model location (Five-Whys: GH-190). The previous HF-CACHE-001
-    // auto-resolution via resolve_hf_repo_to_cache() could pick up corrupt
-    // cached models (e.g., 2.4GB F32 zeros in HF cache).
-
-    // Validate failure policy
     if parse_failure_policy(failure_policy).is_err() {
         eprintln!("Unknown failure policy: {failure_policy}");
         std::process::exit(1);
@@ -666,33 +724,22 @@ fn run_playbook(
         );
     }
 
-    println!(
-        "{} {}",
-        "Running playbook:".bold(),
-        playbook.name.bold().cyan()
-    );
-    println!("  {} {}", "Total tests:".dimmed(), playbook.total_tests());
-    println!("  {} {dry_run}", "Dry run:".dimmed());
-    println!(
-        "  {} {:?}",
-        "Model size:".dimmed(),
-        playbook.size_category()
-    );
-    if let Some(ref path) = model_path {
-        println!("  {} {path}", "Model path:".dimmed());
-    }
-    println!(
-        "  {} {} (max for size: {})",
-        "Workers:".dimmed(),
+    print_run_status(
+        &playbook,
         effective_workers,
-        playbook.model.size_category.max_workers()
+        model_path.as_deref(),
+        dry_run,
+        timeout,
+        skip_conversion_tests,
+        hf_parity,
+        hf_corpus_path,
+        hf_model_family.as_deref(),
     );
-    println!("  {} {timeout}ms", "Timeout:".dimmed());
 
     let run_config = PlaybookRunConfig {
         failure_policy: failure_policy.to_string(),
         dry_run,
-        workers: effective_workers, // §3.4: Use enforced worker limit
+        workers: effective_workers,
         model_path: model_path.clone(),
         timeout,
         no_gpu,
@@ -707,7 +754,7 @@ fn run_playbook(
         } else {
             None
         },
-        hf_parity_model_family: hf_model_family.clone(),
+        hf_parity_model_family: hf_model_family,
     };
 
     let config = match build_execution_config(&run_config) {
@@ -717,36 +764,6 @@ fn run_playbook(
             std::process::exit(1);
         }
     };
-
-    // Print conversion test status (P0 CRITICAL)
-    if !skip_conversion_tests && model_path.is_some() {
-        println!(
-            "  {} {}",
-            "Conversion tests:".dimmed(),
-            "ENABLED (P0 CRITICAL)".bold().green()
-        );
-    } else if skip_conversion_tests {
-        println!(
-            "  {} {}",
-            "Conversion tests:".dimmed(),
-            "DISABLED (WARNING: P0 tests skipped)".bold().yellow()
-        );
-    }
-
-    // Print HF parity status
-    if hf_parity {
-        println!("  {} {}", "HF parity:".dimmed(), "ENABLED".green());
-        println!("    {} {hf_corpus_path}", "Corpus:".dimmed());
-        if let Some(ref family) = hf_model_family {
-            println!("    {} {family}", "Model family:".dimmed());
-        } else {
-            println!(
-                "    {} {}",
-                "Model family:".dimmed(),
-                "NOT SET (required for parity tests)".yellow()
-            );
-        }
-    }
 
     // Run tool tests if enabled
     if run_tool_tests_flag {
@@ -1933,7 +1950,7 @@ fn process_certification_result(
                 return false;
             };
 
-            print_certification_scores(tier_str, raw_score, &grade, &status);
+            print_certification_scores(tier_str, raw_score, &grade, status);
 
             let profile =
                 run_profiling_phase(&result, playbook, model_cache, short, apr_binary, fail_fast);
@@ -1981,7 +1998,7 @@ fn print_certification_scores(
     tier_str: &str,
     raw_score: u32,
     grade: &str,
-    status: &apr_qa_certify::CertificationStatus,
+    status: apr_qa_certify::CertificationStatus,
 ) {
     println!("  {} {tier_str}", "Tier:".dimmed());
     let score_str = format!("{raw_score}/1000");

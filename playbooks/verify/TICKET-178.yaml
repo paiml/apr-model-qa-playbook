@@ -25,7 +25,7 @@ verification_gates:
 
 acceptance:
   validate_exit_code: 0
-  no_false_negatives: true
+  no_false_negatives: "true"
 
 metadata:
   ticket: "https://github.com/paiml/aprender/issues/178"

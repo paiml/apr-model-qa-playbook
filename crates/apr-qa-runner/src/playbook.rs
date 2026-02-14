@@ -4,12 +4,36 @@
 
 use apr_qa_gen::{Backend, Format, Modality, ModelId, QaScenario};
 use regex::Regex;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
 use std::path::Path;
 use std::sync::LazyLock;
 
 use crate::error::{Error, Result};
+
+/// Deserialize a bool that may be quoted as a string in YAML (CB-950 compliance).
+/// Accepts both `true`/`false` (YAML boolean) and `"true"`/`"false"` (YAML string).
+fn deserialize_bool_or_string<'de, D>(deserializer: D) -> std::result::Result<bool, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum BoolOrString {
+        Bool(bool),
+        String(String),
+    }
+    match BoolOrString::deserialize(deserializer)? {
+        BoolOrString::Bool(b) => Ok(b),
+        BoolOrString::String(s) => match s.to_lowercase().as_str() {
+            "true" | "yes" | "on" => Ok(true),
+            "false" | "no" | "off" => Ok(false),
+            _ => Err(serde::de::Error::custom(format!(
+                "expected boolean or truthy string, got '{s}'"
+            ))),
+        },
+    }
+}
 
 // ── Playbook Naming Convention (PMAT-266) ────────────────────────────────────
 //
@@ -652,7 +676,7 @@ pub struct DifferentialTestConfig {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FormatValidationConfig {
     /// Enable format validation
-    #[serde(default)]
+    #[serde(default, deserialize_with = "deserialize_bool_or_string")]
     pub enabled: bool,
     /// Checks to run: dtype_mapping, tensor_alignment, header_integrity
     #[serde(default)]
@@ -666,7 +690,7 @@ pub struct FormatValidationConfig {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TensorDiffConfig {
     /// Enable tensor diff
-    #[serde(default)]
+    #[serde(default, deserialize_with = "deserialize_bool_or_string")]
     pub enabled: bool,
     /// Filter pattern for tensor names
     #[serde(default)]
@@ -680,7 +704,7 @@ pub struct TensorDiffConfig {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InferenceCompareConfig {
     /// Enable inference comparison
-    #[serde(default)]
+    #[serde(default, deserialize_with = "deserialize_bool_or_string")]
     pub enabled: bool,
     /// Prompt to use for comparison
     #[serde(default)]
@@ -708,7 +732,7 @@ fn default_tolerance() -> f64 {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FingerprintConfig {
     /// Enable fingerprint testing
-    #[serde(default)]
+    #[serde(default, deserialize_with = "deserialize_bool_or_string")]
     pub enabled: bool,
     /// Tensors to fingerprint ("all" or comma-separated list)
     #[serde(default = "default_fingerprint_tensors")]
@@ -739,7 +763,7 @@ fn default_fingerprint_stats() -> Vec<String> {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ValidateStatsConfig {
     /// Enable stats validation
-    #[serde(default)]
+    #[serde(default, deserialize_with = "deserialize_bool_or_string")]
     pub enabled: bool,
     /// Reference file for comparison
     #[serde(default)]
@@ -782,7 +806,7 @@ fn default_attention_tolerance() -> f64 {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProfileCiConfig {
     /// Enable profile CI
-    #[serde(default)]
+    #[serde(default, deserialize_with = "deserialize_bool_or_string")]
     pub enabled: bool,
     /// Warmup iterations
     #[serde(default = "default_warmup")]
@@ -860,7 +884,7 @@ impl ProfileCiAssertions {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TracePayloadConfig {
     /// Enable trace payload
-    #[serde(default)]
+    #[serde(default, deserialize_with = "deserialize_bool_or_string")]
     pub enabled: bool,
     /// Prompt for trace
     #[serde(default)]
@@ -877,7 +901,7 @@ pub struct TracePayloadConfig {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OllamaParityConfig {
     /// Enable ollama parity testing
-    #[serde(default)]
+    #[serde(default, deserialize_with = "deserialize_bool_or_string")]
     pub enabled: bool,
     /// Ollama model tag (e.g., "qwen2.5-coder:7b-instruct-q4_k_m")
     #[serde(default)]

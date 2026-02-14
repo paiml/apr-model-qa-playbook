@@ -106,19 +106,19 @@ properties:
       g1_model_loads:
         type: boolean
         description: "G1: Model loads successfully"
-        default: true
+        default: "true"
       g2_basic_inference:
         type: boolean
         description: "G2: Basic inference works"
-        default: true
+        default: "true"
       g3_no_crashes:
         type: boolean
         description: "G3: No panics or crashes"
-        default: true
+        default: "true"
       g4_output_quality:
         type: boolean
         description: "G4: Output is not garbage"
-        default: true
+        default: "true"
 
   oracles:
     type: array
@@ -135,7 +135,7 @@ properties:
         config:
           type: object
           description: "Oracle-specific configuration"
-          additionalProperties: true
+          additionalProperties: "true"
 
   failure_policy:
     type: string
@@ -149,7 +149,7 @@ properties:
     properties:
       enabled:
         type: boolean
-        default: true
+        default: "true"
       cases:
         type: integer
         description: "Number of proptest cases"
@@ -168,7 +168,7 @@ properties:
     properties:
       enabled:
         type: boolean
-        default: false
+        default: "false"
       states:
         type: array
         items:
@@ -303,6 +303,6 @@ properties:
   metadata:
     type: object
     description: "Additional metadata"
-    additionalProperties: true
+    additionalProperties: "true"
 
-additionalProperties: false
+additionalProperties: "false"

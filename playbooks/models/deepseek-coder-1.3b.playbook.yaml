@@ -32,10 +32,10 @@ test_matrix:
   timeout_ms: 60000
 
 gates:
-  g1_model_loads: true
-  g2_basic_inference: true
-  g3_no_crashes: true
-  g4_output_quality: true
+  g1_model_loads: "true"
+  g2_basic_inference: "true"
+  g3_no_crashes: "true"
+  g4_output_quality: "true"
 
 oracles:
   - type: arithmetic
@@ -74,7 +74,7 @@ property_tests:
 differential_tests:
   # APR format validation - dtype mapping verification
   format_validation:
-    enabled: true
+    enabled: "true"
     checks:
       - dtype_mapping        # Q4K=12, Q5K=13, Q6K=14 match APR spec
       - tensor_alignment     # 64-byte alignment for SIMD
@@ -85,22 +85,22 @@ differential_tests:
       - F-APR-FORMAT-003     # Header magic/version valid
 
   tensor_diff:
-    enabled: true
+    enabled: "true"
     filter: "embed,lm_head"
     gates: ["F-ROSETTA-DIFF-001", "F-ROSETTA-DIFF-002"]
   inference_compare:
-    enabled: true
+    enabled: "true"
     prompt: "What is 2+2?"
     max_tokens: 10
     tolerance: 1e-5
     gates: ["F-ROSETTA-INF-001", "F-ROSETTA-INF-003"]
   fingerprint:
-    enabled: true
+    enabled: "true"
     tensors: "all"
     stats: ["mean", "std", "min", "max", "checksum"]
     gates: ["F-ROSETTA-FP-001", "F-ROSETTA-FP-002"]
   validate_stats:
-    enabled: true
+    enabled: "true"
     reference: "deepseek-coder-1.3b-reference.json"
     tolerance:
       layernorm: 0.001
@@ -110,7 +110,7 @@ differential_tests:
 
 # Profile CI Assertions (v1.3.0)
 profile_ci:
-  enabled: true
+  enabled: "true"
   warmup: 3
   measure: 10
   assertions:
@@ -120,7 +120,7 @@ profile_ci:
 
 # Trace Payload (v1.3.0)
 trace_payload:
-  enabled: true
+  enabled: "true"
   prompt: "Write a Python function to calculate factorial."
   gates: ["F-TRACE-PAYLOAD-001", "F-TRACE-PAYLOAD-002"]
 

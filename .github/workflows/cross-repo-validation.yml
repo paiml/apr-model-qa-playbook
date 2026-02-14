@@ -23,7 +23,7 @@ jobs:
     name: Validate Aprender Alignment
     runs-on: ubuntu-latest
     # Don't block PRs while we fix existing misalignments
-    continue-on-error: true
+    continue-on-error: "true"
     steps:
       - name: Checkout apr-model-qa-playbook
         uses: actions/checkout@v4

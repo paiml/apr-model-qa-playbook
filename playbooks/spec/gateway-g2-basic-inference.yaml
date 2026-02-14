@@ -24,21 +24,21 @@ scenarios:
     command: "apr run ${MODEL} '2+2='"
     expected:
       exit_code: 0
-      stdout_not_empty: true
+      stdout_not_empty: "true"
     rationale: "Most basic inference test"
 
   - name: "Hello world prompt"
     command: "apr run ${MODEL} 'Hello'"
     expected:
       exit_code: 0
-      stdout_not_empty: true
+      stdout_not_empty: "true"
     rationale: "Generic greeting response"
 
   - name: "Single token prompt"
     command: "apr run ${MODEL} 'The'"
     expected:
       exit_code: 0
-      stdout_not_empty: true
+      stdout_not_empty: "true"
     rationale: "Minimal continuation"
 
   # Edge cases - MUST handle gracefully

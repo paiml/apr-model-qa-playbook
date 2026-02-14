@@ -33,10 +33,10 @@ test_matrix:
   timeout_ms: 120000
 
 gates:
-  g1_model_loads: true
-  g2_basic_inference: true
-  g3_no_crashes: true
-  g4_output_quality: true
+  g1_model_loads: "true"
+  g2_basic_inference: "true"
+  g3_no_crashes: "true"
+  g4_output_quality: "true"
 
 oracles:
   - type: arithmetic

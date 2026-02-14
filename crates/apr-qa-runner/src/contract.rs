@@ -10,9 +10,32 @@
 use crate::command::CommandRunner;
 use crate::evidence::Evidence;
 use apr_qa_gen::{Backend, Format, Modality, ModelId, QaScenario};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
+
+/// Deserialize a bool that may be quoted as a string in YAML (CB-950 compliance).
+fn deserialize_bool_or_string<'de, D>(deserializer: D) -> std::result::Result<bool, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum BoolOrString {
+        Bool(bool),
+        String(String),
+    }
+    match BoolOrString::deserialize(deserializer)? {
+        BoolOrString::Bool(b) => Ok(b),
+        BoolOrString::String(s) => match s.to_lowercase().as_str() {
+            "true" | "yes" | "on" => Ok(true),
+            "false" | "no" | "off" => Ok(false),
+            _ => Err(serde::de::Error::custom(format!(
+                "expected boolean or truthy string, got '{s}'"
+            ))),
+        },
+    }
+}
 use std::sync::Arc;
 
 /// Embedded YAML contract — single source of truth for format invariants.
@@ -105,7 +128,7 @@ pub struct InvariantDef {
     #[serde(default)]
     pub test: Option<String>,
     /// Whether already implemented elsewhere.
-    #[serde(default)]
+    #[serde(default, deserialize_with = "deserialize_bool_or_string")]
     pub implemented: bool,
 }
 

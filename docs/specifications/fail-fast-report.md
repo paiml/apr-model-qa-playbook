@@ -34,7 +34,7 @@ output/fail-fast-report/
 
 ### FF-REPORT-003: Summary Markdown Format
 
-```markdown
+````markdown
 # Fail-Fast Report: {gate_id}
 
 ## Failure Summary
@@ -87,7 +87,7 @@ apr check {model_path}
 apr trace {model_path} --payload -v
 apr explain {error_code}
 ```
-```
+````
 
 ### FF-REPORT-004: Diagnostic Stages
 
@@ -195,7 +195,7 @@ If a diagnostic times out, note it in the report and continue.
 
 Generate issue body suitable for direct paste:
 
-```markdown
+````markdown
 ### Bug Report: {gate_id} Failure
 
 **Model:** {model}
@@ -211,31 +211,31 @@ Generate issue body suitable for direct paste:
 - Git: {commit}
 
 #### Reproduction
-\`\`\`bash
+```bash
 apr-qa run {playbook} --fail-fast
-\`\`\`
+```
 
 #### Diagnostics
 <details>
 <summary>apr check output</summary>
 
-\`\`\`json
+```json
 {check_output}
-\`\`\`
+```
 </details>
 
 <details>
 <summary>Full stderr</summary>
 
-\`\`\`
+```
 {stderr}
-\`\`\`
+```
 </details>
 
 #### Attachments
-- [diagnostics.json](link)
-- [full report](link)
-```
+- diagnostics.json (attached)
+- full report (attached)
+````
 
 ## Implementation
 

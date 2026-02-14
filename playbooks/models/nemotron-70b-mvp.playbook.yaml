@@ -26,10 +26,10 @@ test_matrix:
   timeout_ms: 600000
 
 gates:
-  g1_model_loads: true
-  g2_basic_inference: true
-  g3_no_crashes: true
-  g4_output_quality: true
+  g1_model_loads: "true"
+  g2_basic_inference: "true"
+  g3_no_crashes: "true"
+  g4_output_quality: "true"
 
 oracles:
   - type: arithmetic
@@ -43,7 +43,7 @@ oracles:
 failure_policy: collect_all
 
 profile_ci:
-  enabled: true
+  enabled: "true"
   warmup: 1
   measure: 2
   formats: [safetensors, apr, gguf]

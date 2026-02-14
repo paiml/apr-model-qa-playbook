@@ -24,10 +24,10 @@ test_matrix:
   timeout_ms: 60000
 
 gates:
-  g1_model_loads: true      # Model loads without error
-  g2_basic_inference: true  # Produces output
-  g3_no_crashes: true       # No segfaults/panics
-  g4_output_quality: true   # Not garbage
+  g1_model_loads: "true"      # Model loads without error
+  g2_basic_inference: "true"  # Produces output
+  g3_no_crashes: "true"       # No segfaults/panics
+  g4_output_quality: "true"   # Not garbage
 
 oracles:
   - type: arithmetic

@@ -215,7 +215,109 @@ impl Executor {
         let total = scenarios.len();
         let start = Instant::now();
 
-        // §3.1: Playbook integrity check against lock file
+        // Pre-flight checks (integrity, implicit skips, gateways)
+        if let Some(result) = self.check_pre_flight(playbook, total, start) {
+            return Ok(result);
+        }
+
+        // G0-PULL: Ensure model is cached (skip when user provided --model-path)
+        let (pull_passed, pull_failed) = if self.config.model_path.is_none() {
+            let model_id = playbook.model_id();
+            let (pp, pf, pulled_path) = self.run_g0_pull_check(&playbook.model.hf_repo, &model_id);
+            if pf > 0 {
+                return Ok(ExecutionResult {
+                    playbook_name: playbook.name.clone(),
+                    total_scenarios: total + pp + pf,
+                    passed: pp,
+                    failed: total + pf,
+                    skipped: 0,
+                    duration_ms: start.elapsed().as_millis() as u64,
+                    gateway_failed: Some("G0-PULL-001: Model acquisition failed".to_string()),
+                    evidence: self.collector.clone(),
+                });
+            }
+            if let Some(ref path) = pulled_path {
+                self.config.model_path = Some(path.clone());
+            }
+            (pp, pf)
+        } else {
+            (0, 0)
+        };
+
+        // G0-FORMAT, G0-VALIDATE (early return on failure), G0-TENSOR, G0-INTEGRITY, G0-LAYOUT
+        let (format_passed, format_failed) = self.run_g0_format_check(playbook);
+
+        let (validate_passed, validate_failed) =
+            self.config.model_path.clone().map_or((0, 0), |model_path| {
+                let model_id = playbook.model_id();
+                self.run_g0_validate_check(Path::new(&model_path), &model_id)
+            });
+        if validate_failed > 0 {
+            return Ok(ExecutionResult {
+                playbook_name: playbook.name.clone(),
+                total_scenarios: total + pull_passed + validate_passed + validate_failed,
+                passed: pull_passed + validate_passed,
+                failed: total + validate_failed,
+                skipped: 0,
+                duration_ms: start.elapsed().as_millis() as u64,
+                gateway_failed: Some(
+                    "G0-VALIDATE-001: Model physics validation failed (corrupt model)".to_string(),
+                ),
+                evidence: self.collector.clone(),
+            });
+        }
+
+        let (tensor_passed, tensor_failed) = self.check_g0_tensor(playbook);
+        let (integrity_passed, integrity_failed) =
+            self.config.model_path.clone().map_or((0, 0), |model_path| {
+                let model_id = playbook.model_id();
+                self.run_g0_integrity_check(Path::new(&model_path), &model_id)
+            });
+        let (layout_passed, layout_failed) =
+            self.config.model_path.clone().map_or((0, 0), |model_path| {
+                let model_id = playbook.model_id();
+                self.run_g0_layout_check(Path::new(&model_path), &model_id)
+            });
+
+        // Execute scenarios
+        let (passed, failed, skipped) = self.execute_scenarios(scenarios, &playbook.name);
+
+        // Run extended tests (conversion, golden rule, contracts, parity, perf, ollama)
+        let (ext_passed, ext_failed) = self.run_extended_tests(playbook);
+
+        // Tally results
+        let gate_passed = pull_passed
+            + format_passed
+            + validate_passed
+            + tensor_passed
+            + integrity_passed
+            + layout_passed;
+        let gate_failed = pull_failed
+            + format_failed
+            + validate_failed
+            + tensor_failed
+            + integrity_failed
+            + layout_failed;
+
+        Ok(ExecutionResult {
+            playbook_name: playbook.name.clone(),
+            total_scenarios: total + gate_passed + gate_failed + ext_passed + ext_failed,
+            passed: passed + gate_passed + ext_passed,
+            failed: failed + gate_failed + ext_failed,
+            skipped,
+            duration_ms: start.elapsed().as_millis() as u64,
+            gateway_failed: None,
+            evidence: self.collector.clone(),
+        })
+    }
+
+    /// Pre-flight checks: integrity, implicit skips, gateway conditions
+    fn check_pre_flight(
+        &self,
+        playbook: &Playbook,
+        total: usize,
+        start: Instant,
+    ) -> Option<ExecutionResult> {
         if self.config.check_integrity {
             if let Some(ref lock_path) = self.config.lock_file_path {
                 match crate::playbook::load_lock_file(lock_path) {
@@ -225,7 +327,7 @@ impl Executor {
                             &lock_file,
                             &playbook.name,
                         ) {
-                            return Ok(ExecutionResult {
+                            return Some(ExecutionResult {
                                 playbook_name: playbook.name.clone(),
                                 total_scenarios: total,
                                 passed: 0,
@@ -244,7 +346,6 @@ impl Executor {
             }
         }
 
-        // §3.3: Warn about implicit format/backend skips
         if self.config.warn_implicit_skips {
             let all_formats = vec![Format::Gguf, Format::SafeTensors, Format::Apr];
             let skip_files = crate::playbook::find_skip_files(Path::new("."), &playbook.name);
@@ -255,9 +356,8 @@ impl Executor {
             }
         }
 
-        // Check gateway conditions first
         if let Err(e) = self.check_gateways(playbook) {
-            return Ok(ExecutionResult {
+            return Some(ExecutionResult {
                 playbook_name: playbook.name.clone(),
                 total_scenarios: total,
                 passed: 0,
@@ -269,162 +369,86 @@ impl Executor {
             });
         }
 
-        // G0-PULL: Ensure model is cached via apr pull
-        // Bug 204: Skip when user provided --model-path (no need to download 14GB from HF)
-        let (pull_passed, pull_failed) = if self.config.model_path.is_none() {
-            let model_id = playbook.model_id();
-            let (pp, pf, pulled_path) =
-                self.run_g0_pull_check(&playbook.model.hf_repo, &model_id);
+        None
+    }
 
-            // Jidoka: If G0-PULL fails, stop immediately — model acquisition failed
-            if pf > 0 {
-                return Ok(ExecutionResult {
-                    playbook_name: playbook.name.clone(),
-                    total_scenarios: total + pp + pf,
-                    passed: pp,
-                    failed: total + pf,
-                    skipped: 0,
-                    duration_ms: start.elapsed().as_millis() as u64,
-                    gateway_failed: Some("G0-PULL-001: Model acquisition failed".to_string()),
-                    evidence: self.collector.clone(),
-                });
-            }
+    /// G0-FORMAT: Prepare workspace with APR cache directory structure
+    fn run_g0_format_check(&mut self, playbook: &Playbook) -> (usize, usize) {
+        let Some(model_path_str) = self.config.model_path.clone() else {
+            return (0, 0);
+        };
+        let path = Path::new(&model_path_str);
+        let is_single_safetensors =
+            path.is_file() && path.extension().is_some_and(|e| e == "safetensors");
+        let is_sharded_index = path.is_file()
+            && path
+                .file_name()
+                .is_some_and(|n| n.to_string_lossy().ends_with(".safetensors.index.json"));
+        let is_flat_dir = path.is_dir() && {
+            let has_st_file = path.join("model.safetensors").exists();
+            let has_cache_structure = path.join("apr").exists();
+            has_st_file && !has_cache_structure
+        };
+        let is_sharded_dir =
+            path.is_dir() && path.join("model.safetensors.index.json").exists();
 
-            // Use pulled path since model_path wasn't explicitly set.
-            if let Some(ref path) = pulled_path {
-                self.config.model_path = Some(path.clone());
-            }
-            (pp, pf)
+        let source_file = if is_single_safetensors || is_sharded_index {
+            Some(path.to_path_buf())
+        } else if is_sharded_dir {
+            Some(path.join("model.safetensors.index.json"))
+        } else if is_flat_dir {
+            Some(path.join("model.safetensors"))
         } else {
-            (0, 0) // Skip G0-PULL: user provided --model-path
+            None
         };
 
-        // G0-FORMAT: Prepare workspace with APR cache directory structure.
-        // This creates {workspace}/safetensors/, {workspace}/apr/, {workspace}/gguf/
-        // so downstream code (resolve_model_path, run_conversion_tests, run_golden_rule_test,
-        // run_contract_invariants) all work without modification.
-        //
-        // Handles three cases:
-        // 1. Single file: /path/to/abc123.safetensors (pacha cache, small models)
-        // 2. Sharded model: /path/to/model.safetensors.index.json (HF cache, 3B+ models)
-        // 3. Flat directory: /path/to/snapshot/ containing model.safetensors (HF cache dir)
-        let (format_passed, format_failed) =
-            if let Some(ref model_path_str) = self.config.model_path.clone() {
-                let path = Path::new(&model_path_str);
-                let is_single_safetensors =
-                    path.is_file() && path.extension().is_some_and(|e| e == "safetensors");
-                let is_sharded_index = path.is_file()
-                    && path
-                        .file_name()
-                        .is_some_and(|n| n.to_string_lossy().ends_with(".safetensors.index.json"));
-                // Case 3: Directory with flat SafeTensors file but no APR cache structure
-                let is_flat_dir = path.is_dir() && {
-                    let has_st_file = path.join("model.safetensors").exists();
-                    let has_cache_structure = path.join("apr").exists();
-                    has_st_file && !has_cache_structure
-                };
-                // Case 4: Directory with sharded SafeTensors (index.json + multiple shards)
-                let is_sharded_dir = path.is_dir() && {
-                    path.join("model.safetensors.index.json").exists()
-                };
-
-                if is_single_safetensors || is_sharded_index {
-                    let model_id = playbook.model_id();
-                    let (workspace, fp, ff) =
-                        self.prepare_model_workspace(path, &model_id, &playbook.model.formats);
-                    self.config.model_path = Some(workspace);
-                    (fp, ff)
-                } else if is_sharded_dir {
-                    // Resolve the index.json file within the sharded directory
-                    let index_file = path.join("model.safetensors.index.json");
-                    let model_id = playbook.model_id();
-                    let (workspace, fp, ff) =
-                        self.prepare_model_workspace(&index_file, &model_id, &playbook.model.formats);
-                    self.config.model_path = Some(workspace);
-                    (fp, ff)
-                } else if is_flat_dir {
-                    // Resolve the SafeTensors file within the flat directory
-                    let st_file = path.join("model.safetensors");
-                    let model_id = playbook.model_id();
-                    let (workspace, fp, ff) =
-                        self.prepare_model_workspace(&st_file, &model_id, &playbook.model.formats);
-                    self.config.model_path = Some(workspace);
-                    (fp, ff)
-                } else {
-                    (0, 0)
-                }
-            } else {
-                (0, 0)
-            };
-
-        // G0-VALIDATE: Model physics validation (NaN, Inf, all-zeros)
-        // Catches corrupt model files before wasting time on qualification
-        let (validate_passed, validate_failed) =
-            self.config.model_path.clone().map_or((0, 0), |model_path| {
-                let model_id = playbook.model_id();
-                self.run_g0_validate_check(Path::new(&model_path), &model_id)
-            });
-
-        // Jidoka: If G0-VALIDATE fails, stop immediately — corrupt model
-        if validate_failed > 0 {
-            return Ok(ExecutionResult {
-                playbook_name: playbook.name.clone(),
-                total_scenarios: total + pull_passed + validate_passed + validate_failed,
-                passed: pull_passed + validate_passed,
-                failed: total + validate_failed,
-                skipped: 0,
-                duration_ms: start.elapsed().as_millis() as u64,
-                gateway_failed: Some(
-                    "G0-VALIDATE-001: Model physics validation failed (corrupt model)".to_string(),
-                ),
-                evidence: self.collector.clone(),
-            });
+        if let Some(source) = source_file {
+            let model_id = playbook.model_id();
+            let (workspace, fp, ff) =
+                self.prepare_model_workspace(&source, &model_id, &playbook.model.formats);
+            self.config.model_path = Some(workspace);
+            (fp, ff)
+        } else {
+            (0, 0)
         }
+    }
 
-        // G0-TENSOR: Tensor template validation against family YAML (PMAT-271)
-        // Verifies model tensors match the expected structure from family contract
-        let (tensor_passed, tensor_failed) =
-            if let (Some(ref model_path_str), Some(ref family), Some(ref size_variant)) = (
-                self.config.model_path.clone(),
-                playbook.model.family.clone(),
-                playbook.model.size_variant.clone(),
-            ) {
-                let model_id = playbook.model_id();
-                self.run_g0_tensor_template_check(
-                    Path::new(model_path_str),
-                    &model_id,
-                    family,
-                    size_variant,
-                    None, // Use default aprender path
-                )
-            } else {
-                (0, 0) // Skip if family/size_variant not configured
-            };
+    /// G0-TENSOR: Tensor template validation against family YAML
+    fn check_g0_tensor(&mut self, playbook: &Playbook) -> (usize, usize) {
+        let model_path_str = match self.config.model_path.as_ref() {
+            Some(p) => p.clone(),
+            None => return (0, 0),
+        };
+        let family = match playbook.model.family.as_ref() {
+            Some(f) => f.clone(),
+            None => return (0, 0),
+        };
+        let size_variant = match playbook.model.size_variant.as_ref() {
+            Some(s) => s.clone(),
+            None => return (0, 0),
+        };
+        let model_id = playbook.model_id();
+        self.run_g0_tensor_template_check(
+            Path::new(&model_path_str),
+            &model_id,
+            &family,
+            &size_variant,
+            None,
+        )
+    }
 
-        // G0: Model integrity check for SafeTensors models (pre-flight)
-        // This catches corrupted config.json before inference even starts
-        let (integrity_passed, integrity_failed) =
-            self.config.model_path.clone().map_or((0, 0), |model_path| {
-                let model_id = playbook.model_id();
-                self.run_g0_integrity_check(Path::new(&model_path), &model_id)
-            });
-
-        // G0-LAYOUT: Tensor layout contract validation (Issue #4)
-        // Validates model tensor shapes against aprender's tensor-layout-v1.yaml
-        // This catches GH-202 style bugs where wrong shapes cause garbage output
-        let (layout_passed, layout_failed) =
-            self.config.model_path.clone().map_or((0, 0), |model_path| {
-                let model_id = playbook.model_id();
-                self.run_g0_layout_check(Path::new(&model_path), &model_id)
-            });
-
+    /// Execute scenario loop with failure policy handling
+    fn execute_scenarios(
+        &mut self,
+        scenarios: Vec<QaScenario>,
+        playbook_name: &str,
+    ) -> (usize, usize, usize) {
         let mut passed = 0;
         let mut failed = 0;
         let mut skipped = 0;
 
         for scenario in scenarios {
             if self.config.dry_run {
-                // In dry run mode, just generate the command
                 let cmd = scenario.to_command("model.gguf");
                 println!("[DRY RUN] {cmd}");
                 skipped += 1;
@@ -441,184 +465,118 @@ impl Executor {
                 passed += 1;
             } else {
                 failed += 1;
-
-                // Check failure policy
-                match self.config.failure_policy {
-                    FailurePolicy::StopOnFirst => {
-                        self.collector.add(evidence);
-                        break;
-                    }
-                    FailurePolicy::FailFast => {
-                        // Enhanced tracing mode: generate comprehensive diagnostic report
-                        eprintln!("\n[FAIL-FAST] Gate {} FALSIFIED", evidence.gate_id);
-                        eprintln!("[FAIL-FAST] Model: {}", evidence.scenario.model.hf_repo());
-                        eprintln!("[FAIL-FAST] Format: {:?}", evidence.scenario.format);
-                        eprintln!("[FAIL-FAST] Backend: {:?}", evidence.scenario.backend);
-                        eprintln!("[FAIL-FAST] Outcome: {:?}", evidence.outcome);
-                        eprintln!("[FAIL-FAST] Reason: {}", evidence.reason);
-
-                        // Generate diagnostic report using apr tooling (FF-REPORT-001)
-                        if let Some(ref model_path) = self.config.model_path {
-                            let output_dir = self.config.output_dir.as_deref().unwrap_or("output");
-                            let reporter = FailFastReporter::new(Path::new(output_dir));
-                            if let Err(e) = reporter.generate_report(
-                                &evidence,
-                                Path::new(model_path),
-                                Some(&playbook.name),
-                            ) {
-                                eprintln!("[FAIL-FAST] Warning: Failed to generate report: {e}");
-                            }
-                        } else {
-                            // Fallback to basic stderr output when no model path
-                            if let Some(ref stderr) = evidence.stderr {
-                                eprintln!("[FAIL-FAST] Stderr:\n{stderr}");
-                            }
-                            if let Some(exit_code) = evidence.exit_code {
-                                eprintln!("[FAIL-FAST] Exit code: {exit_code}");
-                            }
-                            eprintln!("[FAIL-FAST] No model path - full report not generated\n");
-                        }
-
-                        self.collector.add(evidence);
-                        break;
-                    }
-                    FailurePolicy::StopOnP0 => {
-                        // Check if this is a P0 failure
-                        if evidence.gate_id.contains("-P0-") {
-                            self.collector.add(evidence);
-                            break;
-                        }
-                    }
-                    FailurePolicy::CollectAll => {}
+                if self.should_stop_on_failure(&evidence, playbook_name) {
+                    self.collector.add(evidence);
+                    break;
                 }
             }
             self.collector.add(evidence);
         }
 
-        // P0 CRITICAL: Run format conversion tests
-        let mut conversion_passed = 0;
-        let mut conversion_failed = 0;
+        (passed, failed, skipped)
+    }
+
+    /// Check failure policy and return true if execution should stop
+    fn should_stop_on_failure(&self, evidence: &Evidence, playbook_name: &str) -> bool {
+        match self.config.failure_policy {
+            FailurePolicy::StopOnFirst => true,
+            FailurePolicy::FailFast => {
+                self.print_fail_fast_diagnostics(evidence, playbook_name);
+                true
+            }
+            FailurePolicy::StopOnP0 => evidence.gate_id.contains("-P0-"),
+            FailurePolicy::CollectAll => false,
+        }
+    }
+
+    /// Print fail-fast diagnostic report (FF-REPORT-001)
+    fn print_fail_fast_diagnostics(&self, evidence: &Evidence, playbook_name: &str) {
+        eprintln!("\n[FAIL-FAST] Gate {} FALSIFIED", evidence.gate_id);
+        eprintln!("[FAIL-FAST] Model: {}", evidence.scenario.model.hf_repo());
+        eprintln!("[FAIL-FAST] Format: {:?}", evidence.scenario.format);
+        eprintln!("[FAIL-FAST] Backend: {:?}", evidence.scenario.backend);
+        eprintln!("[FAIL-FAST] Outcome: {:?}", evidence.outcome);
+        eprintln!("[FAIL-FAST] Reason: {}", evidence.reason);
+
+        if let Some(ref model_path) = self.config.model_path {
+            let output_dir = self.config.output_dir.as_deref().unwrap_or("output");
+            let reporter = FailFastReporter::new(Path::new(output_dir));
+            if let Err(e) = reporter.generate_report(
+                evidence,
+                Path::new(model_path),
+                Some(playbook_name),
+            ) {
+                eprintln!("[FAIL-FAST] Warning: Failed to generate report: {e}");
+            }
+        } else {
+            if let Some(ref stderr) = evidence.stderr {
+                eprintln!("[FAIL-FAST] Stderr:\n{stderr}");
+            }
+            if let Some(exit_code) = evidence.exit_code {
+                eprintln!("[FAIL-FAST] Exit code: {exit_code}");
+            }
+            eprintln!("[FAIL-FAST] No model path - full report not generated\n");
+        }
+    }
+
+    /// Run extended tests: conversion, golden rule, contracts, parity, perf, ollama
+    fn run_extended_tests(&mut self, playbook: &Playbook) -> (usize, usize) {
+        let mut total_passed = 0;
+        let mut total_failed = 0;
+
         if self.config.run_conversion_tests {
             if let Some(model_path) = self.config.model_path.clone() {
                 let model_id = playbook.model_id();
-                let (cp, cf) = self.run_conversion_tests(Path::new(&model_path), &model_id);
-                conversion_passed = cp;
-                conversion_failed = cf;
+                let (p, f) = self.run_conversion_tests(Path::new(&model_path), &model_id);
+                total_passed += p;
+                total_failed += f;
             }
         }
 
-        // INVARIANT I-1: Golden Rule Test (convert → inference → diff)
-        // This single test catches ALL conversion bugs (Five Whys: GH-190)
-        let mut golden_passed = 0;
-        let mut golden_failed = 0;
         if self.config.run_golden_rule_test {
             if let Some(model_path) = self.config.model_path.clone() {
                 let model_id = playbook.model_id();
-                let (gp, gf) = self.run_golden_rule_test(Path::new(&model_path), &model_id);
-                golden_passed = gp;
-                golden_failed = gf;
+                let (p, f) = self.run_golden_rule_test(Path::new(&model_path), &model_id);
+                total_passed += p;
+                total_failed += f;
             }
         }
 
-        // Contract invariant tests I-2 through I-5 (GH-190/191 Five-Whys)
-        let (contract_passed, contract_failed) = if self.config.run_contract_tests {
-            self.config.model_path.clone().map_or((0, 0), |model_path| {
+        if self.config.run_contract_tests {
+            if let Some(model_path) = self.config.model_path.clone() {
                 let model_id = playbook.model_id();
-                self.run_contract_invariants(Path::new(&model_path), &model_id, playbook)
-            })
-        } else {
-            (0, 0)
-        };
+                let (p, f) =
+                    self.run_contract_invariants(Path::new(&model_path), &model_id, playbook);
+                total_passed += p;
+                total_failed += f;
+            }
+        }
 
-        // HF Parity Test: Cross-implementation validation against HuggingFace golden corpus
-        // Implements Popperian falsification methodology (Popper, 1959)
-        let (hf_parity_passed, hf_parity_failed) = if self.config.run_hf_parity {
+        if self.config.run_hf_parity {
             let model_id = playbook.model_id();
-            self.run_hf_parity_tests(&model_id)
-        } else {
-            (0, 0)
-        };
+            let (p, f) = self.run_hf_parity_tests(&model_id);
+            total_passed += p;
+            total_failed += f;
+        }
 
-        // Performance gates (F-PERF-003, F-PERF-005): GPU/CPU ratio + memory profiling
-        let (perf_passed, perf_failed) = if self.config.run_profile_ci {
-            self.config.model_path.clone().map_or((0, 0), |model_path| {
+        if self.config.run_profile_ci {
+            if let Some(model_path) = self.config.model_path.clone() {
                 let model_id = playbook.model_id();
-                self.run_perf_gates(Path::new(&model_path), &model_id, playbook)
-            })
-        } else {
-            (0, 0)
-        };
+                let (p, f) = self.run_perf_gates(Path::new(&model_path), &model_id, playbook);
+                total_passed += p;
+                total_failed += f;
+            }
+        }
 
-        // Ollama parity tests (GH-6/AC-2): cross-runtime validation
-        let (ollama_passed, ollama_failed) = if self.config.run_ollama_parity {
-            self.config.model_path.clone().map_or((0, 0), |model_path| {
-                self.run_ollama_parity_tests(Path::new(&model_path), playbook)
-            })
-        } else {
-            (0, 0)
-        };
+        if self.config.run_ollama_parity {
+            if let Some(model_path) = self.config.model_path.clone() {
+                let (p, f) = self.run_ollama_parity_tests(Path::new(&model_path), playbook);
+                total_passed += p;
+                total_failed += f;
+            }
+        }
 
-        let total_passed = passed
-            + conversion_passed
-            + golden_passed
-            + integrity_passed
-            + hf_parity_passed
-            + contract_passed
-            + validate_passed
-            + pull_passed
-            + format_passed
-            + tensor_passed
-            + layout_passed
-            + ollama_passed
-            + perf_passed;
-        let total_failed = failed
-            + conversion_failed
-            + golden_failed
-            + integrity_failed
-            + hf_parity_failed
-            + contract_failed
-            + validate_failed
-            + pull_failed
-            + format_failed
-            + tensor_failed
-            + layout_failed
-            + ollama_failed
-            + perf_failed;
-
-        Ok(ExecutionResult {
-            playbook_name: playbook.name.clone(),
-            total_scenarios: total
-                + conversion_passed
-                + conversion_failed
-                + golden_passed
-                + golden_failed
-                + integrity_passed
-                + integrity_failed
-                + hf_parity_passed
-                + hf_parity_failed
-                + contract_passed
-                + contract_failed
-                + validate_passed
-                + validate_failed
-                + pull_passed
-                + pull_failed
-                + format_passed
-                + format_failed
-                + tensor_passed
-                + tensor_failed
-                + layout_passed
-                + layout_failed
-                + ollama_passed
-                + ollama_failed
-                + perf_passed
-                + perf_failed,
-            passed: total_passed,
-            failed: total_failed,
-            skipped,
-            duration_ms: start.elapsed().as_millis() as u64,
-            gateway_failed: None,
-            evidence: self.collector.clone(),
-        })
+        (total_passed, total_failed)
     }
 
     /// Run P0 format conversion tests
@@ -1432,25 +1390,12 @@ impl Executor {
     ///
     /// (passed_count, failed_count) - evidence is added to collector
     fn run_g0_integrity_check(&mut self, model_path: &Path, model_id: &ModelId) -> (usize, usize) {
-        // File mode: when model_path is a specific .safetensors file (e.g., from
-        // apr pull in pacha cache), use file-specific integrity check that finds
-        // the associated config via hash prefix. This avoids scanning the shared
-        // parent directory which contains files from other models.
-        let result =
-            if model_path.is_file() && model_path.extension().is_some_and(|e| e == "safetensors") {
-                integrity::check_safetensors_file_integrity(model_path)
-            } else {
-                // Directory mode: scan for safetensors files
-                let safetensors_dir = Self::find_safetensors_dir(model_path);
-                let Some(st_dir) = safetensors_dir else {
-                    // No SafeTensors found - G0 check not applicable, auto-pass
-                    return (0, 0);
-                };
-                integrity::check_safetensors_integrity(&st_dir)
-            };
+        let result = Self::run_integrity_analysis(model_path);
+        let Some(result) = result else {
+            return (0, 0);
+        };
 
         if result.passed {
-            // All integrity checks passed
             let ev = Evidence::corroborated(
                 integrity::gate_ids::CONFIG,
                 Self::integrity_scenario(model_id),
@@ -1458,35 +1403,48 @@ impl Executor {
                 0,
             );
             self.collector.add(ev);
-            (1, 0)
-        } else {
-            // Add evidence for each failure
-            let mut failed = 0;
-            for error in &result.errors {
-                let gate_id = if error.contains("LAYERS") {
-                    integrity::gate_ids::LAYERS
-                } else if error.contains("HIDDEN") {
-                    integrity::gate_ids::HIDDEN
-                } else if error.contains("VOCAB") {
-                    integrity::gate_ids::VOCAB
-                } else {
-                    integrity::gate_ids::CONFIG
-                };
+            return (1, 0);
+        }
 
-                let ev = Evidence::falsified(
-                    gate_id,
-                    Self::integrity_scenario(model_id),
-                    error,
-                    &format!(
-                        "Config: {:?}, Tensors: {:?}",
-                        result.config_values, result.tensor_values
-                    ),
-                    0,
-                );
-                self.collector.add(ev);
-                failed += 1;
-            }
-            (0, failed)
+        let mut failed = 0;
+        for error in &result.errors {
+            let gate_id = Self::classify_integrity_gate(error);
+            let ev = Evidence::falsified(
+                gate_id,
+                Self::integrity_scenario(model_id),
+                error,
+                &format!(
+                    "Config: {:?}, Tensors: {:?}",
+                    result.config_values, result.tensor_values
+                ),
+                0,
+            );
+            self.collector.add(ev);
+            failed += 1;
+        }
+        (0, failed)
+    }
+
+    /// Run integrity analysis, returning None if not applicable
+    fn run_integrity_analysis(model_path: &Path) -> Option<integrity::IntegrityResult> {
+        if model_path.is_file() && model_path.extension().is_some_and(|e| e == "safetensors") {
+            Some(integrity::check_safetensors_file_integrity(model_path))
+        } else {
+            let st_dir = Self::find_safetensors_dir(model_path)?;
+            Some(integrity::check_safetensors_integrity(&st_dir))
+        }
+    }
+
+    /// Classify integrity error into specific gate ID
+    fn classify_integrity_gate(error: &str) -> &'static str {
+        if error.contains("LAYERS") {
+            integrity::gate_ids::LAYERS
+        } else if error.contains("HIDDEN") {
+            integrity::gate_ids::HIDDEN
+        } else if error.contains("VOCAB") {
+            integrity::gate_ids::VOCAB
+        } else {
+            integrity::gate_ids::CONFIG
         }
     }
 
@@ -2187,9 +2145,9 @@ impl Executor {
         let port = 18_080 + (scenario.seed % 1000) as u16;
 
         // Spawn server in background
-        let spawn_output =
-            self.command_runner
-                .spawn_serve(Path::new(model_path), port, no_gpu);
+        let spawn_output = self
+            .command_runner
+            .spawn_serve(Path::new(model_path), port, no_gpu);
         if !spawn_output.success {
             return (
                 String::new(),
@@ -2230,9 +2188,7 @@ impl Executor {
         if !server_ready {
             // Kill server and report failure
             if pid_str.parse::<u32>().is_ok() {
-                let _ = std::process::Command::new("kill")
-                    .arg(&pid_str)
-                    .output();
+                let _ = std::process::Command::new("kill").arg(&pid_str).output();
             }
             return (
                 String::new(),
@@ -2253,9 +2209,7 @@ impl Executor {
 
         // Kill the server process
         if pid_str.parse::<u32>().is_ok() {
-            let _ = std::process::Command::new("kill")
-                .arg(&pid_str)
-                .output();
+            let _ = std::process::Command::new("kill").arg(&pid_str).output();
         }
 
         let tps = Self::parse_tps_from_output(&output.stdout);
@@ -2288,71 +2242,72 @@ impl Executor {
         let model_path = self.config.model_path.as_deref().unwrap_or(".");
         let path = Path::new(model_path);
 
-        // Handle sharded SafeTensors index files (*.safetensors.index.json)
-        // apr pull returns these for multi-shard models; apr run/chat/serve accept them
-        let is_sharded_index = model_path.ends_with(".safetensors.index.json");
-        if is_sharded_index {
-            if scenario.format == Format::SafeTensors {
-                return Some(model_path.to_string());
-            }
-            // For non-SafeTensors formats, use parent directory for sibling lookup
-            if let Some(parent) = path.parent() {
-                let target_ext = match scenario.format {
-                    Format::Gguf => "gguf",
-                    Format::SafeTensors => unreachable!(),
-                    Format::Apr => "apr",
-                };
-                if let Some(found) = Self::find_clean_model_file(parent, target_ext) {
-                    return Some(found);
-                }
-            }
-            return None;
+        if model_path.ends_with(".safetensors.index.json") {
+            return Self::resolve_sharded_index(path, model_path, scenario);
         }
 
-        // Check if path looks like a file (has model extension)
         let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
-        let is_model_extension = ext == "gguf" || ext == "safetensors" || ext == "apr";
-
-        if is_model_extension {
-            // FILE MODE: pass directly to apr if format matches extension
-            // Note: We check extension match but don't require file existence here
-            // to support mock testing. Real file existence is validated by apr CLI.
-            let matches = match scenario.format {
-                Format::Gguf => ext == "gguf",
-                Format::SafeTensors => ext == "safetensors",
-                Format::Apr => ext == "apr",
-            };
-            if matches {
-                return Some(model_path.to_string());
-            }
-
-            // Bug 202: Try sibling file with target extension in the same directory
-            let target_ext = match scenario.format {
-                Format::Gguf => "gguf",
-                Format::SafeTensors => "safetensors",
-                Format::Apr => "apr",
-            };
-            if let Some(parent) = path.parent() {
-                if let Some(stem) = path.file_stem().and_then(|s| s.to_str()) {
-                    // Try exact stem match: same_name.target_ext
-                    let sibling = parent.join(format!("{stem}.{target_ext}"));
-                    if sibling.exists() {
-                        return Some(sibling.to_string_lossy().to_string());
-                    }
-                    // Try model-family prefix match to avoid cross-model confusion
-                    // e.g. "qwen2.5-coder-7b-instruct-q4k" → prefix "qwen2.5-coder-7b"
-                    let prefix = Self::extract_model_family_prefix(stem);
-                    if let Some(found) =
-                        Self::find_model_by_prefix(parent, &prefix, target_ext)
-                    {
-                        return Some(found);
-                    }
-                }
-            }
-            return None;
+        if ext == "gguf" || ext == "safetensors" || ext == "apr" {
+            return Self::resolve_file_model(path, model_path, ext, scenario);
         }
 
-        // DIRECTORY MODE
+        Self::resolve_directory_model(path, scenario)
+    }
+
+    /// Resolve model path for sharded SafeTensors index files
+    fn resolve_sharded_index(
+        path: &Path,
+        model_path: &str,
+        scenario: &QaScenario,
+    ) -> Option<String> {
+        if scenario.format == Format::SafeTensors {
+            return Some(model_path.to_string());
+        }
+        let parent = path.parent()?;
+        let target_ext = match scenario.format {
+            Format::Gguf => "gguf",
+            Format::SafeTensors => unreachable!(),
+            Format::Apr => "apr",
+        };
+        Self::find_clean_model_file(parent, target_ext)
+    }
+
+    /// Resolve model path when path has a model file extension
+    fn resolve_file_model(
+        path: &Path,
+        model_path: &str,
+        ext: &str,
+        scenario: &QaScenario,
+    ) -> Option<String> {
+        let matches = match scenario.format {
+            Format::Gguf => ext == "gguf",
+            Format::SafeTensors => ext == "safetensors",
+            Format::Apr => ext == "apr",
+        };
+        if matches {
+            return Some(model_path.to_string());
+        }
+
+        // Bug 202: Try sibling file with target extension
+        let target_ext = match scenario.format {
+            Format::Gguf => "gguf",
+            Format::SafeTensors => "safetensors",
+            Format::Apr => "apr",
+        };
+        let parent = path.parent()?;
+        let stem = path.file_stem().and_then(|s| s.to_str())?;
+
+        let sibling = parent.join(format!("{stem}.{target_ext}"));
+        if sibling.exists() {
+            return Some(sibling.to_string_lossy().to_string());
+        }
+
+        let prefix = Self::extract_model_family_prefix(stem);
+        Self::find_model_by_prefix(parent, &prefix, target_ext)
+    }
+
+    /// Resolve model path when path is a directory
+    fn resolve_directory_model(path: &Path, scenario: &QaScenario) -> Option<String> {
         let (subdir, extension) = match scenario.format {
             Format::Gguf => ("gguf", "gguf"),
             Format::Apr => ("apr", "apr"),
@@ -2366,7 +2321,6 @@ impl Executor {
         }
 
         // Try sharded SafeTensors: {base}/{format}/model.safetensors.index.json
-        // Return the index file path - apr run uses index to locate all shards
         if extension == "safetensors" {
             let sharded_index = path.join(subdir).join("model.safetensors.index.json");
             if sharded_index.exists() {
@@ -2380,19 +2334,14 @@ impl Executor {
             return Some(flat_resolved.to_string_lossy().to_string());
         }
 
-        // Fall back to finding clean model file in format subdir (skip test artifacts)
+        // Fall back to finding clean model file in format subdir
         let format_dir = path.join(subdir);
         if let Some(found) = Self::find_clean_model_file(&format_dir, extension) {
             return Some(found);
         }
 
         // Fall back to finding clean model file in base dir (HF cache)
-        if let Some(found) = Self::find_clean_model_file(path, extension) {
-            return Some(found);
-        }
-
-        // No clean model file found - return None to skip this format
-        None
+        Self::find_clean_model_file(path, extension)
     }
 
     /// Find a clean model file in a directory, filtering out test artifacts.
@@ -2439,8 +2388,8 @@ impl Executor {
         let lower = stem.to_lowercase();
         // Strip known quantization suffixes
         let suffixes = [
-            "-q4k", "-q4_k_m", "-q4_k_s", "-q6_k", "-q8_0", "-q5_k_m",
-            "-q2_k", "-q3_k_m", "-q3_k_s", "-f16", "-f32",
+            "-q4k", "-q4_k_m", "-q4_k_s", "-q6_k", "-q8_0", "-q5_k_m", "-q2_k", "-q3_k_m",
+            "-q3_k_s", "-f16", "-f32",
         ];
         let mut result = stem.to_string();
         for suffix in &suffixes {
@@ -2632,34 +2581,8 @@ impl Executor {
             .join(&model_id.org)
             .join(&model_id.name);
 
-        let mut passed = 0;
-        let mut failed = 0;
+        Self::clean_stale_artifacts(&workspace);
 
-        // Step 0: Clean stale conversion artifacts from previous runs
-        // Conversion tests may leave files like `converted.*.safetensors` that
-        // confuse G0-VALIDATE when it iterates all .safetensors in the workspace.
-        if workspace.exists() {
-            for subdir in &["safetensors", "apr", "gguf"] {
-                let dir = workspace.join(subdir);
-                if dir.exists() {
-                    if let Ok(entries) = std::fs::read_dir(&dir) {
-                        for entry in entries.flatten() {
-                            let name = entry.file_name();
-                            let name_str = name.to_string_lossy();
-                            if name_str.contains("converted")
-                                || name_str.contains("byte_rt")
-                                || name_str.contains("idem")
-                                || name_str.contains("com_")
-                            {
-                                let _ = std::fs::remove_file(entry.path());
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Step 1: Create safetensors subdirectory
         let st_dir = workspace.join("safetensors");
         if let Err(e) = std::fs::create_dir_all(&st_dir) {
             let ev = Evidence::falsified(
@@ -2673,86 +2596,134 @@ impl Executor {
             return (workspace.to_string_lossy().to_string(), 0, 1);
         }
 
-        // Detect if this is a sharded model (index.json) or single file
         let is_sharded = source_file
             .file_name()
             .is_some_and(|n| n.to_string_lossy().ends_with(".safetensors.index.json"));
 
-        if is_sharded {
-            // Sharded model: symlink all files from the source directory
-            let Some(source_dir) = source_file.parent() else {
-                let ev = Evidence::falsified(
-                    "G0-FORMAT-WORKSPACE-001",
-                    Self::format_scenario(model_id, Format::SafeTensors),
-                    "Sharded model has no parent directory".to_string(),
-                    "N/A",
-                    0,
-                );
-                self.collector.add(ev);
-                return (workspace.to_string_lossy().to_string(), 0, 1);
-            };
-
-            // Symlink only actual model files from source directory to workspace.
-            // Skip conversion artifacts (converted, byte_rt, idem, com_) that
-            // rosetta leaves in the source directory during two-step conversion.
-            if let Ok(entries) = std::fs::read_dir(source_dir) {
-                for entry in entries.flatten() {
-                    let src_path = entry.path();
-                    let Some(filename) = src_path.file_name() else {
-                        continue;
-                    };
-                    let name_str = filename.to_string_lossy();
-                    // Skip conversion artifacts
-                    if name_str.contains("converted")
-                        || name_str.contains("byte_rt")
-                        || name_str.contains("idem")
-                        || name_str.contains("com_")
-                    {
-                        continue;
-                    }
-                    let link_path = st_dir.join(filename);
-                    let _ = std::fs::remove_file(&link_path);
-                    #[cfg(unix)]
-                    let _ = std::os::unix::fs::symlink(&src_path, &link_path);
-                    #[cfg(not(unix))]
-                    let _ = std::fs::copy(&src_path, &link_path);
-                }
-            }
-        } else {
-            // Single file: symlink the model file
-            let st_link = st_dir.join("model.safetensors");
-            let _ = std::fs::remove_file(&st_link);
-            #[cfg(unix)]
-            let link_result = std::os::unix::fs::symlink(source_file, &st_link);
-            #[cfg(not(unix))]
-            let link_result = std::fs::copy(source_file, &st_link).map(|_| ());
-
-            if let Err(e) = link_result {
-                let ev = Evidence::falsified(
-                    "G0-FORMAT-WORKSPACE-001",
-                    Self::format_scenario(model_id, Format::SafeTensors),
-                    format!("Failed to symlink model file: {e}"),
-                    "N/A",
-                    0,
-                );
-                self.collector.add(ev);
-                return (workspace.to_string_lossy().to_string(), 0, 1);
-            }
-
-            // Symlink sibling config files (config.json, tokenizer.json, etc.)
-            let siblings = Self::find_sibling_model_files(source_file);
-            for (src_path, canonical_name) in &siblings {
-                let link_path = st_dir.join(canonical_name);
-                let _ = std::fs::remove_file(&link_path);
-                #[cfg(unix)]
-                let _ = std::os::unix::fs::symlink(src_path, &link_path);
-                #[cfg(not(unix))]
-                let _ = std::fs::copy(src_path, &link_path);
-            }
+        if let Some(err) = Self::setup_source_links(source_file, &st_dir, is_sharded) {
+            let ev = Evidence::falsified(
+                "G0-FORMAT-WORKSPACE-001",
+                Self::format_scenario(model_id, Format::SafeTensors),
+                err,
+                "N/A",
+                0,
+            );
+            self.collector.add(ev);
+            return (workspace.to_string_lossy().to_string(), 0, 1);
         }
 
-        // Step 4: Convert to each requested non-SafeTensors format
-        // Sharded models supported since Bug 212 (apr rosetta convert handles index.json)
+        let (passed, failed) = self.convert_requested_formats(
+            &workspace,
+            &st_dir,
+            source_file,
+            model_id,
+            requested_formats,
+            is_sharded,
+        );
+
+        (workspace.to_string_lossy().to_string(), passed, failed)
+    }
+
+    /// Clean stale conversion artifacts from previous runs
+    fn clean_stale_artifacts(workspace: &Path) {
+        if !workspace.exists() {
+            return;
+        }
+        for subdir in &["safetensors", "apr", "gguf"] {
+            let dir = workspace.join(subdir);
+            let Ok(entries) = std::fs::read_dir(&dir) else {
+                continue;
+            };
+            for entry in entries.flatten() {
+                let name = entry.file_name();
+                let name_str = name.to_string_lossy();
+                if Self::is_conversion_artifact(&name_str) {
+                    let _ = std::fs::remove_file(entry.path());
+                }
+            }
+        }
+    }
+
+    /// Check if a filename is a conversion test artifact
+    fn is_conversion_artifact(name: &str) -> bool {
+        name.contains("converted")
+            || name.contains("byte_rt")
+            || name.contains("idem")
+            || name.contains("com_")
+    }
+
+    /// Set up source file symlinks in the workspace. Returns Some(error) on failure.
+    fn setup_source_links(source_file: &Path, st_dir: &Path, is_sharded: bool) -> Option<String> {
+        if is_sharded {
+            Self::setup_sharded_links(source_file, st_dir)
+        } else {
+            Self::setup_single_file_link(source_file, st_dir)
+        }
+    }
+
+    /// Symlink all files from a sharded model directory
+    fn setup_sharded_links(source_file: &Path, st_dir: &Path) -> Option<String> {
+        let source_dir = source_file.parent()?;
+        let Ok(entries) = std::fs::read_dir(source_dir) else {
+            return None;
+        };
+        for entry in entries.flatten() {
+            let src_path = entry.path();
+            let Some(filename) = src_path.file_name() else {
+                continue;
+            };
+            if Self::is_conversion_artifact(&filename.to_string_lossy()) {
+                continue;
+            }
+            let link_path = st_dir.join(filename);
+            let _ = std::fs::remove_file(&link_path);
+            #[cfg(unix)]
+            let _ = std::os::unix::fs::symlink(&src_path, &link_path);
+            #[cfg(not(unix))]
+            let _ = std::fs::copy(&src_path, &link_path);
+        }
+        None
+    }
+
+    /// Symlink a single model file and its sibling configs
+    fn setup_single_file_link(source_file: &Path, st_dir: &Path) -> Option<String> {
+        let st_link = st_dir.join("model.safetensors");
+        let _ = std::fs::remove_file(&st_link);
+        #[cfg(unix)]
+        let link_result = std::os::unix::fs::symlink(source_file, &st_link);
+        #[cfg(not(unix))]
+        let link_result = std::fs::copy(source_file, &st_link).map(|_| ());
+
+        if let Err(e) = link_result {
+            return Some(format!("Failed to symlink model file: {e}"));
+        }
+
+        let siblings = Self::find_sibling_model_files(source_file);
+        for (src_path, canonical_name) in &siblings {
+            let link_path = st_dir.join(canonical_name);
+            let _ = std::fs::remove_file(&link_path);
+            #[cfg(unix)]
+            let _ = std::os::unix::fs::symlink(src_path, &link_path);
+            #[cfg(not(unix))]
+            let _ = std::fs::copy(src_path, &link_path);
+        }
+        None
+    }
+
+    /// Convert source model to each requested non-SafeTensors format
+    #[allow(clippy::too_many_arguments)]
+    fn convert_requested_formats(
+        &mut self,
+        workspace: &Path,
+        st_dir: &Path,
+        source_file: &Path,
+        model_id: &ModelId,
+        requested_formats: &[Format],
+        is_sharded: bool,
+    ) -> (usize, usize) {
+        let mut passed = 0;
+        let mut failed = 0;
+
         for format in requested_formats {
             if *format == Format::SafeTensors {
                 continue;
@@ -2780,13 +2751,8 @@ impl Executor {
 
             let target = format_dir.join(format!("model.{ext}"));
             let start = Instant::now();
-            // For sharded models, pass the index.json file
             let convert_source = if is_sharded {
-                st_dir.join(
-                    source_file
-                        .file_name()
-                        .unwrap_or_default(),
-                )
+                st_dir.join(source_file.file_name().unwrap_or_default())
             } else {
                 source_file.to_path_buf()
             };
@@ -2815,7 +2781,7 @@ impl Executor {
             }
         }
 
-        (workspace.to_string_lossy().to_string(), passed, failed)
+        (passed, failed)
     }
 
     /// Check gateway conditions
@@ -6378,7 +6344,13 @@ test_matrix:
             fn profile_memory(&self, _: &Path) -> CommandOutput {
                 CommandOutput::success(r#"{"peak_rss_mb":1024}"#)
             }
-            fn run_chat(&self, _model_path: &Path, _prompt: &str, _no_gpu: bool, _extra_args: &[&str]) -> CommandOutput {
+            fn run_chat(
+                &self,
+                _model_path: &Path,
+                _prompt: &str,
+                _no_gpu: bool,
+                _extra_args: &[&str],
+            ) -> CommandOutput {
                 CommandOutput::success("Chat output")
             }
             fn http_post(&self, _url: &str, _body: &str) -> CommandOutput {
@@ -6554,7 +6526,13 @@ test_matrix:
             fn profile_memory(&self, _: &Path) -> CommandOutput {
                 CommandOutput::success(r#"{"peak_rss_mb":1024}"#)
             }
-            fn run_chat(&self, _model_path: &Path, _prompt: &str, _no_gpu: bool, _extra_args: &[&str]) -> CommandOutput {
+            fn run_chat(
+                &self,
+                _model_path: &Path,
+                _prompt: &str,
+                _no_gpu: bool,
+                _extra_args: &[&str],
+            ) -> CommandOutput {
                 CommandOutput::success("Chat output")
             }
             fn http_post(&self, _url: &str, _body: &str) -> CommandOutput {
@@ -6726,7 +6704,13 @@ test_matrix:
             fn profile_memory(&self, _: &Path) -> CommandOutput {
                 CommandOutput::success(r#"{"peak_rss_mb":1024}"#)
             }
-            fn run_chat(&self, _model_path: &Path, _prompt: &str, _no_gpu: bool, _extra_args: &[&str]) -> CommandOutput {
+            fn run_chat(
+                &self,
+                _model_path: &Path,
+                _prompt: &str,
+                _no_gpu: bool,
+                _extra_args: &[&str],
+            ) -> CommandOutput {
                 CommandOutput::success("Chat output")
             }
             fn http_post(&self, _url: &str, _body: &str) -> CommandOutput {
@@ -7372,7 +7356,13 @@ test_matrix:
             fn profile_memory(&self, _: &Path) -> CommandOutput {
                 CommandOutput::success(r#"{"peak_rss_mb":1024}"#)
             }
-            fn run_chat(&self, _model_path: &Path, _prompt: &str, _no_gpu: bool, _extra_args: &[&str]) -> CommandOutput {
+            fn run_chat(
+                &self,
+                _model_path: &Path,
+                _prompt: &str,
+                _no_gpu: bool,
+                _extra_args: &[&str],
+            ) -> CommandOutput {
                 CommandOutput::success("Chat output")
             }
             fn http_post(&self, _url: &str, _body: &str) -> CommandOutput {
@@ -9755,10 +9745,7 @@ profile_ci:
             0,
         );
         let path = executor.resolve_model_path(&scenario);
-        assert!(
-            path.is_none(),
-            "Should NOT match unrelated model family"
-        );
+        assert!(path.is_none(), "Should NOT match unrelated model family");
     }
 
     #[test]
@@ -9837,8 +9824,7 @@ profile_ci:
             0,
         );
 
-        let (_text, _stderr, _exit_code, _tps, skipped) =
-            executor.subprocess_execution(&scenario);
+        let (_text, _stderr, _exit_code, _tps, skipped) = executor.subprocess_execution(&scenario);
         // Serve scenario should not be skipped (spawn_serve mock returns success)
         assert!(!skipped, "Serve scenario should not be skipped");
     }
@@ -9865,8 +9851,7 @@ profile_ci:
             0,
         );
 
-        let (_text, _stderr, exit_code, _tps, skipped) =
-            executor.subprocess_execution(&scenario);
+        let (_text, _stderr, exit_code, _tps, skipped) = executor.subprocess_execution(&scenario);
         assert!(!skipped);
         assert_eq!(exit_code, 0);
         // The mock doesn't validate the no_gpu flag directly, but the code path

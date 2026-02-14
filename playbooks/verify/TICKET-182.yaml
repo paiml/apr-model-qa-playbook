@@ -44,8 +44,8 @@ verification_gates:
     condition: "exit_code == 0 && diff < 1e-6"
 
 acceptance:
-  safetensors_inference_works: true
-  companion_files_created: true
+  safetensors_inference_works: "true"
+  companion_files_created: "true"
 
 metadata:
   ticket: "https://github.com/paiml/aprender/issues/182"

@@ -15,6 +15,11 @@ authors = ["PAIML Engineering <engineering@paiml.com>"]
 license = "MIT"
 repository = "https://github.com/paiml/apr-model-qa-playbook"
 rust-version = "1.85"
+exclude = [
+    "output/", "certifications/", "docs/", "book/", "scripts/",
+    ".pmat/", ".pmat-work/", "target/", "*.profraw", "*.profdata",
+    ".vscode/", ".idea/", "proptest-regressions/",
+]
 
 [workspace.dependencies]
 # Core

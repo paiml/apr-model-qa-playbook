@@ -31,10 +31,10 @@ test_matrix:
   timeout_ms: 300000  # 300s for F16
 
 gates:
-  g1_model_loads: true
-  g2_basic_inference: true
-  g3_no_crashes: true
-  g4_output_quality: true
+  g1_model_loads: "true"
+  g2_basic_inference: "true"
+  g3_no_crashes: "true"
+  g4_output_quality: "true"
 
 oracles:
   - type: arithmetic
@@ -53,25 +53,25 @@ failure_policy: collect_all
 # Differential testing: tensor + inference comparison
 differential_tests:
   format_validation:
-    enabled: true
+    enabled: "true"
     checks: [dtype_mapping, tensor_alignment, header_integrity]
     gates: ["F-ROSETTA-FMT-001", "F-ROSETTA-FMT-002"]
   tensor_diff:
-    enabled: true
+    enabled: "true"
     gates: ["F-ROSETTA-DIFF-001", "F-ROSETTA-DIFF-002"]
   inference_compare:
-    enabled: true
+    enabled: "true"
     prompt: "What is 2+2?"
     max_tokens: 10
     tolerance: 0.00001
     gates: ["F-ROSETTA-INF-001"]
   fingerprint:
-    enabled: true
+    enabled: "true"
     tensors: "all"
     stats: ["mean", "std", "min", "max", "checksum"]
     gates: ["F-ROSETTA-FP-001", "F-ROSETTA-FP-002"]
   validate_stats:
-    enabled: true
+    enabled: "true"
     tolerance:
       layernorm: 0.001
       embedding: 0.1
@@ -80,7 +80,7 @@ differential_tests:
 
 # 6-column profiling: 3 formats × 2 backends
 profile_ci:
-  enabled: true
+  enabled: "true"
   warmup: 3
   measure: 10
   formats: [safetensors, apr, gguf]
@@ -93,7 +93,7 @@ profile_ci:
 
 # Trace payload testing
 trace_payload:
-  enabled: true
+  enabled: "true"
   prompt: "def fibonacci(n):"
   gates: ["F-TRACE-PAYLOAD-001", "F-TRACE-PAYLOAD-002"]
 
@@ -103,7 +103,7 @@ contract_tests:
 
 # Ollama parity tests (GH-6/AC-2)
 ollama_parity:
-  enabled: true
+  enabled: "true"
   model_tag: "qwen2.5-coder:7b-instruct-q4_k_m"
   quantizations:
     - q4_k_m
@@ -121,7 +121,7 @@ metadata:
   author: "apr-qa-gen"
   tier: "full"
   architecture: "qwen2"
-  primary_qa_model: true
+  primary_qa_model: "true"
   tags:
     - code
     - instruct

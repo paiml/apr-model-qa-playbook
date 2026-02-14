@@ -1,0 +1,38 @@
+# O(1) Quality Gate Metric Thresholds for APR Model QA Playbook
+# Spec: Phase 2 O(1) Quality Gates with hash-based caching
+# Pattern: Toyota Way - Jidoka (MEAN mode: warnings = errors)
+
+[thresholds]
+# Hard limits (block commits) - based on project Makefile tier targets
+lint_max_ms = 30_000              # 30s (clippy --workspace)
+test_tier1_max_ms = 30_000        # 30s (focused tests)
+test_tier2_max_ms = 300_000       # 5min (full workspace tests)
+coverage_max_ms = 600_000         # 10min (cargo llvm-cov --workspace --lib)
+binary_max_bytes = 10_000_000     # 10MB (CLI binary)
+
+# Soft limits (warnings only)
+build_release_max_ms = 180_000    # 3min (typical Rust build time)
+
+[staleness]
+# Metrics older than this trigger warnings
+max_age_days = 7
+
+[enforcement]
+# Pre-commit behavior (MEAN mode = strict)
+fail_on_stale_metrics = false     # Warn, don't block
+fail_on_missing_metrics = false   # Allow commits if no cache
+fail_on_threshold_violation = true # Block commits on violations (MEAN mode)
+
+[trend_analysis]
+# Track metrics for Kaizen (continuous improvement)
+enabled = true
+retention_days = 90
+alert_on_regression = true
+regression_threshold_pct = 10.0   # Alert if >10% slower
+
+[quality_gates]
+# Quality targets (Popperian falsification framework)
+min_coverage_pct = 95.0           # Target: >=95% line coverage (PMAT mandate)
+max_cyclomatic_complexity = 15    # Target: <=15 per function
+min_tdg_grade = "B"               # Target: B or better
+max_unwrap_calls = 20             # Near unwrap-free

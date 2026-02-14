@@ -46,7 +46,7 @@ invariants:
     description: "inference(convert(model)) == inference(model)"
     catches: ["GH-186", "GH-189", "GH-190", "GH-191"]
     gate_id: "F-CONTRACT-I1-001"
-    implemented: true
+    implemented: "true"
 
   - id: "I-2"
     name: "Tensor Name Bijection"

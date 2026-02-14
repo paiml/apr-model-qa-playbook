@@ -36,7 +36,7 @@ verification_gates:
 
 acceptance:
   validate_exit_code: 0
-  no_false_negatives: true
+  no_false_negatives: "true"
   tool_coverage: 100  # 9/9 tools pass
 
 metadata:

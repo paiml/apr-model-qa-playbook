@@ -33,10 +33,10 @@ test_matrix:
   timeout_ms: 60000
 
 gates:
-  g1_model_loads: true
-  g2_basic_inference: true
-  g3_no_crashes: true
-  g4_output_quality: true
+  g1_model_loads: "true"
+  g2_basic_inference: "true"
+  g3_no_crashes: "true"
+  g4_output_quality: "true"
 
 oracles:
   - type: arithmetic
@@ -69,7 +69,7 @@ property_tests:
 differential_tests:
   # APR format validation - dtype mapping verification (GH-186 root cause)
   format_validation:
-    enabled: true
+    enabled: "true"
     checks:
       - dtype_mapping        # Q4K=12, Q5K=13, Q6K=14 match APR spec
       - tensor_alignment     # 64-byte alignment for SIMD
@@ -81,7 +81,7 @@ differential_tests:
 
   # Rosetta tensor diff - detect layout mismatches
   tensor_diff:
-    enabled: true
+    enabled: "true"
     filter: "embed,lm_head"
     gates:
       - F-ROSETTA-DIFF-001  # No transposed dimensions
@@ -89,7 +89,7 @@ differential_tests:
 
   # Rosetta inference comparison - token-by-token
   inference_compare:
-    enabled: true
+    enabled: "true"
     prompt: "What is 2+2?"
     max_tokens: 10
     tolerance: 1e-5
@@ -100,7 +100,7 @@ differential_tests:
 
   # Rosetta fingerprint - statistical corruption detection (PMAT-201)
   fingerprint:
-    enabled: true
+    enabled: "true"
     tensors: "all"
     stats: ["mean", "std", "min", "max", "checksum"]
     gates:
@@ -109,7 +109,7 @@ differential_tests:
 
   # Rosetta validate-stats - anomaly detection (PMAT-202)
   validate_stats:
-    enabled: true
+    enabled: "true"
     reference: "qwen2.5-coder-1.5b-reference.json"
     tolerance:
       layernorm: 0.001      # Strict for normalization
@@ -123,7 +123,7 @@ differential_tests:
 
 # Profile CI Assertions (PMAT-192)
 profile_ci:
-  enabled: true
+  enabled: "true"
   warmup: 3
   measure: 10
   assertions:
@@ -137,7 +137,7 @@ profile_ci:
 
 # Trace Payload Testing (APR-TRACE-001)
 trace_payload:
-  enabled: true
+  enabled: "true"
   prompt: "Write a Python function to add two numbers."
   gates:
     - F-TRACE-PAYLOAD-001   # No NaN/Inf in any layer

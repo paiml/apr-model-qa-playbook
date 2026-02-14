@@ -32,10 +32,10 @@ test_matrix:
   timeout_ms: 90000
 
 gates:
-  g1_model_loads: true
-  g2_basic_inference: true
-  g3_no_crashes: true
-  g4_output_quality: true
+  g1_model_loads: "true"
+  g2_basic_inference: "true"
+  g3_no_crashes: "true"
+  g4_output_quality: "true"
 
 oracles:
   - type: arithmetic
@@ -73,7 +73,7 @@ property_tests:
 # Differential Testing (v1.4.0)
 differential_tests:
   format_validation:
-    enabled: true
+    enabled: "true"
     checks:
       - dtype_mapping
       - tensor_alignment
@@ -83,22 +83,22 @@ differential_tests:
       - F-APR-FORMAT-002
       - F-APR-FORMAT-003
   tensor_diff:
-    enabled: true
+    enabled: "true"
     filter: "embed,lm_head,layers.0"
     gates: ["F-ROSETTA-DIFF-001", "F-ROSETTA-DIFF-002"]
   inference_compare:
-    enabled: true
+    enabled: "true"
     prompt: "What is 2+2?"
     max_tokens: 10
     tolerance: 1e-5
     gates: ["F-ROSETTA-INF-001", "F-ROSETTA-INF-002", "F-ROSETTA-INF-003"]
   fingerprint:
-    enabled: true
+    enabled: "true"
     tensors: "all"
     stats: ["mean", "std", "min", "max", "checksum"]
     gates: ["F-ROSETTA-FP-001", "F-ROSETTA-FP-002"]
   validate_stats:
-    enabled: true
+    enabled: "true"
     reference: "qwen2.5-coder-3b-reference.json"
     tolerance:
       layernorm: 0.001
@@ -108,7 +108,7 @@ differential_tests:
 
 # Profile CI Assertions (PMAT-192)
 profile_ci:
-  enabled: true
+  enabled: "true"
   warmup: 3
   measure: 10
   assertions:
@@ -118,7 +118,7 @@ profile_ci:
 
 # Trace Payload (v1.3.0)
 trace_payload:
-  enabled: true
+  enabled: "true"
   prompt: "Write a Rust function to reverse a string."
   gates: ["F-TRACE-PAYLOAD-001", "F-TRACE-PAYLOAD-002"]
 
