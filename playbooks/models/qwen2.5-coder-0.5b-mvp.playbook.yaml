@@ -1,8 +1,9 @@
 # Qwen2.5-Coder-0.5B MVP Playbook
+# Kernel profile: GQA + RMSNorm + SiLU + SwiGLU + RoPE + BiasAdd
 # Full surface coverage: 3 formats × 2 backends × 3 modalities = 18 tests
 name: qwen2.5-coder-0.5b-mvp
-version: "1.0.0"
-description: "MVP certification for Qwen2.5-Coder-0.5B-Instruct"
+version: "2.0.0"
+description: "MVP certification for Qwen2.5-Coder-0.5B-Instruct (kernel profile-driven)"
 
 model:
   hf_repo: "Qwen/Qwen2.5-Coder-0.5B-Instruct"
@@ -13,6 +14,14 @@ model:
   quantizations:
     - q4_k_m
   size_category: tiny
+  expected_hidden_dim: 896
+  expected_num_layers: 24
+  expected_num_heads: 14
+  expected_num_kv_heads: 2
+  expected_vocab_size: 151936
+  expected_intermediate_dim: 4864
+  family: qwen2
+  size_variant: "0.5b"
 
 test_matrix:
   modalities:
@@ -25,6 +34,37 @@ test_matrix:
   scenario_count: 1
   seed: 42
   timeout_ms: 60000
+  prompts:
+    # GQA multi-turn (stress KV cache sharing across head groups)
+    - "Given x=5 and y=3, what is x*y? Then what is the result plus 10?"
+    - "List the first 5 prime numbers. Now sum them."
+    - "Define a function add(a,b) that returns a+b. What does add(3,4) return?"
+    # RoPE long-context (position encoding extrapolation)
+    - "Write a detailed step-by-step solution to: What is 123 * 456? Show all intermediate multiplication steps."
+    # Bias precision (floating-point accumulation)
+    - "What is 0.1 + 0.2? Give a precise answer."
+    - "Calculate 999 + 1."
+    # Arithmetic verification (deterministic correctness)
+    - "What is 2+2?"
+    - "Calculate 7*8"
+    - "What is 15-7?"
+    # Code completion (full token generation pipeline)
+    - "def fibonacci(n):"
+    - "Write a Python function that checks if a number is prime."
+
+kernel_profile:
+  family: qwen2
+  kernel_ops:
+    - FusedQ4kMatvec
+    - FusedQ6kMatvec
+    - GroupedQueryAttention
+    - RmsNorm
+    - Silu
+    - SwiGlu
+    - Rope
+    - BiasAdd
+  prompt_count: 11
+  long_context: true
 
 gates:
   g1_model_loads: "true"
