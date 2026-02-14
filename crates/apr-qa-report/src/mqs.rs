@@ -409,11 +409,10 @@ impl MqsCalculator {
             }
         }
 
-        let score_for =
-            |cat: &str, max: u32| -> u32 {
-                let &(pass, total) = tallies.get(cat).unwrap_or(&(0, 0));
-                Self::proportional_score_or_full(pass, total, max)
-            };
+        let score_for = |cat: &str, max: u32| -> u32 {
+            let &(pass, total) = tallies.get(cat).unwrap_or(&(0, 0));
+            Self::proportional_score_or_full(pass, total, max)
+        };
 
         // Categories with 0 tests get full credit (no evidence of failure)
         CategoryScores {
