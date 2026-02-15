@@ -14,8 +14,8 @@ model:
   size_category: small
   expected_hidden_dim: 2048
   expected_num_layers: 36
-  expected_num_heads: 16
-  expected_num_kv_heads: 2
+  expected_num_heads: 32
+  expected_num_kv_heads: 4
   expected_vocab_size: 151936
   expected_intermediate_dim: 11008
   family: qwen2
