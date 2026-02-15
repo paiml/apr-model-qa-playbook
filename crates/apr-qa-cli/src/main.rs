@@ -2055,8 +2055,11 @@ fn process_certification_result(
 
             print_certification_scores(tier_str, raw_score, &grade, status);
 
-            let profile =
-                run_profiling_phase(&result, playbook, model_cache, short, apr_binary, fail_fast);
+            let profile = if matches!(tier, CertTier::DimensionalSmoke) {
+                apr_qa_runner::SixColumnProfile::default()
+            } else {
+                run_profiling_phase(&result, playbook, model_cache, short, apr_binary, fail_fast)
+            };
 
             update_certification_record(
                 certifications,
