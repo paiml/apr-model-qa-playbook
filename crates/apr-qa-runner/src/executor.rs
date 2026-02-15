@@ -126,6 +126,9 @@ pub struct ExecutionConfig {
     pub run_contract_tests: bool,
     /// Run ollama parity tests (GH-6/AC-2)
     pub run_ollama_parity: bool,
+    /// Metadata-only mode: skip inference, only verify config.json + SafeTensors headers
+    /// Used by dim-smoke tier for rapid model qualification.
+    pub metadata_only: bool,
 }
 
 impl Default for ExecutionConfig {
@@ -152,6 +155,7 @@ impl Default for ExecutionConfig {
             output_dir: Some("output".to_string()), // ISO-OUT-001: Default to isolated output
             run_contract_tests: true, // v1.4.0: Contract invariants (GH-190/191 Five-Whys)
             run_ollama_parity: false, // GH-6/AC-2: Opt-in, requires ollama binary
+            metadata_only: false,
         }
     }
 }
@@ -214,6 +218,11 @@ impl Executor {
         let scenarios = playbook.generate_scenarios();
         let total = scenarios.len();
         let start = Instant::now();
+
+        // Metadata-only mode: skip inference, verify dimensions from config.json + SafeTensors headers
+        if self.config.metadata_only {
+            return self.execute_metadata_only(playbook, start);
+        }
 
         // Pre-flight checks (integrity, implicit skips, gateways)
         if let Some(result) = self.check_pre_flight(playbook, total, start) {
@@ -370,6 +379,106 @@ impl Executor {
         }
 
         None
+    }
+
+    /// Execute metadata-only dimensional verification (dim-smoke tier).
+    ///
+    /// Resolves the model path, then runs dimensional checks against
+    /// config.json and SafeTensors headers without loading model weights.
+    fn execute_metadata_only(
+        &mut self,
+        playbook: &Playbook,
+        start: Instant,
+    ) -> Result<ExecutionResult> {
+        let model_id = playbook.model_id();
+
+        // Resolve model path: prefer explicit --model-path, then try HF cache, then apr pull
+        let model_path = if let Some(ref path) = self.config.model_path {
+            PathBuf::from(path)
+        } else if let Ok(p) =
+            crate::conversion::resolve_hf_repo_to_cache(&playbook.model.hf_repo)
+        {
+            p
+        } else {
+            let (pp, pf, pulled_path) =
+                self.run_g0_pull_check(&playbook.model.hf_repo, &model_id);
+            if pf > 0 {
+                return Ok(ExecutionResult {
+                    playbook_name: playbook.name.clone(),
+                    total_scenarios: pp + pf,
+                    passed: pp,
+                    failed: pf,
+                    skipped: 0,
+                    duration_ms: start.elapsed().as_millis() as u64,
+                    gateway_failed: Some(
+                        "G0-PULL-001: Model acquisition failed".to_string(),
+                    ),
+                    evidence: self.collector.clone(),
+                });
+            }
+            PathBuf::from(pulled_path.unwrap_or_default())
+        };
+
+        let check_result =
+            crate::dimensional_check::run_dimensional_check(&model_path, playbook);
+
+        let mut passed = 0usize;
+        let mut failed = 0usize;
+        for check in &check_result.checks {
+            let gate_id = format!("G0-DIM-{}", check.name.to_uppercase());
+            let scenario = QaScenario::new(
+                model_id.clone(),
+                Modality::Run,
+                Backend::Cpu,
+                Format::SafeTensors,
+                format!("Dimensional check: {}", check.name),
+                0,
+            );
+            if check.passed {
+                self.collector.add(Evidence::corroborated(
+                    &gate_id,
+                    scenario,
+                    format!(
+                        "G0 PASS: {} expected={} actual={}",
+                        check.name, check.expected, check.actual
+                    ),
+                    check_result.duration_ms,
+                ));
+                passed += 1;
+            } else {
+                self.collector.add(Evidence::falsified(
+                    &gate_id,
+                    scenario,
+                    format!(
+                        "G0 FAIL: {} expected={} actual={}",
+                        check.name, check.expected, check.actual
+                    ),
+                    format!("expected={} actual={}", check.expected, check.actual),
+                    check_result.duration_ms,
+                ));
+                failed += 1;
+            }
+        }
+
+        let gateway_failed = if failed > 0 {
+            Some(format!(
+                "G0-DIM: {failed} dimensional check(s) failed for {}",
+                check_result.model_id
+            ))
+        } else {
+            None
+        };
+
+        Ok(ExecutionResult {
+            playbook_name: playbook.name.clone(),
+            total_scenarios: passed + failed,
+            passed,
+            failed,
+            skipped: 0,
+            duration_ms: start.elapsed().as_millis() as u64,
+            gateway_failed,
+            evidence: self.collector.clone(),
+        })
     }
 
     /// G0-FORMAT: Prepare workspace with APR cache directory structure
@@ -4373,6 +4482,7 @@ test_matrix:
             output_dir: Some("test_output".to_string()),
             run_contract_tests: false,
             run_ollama_parity: false,
+            metadata_only: false,
         };
         assert_eq!(config.failure_policy, FailurePolicy::CollectAll);
         assert!(config.dry_run);
@@ -10872,5 +10982,123 @@ test_matrix:
         std::fs::write(tmp.path().join("model.safetensors"), b"data").unwrap();
         let result = Executor::find_clean_model_file(tmp.path(), "gguf");
         assert!(result.is_none());
+    }
+
+    // ── metadata_only mode ─────────────────────────────────────────────
+
+    #[test]
+    fn test_metadata_only_skips_inference() {
+        let tmp = tempfile::tempdir().unwrap();
+        // Write config.json with matching dimensions
+        let config = serde_json::json!({
+            "hidden_size": 896,
+            "num_hidden_layers": 24,
+            "num_attention_heads": 14,
+            "num_key_value_heads": 2,
+            "vocab_size": 151_936
+        });
+        let config_path = tmp.path().join("config.json");
+        std::fs::write(&config_path, serde_json::to_string(&config).unwrap()).unwrap();
+
+        // Write minimal safetensors with correct shapes
+        {
+            use std::collections::HashMap;
+            use std::io::Write;
+            let mut header_map: HashMap<&str, serde_json::Value> = HashMap::new();
+            header_map.insert(
+                "model.embed_tokens.weight",
+                serde_json::json!({"dtype": "F32", "shape": [151_936, 896], "data_offsets": [0, 8]}),
+            );
+            header_map.insert(
+                "lm_head.weight",
+                serde_json::json!({"dtype": "F32", "shape": [151_936, 896], "data_offsets": [8, 16]}),
+            );
+            let header_json = serde_json::to_string(&header_map).unwrap();
+            let header_bytes = header_json.as_bytes();
+            let header_len = header_bytes.len() as u64;
+
+            let st_path = tmp.path().join("model.safetensors");
+            let mut f = std::fs::File::create(st_path).unwrap();
+            f.write_all(&header_len.to_le_bytes()).unwrap();
+            f.write_all(header_bytes).unwrap();
+            f.write_all(&[0u8; 16]).unwrap();
+        }
+
+        let playbook_yaml = r#"
+name: test-dim-smoke
+version: "1.0"
+model:
+  hf_repo: "test/model"
+  expected_hidden_dim: 896
+  expected_num_layers: 24
+  expected_num_heads: 14
+  expected_num_kv_heads: 2
+  expected_vocab_size: 151936
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  formats: [safetensors]
+  prompts:
+    - "hello"
+"#;
+        let playbook =
+            crate::playbook::Playbook::from_yaml(playbook_yaml).expect("valid playbook");
+
+        let exec_config = ExecutionConfig {
+            metadata_only: true,
+            model_path: Some(tmp.path().to_string_lossy().to_string()),
+            ..Default::default()
+        };
+        let mut executor = Executor::with_config(exec_config);
+        let result = executor.execute(&playbook).expect("should succeed");
+
+        // All dimensional checks should pass
+        assert_eq!(result.failed, 0, "no checks should fail: gateway={:?}", result.gateway_failed);
+        assert!(result.passed > 0, "should have passing checks");
+        assert!(result.gateway_failed.is_none());
+    }
+
+    #[test]
+    fn test_metadata_only_detects_mismatch() {
+        let tmp = tempfile::tempdir().unwrap();
+        // Write config.json with WRONG hidden_size
+        let model_config = serde_json::json!({
+            "hidden_size": 512,
+            "num_hidden_layers": 24
+        });
+        std::fs::write(
+            tmp.path().join("config.json"),
+            serde_json::to_string(&model_config).unwrap(),
+        )
+        .unwrap();
+
+        let playbook_yaml = r#"
+name: test-dim-smoke-fail
+version: "1.0"
+model:
+  hf_repo: "test/model"
+  expected_hidden_dim: 896
+  expected_num_layers: 24
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  formats: [safetensors]
+  prompts:
+    - "hello"
+"#;
+        let playbook =
+            crate::playbook::Playbook::from_yaml(playbook_yaml).expect("valid playbook");
+
+        let exec_config = ExecutionConfig {
+            metadata_only: true,
+            model_path: Some(tmp.path().to_string_lossy().to_string()),
+            ..Default::default()
+        };
+        let mut executor = Executor::with_config(exec_config);
+        let result = executor.execute(&playbook).expect("should succeed");
+
+        // hidden_size mismatch + no safetensors => failures
+        assert!(result.failed > 0, "should have failures");
+        assert!(result.gateway_failed.is_some());
     }
 }

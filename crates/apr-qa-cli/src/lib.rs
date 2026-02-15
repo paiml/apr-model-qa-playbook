@@ -296,6 +296,7 @@ pub fn build_execution_config(config: &PlaybookRunConfig) -> Result<ExecutionCon
         output_dir: Some("output".to_string()), // ISO-OUT-001: Isolated output directory
         run_contract_tests: true,
         run_ollama_parity: false,
+        metadata_only: false,
     })
 }
 
@@ -453,6 +454,7 @@ pub fn build_certification_config_with_policy(
         output_dir: Some("output".to_string()), // ISO-OUT-001: Isolated output directory
         run_contract_tests: true,
         run_ollama_parity: false,
+        metadata_only: false,
     }
 }
 
@@ -483,6 +485,7 @@ fn build_dimensional_smoke_config(model_cache_path: Option<String>) -> Execution
         output_dir: Some("output".to_string()),
         run_contract_tests: false,
         run_ollama_parity: false,
+        metadata_only: true,
     }
 }
 
@@ -1936,6 +1939,7 @@ test_matrix:
         assert!(!config.run_ollama_parity);
         assert!(!config.run_differential_tests);
         assert!(!config.run_trace_payload);
+        assert!(config.metadata_only);
     }
 
     #[test]
@@ -1960,5 +1964,17 @@ test_matrix:
     fn test_cert_tier_from_str_error_mentions_dim_smoke() {
         let err = "invalid".parse::<CertTier>().unwrap_err();
         assert!(err.contains("dim-smoke"));
+    }
+
+    #[test]
+    fn test_non_dim_smoke_config_not_metadata_only() {
+        let config = build_certification_config(CertTier::Mvp, None);
+        assert!(!config.metadata_only);
+    }
+
+    #[test]
+    fn test_dim_smoke_config_is_metadata_only() {
+        let config = build_certification_config(CertTier::DimensionalSmoke, None);
+        assert!(config.metadata_only);
     }
 }

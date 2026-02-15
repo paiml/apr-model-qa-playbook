@@ -34,10 +34,10 @@ Options:
 
 Examples:
 ```bash
-# Dimensional smoke for all class A models (<30s each)
+# Dimensional smoke for all class A models (metadata-only, ~2-5s each, no inference)
 apr-qa certify --kernel-class A --tier dim-smoke
 
-# Dimensional smoke for a single model
+# Dimensional smoke for a single model (verifies config.json + SafeTensors headers only)
 apr-qa certify --tier dim-smoke Qwen/Qwen2.5-Coder-7B-Instruct
 
 # MVP certification for a model family (recommended)

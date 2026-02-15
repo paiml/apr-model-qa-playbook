@@ -27,6 +27,7 @@ pub mod contract;
 pub mod conversion;
 pub mod diagnostics;
 pub mod differential;
+pub mod dimensional_check;
 pub mod error;
 pub mod evidence;
 pub mod executor;
@@ -49,6 +50,7 @@ pub use provenance::{
 pub mod test_fixtures;
 
 pub use command::{CommandOutput, CommandRunner, MockCommandRunner, RealCommandRunner};
+pub use dimensional_check::{DimensionalCheck, DimensionalCheckResult, run_dimensional_check};
 pub use contract::{
     ContractTestConfig, DtypeByteEntry, DtypeByteSection, FormatContract, InvariantDef,
     InvariantId, NamingExample, TensorNamingContract, ToleranceEntry, load_format_contract,
@@ -85,9 +87,10 @@ pub use integrity::{
     gate_ids as integrity_gate_ids,
 };
 pub use layout_contract::{
-    ModelValidationResult, TensorLayoutContract, TensorSpec, TensorValidationResult,
-    ValidationRule, get_critical_tensors, get_validation_rules, load_contract, load_contract_from,
-    validate_model,
+    LayoutModelConfig, ModelValidationResult, TensorLayoutContract, TensorSpec,
+    TensorValidationResult, ValidationRule, find_and_load_config, find_safetensors_files,
+    get_critical_tensors, get_validation_rules, load_contract, load_contract_from,
+    read_safetensors_metadata, validate_model,
 };
 pub use oracle::{
     CheckStatus, Confidence, CrossReference, FalsificationCheckItem, OracleContext, OracleEnhancer,

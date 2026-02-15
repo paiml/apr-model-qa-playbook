@@ -90,6 +90,7 @@ crates/
 - `KernelProfile` (apr-qa-gen): Architecture → kernel ops + targeted prompt mapping
 - `KernelClass` (apr-qa-gen): Kernel equivalence class (A-E) for dimensional smoke verification
 - `BootstrappedPlaybook` (apr-qa-gen): Complete playbook generated from kernel profile
+- `DimensionalCheckResult` (apr-qa-runner): Metadata-only verification result (config.json + SafeTensors headers)
 
 ### Gateway Logic (G0-G4)
 

@@ -417,7 +417,7 @@ fn collect_tensor_metadata(
 /// Validate lm_head shape (F-LAYOUT-CONTRACT-002 - GH-202 critical check)
 fn validate_lm_head(
     all_tensors: &HashMap<String, Vec<usize>>,
-    config: &ModelConfig,
+    config: &LayoutModelConfig,
     contract: &TensorLayoutContract,
     results: &mut Vec<TensorValidationResult>,
     critical_failures: &mut Vec<String>,
@@ -435,7 +435,7 @@ fn validate_lm_head(
 fn validate_2d_tensors(
     contract: &TensorLayoutContract,
     all_tensors: &HashMap<String, Vec<usize>>,
-    config: &ModelConfig,
+    config: &LayoutModelConfig,
     results: &mut Vec<TensorValidationResult>,
 ) {
     for (name, spec) in &contract.tensors {
@@ -455,7 +455,7 @@ fn validate_2d_tensors(
 fn validate_1d_tensors(
     contract: &TensorLayoutContract,
     all_tensors: &HashMap<String, Vec<usize>>,
-    config: &ModelConfig,
+    config: &LayoutModelConfig,
     results: &mut Vec<TensorValidationResult>,
 ) {
     for (name, spec) in &contract.tensors {
@@ -473,17 +473,24 @@ fn validate_1d_tensors(
 
 /// Model configuration values for validation
 #[derive(Debug, Default)]
-struct ModelConfig {
-    vocab_size: Option<usize>,
-    hidden_size: Option<usize>,
-    intermediate_size: Option<usize>,
-    num_attention_heads: Option<usize>,
-    num_key_value_heads: Option<usize>,
-    num_hidden_layers: Option<usize>,
+pub struct LayoutModelConfig {
+    /// Vocabulary size from config.json
+    pub vocab_size: Option<usize>,
+    /// Hidden size from config.json
+    pub hidden_size: Option<usize>,
+    /// Intermediate/FFN size from config.json
+    pub intermediate_size: Option<usize>,
+    /// Number of attention heads from config.json
+    pub num_attention_heads: Option<usize>,
+    /// Number of key-value heads from config.json
+    pub num_key_value_heads: Option<usize>,
+    /// Number of hidden layers from config.json
+    pub num_hidden_layers: Option<usize>,
 }
 
 /// Find SafeTensors files in a path
-fn find_safetensors_files(path: &Path) -> Vec<PathBuf> {
+#[must_use]
+pub fn find_safetensors_files(path: &Path) -> Vec<PathBuf> {
     if path.is_file() {
         if path.extension().is_some_and(|e| e == "safetensors") {
             return vec![path.to_path_buf()];
@@ -507,7 +514,12 @@ fn find_safetensors_files(path: &Path) -> Vec<PathBuf> {
 }
 
 /// Read SafeTensors header to extract tensor shapes
-fn read_safetensors_metadata(
+///
+/// # Errors
+///
+/// Returns an error string if the file cannot be opened, the header
+/// is malformed, or the JSON cannot be parsed.
+pub fn read_safetensors_metadata(
     path: &Path,
 ) -> std::result::Result<HashMap<String, Vec<usize>>, String> {
     let mut file = File::open(path).map_err(|e| format!("Failed to open: {e}"))?;
@@ -558,7 +570,8 @@ fn get_usize(json: &serde_json::Value, key: &str) -> Option<usize> {
 }
 
 /// Find and load config.json
-fn find_and_load_config(model_path: &Path) -> ModelConfig {
+#[must_use]
+pub fn find_and_load_config(model_path: &Path) -> LayoutModelConfig {
     let config_paths = if model_path.is_file() {
         // For file mode, check parent dir and look for hash-prefixed config
         let parent = model_path.parent().unwrap_or(model_path);
@@ -580,7 +593,7 @@ fn find_and_load_config(model_path: &Path) -> ModelConfig {
     for path in config_paths {
         if let Ok(content) = std::fs::read_to_string(&path) {
             if let Ok(json) = serde_json::from_str::<serde_json::Value>(&content) {
-                return ModelConfig {
+                return LayoutModelConfig {
                     vocab_size: get_usize(&json, "vocab_size"),
                     hidden_size: get_usize(&json, "hidden_size"),
                     intermediate_size: get_usize(&json, "intermediate_size"),
@@ -592,13 +605,13 @@ fn find_and_load_config(model_path: &Path) -> ModelConfig {
         }
     }
 
-    ModelConfig::default()
+    LayoutModelConfig::default()
 }
 
 /// Validate lm_head shape (F-LAYOUT-CONTRACT-002) - CRITICAL
 fn validate_lm_head_shape(
     actual_shape: &[usize],
-    config: &ModelConfig,
+    config: &LayoutModelConfig,
     _contract: &TensorLayoutContract,
 ) -> TensorValidationResult {
     // lm_head.weight should be [vocab_size, hidden_size] in row-major
@@ -652,7 +665,7 @@ fn validate_2d_tensor_shape(
     name: &str,
     actual_shape: &[usize],
     spec: &TensorSpec,
-    config: &ModelConfig,
+    config: &LayoutModelConfig,
 ) -> TensorValidationResult {
     if actual_shape.len() != 2 {
         return TensorValidationResult {
@@ -691,7 +704,7 @@ fn validate_2d_tensor_shape(
 fn validate_layer_tensors(
     pattern: &str,
     all_tensors: &HashMap<String, Vec<usize>>,
-    config: &ModelConfig,
+    config: &LayoutModelConfig,
     spec: &TensorSpec,
     results: &mut Vec<TensorValidationResult>,
 ) {
@@ -709,7 +722,7 @@ fn validate_layer_tensors(
 fn validate_1d_layer_tensors(
     pattern: &str,
     all_tensors: &HashMap<String, Vec<usize>>,
-    config: &ModelConfig,
+    config: &LayoutModelConfig,
     spec: &TensorSpec,
     results: &mut Vec<TensorValidationResult>,
 ) {
@@ -728,7 +741,7 @@ fn validate_1d_tensor_shape(
     name: &str,
     actual_shape: &[usize],
     spec: &TensorSpec,
-    config: &ModelConfig,
+    config: &LayoutModelConfig,
 ) -> TensorValidationResult {
     if actual_shape.len() != 1 {
         return TensorValidationResult {
@@ -762,7 +775,7 @@ fn validate_1d_tensor_shape(
 }
 
 /// Parse expected shape from contract string like "[vocab, hidden]"
-fn parse_expected_shape(shape_str: &str, config: &ModelConfig) -> Option<(usize, usize)> {
+fn parse_expected_shape(shape_str: &str, config: &LayoutModelConfig) -> Option<(usize, usize)> {
     let shape_parts = parse_shape_dims(shape_str);
     if shape_parts.len() != 2 {
         return None;
@@ -774,7 +787,7 @@ fn parse_expected_shape(shape_str: &str, config: &ModelConfig) -> Option<(usize,
 }
 
 /// Resolve a dimension name to its value from config
-fn resolve_dimension(dim: &str, config: &ModelConfig) -> Option<usize> {
+fn resolve_dimension(dim: &str, config: &LayoutModelConfig) -> Option<usize> {
     match dim {
         "vocab" | "vocab_size" => config.vocab_size,
         "hidden" | "hidden_dim" | "hidden_size" => config.hidden_size,
@@ -998,8 +1011,8 @@ mod tests {
         }
     }
 
-    fn make_config_full() -> ModelConfig {
-        ModelConfig {
+    fn make_config_full() -> LayoutModelConfig {
+        LayoutModelConfig {
             vocab_size: Some(32000),
             hidden_size: Some(4096),
             intermediate_size: Some(11008),
@@ -1114,10 +1127,10 @@ mod tests {
 
     #[test]
     fn test_resolve_dimension_head_dim_zero_heads() {
-        let config = ModelConfig {
+        let config = LayoutModelConfig {
             hidden_size: Some(4096),
             num_attention_heads: Some(0),
-            ..ModelConfig::default()
+            ..LayoutModelConfig::default()
         };
         // Division guard: n == 0 => None
         assert_eq!(resolve_dimension("head_dim", &config), None);
@@ -1126,23 +1139,23 @@ mod tests {
     #[test]
     fn test_resolve_dimension_head_dim_missing_fields() {
         // Missing hidden_size
-        let config = ModelConfig {
+        let config = LayoutModelConfig {
             num_attention_heads: Some(32),
-            ..ModelConfig::default()
+            ..LayoutModelConfig::default()
         };
         assert_eq!(resolve_dimension("head_dim", &config), None);
 
         // Missing num_attention_heads
-        let config2 = ModelConfig {
+        let config2 = LayoutModelConfig {
             hidden_size: Some(4096),
-            ..ModelConfig::default()
+            ..LayoutModelConfig::default()
         };
         assert_eq!(resolve_dimension("head_dim", &config2), None);
     }
 
     #[test]
     fn test_resolve_dimension_numeric() {
-        let config = ModelConfig::default();
+        let config = LayoutModelConfig::default();
         assert_eq!(resolve_dimension("128", &config), Some(128));
         assert_eq!(resolve_dimension("0", &config), Some(0));
     }
@@ -1166,14 +1179,14 @@ mod tests {
 
     #[test]
     fn test_resolve_dimension_expression_with_missing() {
-        let config = ModelConfig::default();
+        let config = LayoutModelConfig::default();
         // heads * head_dim => None since both are missing
         assert_eq!(resolve_dimension("heads*head_dim", &config), None);
     }
 
     #[test]
     fn test_resolve_dimension_unknown() {
-        let config = ModelConfig::default();
+        let config = LayoutModelConfig::default();
         assert_eq!(resolve_dimension("foobar", &config), None);
     }
 
@@ -1257,9 +1270,9 @@ mod tests {
 
     #[test]
     fn test_validate_lm_head_shape_partial_vocab_only() {
-        let config = ModelConfig {
+        let config = LayoutModelConfig {
             vocab_size: Some(32000),
-            ..ModelConfig::default()
+            ..LayoutModelConfig::default()
         };
         let contract = make_contract();
         // Only vocab known, dim[0] matches
@@ -1272,9 +1285,9 @@ mod tests {
 
     #[test]
     fn test_validate_lm_head_shape_partial_hidden_only() {
-        let config = ModelConfig {
+        let config = LayoutModelConfig {
             hidden_size: Some(4096),
-            ..ModelConfig::default()
+            ..LayoutModelConfig::default()
         };
         let contract = make_contract();
         // Only hidden known, dim[1] matches
@@ -1287,7 +1300,7 @@ mod tests {
 
     #[test]
     fn test_validate_lm_head_shape_no_config() {
-        let config = ModelConfig::default();
+        let config = LayoutModelConfig::default();
         let contract = make_contract();
         // No config => can't validate => passes
         let result = validate_lm_head_shape(&[100, 200], &config, &contract);
@@ -1331,7 +1344,7 @@ mod tests {
     fn test_validate_2d_tensor_shape_unresolvable() {
         // When shape dims can't be resolved, validation passes by default
         let spec = make_spec("test.weight", "[unknown1, unknown2]", true);
-        let config = ModelConfig::default();
+        let config = LayoutModelConfig::default();
         let result = validate_2d_tensor_shape("test", &[100, 200], &spec, &config);
         assert!(result.passed);
     }
@@ -1371,7 +1384,7 @@ mod tests {
     #[test]
     fn test_validate_1d_tensor_shape_no_config() {
         let spec = make_spec("test.bias", "[hidden]", false);
-        let config = ModelConfig::default();
+        let config = LayoutModelConfig::default();
         // No hidden_size => passes by default
         let result = validate_1d_tensor_shape("test.bias", &[9999], &spec, &config);
         assert!(result.passed);
@@ -1626,11 +1639,11 @@ mod tests {
 
     #[test]
     fn test_validate_layer_tensors_with_layers() {
-        let config = ModelConfig {
+        let config = LayoutModelConfig {
             num_hidden_layers: Some(2),
             vocab_size: Some(32000),
             hidden_size: Some(4096),
-            ..ModelConfig::default()
+            ..LayoutModelConfig::default()
         };
 
         let spec = make_spec(
@@ -1664,9 +1677,9 @@ mod tests {
 
     #[test]
     fn test_validate_layer_tensors_missing_layer() {
-        let config = ModelConfig {
+        let config = LayoutModelConfig {
             num_hidden_layers: Some(3),
-            ..ModelConfig::default()
+            ..LayoutModelConfig::default()
         };
 
         let spec = make_spec("model.layers.{n}.weight", "[vocab, hidden]", true);
@@ -1689,7 +1702,7 @@ mod tests {
 
     #[test]
     fn test_validate_layer_tensors_zero_layers() {
-        let config = ModelConfig::default(); // num_hidden_layers = None => 0
+        let config = LayoutModelConfig::default(); // num_hidden_layers = None => 0
         let spec = make_spec("model.layers.{n}.weight", "[vocab, hidden]", true);
         let all_tensors = HashMap::new();
         let mut results = Vec::new();
@@ -1711,10 +1724,10 @@ mod tests {
 
     #[test]
     fn test_validate_1d_layer_tensors_with_layers() {
-        let config = ModelConfig {
+        let config = LayoutModelConfig {
             num_hidden_layers: Some(2),
             hidden_size: Some(4096),
-            ..ModelConfig::default()
+            ..LayoutModelConfig::default()
         };
 
         let spec = make_spec("model.layers.{n}.input_layernorm.weight", "[hidden]", false);
@@ -1744,10 +1757,10 @@ mod tests {
 
     #[test]
     fn test_validate_1d_layer_tensors_invalid_shape() {
-        let config = ModelConfig {
+        let config = LayoutModelConfig {
             num_hidden_layers: Some(1),
             hidden_size: Some(4096),
-            ..ModelConfig::default()
+            ..LayoutModelConfig::default()
         };
 
         let spec = make_spec("model.layers.{n}.norm.weight", "[hidden]", false);
@@ -1959,11 +1972,11 @@ mod tests {
             ),
         );
 
-        let config = ModelConfig {
+        let config = LayoutModelConfig {
             num_hidden_layers: Some(1),
             vocab_size: Some(100),
             hidden_size: Some(200),
-            ..ModelConfig::default()
+            ..LayoutModelConfig::default()
         };
 
         let mut all_tensors = HashMap::new();
@@ -2046,10 +2059,10 @@ mod tests {
             make_spec("model.layers.{n}.input_layernorm.weight", "[hidden]", false),
         );
 
-        let config = ModelConfig {
+        let config = LayoutModelConfig {
             num_hidden_layers: Some(1),
             hidden_size: Some(4096),
-            ..ModelConfig::default()
+            ..LayoutModelConfig::default()
         };
 
         let mut all_tensors = HashMap::new();
@@ -2335,7 +2348,7 @@ mod tests {
             &[("lm_head.weight", &[32000, 4096])],
         );
 
-        // No config.json => ModelConfig::default() => lm_head passes (no expected dims)
+        // No config.json => LayoutModelConfig::default() => lm_head passes (no expected dims)
         let contract = make_contract();
         let result = validate_model(dir.path(), &contract).unwrap();
 
