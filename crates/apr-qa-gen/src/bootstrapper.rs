@@ -45,6 +45,9 @@ pub struct BootstrappedPlaybook {
     /// Profile CI assertions
     #[serde(skip_serializing_if = "Option::is_none")]
     pub profile_ci: Option<BootstrappedProfileCi>,
+    /// Reference to kernel proof model (for dim-smoke tier)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub kernel_proof_ref: Option<String>,
 }
 
 /// Model section of bootstrapped playbook.
@@ -153,7 +156,7 @@ pub struct BootstrappedProfileCi {
 /// Scenario count for a given tier.
 fn scenario_count_for_tier(tier: &str) -> usize {
     match tier {
-        "smoke" => 1,
+        "dim-smoke" | "smoke" => 1,
         "quick" => 5,
         "standard" => 10,
         "deep" => 50,
@@ -223,7 +226,8 @@ pub fn bootstrap_playbook(
         )
     });
 
-    let is_smoke = config.tier == "smoke";
+    let is_dim_smoke = config.tier == "dim-smoke";
+    let is_smoke = config.tier == "smoke" || is_dim_smoke;
     let (min_throughput, max_p99_ms) = performance_thresholds(size_category);
 
     let modalities = if is_smoke {
@@ -238,13 +242,27 @@ pub fn bootstrap_playbook(
         vec!["cpu".to_string(), "gpu".to_string()]
     };
 
-    let model = BootstrappedModel {
-        hf_repo: config.hf_repo.clone(),
-        formats: vec![
+    let formats = if is_dim_smoke {
+        vec!["safetensors".to_string()]
+    } else {
+        vec![
             "gguf".to_string(),
             "safetensors".to_string(),
             "apr".to_string(),
-        ],
+        ]
+    };
+
+    let kernel_proof_ref = if is_dim_smoke {
+        use crate::kernel_class::KernelClass;
+        KernelClass::from_family(&config.family)
+            .map(|kc| kc.representative_model().to_string())
+    } else {
+        None
+    };
+
+    let model = BootstrappedModel {
+        hf_repo: config.hf_repo.clone(),
+        formats,
         quantizations: vec!["q4_k_m".to_string()],
         size_category: size_category.to_string(),
         expected_hidden_dim: Some(size_variant.hidden_dim),
@@ -307,6 +325,7 @@ pub fn bootstrap_playbook(
         falsification_gates: standard_gates(),
         differential_tests,
         profile_ci,
+        kernel_proof_ref,
     }
 }
 
@@ -657,5 +676,48 @@ mod tests {
             .collect::<Vec<_>>()
             .join("\n");
         assert!(!body.is_empty());
+    }
+
+    #[test]
+    fn test_bootstrap_dim_smoke_tier() {
+        let mut config = qwen_config();
+        config.tier = "dim-smoke".to_string();
+        let playbook =
+            bootstrap_playbook(&config, &qwen_constraints(), &qwen_size_variant(), "small");
+
+        // 1 scenario, single modality/backend, safetensors only
+        assert_eq!(playbook.test_matrix.scenario_count, 1);
+        assert_eq!(playbook.test_matrix.modalities, vec!["run"]);
+        assert_eq!(playbook.test_matrix.backends, vec!["cpu"]);
+        assert_eq!(playbook.model.formats, vec!["safetensors"]);
+
+        // No differential or profile CI
+        assert!(playbook.differential_tests.is_none());
+        assert!(playbook.profile_ci.is_none());
+
+        // Should have kernel proof reference
+        assert!(playbook.kernel_proof_ref.is_some());
+        let proof_ref = playbook.kernel_proof_ref.unwrap();
+        assert!(proof_ref.contains("Qwen"));
+    }
+
+    #[test]
+    fn test_bootstrap_dim_smoke_name() {
+        let mut config = qwen_config();
+        config.tier = "dim-smoke".to_string();
+        let playbook =
+            bootstrap_playbook(&config, &qwen_constraints(), &qwen_size_variant(), "small");
+        assert_eq!(playbook.name, "qwen2-1.5b-dim-smoke");
+    }
+
+    #[test]
+    fn test_bootstrap_non_dim_smoke_no_kernel_proof_ref() {
+        let playbook = bootstrap_playbook(
+            &qwen_config(),
+            &qwen_constraints(),
+            &qwen_size_variant(),
+            "small",
+        );
+        assert!(playbook.kernel_proof_ref.is_none());
     }
 }

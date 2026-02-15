@@ -46,23 +46,23 @@ where
 //   deepseek-coder-v2-16b-full.playbook.yaml → family="deepseek-coder-v2", size="16b", tier="full"
 //
 // Size patterns: {digits}[.{digits}]b (e.g., 0.5b, 1b, 7b, 70b)
-// Tier patterns: mvp, smoke, quick, ci, full, nightly, release
+// Tier patterns: dim-smoke, mvp, smoke, quick, ci, full, nightly, release
 
 /// Regex pattern for playbook naming convention
 /// Matches: {family}-{size}[-{tier}].playbook.yaml
 /// - family: one or more segments separated by `-` (letters, digits, dots)
 /// - size: digits optionally with decimal, followed by `b` (e.g., 0.5b, 1b, 7b)
-/// - tier (optional): mvp, smoke, quick, ci, full, nightly, release
+/// - tier (optional): dim-smoke, mvp, smoke, quick, ci, full, nightly, release
 static PLAYBOOK_NAME_REGEX: LazyLock<Regex> = LazyLock::new(|| {
     // This regex pattern is verified at compile time, unwrap is safe here
     #[allow(clippy::unwrap_used)]
     Regex::new(
-        r"^(?P<family>(?:[a-z0-9]+\.?)+(?:-[a-z0-9]+\.?)*)-(?P<size>\d+(?:\.\d+)?b)(?:-(?P<tier>mvp|smoke|quick|ci|full|nightly|release))?\.playbook\.yaml$"
+        r"^(?P<family>(?:[a-z0-9]+\.?)+(?:-[a-z0-9]+\.?)*)-(?P<size>\d+(?:\.\d+)?b)(?:-(?P<tier>dim-smoke|mvp|smoke|quick|ci|full|nightly|release))?\.playbook\.yaml$"
     ).unwrap()
 });
 
 /// Valid tier values for playbook naming
-pub const VALID_TIERS: &[&str] = &["mvp", "smoke", "quick", "ci", "full", "nightly", "release"];
+pub const VALID_TIERS: &[&str] = &["dim-smoke", "mvp", "smoke", "quick", "ci", "full", "nightly", "release"];
 
 /// Parsed components from a playbook filename
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -2212,7 +2212,8 @@ test_matrix:
 
     #[test]
     fn test_valid_tiers_constant() {
-        assert_eq!(VALID_TIERS.len(), 7);
+        assert_eq!(VALID_TIERS.len(), 8);
+        assert!(VALID_TIERS.contains(&"dim-smoke"));
         assert!(VALID_TIERS.contains(&"mvp"));
         assert!(VALID_TIERS.contains(&"smoke"));
         assert!(VALID_TIERS.contains(&"quick"));
@@ -2220,6 +2221,16 @@ test_matrix:
         assert!(VALID_TIERS.contains(&"full"));
         assert!(VALID_TIERS.contains(&"nightly"));
         assert!(VALID_TIERS.contains(&"release"));
+    }
+
+    #[test]
+    fn test_validate_playbook_name_dim_smoke() {
+        let result = validate_playbook_name("qwen2.5-coder-0.5b-dim-smoke.playbook.yaml");
+        assert!(result.is_ok());
+        let parts = result.unwrap();
+        assert_eq!(parts.family, "qwen2.5-coder");
+        assert_eq!(parts.size, "0.5b");
+        assert_eq!(parts.tier, Some("dim-smoke".to_string()));
     }
 
     // ── PMAT-269 Test matrix generation tests ────────────────────────────

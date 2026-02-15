@@ -46,9 +46,13 @@ enum Commands {
         #[arg(long)]
         family: Option<String>,
 
-        /// Certification tier (smoke, quick, standard, deep)
+        /// Certification tier (dim-smoke, smoke, quick, standard, deep)
         #[arg(long, default_value = "quick")]
         tier: String,
+
+        /// Kernel equivalence class (A-E) for batch dim-smoke certification
+        #[arg(long)]
+        kernel_class: Option<String>,
 
         /// Specific model IDs to certify
         #[arg(value_name = "MODEL")]
@@ -447,6 +451,7 @@ fn main() {
             all,
             family,
             tier,
+            kernel_class,
             models,
             output,
             dry_run,
@@ -462,6 +467,7 @@ fn main() {
                 all,
                 family,
                 &tier,
+                kernel_class,
                 &models,
                 &output,
                 dry_run,
@@ -1647,6 +1653,7 @@ fn run_certification(
     all: bool,
     family: Option<String>,
     tier_str: &str,
+    kernel_class: Option<String>,
     model_ids: &[String],
     output_dir: &PathBuf,
     dry_run: bool,
@@ -1677,8 +1684,13 @@ fn run_certification(
     print_certification_header(tier_str, dry_run, fail_fast, model_cache.as_ref());
 
     let (csv_path, mut certifications) = load_certification_csv();
-    let models_to_certify =
-        determine_models_to_certify(all, family.as_deref(), model_ids, &certifications);
+    let models_to_certify = resolve_models_for_certification(
+        all,
+        family.as_deref(),
+        model_ids,
+        kernel_class.as_deref(),
+        &certifications,
+    );
 
     println!("Models to certify: {}\n", models_to_certify.len());
 
@@ -1818,6 +1830,43 @@ fn determine_models_to_certify(
         eprintln!("Error: Specify --all, --family, or model IDs");
         std::process::exit(1);
     }
+}
+
+fn resolve_models_for_certification(
+    all: bool,
+    family: Option<&str>,
+    model_ids: &[String],
+    kernel_class: Option<&str>,
+    certifications: &[apr_qa_certify::ModelCertification],
+) -> Vec<String> {
+    kernel_class.map_or_else(
+        || determine_models_to_certify(all, family, model_ids, certifications),
+        |kc_str| {
+            let kc: apr_qa_gen::KernelClass = match kc_str.parse() {
+                Ok(k) => k,
+                Err(e) => {
+                    eprintln!("{e}");
+                    std::process::exit(1);
+                }
+            };
+            let families_and_ids: Vec<(String, String)> = certifications
+                .iter()
+                .map(|c| (c.family.clone(), c.model_id.clone()))
+                .collect();
+            let models = apr_qa_gen::models_in_class(kc, &families_and_ids);
+            if models.is_empty() {
+                eprintln!("No models found for kernel class {kc}");
+                std::process::exit(1);
+            }
+            println!(
+                "Kernel class {kc} ({}) — {} models, proof: {}",
+                kc.label(),
+                models.len(),
+                kc.representative_model(),
+            );
+            models
+        },
+    )
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -2131,9 +2180,11 @@ fn compute_certification_scores(
 
     let cert_tier = match tier {
         CertTier::Mvp => CertificationTier::Mvp,
-        CertTier::Smoke | CertTier::Quick | CertTier::Standard | CertTier::Deep => {
-            CertificationTier::Full
-        }
+        CertTier::DimensionalSmoke
+        | CertTier::Smoke
+        | CertTier::Quick
+        | CertTier::Standard
+        | CertTier::Deep => CertificationTier::Full,
     };
 
     let pass_rate = result.pass_rate() / 100.0;

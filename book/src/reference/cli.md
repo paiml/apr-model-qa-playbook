@@ -21,7 +21,8 @@ apr-qa certify [OPTIONS] [MODEL...]
 Options:
 - `--all` - Certify all models in registry
 - `--family <NAME>` - Certify by model family (e.g., "qwen-coder", "llama")
-- `--tier <TIER>` - Certification tier: `smoke`, `mvp`, `quick` (default), `standard`, `deep`
+- `--tier <TIER>` - Certification tier: `dim-smoke`, `smoke`, `mvp`, `quick` (default), `standard`, `deep`
+- `--kernel-class <CLASS>` - Kernel equivalence class (A-E) for batch dim-smoke certification
 - `--output <DIR>` - Output directory for certification artifacts
 - `--dry-run` - Preview what would be certified
 - `--model-cache <DIR>` - Model cache directory (defaults to `~/.cache/apr-models`)
@@ -33,6 +34,12 @@ Options:
 
 Examples:
 ```bash
+# Dimensional smoke for all class A models (<30s each)
+apr-qa certify --kernel-class A --tier dim-smoke
+
+# Dimensional smoke for a single model
+apr-qa certify --tier dim-smoke Qwen/Qwen2.5-Coder-7B-Instruct
+
 # MVP certification for a model family (recommended)
 apr-qa certify --family qwen-coder --tier mvp
 

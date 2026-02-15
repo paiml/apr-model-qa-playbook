@@ -313,6 +313,8 @@ pub fn execute_playbook(
 /// Certification tier levels
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum CertTier {
+    /// Dimensional smoke: dimension-only verification via kernel equivalence
+    DimensionalSmoke,
     /// Tier 1: Smoke test
     Smoke,
     /// Tier 2: MVP - all formats/backends/modalities
@@ -331,13 +333,14 @@ impl std::str::FromStr for CertTier {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_lowercase().as_str() {
+            "dim-smoke" | "dimensional-smoke" => Ok(Self::DimensionalSmoke),
             "smoke" => Ok(Self::Smoke),
             "mvp" => Ok(Self::Mvp),
             "quick" => Ok(Self::Quick),
             "standard" => Ok(Self::Standard),
             "deep" => Ok(Self::Deep),
             _ => Err(format!(
-                "Unknown tier: {s}. Use: smoke, mvp, quick, standard, deep"
+                "Unknown tier: {s}. Use: dim-smoke, smoke, mvp, quick, standard, deep"
             )),
         }
     }
@@ -348,6 +351,7 @@ impl CertTier {
     #[must_use]
     pub const fn playbook_suffix(self) -> &'static str {
         match self {
+            Self::DimensionalSmoke => "-dim-smoke",
             Self::Smoke => "-smoke",
             Self::Mvp => "-mvp",
             Self::Quick => "-quick",
@@ -418,6 +422,10 @@ pub fn build_certification_config_with_policy(
     model_cache_path: Option<String>,
     fail_fast: bool,
 ) -> ExecutionConfig {
+    if matches!(tier, CertTier::DimensionalSmoke) {
+        return build_dimensional_smoke_config(model_cache_path);
+    }
+
     let failure_policy = if fail_fast {
         FailurePolicy::FailFast
     } else {
@@ -444,6 +452,36 @@ pub fn build_certification_config_with_policy(
         hf_parity_model_family: None,
         output_dir: Some("output".to_string()), // ISO-OUT-001: Isolated output directory
         run_contract_tests: true,
+        run_ollama_parity: false,
+    }
+}
+
+/// Build an ExecutionConfig for dimensional smoke tier.
+///
+/// Minimal config: no conversion, no golden rule, no contracts, no profiling.
+/// SafeTensors-only, CPU-only, single worker, 30s timeout, fail-fast.
+fn build_dimensional_smoke_config(model_cache_path: Option<String>) -> ExecutionConfig {
+    ExecutionConfig {
+        failure_policy: FailurePolicy::FailFast,
+        dry_run: false,
+        max_workers: 1,
+        model_path: model_cache_path,
+        default_timeout_ms: 30_000,
+        no_gpu: true,
+        run_conversion_tests: false,
+        run_differential_tests: false,
+        run_profile_ci: false,
+        run_trace_payload: false,
+        run_golden_rule_test: false,
+        golden_reference_path: None,
+        lock_file_path: None,
+        check_integrity: false,
+        warn_implicit_skips: false,
+        run_hf_parity: false,
+        hf_parity_corpus_path: None,
+        hf_parity_model_family: None,
+        output_dir: Some("output".to_string()),
+        run_contract_tests: false,
         run_ollama_parity: false,
     }
 }
@@ -1843,5 +1881,84 @@ test_matrix:
         // Should succeed with 0 entries (no files found)
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), 0);
+    }
+
+    // =========================================================================
+    // Dimensional Smoke Tier Tests
+    // =========================================================================
+
+    #[test]
+    fn test_cert_tier_dimensional_smoke_from_str() {
+        assert_eq!(
+            "dim-smoke".parse::<CertTier>().unwrap(),
+            CertTier::DimensionalSmoke
+        );
+        assert_eq!(
+            "dimensional-smoke".parse::<CertTier>().unwrap(),
+            CertTier::DimensionalSmoke
+        );
+        // Case insensitive
+        assert_eq!(
+            "DIM-SMOKE".parse::<CertTier>().unwrap(),
+            CertTier::DimensionalSmoke
+        );
+    }
+
+    #[test]
+    fn test_cert_tier_dimensional_smoke_suffix() {
+        assert_eq!(CertTier::DimensionalSmoke.playbook_suffix(), "-dim-smoke");
+    }
+
+    #[test]
+    fn test_playbook_path_for_model_dim_smoke() {
+        let path = playbook_path_for_model(
+            "Qwen/Qwen2.5-Coder-7B-Instruct",
+            CertTier::DimensionalSmoke,
+        );
+        assert_eq!(
+            path,
+            "playbooks/models/qwen2.5-coder-7b-dim-smoke.playbook.yaml"
+        );
+    }
+
+    #[test]
+    fn test_build_dimensional_smoke_config_values() {
+        let config = build_certification_config(CertTier::DimensionalSmoke, None);
+        assert!(matches!(config.failure_policy, FailurePolicy::FailFast));
+        assert_eq!(config.max_workers, 1);
+        assert_eq!(config.default_timeout_ms, 30_000);
+        assert!(config.no_gpu);
+        assert!(!config.run_conversion_tests);
+        assert!(!config.run_golden_rule_test);
+        assert!(!config.run_contract_tests);
+        assert!(!config.run_profile_ci);
+        assert!(!config.run_hf_parity);
+        assert!(!config.run_ollama_parity);
+        assert!(!config.run_differential_tests);
+        assert!(!config.run_trace_payload);
+    }
+
+    #[test]
+    fn test_build_dimensional_smoke_config_with_model_path() {
+        let config = build_certification_config(
+            CertTier::DimensionalSmoke,
+            Some("/path/to/model".to_string()),
+        );
+        assert_eq!(config.model_path, Some("/path/to/model".to_string()));
+        assert!(matches!(config.failure_policy, FailurePolicy::FailFast));
+    }
+
+    #[test]
+    fn test_build_dimensional_smoke_ignores_fail_fast_flag() {
+        // DimensionalSmoke always uses FailFast regardless of the flag
+        let config =
+            build_certification_config_with_policy(CertTier::DimensionalSmoke, None, false);
+        assert!(matches!(config.failure_policy, FailurePolicy::FailFast));
+    }
+
+    #[test]
+    fn test_cert_tier_from_str_error_mentions_dim_smoke() {
+        let err = "invalid".parse::<CertTier>().unwrap_err();
+        assert!(err.contains("dim-smoke"));
     }
 }

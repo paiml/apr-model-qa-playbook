@@ -163,6 +163,8 @@ pub struct ModelCertification {
     pub tps_st_gpu: Option<f64>,
     /// Provenance verified (PMAT-PROV-001).
     pub provenance_verified: bool,
+    /// Kernel proof reference model (for dim-smoke tier).
+    pub kernel_proof_ref: Option<String>,
 }
 
 impl ModelCertification {
@@ -258,6 +260,10 @@ pub fn parse_csv(content: &str) -> Result<Vec<ModelCertification>> {
         let tps_st_cpu = fields.get(17).and_then(|s| s.parse().ok());
         let tps_st_gpu = fields.get(18).and_then(|s| s.parse().ok());
         let provenance_verified = fields.get(19).is_some_and(|s| s.to_lowercase() == "true");
+        let kernel_proof_ref = fields
+            .get(20)
+            .filter(|s| !s.is_empty())
+            .map(|s| (*s).to_string());
 
         models.push(ModelCertification {
             model_id: fields[0].to_string(),
@@ -280,6 +286,7 @@ pub fn parse_csv(content: &str) -> Result<Vec<ModelCertification>> {
             tps_st_cpu,
             tps_st_gpu,
             provenance_verified,
+            kernel_proof_ref,
         });
     }
 
@@ -402,9 +409,9 @@ pub const END_MARKER: &str = "<!-- CERTIFICATION_TABLE_END -->";
 pub fn write_csv(models: &[ModelCertification]) -> String {
     let mut lines = Vec::new();
 
-    // Header with 6 tps columns (format × backend) + provenance
+    // Header with 6 tps columns (format × backend) + provenance + kernel_proof_ref
     lines.push(
-        "model_id,family,parameters,size_category,status,mqs_score,grade,certified_tier,last_certified,g1,g2,g3,g4,tps_gguf_cpu,tps_gguf_gpu,tps_apr_cpu,tps_apr_gpu,tps_st_cpu,tps_st_gpu,provenance_verified"
+        "model_id,family,parameters,size_category,status,mqs_score,grade,certified_tier,last_certified,g1,g2,g3,g4,tps_gguf_cpu,tps_gguf_gpu,tps_apr_cpu,tps_apr_gpu,tps_st_cpu,tps_st_gpu,provenance_verified,kernel_proof_ref"
             .to_string(),
     );
 
@@ -424,7 +431,7 @@ pub fn write_csv(models: &[ModelCertification]) -> String {
         let fmt = |v: Option<f64>| v.map_or(String::new(), |x| format!("{x:.1}"));
 
         lines.push(format!(
-            "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}",
+            "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}",
             m.model_id,
             m.family,
             m.parameters,
@@ -445,6 +452,7 @@ pub fn write_csv(models: &[ModelCertification]) -> String {
             fmt(m.tps_st_cpu),
             fmt(m.tps_st_gpu),
             m.provenance_verified,
+            m.kernel_proof_ref.as_deref().unwrap_or(""),
         ));
     }
 
@@ -742,6 +750,7 @@ meta-llama/Llama-3.2-1B-Instruct,llama,1B,small,BLOCKED,450,F,smoke,2026-01-31T0
             tps_st_cpu: None,
             tps_st_gpu: None,
             provenance_verified: false,
+            kernel_proof_ref: None,
         };
         assert_eq!(model.short_name(), "Qwen2.5-Coder-1.5B-Instruct");
     }
@@ -769,6 +778,7 @@ meta-llama/Llama-3.2-1B-Instruct,llama,1B,small,BLOCKED,450,F,smoke,2026-01-31T0
             tps_st_cpu: None,
             tps_st_gpu: None,
             provenance_verified: false,
+            kernel_proof_ref: None,
         };
         assert_eq!(
             model.hf_url(),
@@ -799,6 +809,7 @@ meta-llama/Llama-3.2-1B-Instruct,llama,1B,small,BLOCKED,450,F,smoke,2026-01-31T0
             tps_st_cpu: None,
             tps_st_gpu: None,
             provenance_verified: false,
+            kernel_proof_ref: None,
         };
         assert!((model.param_count() - 1.5).abs() < f64::EPSILON);
 
@@ -963,6 +974,7 @@ More content";
             tps_st_cpu: None,
             tps_st_gpu: None,
             provenance_verified: false,
+            kernel_proof_ref: None,
         };
         assert_eq!(model.short_name(), "model-without-org");
     }
@@ -990,6 +1002,7 @@ More content";
             tps_st_cpu: None,
             tps_st_gpu: None,
             provenance_verified: false,
+            kernel_proof_ref: None,
         };
         assert_eq!(
             model.markdown_link(),
@@ -1216,6 +1229,7 @@ only,a,few,fields";
                 tps_st_cpu: None,
                 tps_st_gpu: None,
                 provenance_verified: false,
+                kernel_proof_ref: None,
             },
             ModelCertification {
                 model_id: "medium-model".to_string(),
@@ -1238,6 +1252,7 @@ only,a,few,fields";
                 tps_st_cpu: None,
                 tps_st_gpu: None,
                 provenance_verified: false,
+                kernel_proof_ref: None,
             },
             ModelCertification {
                 model_id: "large-model".to_string(),
@@ -1260,6 +1275,7 @@ only,a,few,fields";
                 tps_st_cpu: None,
                 tps_st_gpu: None,
                 provenance_verified: false,
+                kernel_proof_ref: None,
             },
             ModelCertification {
                 model_id: "xlarge-model".to_string(),
@@ -1282,6 +1298,7 @@ only,a,few,fields";
                 tps_st_cpu: None,
                 tps_st_gpu: None,
                 provenance_verified: false,
+                kernel_proof_ref: None,
             },
         ];
 

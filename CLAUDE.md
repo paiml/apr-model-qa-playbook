@@ -88,6 +88,7 @@ crates/
 - `MqsScore` (apr-qa-report): Qualification score with gateways and category breakdowns
 - `Oracle` (apr-qa-gen): Verifies output correctness (Arithmetic, Garbage, CodeSyntax, Response)
 - `KernelProfile` (apr-qa-gen): Architecture → kernel ops + targeted prompt mapping
+- `KernelClass` (apr-qa-gen): Kernel equivalence class (A-E) for dimensional smoke verification
 - `BootstrappedPlaybook` (apr-qa-gen): Complete playbook generated from kernel profile
 
 ### Gateway Logic (G0-G4)

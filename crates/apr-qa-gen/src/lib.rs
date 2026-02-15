@@ -27,6 +27,7 @@
 pub mod bootstrapper;
 pub mod error;
 pub mod hf_parity;
+pub mod kernel_class;
 pub mod kernel_profile;
 pub mod models;
 pub mod oracle;
@@ -34,6 +35,7 @@ pub mod proptest_impl;
 pub mod scenario;
 
 pub use bootstrapper::{BootstrapConfig, BootstrappedPlaybook, bootstrap_playbook, to_yaml};
+pub use kernel_class::{KernelClass, models_in_class};
 pub use error::{Error, Result};
 pub use hf_parity::{GoldenOutput, HfParityOracle, TensorDiff, Tolerance, hash_prompt};
 pub use kernel_profile::{

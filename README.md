@@ -206,6 +206,7 @@ cargo run --bin apr-qa -- run playbooks/models/qwen2.5-coder-1.5b-mvp.playbook.y
 
 | Tier | Time | Description | Pass → Grade / Status |
 |------|------|-------------|----------------------|
+| **Dim-Smoke** | <30s | Dimension-only via kernel equivalence (SafeTensors, CPU) | Kernel-proven dev check |
 | **Smoke** | ~1-2 min | Sanity check (minimal matrix) | Dev feedback only |
 | **MVP** | ~5-10 min | All formats × backends × modalities (18 combos) | ≥90% → B / PROVISIONAL |
 | **Quick** | ~10-30 min | Dev iteration with broader coverage | Dev feedback |
@@ -213,7 +214,10 @@ cargo run --bin apr-qa -- run playbooks/models/qwen2.5-coder-1.5b-mvp.playbook.y
 | **Deep** | ~8-24 hr | Production qualification (full matrix) | ≥95% → A+ / CERTIFIED |
 
 ```bash
-# Smoke check (fastest)
+# Dimensional smoke (fastest — requires kernel proof via MVP on representative model)
+cargo run --bin apr-qa -- certify --kernel-class A --tier dim-smoke
+
+# Smoke check
 cargo run --bin apr-qa -- certify --family qwen-coder --tier smoke
 
 # MVP certification (quick surface coverage)
