@@ -1,8 +1,9 @@
 # Qwen2.5-Coder-7B Smoke Test Playbook
-# Ultra-light for 10-minute certification
+# Kernel profile: GQA + RMSNorm + SiLU + SwiGLU + RoPE + BiasAdd
+# Ultra-light: 1 format × 1 backend × 1 modality = 1 test
 name: qwen2.5-coder-7b-smoke
-version: "1.0.0"
-description: "Smoke test for Qwen2.5-Coder-7B-Instruct"
+version: "2.0.0"
+description: "Smoke test for Qwen2.5-Coder-7B-Instruct (kernel profile-driven)"
 
 model:
   hf_repo: "Qwen/Qwen2.5-Coder-7B-Instruct"
@@ -11,6 +12,14 @@ model:
   quantizations:
     - q4_k_m
   size_category: medium
+  expected_hidden_dim: 3584
+  expected_num_layers: 28
+  expected_num_heads: 28
+  expected_num_kv_heads: 4
+  expected_vocab_size: 152064
+  expected_intermediate_dim: 18944
+  family: qwen2
+  size_variant: "7b"
 
 test_matrix:
   modalities:
@@ -20,6 +29,27 @@ test_matrix:
   scenario_count: 3
   seed: 42
   timeout_ms: 180000
+  prompts:
+    # GQA multi-turn (stress KV cache sharing, 4 KV heads)
+    - "Given x=5 and y=3, what is x*y? Then what is the result plus 10?"
+    # Arithmetic verification
+    - "What is 2+2?"
+    # Code completion
+    - "def fibonacci(n):"
+
+kernel_profile:
+  family: qwen2
+  kernel_ops:
+    - FusedQ4kMatvec
+    - FusedQ6kMatvec
+    - GroupedQueryAttention
+    - RmsNorm
+    - Silu
+    - SwiGlu
+    - Rope
+    - BiasAdd
+  prompt_count: 3
+  long_context: true
 
 gates:
   g1_model_loads: "true"
@@ -40,6 +70,7 @@ failure_policy: collect_all
 
 metadata:
   author: "apr-qa-gen"
+  tier: "smoke"
   architecture: "qwen2"
   tags:
     - code
