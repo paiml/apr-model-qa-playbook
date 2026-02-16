@@ -1,12 +1,12 @@
 [
   {
-    "id": "00000000000000001894ace7dfb0293a",
+    "id": "00000000000000001894acad32c41d22",
     "gate_id": "G0-DIM-CONFIG_PARSE",
     "scenario": {
-      "id": "Phi-4-mini-instruct_run_cpu_safetensors_0000000000000000",
+      "id": "Phi-3.5-mini-instruct_run_cpu_safetensors_0000000000000000",
       "model": {
         "org": "microsoft",
-        "name": "Phi-4-mini-instruct",
+        "name": "Phi-3.5-mini-instruct",
         "variant": null
       },
       "modality": "run",
@@ -31,7 +31,7 @@
       "memory_peak_mb": null,
       "duration_ms": 1
     },
-    "timestamp": "2026-02-16T08:31:05.353736901Z",
+    "timestamp": "2026-02-16T08:26:53.344482940Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -42,13 +42,13 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001894ace7dfb053c0",
+    "id": "00000000000000001894acad32c44b92",
     "gate_id": "G0-DIM-HIDDEN_SIZE",
     "scenario": {
-      "id": "Phi-4-mini-instruct_run_cpu_safetensors_0000000000000000",
+      "id": "Phi-3.5-mini-instruct_run_cpu_safetensors_0000000000000000",
       "model": {
         "org": "microsoft",
-        "name": "Phi-4-mini-instruct",
+        "name": "Phi-3.5-mini-instruct",
         "variant": null
       },
       "modality": "run",
@@ -73,7 +73,7 @@
       "memory_peak_mb": null,
       "duration_ms": 1
     },
-    "timestamp": "2026-02-16T08:31:05.353745705Z",
+    "timestamp": "2026-02-16T08:26:53.344492775Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -84,13 +84,13 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001894ace7dfb05e1e",
+    "id": "00000000000000001894acad32c45672",
     "gate_id": "G0-DIM-NUM_LAYERS",
     "scenario": {
-      "id": "Phi-4-mini-instruct_run_cpu_safetensors_0000000000000000",
+      "id": "Phi-3.5-mini-instruct_run_cpu_safetensors_0000000000000000",
       "model": {
         "org": "microsoft",
-        "name": "Phi-4-mini-instruct",
+        "name": "Phi-3.5-mini-instruct",
         "variant": null
       },
       "modality": "run",
@@ -115,7 +115,7 @@
       "memory_peak_mb": null,
       "duration_ms": 1
     },
-    "timestamp": "2026-02-16T08:31:05.353748269Z",
+    "timestamp": "2026-02-16T08:26:53.344495489Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -126,13 +126,13 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001894ace7dfb06728",
+    "id": "00000000000000001894acad32c45fae",
     "gate_id": "G0-DIM-NUM_HEADS",
     "scenario": {
-      "id": "Phi-4-mini-instruct_run_cpu_safetensors_0000000000000000",
+      "id": "Phi-3.5-mini-instruct_run_cpu_safetensors_0000000000000000",
       "model": {
         "org": "microsoft",
-        "name": "Phi-4-mini-instruct",
+        "name": "Phi-3.5-mini-instruct",
         "variant": null
       },
       "modality": "run",
@@ -147,7 +147,7 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "G0 PASS: num_heads expected=24 actual=24",
+    "output": "G0 PASS: num_heads expected=32 actual=32",
     "stderr": null,
     "exit_code": 0,
     "metrics": {
@@ -157,7 +157,7 @@
       "memory_peak_mb": null,
       "duration_ms": 1
     },
-    "timestamp": "2026-02-16T08:31:05.353750632Z",
+    "timestamp": "2026-02-16T08:26:53.344498013Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -168,13 +168,13 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001894ace7dfb07013",
+    "id": "00000000000000001894acad32c469da",
     "gate_id": "G0-DIM-NUM_KV_HEADS",
     "scenario": {
-      "id": "Phi-4-mini-instruct_run_cpu_safetensors_0000000000000000",
+      "id": "Phi-3.5-mini-instruct_run_cpu_safetensors_0000000000000000",
       "model": {
         "org": "microsoft",
-        "name": "Phi-4-mini-instruct",
+        "name": "Phi-3.5-mini-instruct",
         "variant": null
       },
       "modality": "run",
@@ -189,7 +189,7 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "G0 PASS: num_kv_heads expected=8 actual=8",
+    "output": "G0 PASS: num_kv_heads expected=32 actual=32",
     "stderr": null,
     "exit_code": 0,
     "metrics": {
@@ -199,7 +199,7 @@
       "memory_peak_mb": null,
       "duration_ms": 1
     },
-    "timestamp": "2026-02-16T08:31:05.353752886Z",
+    "timestamp": "2026-02-16T08:26:53.344500416Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -210,13 +210,13 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001894ace7dfb079ef",
+    "id": "00000000000000001894acad32c47410",
     "gate_id": "G0-DIM-VOCAB_SIZE",
     "scenario": {
-      "id": "Phi-4-mini-instruct_run_cpu_safetensors_0000000000000000",
+      "id": "Phi-3.5-mini-instruct_run_cpu_safetensors_0000000000000000",
       "model": {
         "org": "microsoft",
-        "name": "Phi-4-mini-instruct",
+        "name": "Phi-3.5-mini-instruct",
         "variant": null
       },
       "modality": "run",
@@ -231,7 +231,7 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "G0 PASS: vocab_size expected=200064 actual=200064",
+    "output": "G0 PASS: vocab_size expected=32064 actual=32064",
     "stderr": null,
     "exit_code": 0,
     "metrics": {
@@ -241,7 +241,7 @@
       "memory_peak_mb": null,
       "duration_ms": 1
     },
-    "timestamp": "2026-02-16T08:31:05.353755430Z",
+    "timestamp": "2026-02-16T08:26:53.344503120Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -252,13 +252,13 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001894ace7dfb08367",
+    "id": "00000000000000001894acad32c47e0a",
     "gate_id": "G0-DIM-SAFETENSORS_FOUND",
     "scenario": {
-      "id": "Phi-4-mini-instruct_run_cpu_safetensors_0000000000000000",
+      "id": "Phi-3.5-mini-instruct_run_cpu_safetensors_0000000000000000",
       "model": {
         "org": "microsoft",
-        "name": "Phi-4-mini-instruct",
+        "name": "Phi-3.5-mini-instruct",
         "variant": null
       },
       "modality": "run",
@@ -283,7 +283,7 @@
       "memory_peak_mb": null,
       "duration_ms": 1
     },
-    "timestamp": "2026-02-16T08:31:05.353757813Z",
+    "timestamp": "2026-02-16T08:26:53.344505604Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -294,13 +294,13 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001894ace7dfb08b94",
+    "id": "00000000000000001894acad32c486e1",
     "gate_id": "G0-DIM-SAFETENSORS_HEADER",
     "scenario": {
-      "id": "Phi-4-mini-instruct_run_cpu_safetensors_0000000000000000",
+      "id": "Phi-3.5-mini-instruct_run_cpu_safetensors_0000000000000000",
       "model": {
         "org": "microsoft",
-        "name": "Phi-4-mini-instruct",
+        "name": "Phi-3.5-mini-instruct",
         "variant": null
       },
       "modality": "run",
@@ -315,7 +315,7 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "G0 PASS: safetensors_header expected=>= 1 tensor actual=83 tensor(s)",
+    "output": "G0 PASS: safetensors_header expected=>= 1 tensor actual=67 tensor(s)",
     "stderr": null,
     "exit_code": 0,
     "metrics": {
@@ -325,7 +325,49 @@
       "memory_peak_mb": null,
       "duration_ms": 1
     },
-    "timestamp": "2026-02-16T08:31:05.353759936Z",
+    "timestamp": "2026-02-16T08:26:53.344507938Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001894acad32c48ff5",
+    "gate_id": "G0-DIM-TENSOR_LM_HEAD",
+    "scenario": {
+      "id": "Phi-3.5-mini-instruct_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "microsoft",
+        "name": "Phi-3.5-mini-instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Dimensional check: tensor_lm_head",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: tensor_lm_head expected=dim0=32064, dim1=3072 actual=[32064, 3072]",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 1
+    },
+    "timestamp": "2026-02-16T08:26:53.344510231Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",

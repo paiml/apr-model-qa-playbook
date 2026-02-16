@@ -1,7 +1,7 @@
 [
   {
-    "id": "00000000000000001893d8405f6804af",
-    "gate_id": "G0-PULL-001",
+    "id": "00000000000000001894ab8cc08028e1",
+    "gate_id": "G0-DIM-CONFIG_PARSE",
     "scenario": {
       "id": "starcoder2-3b_run_cpu_safetensors_0000000000000000",
       "model": {
@@ -12,7 +12,7 @@
       "modality": "run",
       "backend": "cpu",
       "format": "safetensors",
-      "prompt": "G0 Pull: acquire model via apr pull",
+      "prompt": "Dimensional check: config_parse",
       "temperature": 0.0,
       "max_tokens": 32,
       "seed": 0,
@@ -21,7 +21,7 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "G0 PASS: model acquired via apr pull\n\u001b[1;36m=== APR Pull ===\u001b[0m\n\nModel: \u001b[36mhf://bigcode/starcoder2-3b/model.safetensors\u001b[0m\n\n\u001b[33mDownloading...\u001b[0m\n\r  [==================================================] 100.0% (0 B/0 B)\r  [==================================================] 100.0% (11.29 GB/11.29 GB)\n\n\u001b[32m✓\u001b[0m Downloaded successfully\n  Path: \u001b[32m/home/noah/.cache/pacha/models/5c84a14af979daf5.safetensors\u001b[0m\n  Size: \u001b[33m11.29 GB\u001b[0m\n  Format: SafeTensors(SafeTensorsInfo { tensor_count: 483, tensors: {\"model.layers.5.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.22.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.24.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.1.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.14.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.18.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.23.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.17.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.8.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.28.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.5.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.11.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.14.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.11.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.19.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.20.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.18.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.20.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.18.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.12.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.27.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.28.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.8.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.28.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.10.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.5.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.2.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.22.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.16.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.19.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.1.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.0.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.21.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.15.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.21.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.23.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.4.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.8.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.1.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.6.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.15.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.6.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.6.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.12.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.9.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.24.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.3.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.16.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.27.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.24.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.6.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.9.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.26.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.14.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.29.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.11.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.10.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.12.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.2.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.26.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.16.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.5.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.28.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.9.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.4.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.11.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.15.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.8.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.2.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.28.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.24.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.4.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.24.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.1.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.10.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.27.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.13.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.28.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.13.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.8.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.14.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.23.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.22.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.12.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.16.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.28.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.11.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.19.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.11.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.26.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.18.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.20.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.17.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.25.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.21.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.16.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.14.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.27.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.16.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.norm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.17.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.15.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.22.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.25.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.18.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.8.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.15.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.29.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.21.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.19.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.2.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.14.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.19.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.25.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.10.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.7.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.10.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.21.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.15.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.11.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.10.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.21.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.26.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.4.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.8.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.14.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.13.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.21.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.19.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.2.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.7.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.10.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.22.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.5.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.25.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.16.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.12.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.12.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.10.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.17.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.20.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.6.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.16.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.2.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.18.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.6.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.3.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.24.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.6.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.5.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.23.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.0.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.18.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.7.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.18.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.7.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.7.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.17.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.8.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.3.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.25.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.26.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.11.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.25.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.6.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.0.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.23.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.9.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.29.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.12.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.17.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.7.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.9.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.12.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.23.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.24.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.2.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.10.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.24.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.26.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.27.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.0.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.21.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.9.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.25.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.3.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.3.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.8.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.26.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.12.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.6.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.13.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.12.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.9.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.29.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.2.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.26.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.3.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.19.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.8.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.18.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.29.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.21.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.24.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.11.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.26.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.11.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.1.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.1.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.13.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.0.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.24.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.1.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.5.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.7.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.9.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.19.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.3.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.9.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.25.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.6.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.5.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.22.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.13.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.29.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.9.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.1.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.8.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.6.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.26.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.0.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.28.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.18.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.16.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.10.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.25.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.15.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.15.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.12.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.0.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.8.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.3.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.4.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.27.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.22.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.13.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.21.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.0.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.2.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.19.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.23.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.1.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.24.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.0.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.17.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.5.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.15.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.27.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.2.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.16.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.29.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.19.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.15.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.20.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.29.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.11.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.19.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.4.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.5.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.2.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.25.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.19.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.25.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.4.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.26.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.22.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.6.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.13.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.1.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.6.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.25.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.9.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.20.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.18.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.19.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.7.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.3.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.2.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.9.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.26.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.11.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.7.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.13.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.10.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.23.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.16.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.6.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.23.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.22.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.21.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.3.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.28.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.9.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.1.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.24.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.22.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.17.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.3.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.0.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.5.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.26.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.24.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.7.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.19.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.2.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.9.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.28.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.15.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.27.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.23.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.23.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.12.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.17.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.28.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.14.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.27.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.29.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.23.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.1.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.16.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.13.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.6.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.26.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.4.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.3.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.21.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.13.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.17.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.10.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.11.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.14.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.29.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.10.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.7.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.18.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.27.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.17.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.16.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.29.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.25.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.22.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.5.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.17.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.16.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.23.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.13.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.1.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.22.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.19.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.17.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.20.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.8.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.16.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.15.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.6.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.3.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.1.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.3.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.18.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.10.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.4.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.27.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.20.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.7.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.4.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.17.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.5.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.29.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.12.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.22.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.5.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.29.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.4.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.8.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.13.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.21.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.20.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.26.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.20.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.2.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.24.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.23.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.4.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.17.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.22.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.14.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.14.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.0.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.7.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.norm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.14.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.4.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.25.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.15.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.20.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.27.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.embed_tokens.weight\": TensorInfo { shape: [49152, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.28.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.11.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.20.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.16.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.11.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.14.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.20.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.0.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.8.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.1.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.23.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.20.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.0.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.27.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.10.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.27.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.26.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.12.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.4.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.1.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.17.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.28.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.2.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.0.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.13.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.3.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.27.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.19.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.7.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.23.self_attn.q_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.5.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.29.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.4.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.21.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.28.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.25.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.22.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.15.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.13.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.9.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.12.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.12.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.15.input_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.14.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.18.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.20.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.24.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.14.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.0.mlp.c_fc.weight\": TensorInfo { shape: [12288, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.29.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.20.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.3.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.18.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.11.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.7.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.18.self_attn.k_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.21.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.4.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.15.self_attn.o_proj.weight\": TensorInfo { shape: [3072, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.10.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.25.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.5.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.27.input_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.0.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.8.self_attn.k_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.28.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.22.self_attn.o_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.7.self_attn.q_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.2.mlp.c_proj.weight\": TensorInfo { shape: [3072, 12288], dtype: \"F32\", offset: 0 }, \"model.layers.24.self_attn.v_proj.bias\": TensorInfo { shape: [256], dtype: \"F32\", offset: 0 }, \"model.layers.29.self_attn.v_proj.weight\": TensorInfo { shape: [256, 3072], dtype: \"F32\", offset: 0 }, \"model.layers.9.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.14.mlp.c_fc.bias\": TensorInfo { shape: [12288], dtype: \"F32\", offset: 0 }, \"model.layers.21.post_attention_layernorm.weight\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.13.post_attention_layernorm.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }, \"model.layers.28.mlp.c_proj.bias\": TensorInfo { shape: [3072], dtype: \"F32\", offset: 0 }}, metadata: {\"format\": \"pt\"}, parameters: Some(3030371328), dtype: Some(\"F32\") })\n  Hash: 5c84a14af979daf5\n  \u001b[32m✓\u001b[0m 5c84a14af979daf5.tokenizer.json (\u001b[2m1.97 MB\u001b[0m)\n  \u001b[32m✓\u001b[0m 5c84a14af979daf5.config.json (\u001b[2m700 B\u001b[0m)\n\n\u001b[1;36mUsage:\u001b[0m\n  apr run /home/noah/.cache/pacha/models/5c84a14af979daf5.safetensors\n  apr serve /home/noah/.cache/pacha/models/5c84a14af979daf5.safetensors\n",
+    "output": "G0 PASS: config_parse expected=config.json parseable actual=parsed successfully",
     "stderr": null,
     "exit_code": 0,
     "metrics": {
@@ -29,9 +29,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 272687
+      "duration_ms": 3
     },
-    "timestamp": "2026-02-13T15:34:09.476923661Z",
+    "timestamp": "2026-02-16T08:06:14.476844976Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -42,92 +42,8 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001893d85a6013e915",
-    "gate_id": "G0-FORMAT-APR-001",
-    "scenario": {
-      "id": "starcoder2-3b_run_cpu_apr_0000000000000000",
-      "model": {
-        "org": "bigcode",
-        "name": "starcoder2-3b",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "apr",
-      "prompt": "G0 Format: prepare Apr workspace",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "G0 PASS: converted to apr\n\u001b[1;36m=== Rosetta Stone Conversion ===\u001b[0m\n\nSource: /home/noah/.cache/pacha/models/5c84a14af979daf5.safetensors\nTarget: output/workspace/bigcode/starcoder2-3b/apr/model.apr\n\n\u001b[33m--- Source Inspection ---\u001b[0m\n╭────────────┬───────────────╮\n│     Format │ SafeTensors   │\n├────────────┼───────────────┤\n│  File Size │ 11.29 GiB     │\n│    Tensors │ 483           │\n│ Parameters │ 3,030,371,328 │\n╰────────────┴───────────────╯\n\n\u001b[33mConverting...\u001b[0m\n\n\u001b[33m--- Target Inspection ---\u001b[0m\n╭──────────────┬───────────────╮\n│       Format │ APR           │\n├──────────────┼───────────────┤\n│    File Size │ 11.85 GiB     │\n│      Tensors │ 484           │\n│   Parameters │ 3,181,366,272 │\n│ Architecture │ qwen2         │\n╰──────────────┴───────────────╯\n\n\u001b[1;36m=== Conversion Summary ===\u001b[0m\nPath: SafeTensors → APR\nDuration: 91160ms\nTensors: 483 -> 484\n\n\u001b[33mWarning: Tensor count changed during conversion\u001b[0m\n",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 111675
-    },
-    "timestamp": "2026-02-13T15:36:01.157314647Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "00000000000000001893d88445e3849c",
-    "gate_id": "G0-FORMAT-GGUF-001",
-    "scenario": {
-      "id": "starcoder2-3b_run_cpu_gguf_0000000000000000",
-      "model": {
-        "org": "bigcode",
-        "name": "starcoder2-3b",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "gguf",
-      "prompt": "G0 Format: prepare Gguf workspace",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "G0 PASS: converted to gguf\n\u001b[1;36m=== Rosetta Stone Conversion ===\u001b[0m\n\nSource: /home/noah/.cache/pacha/models/5c84a14af979daf5.safetensors\nTarget: output/workspace/bigcode/starcoder2-3b/gguf/model.gguf\n\n\u001b[33m--- Source Inspection ---\u001b[0m\n╭────────────┬───────────────╮\n│     Format │ SafeTensors   │\n├────────────┼───────────────┤\n│  File Size │ 11.29 GiB     │\n│    Tensors │ 483           │\n│ Parameters │ 3,030,371,328 │\n╰────────────┴───────────────╯\n\n\u001b[33mConverting...\u001b[0m\n\n\u001b[33m--- Target Inspection ---\u001b[0m\n╭──────────────┬───────────────╮\n│       Format │ GGUF          │\n├──────────────┼───────────────┤\n│    File Size │ 2.15 GiB      │\n│      Tensors │ 484           │\n│   Parameters │ 3,181,366,272 │\n│ Architecture │ qwen2         │\n│ Quantization │ 0             │\n╰──────────────┴───────────────╯\n\n\u001b[1;36m=== Conversion Summary ===\u001b[0m\nPath: SafeTensors → GGUF\nDuration: 155642ms\nTensors: 483 -> 484\n\n\u001b[33mWarning: Tensor count changed during conversion\u001b[0m\n",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 179946
-    },
-    "timestamp": "2026-02-13T15:39:01.106559290Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "00000000000000001893d889bac562fb",
-    "gate_id": "G0-VALIDATE-001",
+    "id": "00000000000000001894ab8cc0805050",
+    "gate_id": "G0-DIM-HIDDEN_SIZE",
     "scenario": {
       "id": "starcoder2-3b_run_cpu_safetensors_0000000000000000",
       "model": {
@@ -138,16 +54,16 @@
       "modality": "run",
       "backend": "cpu",
       "format": "safetensors",
-      "prompt": "G0 Validate: NaN/Inf/all-zeros tensor check",
+      "prompt": "Dimensional check: hidden_size",
       "temperature": 0.0,
       "max_tokens": 32,
       "seed": 0,
       "trace_level": "none",
-      "oracle_type": "arithmetic"
+      "oracle_type": "garbage"
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "G0 PASS: model.safetensors physics validated\nValidating output/workspace/bigcode/starcoder2-3b/safetensors/model.safetensors...\n\n\n\u001b[36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m\n  \u001b[1;36mValidate: SafeTensors (Rosetta Stone)\u001b[0m\n\u001b[36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m\n╭─────────────────────────────────────────────────┬──────────────────────────┬──────────╮\n│ Tensor                                          │ Status                   │ Failures │\n├─────────────────────────────────────────────────┼──────────────────────────┼──────────┤\n│ model.embed_tokens.weight                       │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.input_layernorm.bias             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.mlp.c_fc.bias                    │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.mlp.c_fc.weight                  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.mlp.c_proj.bias                  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.mlp.c_proj.weight                │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.post_attention_layernorm.bias    │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.self_attn.k_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.self_attn.o_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.self_attn.q_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.self_attn.v_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.0.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.input_layernorm.bias             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.mlp.c_fc.bias                    │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.mlp.c_fc.weight                  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.mlp.c_proj.bias                  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.mlp.c_proj.weight                │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.post_attention_layernorm.bias    │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.self_attn.k_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.self_attn.o_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.self_attn.q_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.self_attn.v_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.1.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.input_layernorm.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.mlp.c_fc.bias                   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.mlp.c_fc.weight                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.mlp.c_proj.bias                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.mlp.c_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.post_attention_layernorm.bias   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.self_attn.o_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.10.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.input_layernorm.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.mlp.c_fc.bias                   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.mlp.c_fc.weight                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.mlp.c_proj.bias                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.mlp.c_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.post_attention_layernorm.bias   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.self_attn.o_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.11.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.input_layernorm.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.mlp.c_fc.bias                   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.mlp.c_fc.weight                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.mlp.c_proj.bias                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.mlp.c_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.post_attention_layernorm.bias   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.self_attn.o_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.12.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.input_layernorm.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.mlp.c_fc.bias                   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.mlp.c_fc.weight                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.mlp.c_proj.bias                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.mlp.c_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.post_attention_layernorm.bias   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.self_attn.o_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.13.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.input_layernorm.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.mlp.c_fc.bias                   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.mlp.c_fc.weight                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.mlp.c_proj.bias                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.mlp.c_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.post_attention_layernorm.bias   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.self_attn.o_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.14.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.input_layernorm.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.mlp.c_fc.bias                   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.mlp.c_fc.weight                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.mlp.c_proj.bias                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.mlp.c_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.post_attention_layernorm.bias   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.self_attn.o_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.15.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.input_layernorm.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.mlp.c_fc.bias                   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.mlp.c_fc.weight                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.mlp.c_proj.bias                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.mlp.c_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.post_attention_layernorm.bias   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.self_attn.o_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.16.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.input_layernorm.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.mlp.c_fc.bias                   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.mlp.c_fc.weight                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.mlp.c_proj.bias                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.mlp.c_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.post_attention_layernorm.bias   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.self_attn.o_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.17.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.input_layernorm.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.mlp.c_fc.bias                   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.mlp.c_fc.weight                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.mlp.c_proj.bias                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.mlp.c_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.post_attention_layernorm.bias   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.self_attn.o_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.18.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.input_layernorm.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.mlp.c_fc.bias                   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.mlp.c_fc.weight                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.mlp.c_proj.bias                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.mlp.c_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.post_attention_layernorm.bias   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.self_attn.o_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.19.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.input_layernorm.bias             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.mlp.c_fc.bias                    │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.mlp.c_fc.weight                  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.mlp.c_proj.bias                  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.mlp.c_proj.weight                │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.post_attention_layernorm.bias    │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.self_attn.k_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.self_attn.o_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.self_attn.q_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.self_attn.v_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.2.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.input_layernorm.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.mlp.c_fc.bias                   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.mlp.c_fc.weight                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.mlp.c_proj.bias                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.mlp.c_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.post_attention_layernorm.bias   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.self_attn.o_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.20.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.input_layernorm.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.mlp.c_fc.bias                   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.mlp.c_fc.weight                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.mlp.c_proj.bias                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.mlp.c_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.post_attention_layernorm.bias   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.self_attn.o_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.21.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.input_layernorm.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.mlp.c_fc.bias                   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.mlp.c_fc.weight                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.mlp.c_proj.bias                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.mlp.c_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.post_attention_layernorm.bias   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.self_attn.o_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.22.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.input_layernorm.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.mlp.c_fc.bias                   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.mlp.c_fc.weight                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.mlp.c_proj.bias                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.mlp.c_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.post_attention_layernorm.bias   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.self_attn.o_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.23.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.input_layernorm.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.mlp.c_fc.bias                   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.mlp.c_fc.weight                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.mlp.c_proj.bias                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.mlp.c_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.post_attention_layernorm.bias   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.self_attn.o_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.24.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.input_layernorm.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.mlp.c_fc.bias                   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.mlp.c_fc.weight                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.mlp.c_proj.bias                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.mlp.c_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.post_attention_layernorm.bias   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.self_attn.o_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.25.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.input_layernorm.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.mlp.c_fc.bias                   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.mlp.c_fc.weight                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.mlp.c_proj.bias                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.mlp.c_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.post_attention_layernorm.bias   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.self_attn.o_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.26.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.input_layernorm.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.mlp.c_fc.bias                   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.mlp.c_fc.weight                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.mlp.c_proj.bias                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.mlp.c_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.post_attention_layernorm.bias   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.self_attn.o_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.27.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.28.input_layernorm.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.28.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.28.mlp.c_fc.bias                   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.28.mlp.c_fc.weight                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.28.mlp.c_proj.bias                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.28.mlp.c_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.28.post_attention_layernorm.bias   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.28.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.28.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.28.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.28.self_attn.o_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.28.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.28.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.28.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.28.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.28.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.29.input_layernorm.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.29.input_layernorm.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.29.mlp.c_fc.bias                   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.29.mlp.c_fc.weight                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.29.mlp.c_proj.bias                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.29.mlp.c_proj.weight               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.29.post_attention_layernorm.bias   │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.29.post_attention_layernorm.weight │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.29.self_attn.k_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.29.self_attn.k_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.29.self_attn.o_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.29.self_attn.o_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.29.self_attn.q_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.29.self_attn.q_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.29.self_attn.v_proj.bias           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.29.self_attn.v_proj.weight         │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.input_layernorm.bias             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.mlp.c_fc.bias                    │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.mlp.c_fc.weight                  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.mlp.c_proj.bias                  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.mlp.c_proj.weight                │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.post_attention_layernorm.bias    │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.self_attn.k_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.self_attn.o_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.self_attn.q_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.self_attn.v_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.3.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.input_layernorm.bias             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.mlp.c_fc.bias                    │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.mlp.c_fc.weight                  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.mlp.c_proj.bias                  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.mlp.c_proj.weight                │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.post_attention_layernorm.bias    │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.self_attn.k_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.self_attn.o_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.self_attn.q_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.self_attn.v_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.4.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.input_layernorm.bias             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.mlp.c_fc.bias                    │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.mlp.c_fc.weight                  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.mlp.c_proj.bias                  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.mlp.c_proj.weight                │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.post_attention_layernorm.bias    │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.self_attn.k_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.self_attn.o_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.self_attn.q_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.self_attn.v_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.5.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.input_layernorm.bias             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.mlp.c_fc.bias                    │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.mlp.c_fc.weight                  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.mlp.c_proj.bias                  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.mlp.c_proj.weight                │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.post_attention_layernorm.bias    │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.self_attn.k_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.self_attn.o_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.self_attn.q_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.self_attn.v_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.6.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.input_layernorm.bias             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.mlp.c_fc.bias                    │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.mlp.c_fc.weight                  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.mlp.c_proj.bias                  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.mlp.c_proj.weight                │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.post_attention_layernorm.bias    │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.self_attn.k_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.self_attn.o_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.self_attn.q_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.self_attn.v_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.7.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.input_layernorm.bias             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.mlp.c_fc.bias                    │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.mlp.c_fc.weight                  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.mlp.c_proj.bias                  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.mlp.c_proj.weight                │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.post_attention_layernorm.bias    │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.self_attn.k_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.self_attn.o_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.self_attn.q_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.self_attn.v_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.8.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.input_layernorm.bias             │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.input_layernorm.weight           │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.mlp.c_fc.bias                    │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.mlp.c_fc.weight                  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.mlp.c_proj.bias                  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.mlp.c_proj.weight                │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.post_attention_layernorm.bias    │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.post_attention_layernorm.weight  │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.self_attn.k_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.self_attn.k_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.self_attn.o_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.self_attn.o_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.self_attn.q_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.self_attn.q_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.self_attn.v_proj.bias            │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.layers.9.self_attn.v_proj.weight          │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.norm.bias                                 │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n│ model.norm.weight                               │ \u001b[1;32m✓\u001b[0m \u001b[1;32mPASS\u001b[0m │          │\n╰─────────────────────────────────────────────────┴──────────────────────────┴──────────╯\n\nVALID: 483 tensors checked, 0 contract violations (PMAT-235)\n",
+    "output": "G0 PASS: hidden_size expected=3072 actual=3072",
     "stderr": null,
     "exit_code": 0,
     "metrics": {
@@ -155,9 +71,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 23435
+      "duration_ms": 3
     },
-    "timestamp": "2026-02-13T15:39:24.542427712Z",
+    "timestamp": "2026-02-16T08:06:14.476853689Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -168,8 +84,8 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001893d889badce4ba",
-    "gate_id": "G0-INTEGRITY-CONFIG",
+    "id": "00000000000000001894ab8cc0805a5e",
+    "gate_id": "G0-DIM-NUM_LAYERS",
     "scenario": {
       "id": "starcoder2-3b_run_cpu_safetensors_0000000000000000",
       "model": {
@@ -180,7 +96,7 @@
       "modality": "run",
       "backend": "cpu",
       "format": "safetensors",
-      "prompt": "G0 Integrity: config.json vs tensor metadata",
+      "prompt": "Dimensional check: num_layers",
       "temperature": 0.0,
       "max_tokens": 32,
       "seed": 0,
@@ -189,7 +105,7 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "G0 PASS: config.json matches tensor metadata",
+    "output": "G0 PASS: num_layers expected=30 actual=30",
     "stderr": null,
     "exit_code": 0,
     "metrics": {
@@ -197,9 +113,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 3
     },
-    "timestamp": "2026-02-13T15:39:24.543895095Z",
+    "timestamp": "2026-02-16T08:06:14.476856193Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -210,8 +126,8 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001893d889bb130bd5",
-    "gate_id": "G0-LAYOUT-001",
+    "id": "00000000000000001894ab8cc0806340",
+    "gate_id": "G0-DIM-NUM_HEADS",
     "scenario": {
       "id": "starcoder2-3b_run_cpu_safetensors_0000000000000000",
       "model": {
@@ -222,7 +138,7 @@
       "modality": "run",
       "backend": "cpu",
       "format": "safetensors",
-      "prompt": "G0 Layout: tensor shape contract validation",
+      "prompt": "Dimensional check: num_heads",
       "temperature": 0.0,
       "max_tokens": 32,
       "seed": 0,
@@ -231,7 +147,7 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "G0 PASS: Tensor layouts conform to contract\n  Rules checked: 182\n  Rules passed: 182",
+    "output": "G0 PASS: num_heads expected=24 actual=24",
     "stderr": null,
     "exit_code": 0,
     "metrics": {
@@ -239,9 +155,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 3
     },
-    "timestamp": "2026-02-13T15:39:24.547444070Z",
+    "timestamp": "2026-02-16T08:06:14.476858436Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -252,8 +168,8 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001893d8960d3b554c",
-    "gate_id": "G2-BASIC",
+    "id": "00000000000000001894ab8cc0806bc7",
+    "gate_id": "G0-DIM-NUM_KV_HEADS",
     "scenario": {
       "id": "starcoder2-3b_run_cpu_safetensors_0000000000000000",
       "model": {
@@ -264,301 +180,7 @@
       "modality": "run",
       "backend": "cpu",
       "format": "safetensors",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Falsified",
-    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.layers.0.mlp.gate_proj.weight', 'blk.0.ffn_gate.weight', or 'layers.0.mlp.gate_proj.weight'. Available tensors (483 total): [\"model.layers.28.self_attn.v_proj.bias\", \"model.layers.19.self_attn.v_proj.weight\", \"model.layers.9.post_attention_layernorm.weight\", \"model.layers.5.self_attn.q_proj.bias\", \"model.layers.13.mlp.c_fc.bias\"], ...\n\n--- TRACE OUTPUT ---\n\u001b[36mInference tracing enabled (APR-TRACE-001)\u001b[0m\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.layers.0.mlp.gate_proj.weight', 'blk.0.ffn_gate.weight', or 'layers.0.mlp.gate_proj.weight'. Available tensors (483 total): [\"model.layers.18.mlp.c_fc.bias\", \"model.layers.12.self_attn.v_proj.bias\", \"model.layers.1.input_layernorm.weight\", \"model.layers.18.post_attention_layernorm.weight\", \"model.layers.15.self_attn.v_proj.weight\"], ...\n\n--- TRACE STDOUT ---\n\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/bigcode/starcoder2-3b/safetensors/model.safetensors\n",
-    "output": "\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/bigcode/starcoder2-3b/safetensors/model.safetensors",
-    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.layers.0.mlp.gate_proj.weight', 'blk.0.ffn_gate.weight', or 'layers.0.mlp.gate_proj.weight'. Available tensors (483 total): [\"model.layers.28.self_attn.v_proj.bias\", \"model.layers.19.self_attn.v_proj.weight\", \"model.layers.9.post_attention_layernorm.weight\", \"model.layers.5.self_attn.q_proj.bias\", \"model.layers.13.mlp.c_fc.bias\"], ...\n\n--- TRACE OUTPUT ---\n\u001b[36mInference tracing enabled (APR-TRACE-001)\u001b[0m\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.layers.0.mlp.gate_proj.weight', 'blk.0.ffn_gate.weight', or 'layers.0.mlp.gate_proj.weight'. Available tensors (483 total): [\"model.layers.18.mlp.c_fc.bias\", \"model.layers.12.self_attn.v_proj.bias\", \"model.layers.1.input_layernorm.weight\", \"model.layers.18.post_attention_layernorm.weight\", \"model.layers.15.self_attn.v_proj.weight\"], ...\n\n--- TRACE STDOUT ---\n\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/bigcode/starcoder2-3b/safetensors/model.safetensors\n",
-    "exit_code": 8,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 52917
-    },
-    "timestamp": "2026-02-13T15:40:17.465424653Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "00000000000000001893d8aeb7bbcd7d",
-    "gate_id": "G2-BASIC",
-    "scenario": {
-      "id": "starcoder2-3b_run_cpu_apr_0000000000000001",
-      "model": {
-        "org": "bigcode",
-        "name": "starcoder2-3b",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "apr",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 1,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Falsified",
-    "reason": "Command failed (exit 8): [PMAT-171] Loaded embedded BPE tokenizer: 49152 vocab, 48872 merges, 1 special tokens\n[APR-LOAD] Embedding tensor 'model.embed_tokens.weight': dims=[49152, 3072], expected [vocab=49152, hidden=3072]\n[APR-LOAD] Embedding dims=[49152, 3072], using raw data (no transpose needed)\n[APR-LOAD] Token 0 embedding sample: [0.0067, 0.0058, -0.0004, 0.0187, -0.0098]\n[APR-LOAD] Embedding loaded: 150994944 elements (vocab=49152 x hidden=3072)\n[APR-LOAD] LM head tensor 'lm_head.weight': dims=[49152, 3072], dtype=0, expected [vocab=49152, hidden=3072]\n[APR-LOAD] LM head loaded: 150994944 elements (hidden=3072 x vocab=49152)\n[APR-LOAD] LM head using F32 matmul (no Q4K/Q6K found)\nerror: Inference failed: Inference failed: Format error: [F-DATA-QUALITY-001] Tensor 'layers.0.ffn_up_weight': DENSITY FAILURE: 100.0% zeros (max 80%)\n\n--- TRACE OUTPUT ---\n\u001b[36mInference tracing enabled (APR-TRACE-001)\u001b[0m\n  Trace level: basic\n[PMAT-171] Loaded embedded BPE tokenizer: 49152 vocab, 48872 merges, 1 special tokens\n[APR-LOAD] Embedding tensor 'model.embed_tokens.weight': dims=[49152, 3072], expected [vocab=49152, hidden=3072]\n[APR-LOAD] Embedding dims=[49152, 3072], using raw data (no transpose needed)\n[APR-LOAD] Token 0 embedding sample: [0.0067, 0.0058, -0.0004, 0.0187, -0.0098]\n[APR-LOAD] Embedding loaded: 150994944 elements (vocab=49152 x hidden=3072)\n[APR-LOAD] LM head tensor 'lm_head.weight': dims=[49152, 3072], dtype=0, expected [vocab=49152, hidden=3072]\n[APR-LOAD] LM head loaded: 150994944 elements (hidden=3072 x vocab=49152)\n[APR-LOAD] LM head using F32 matmul (no Q4K/Q6K found)\nerror: Inference failed: Inference failed: Format error: [F-DATA-QUALITY-001] Tensor 'layers.0.ffn_up_weight': DENSITY FAILURE: 100.0% zeros (max 80%)\n\n--- TRACE STDOUT ---\n\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/bigcode/starcoder2-3b/apr/model.apr\n",
-    "output": "\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/bigcode/starcoder2-3b/apr/model.apr",
-    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 49152 vocab, 48872 merges, 1 special tokens\n[APR-LOAD] Embedding tensor 'model.embed_tokens.weight': dims=[49152, 3072], expected [vocab=49152, hidden=3072]\n[APR-LOAD] Embedding dims=[49152, 3072], using raw data (no transpose needed)\n[APR-LOAD] Token 0 embedding sample: [0.0067, 0.0058, -0.0004, 0.0187, -0.0098]\n[APR-LOAD] Embedding loaded: 150994944 elements (vocab=49152 x hidden=3072)\n[APR-LOAD] LM head tensor 'lm_head.weight': dims=[49152, 3072], dtype=0, expected [vocab=49152, hidden=3072]\n[APR-LOAD] LM head loaded: 150994944 elements (hidden=3072 x vocab=49152)\n[APR-LOAD] LM head using F32 matmul (no Q4K/Q6K found)\nerror: Inference failed: Inference failed: Format error: [F-DATA-QUALITY-001] Tensor 'layers.0.ffn_up_weight': DENSITY FAILURE: 100.0% zeros (max 80%)\n\n--- TRACE OUTPUT ---\n\u001b[36mInference tracing enabled (APR-TRACE-001)\u001b[0m\n  Trace level: basic\n[PMAT-171] Loaded embedded BPE tokenizer: 49152 vocab, 48872 merges, 1 special tokens\n[APR-LOAD] Embedding tensor 'model.embed_tokens.weight': dims=[49152, 3072], expected [vocab=49152, hidden=3072]\n[APR-LOAD] Embedding dims=[49152, 3072], using raw data (no transpose needed)\n[APR-LOAD] Token 0 embedding sample: [0.0067, 0.0058, -0.0004, 0.0187, -0.0098]\n[APR-LOAD] Embedding loaded: 150994944 elements (vocab=49152 x hidden=3072)\n[APR-LOAD] LM head tensor 'lm_head.weight': dims=[49152, 3072], dtype=0, expected [vocab=49152, hidden=3072]\n[APR-LOAD] LM head loaded: 150994944 elements (hidden=3072 x vocab=49152)\n[APR-LOAD] LM head using F32 matmul (no Q4K/Q6K found)\nerror: Inference failed: Inference failed: Format error: [F-DATA-QUALITY-001] Tensor 'layers.0.ffn_up_weight': DENSITY FAILURE: 100.0% zeros (max 80%)\n\n--- TRACE STDOUT ---\n\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/bigcode/starcoder2-3b/apr/model.apr\n",
-    "exit_code": 8,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 105939
-    },
-    "timestamp": "2026-02-13T15:42:03.405185903Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "00000000000000001893d8baaecc455b",
-    "gate_id": "G2-BASIC",
-    "scenario": {
-      "id": "starcoder2-3b_run_cpu_gguf_0000000000000002",
-      "model": {
-        "org": "bigcode",
-        "name": "starcoder2-3b",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "gguf",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 2,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Falsified",
-    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Invalid shape: Tensor 'blk.0.ffn_up.weight' not found\n\n--- TRACE OUTPUT ---\n\u001b[36mInference tracing enabled (APR-TRACE-001)\u001b[0m\n  Trace level: basic\nerror: Inference failed: Inference failed: Invalid shape: Tensor 'blk.0.ffn_up.weight' not found\n\n--- TRACE STDOUT ---\n\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/bigcode/starcoder2-3b/gguf/model.gguf\n",
-    "output": "\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/bigcode/starcoder2-3b/gguf/model.gguf",
-    "stderr": "error: Inference failed: Inference failed: Invalid shape: Tensor 'blk.0.ffn_up.weight' not found\n\n--- TRACE OUTPUT ---\n\u001b[36mInference tracing enabled (APR-TRACE-001)\u001b[0m\n  Trace level: basic\nerror: Inference failed: Inference failed: Invalid shape: Tensor 'blk.0.ffn_up.weight' not found\n\n--- TRACE STDOUT ---\n\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/bigcode/starcoder2-3b/gguf/model.gguf\n",
-    "exit_code": 8,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 51389
-    },
-    "timestamp": "2026-02-13T15:42:54.794877944Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "00000000000000001893d8c83f29b1f4",
-    "gate_id": "G2-BASIC",
-    "scenario": {
-      "id": "starcoder2-3b_run_gpu_safetensors_0000000000000003",
-      "model": {
-        "org": "bigcode",
-        "name": "starcoder2-3b",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "gpu",
-      "format": "safetensors",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 3,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Falsified",
-    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.layers.0.mlp.gate_proj.weight', 'blk.0.ffn_gate.weight', or 'layers.0.mlp.gate_proj.weight'. Available tensors (483 total): [\"model.layers.20.mlp.c_proj.bias\", \"model.layers.26.self_attn.o_proj.bias\", \"model.layers.17.self_attn.q_proj.bias\", \"model.layers.7.mlp.c_fc.weight\", \"model.layers.10.self_attn.o_proj.bias\"], ...\n\n--- TRACE OUTPUT ---\n\u001b[36mInference tracing enabled (APR-TRACE-001)\u001b[0m\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.layers.0.mlp.gate_proj.weight', 'blk.0.ffn_gate.weight', or 'layers.0.mlp.gate_proj.weight'. Available tensors (483 total): [\"model.layers.2.mlp.c_fc.bias\", \"model.layers.6.self_attn.o_proj.bias\", \"model.layers.24.mlp.c_fc.weight\", \"model.layers.26.input_layernorm.weight\", \"model.layers.29.post_attention_layernorm.bias\"], ...\n\n--- TRACE STDOUT ---\n\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/bigcode/starcoder2-3b/safetensors/model.safetensors\n",
-    "output": "\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/bigcode/starcoder2-3b/safetensors/model.safetensors",
-    "stderr": "error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.layers.0.mlp.gate_proj.weight', 'blk.0.ffn_gate.weight', or 'layers.0.mlp.gate_proj.weight'. Available tensors (483 total): [\"model.layers.20.mlp.c_proj.bias\", \"model.layers.26.self_attn.o_proj.bias\", \"model.layers.17.self_attn.q_proj.bias\", \"model.layers.7.mlp.c_fc.weight\", \"model.layers.10.self_attn.o_proj.bias\"], ...\n\n--- TRACE OUTPUT ---\n\u001b[36mInference tracing enabled (APR-TRACE-001)\u001b[0m\n  Trace level: basic\nerror: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.layers.0.mlp.gate_proj.weight', 'blk.0.ffn_gate.weight', or 'layers.0.mlp.gate_proj.weight'. Available tensors (483 total): [\"model.layers.2.mlp.c_fc.bias\", \"model.layers.6.self_attn.o_proj.bias\", \"model.layers.24.mlp.c_fc.weight\", \"model.layers.26.input_layernorm.weight\", \"model.layers.29.post_attention_layernorm.bias\"], ...\n\n--- TRACE STDOUT ---\n\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/bigcode/starcoder2-3b/safetensors/model.safetensors\n",
-    "exit_code": 8,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 58256
-    },
-    "timestamp": "2026-02-13T15:43:53.051494094Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "00000000000000001893d8e14e155e5d",
-    "gate_id": "G2-BASIC",
-    "scenario": {
-      "id": "starcoder2-3b_run_gpu_apr_0000000000000004",
-      "model": {
-        "org": "bigcode",
-        "name": "starcoder2-3b",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "gpu",
-      "format": "apr",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 4,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Falsified",
-    "reason": "Command failed (exit 8): [PMAT-171] Loaded embedded BPE tokenizer: 49152 vocab, 48872 merges, 1 special tokens\n[APR-LOAD] Embedding tensor 'model.embed_tokens.weight': dims=[49152, 3072], expected [vocab=49152, hidden=3072]\n[APR-LOAD] Embedding dims=[49152, 3072], using raw data (no transpose needed)\n[APR-LOAD] Token 0 embedding sample: [0.0067, 0.0058, -0.0004, 0.0187, -0.0098]\n[APR-LOAD] Embedding loaded: 150994944 elements (vocab=49152 x hidden=3072)\n[APR-LOAD] LM head tensor 'lm_head.weight': dims=[49152, 3072], dtype=0, expected [vocab=49152, hidden=3072]\n[APR-LOAD] LM head loaded: 150994944 elements (hidden=3072 x vocab=49152)\n[APR-LOAD] LM head using F32 matmul (no Q4K/Q6K found)\nerror: Inference failed: Inference failed: Format error: [F-DATA-QUALITY-001] Tensor 'layers.0.ffn_up_weight': DENSITY FAILURE: 100.0% zeros (max 80%)\n\n--- TRACE OUTPUT ---\n\u001b[36mInference tracing enabled (APR-TRACE-001)\u001b[0m\n  Trace level: basic\n[PMAT-171] Loaded embedded BPE tokenizer: 49152 vocab, 48872 merges, 1 special tokens\n[APR-LOAD] Embedding tensor 'model.embed_tokens.weight': dims=[49152, 3072], expected [vocab=49152, hidden=3072]\n[APR-LOAD] Embedding dims=[49152, 3072], using raw data (no transpose needed)\n[APR-LOAD] Token 0 embedding sample: [0.0067, 0.0058, -0.0004, 0.0187, -0.0098]\n[APR-LOAD] Embedding loaded: 150994944 elements (vocab=49152 x hidden=3072)\n[APR-LOAD] LM head tensor 'lm_head.weight': dims=[49152, 3072], dtype=0, expected [vocab=49152, hidden=3072]\n[APR-LOAD] LM head loaded: 150994944 elements (hidden=3072 x vocab=49152)\n[APR-LOAD] LM head using F32 matmul (no Q4K/Q6K found)\nerror: Inference failed: Inference failed: Format error: [F-DATA-QUALITY-001] Tensor 'layers.0.ffn_up_weight': DENSITY FAILURE: 100.0% zeros (max 80%)\n\n--- TRACE STDOUT ---\n\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/bigcode/starcoder2-3b/apr/model.apr\n",
-    "output": "\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/bigcode/starcoder2-3b/apr/model.apr",
-    "stderr": "[PMAT-171] Loaded embedded BPE tokenizer: 49152 vocab, 48872 merges, 1 special tokens\n[APR-LOAD] Embedding tensor 'model.embed_tokens.weight': dims=[49152, 3072], expected [vocab=49152, hidden=3072]\n[APR-LOAD] Embedding dims=[49152, 3072], using raw data (no transpose needed)\n[APR-LOAD] Token 0 embedding sample: [0.0067, 0.0058, -0.0004, 0.0187, -0.0098]\n[APR-LOAD] Embedding loaded: 150994944 elements (vocab=49152 x hidden=3072)\n[APR-LOAD] LM head tensor 'lm_head.weight': dims=[49152, 3072], dtype=0, expected [vocab=49152, hidden=3072]\n[APR-LOAD] LM head loaded: 150994944 elements (hidden=3072 x vocab=49152)\n[APR-LOAD] LM head using F32 matmul (no Q4K/Q6K found)\nerror: Inference failed: Inference failed: Format error: [F-DATA-QUALITY-001] Tensor 'layers.0.ffn_up_weight': DENSITY FAILURE: 100.0% zeros (max 80%)\n\n--- TRACE OUTPUT ---\n\u001b[36mInference tracing enabled (APR-TRACE-001)\u001b[0m\n  Trace level: basic\n[PMAT-171] Loaded embedded BPE tokenizer: 49152 vocab, 48872 merges, 1 special tokens\n[APR-LOAD] Embedding tensor 'model.embed_tokens.weight': dims=[49152, 3072], expected [vocab=49152, hidden=3072]\n[APR-LOAD] Embedding dims=[49152, 3072], using raw data (no transpose needed)\n[APR-LOAD] Token 0 embedding sample: [0.0067, 0.0058, -0.0004, 0.0187, -0.0098]\n[APR-LOAD] Embedding loaded: 150994944 elements (vocab=49152 x hidden=3072)\n[APR-LOAD] LM head tensor 'lm_head.weight': dims=[49152, 3072], dtype=0, expected [vocab=49152, hidden=3072]\n[APR-LOAD] LM head loaded: 150994944 elements (hidden=3072 x vocab=49152)\n[APR-LOAD] LM head using F32 matmul (no Q4K/Q6K found)\nerror: Inference failed: Inference failed: Format error: [F-DATA-QUALITY-001] Tensor 'layers.0.ffn_up_weight': DENSITY FAILURE: 100.0% zeros (max 80%)\n\n--- TRACE STDOUT ---\n\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/bigcode/starcoder2-3b/apr/model.apr\n",
-    "exit_code": 8,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 107624
-    },
-    "timestamp": "2026-02-13T15:45:40.676003075Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "00000000000000001893d8ecd0083a6f",
-    "gate_id": "G2-BASIC",
-    "scenario": {
-      "id": "starcoder2-3b_run_gpu_gguf_0000000000000005",
-      "model": {
-        "org": "bigcode",
-        "name": "starcoder2-3b",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "gpu",
-      "format": "gguf",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 5,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Falsified",
-    "reason": "Command failed (exit 8): error: Inference failed: Inference failed: Invalid shape: Tensor 'blk.0.ffn_up.weight' not found\n\n--- TRACE OUTPUT ---\n\u001b[36mInference tracing enabled (APR-TRACE-001)\u001b[0m\n  Trace level: basic\nerror: Inference failed: Inference failed: Invalid shape: Tensor 'blk.0.ffn_up.weight' not found\n\n--- TRACE STDOUT ---\n\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/bigcode/starcoder2-3b/gguf/model.gguf\n",
-    "output": "\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/bigcode/starcoder2-3b/gguf/model.gguf",
-    "stderr": "error: Inference failed: Inference failed: Invalid shape: Tensor 'blk.0.ffn_up.weight' not found\n\n--- TRACE OUTPUT ---\n\u001b[36mInference tracing enabled (APR-TRACE-001)\u001b[0m\n  Trace level: basic\nerror: Inference failed: Inference failed: Invalid shape: Tensor 'blk.0.ffn_up.weight' not found\n\n--- TRACE STDOUT ---\n\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: output/workspace/bigcode/starcoder2-3b/gguf/model.gguf\n",
-    "exit_code": 8,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 49424
-    },
-    "timestamp": "2026-02-13T15:46:30.100819845Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "00000000000000001893d8f450bb6906",
-    "gate_id": "F-GOLDEN-RULE-001",
-    "scenario": {
-      "id": "starcoder2-3b_run_cpu_apr_0000000000000000",
-      "model": {
-        "org": "bigcode",
-        "name": "starcoder2-3b",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "apr",
-      "prompt": "Golden Rule: convert → inference → diff",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Falsified",
-    "reason": "Golden Rule: original inference failed: error: Inference failed: Inference failed: Operation 'get_tensor_auto' not supported: Tensor not found with names: 'model.layers.0.mlp.gate_proj.weight', 'blk.0.ffn_gate.weight', or 'layers.0.mlp.gate_proj.weight'. Available tensors (483 total): [\"model.layers.27.self_attn.o_proj.weight\", \"model.layers.8.mlp.c_proj.bias\", \"model.layers.25.input_layernorm.weight\", \"model.layers.25.mlp.c_proj.bias\", \"model.layers.16.input_layernorm.bias\"], ...\n",
-    "output": "N/A",
-    "stderr": null,
-    "exit_code": null,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-13T15:47:02.324817156Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "00000000000000001893d8f80df07cfc",
-    "gate_id": "F-CONTRACT-I2-001",
-    "scenario": {
-      "id": "starcoder2-3b_run_cpu_apr_0000000000000000",
-      "model": {
-        "org": "bigcode",
-        "name": "starcoder2-3b",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "apr",
-      "prompt": "Format contract invariant",
+      "prompt": "Dimensional check: num_kv_heads",
       "temperature": 0.0,
       "max_tokens": 32,
       "seed": 0,
@@ -566,8 +188,8 @@
       "oracle_type": "garbage"
     },
     "outcome": "Corroborated",
-    "reason": "I-2 Tensor Name Bijection: all 0 source tensors present in APR (0 total)",
-    "output": "source=0, apr=0",
+    "reason": "Test passed",
+    "output": "G0 PASS: num_kv_heads expected=2 actual=2",
     "stderr": null,
     "exit_code": 0,
     "metrics": {
@@ -575,9 +197,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 3
     },
-    "timestamp": "2026-02-13T15:47:18.384091506Z",
+    "timestamp": "2026-02-16T08:06:14.476860699Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -588,10 +210,10 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001893d9009393d019",
-    "gate_id": "F-CONTRACT-I3-001",
+    "id": "00000000000000001894ab8cc080764d",
+    "gate_id": "G0-DIM-VOCAB_SIZE",
     "scenario": {
-      "id": "starcoder2-3b_run_cpu_apr_0000000000000000",
+      "id": "starcoder2-3b_run_cpu_safetensors_0000000000000000",
       "model": {
         "org": "bigcode",
         "name": "starcoder2-3b",
@@ -599,27 +221,153 @@
       },
       "modality": "run",
       "backend": "cpu",
-      "format": "apr",
-      "prompt": "Format contract invariant",
+      "format": "safetensors",
+      "prompt": "Dimensional check: vocab_size",
       "temperature": 0.0,
       "max_tokens": 32,
       "seed": 0,
       "trace_level": "none",
       "oracle_type": "garbage"
     },
-    "outcome": "Falsified",
-    "reason": "I-3 No Silent Fallbacks: check failed: error: Validation failed: Model self-test failed\n",
-    "output": "\n\u001b[1;36m=== Model Self-Test (PMAT-112: Real Validation) ===\u001b[0m\nModel: \u001b[36moutput/workspace/bigcode/starcoder2-3b/apr/model.apr\u001b[0m\n\n┌─────┬─────────────────────┬──────────────────────────────────────┬──────┐\n│  #  │      Component      │               Details                │ Pass │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 1   │ Tokenizer           │ tokens=[1, 2]                        │ \u001b[31m❌   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 2   │ Embedding           │ Found embedding tensor               │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 3   │ Positional Encoding │ RoPE computed inline                 │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 4   │ Q/K/V Projection    │ Q/K/V found                          │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 5   │ Attention Scores    │ Attention output found               │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 6   │ Feed-Forward (MLP)  │ Missing MLP                          │ \u001b[31m❌   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 7   │ Layer Norm          │ 30 layers                            │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 8   │ LM Head             │ vocab_size=49152                     │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 9   │ Logits → Probs      │ Forward failed: Format error: No ... │ \u001b[31m❌   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 10  │ Sampler/Decode      │ Forward failed: Format error: No ... │ \u001b[31m❌   \u001b[0m │\n└─────┴─────────────────────┴──────────────────────────────────────┴──────┘\n\n\u001b[1;31m❌ 6/10 STAGES PASSED. CHECK STAGE LOGS.\u001b[0m\n",
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: vocab_size expected=49152 actual=49152",
     "stderr": null,
-    "exit_code": null,
+    "exit_code": 0,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 3
     },
-    "timestamp": "2026-02-13T15:47:54.985903267Z",
+    "timestamp": "2026-02-16T08:06:14.476863363Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001894ab8cc0807fd9",
+    "gate_id": "G0-DIM-SAFETENSORS_FOUND",
+    "scenario": {
+      "id": "starcoder2-3b_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "bigcode",
+        "name": "starcoder2-3b",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Dimensional check: safetensors_found",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: safetensors_found expected=>= 1 file actual=1 file(s)",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 3
+    },
+    "timestamp": "2026-02-16T08:06:14.476865787Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001894ab8cc0808932",
+    "gate_id": "G0-DIM-SAFETENSORS_HEADER",
+    "scenario": {
+      "id": "starcoder2-3b_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "bigcode",
+        "name": "starcoder2-3b",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Dimensional check: safetensors_header",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: safetensors_header expected=>= 1 tensor actual=483 tensor(s)",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 3
+    },
+    "timestamp": "2026-02-16T08:06:14.476868151Z",
+    "host": {
+      "hostname": "noah-Lambda-Vector",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001894ab8cc0809200",
+    "gate_id": "G0-DIM-TENSOR_EMBED_TOKENS",
+    "scenario": {
+      "id": "starcoder2-3b_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "bigcode",
+        "name": "starcoder2-3b",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Dimensional check: tensor_embed_tokens",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: tensor_embed_tokens expected=dim0=49152, dim1=3072 actual=[49152, 3072]",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 3
+    },
+    "timestamp": "2026-02-16T08:06:14.476870364Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",

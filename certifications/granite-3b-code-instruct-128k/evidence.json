@@ -1,12 +1,12 @@
 [
   {
-    "id": "00000000000000001894ace7dfb0293a",
+    "id": "00000000000000001894ad4012d6ead2",
     "gate_id": "G0-DIM-CONFIG_PARSE",
     "scenario": {
-      "id": "Phi-4-mini-instruct_run_cpu_safetensors_0000000000000000",
+      "id": "granite-3b-code-instruct-128k_run_cpu_safetensors_0000000000000000",
       "model": {
-        "org": "microsoft",
-        "name": "Phi-4-mini-instruct",
+        "org": "ibm-granite",
+        "name": "granite-3b-code-instruct-128k",
         "variant": null
       },
       "modality": "run",
@@ -31,7 +31,7 @@
       "memory_peak_mb": null,
       "duration_ms": 1
     },
-    "timestamp": "2026-02-16T08:31:05.353736901Z",
+    "timestamp": "2026-02-16T08:37:24.169036954Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -42,13 +42,13 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001894ace7dfb053c0",
+    "id": "00000000000000001894ad4012d71789",
     "gate_id": "G0-DIM-HIDDEN_SIZE",
     "scenario": {
-      "id": "Phi-4-mini-instruct_run_cpu_safetensors_0000000000000000",
+      "id": "granite-3b-code-instruct-128k_run_cpu_safetensors_0000000000000000",
       "model": {
-        "org": "microsoft",
-        "name": "Phi-4-mini-instruct",
+        "org": "ibm-granite",
+        "name": "granite-3b-code-instruct-128k",
         "variant": null
       },
       "modality": "run",
@@ -63,7 +63,7 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "G0 PASS: hidden_size expected=3072 actual=3072",
+    "output": "G0 PASS: hidden_size expected=2560 actual=2560",
     "stderr": null,
     "exit_code": 0,
     "metrics": {
@@ -73,7 +73,7 @@
       "memory_peak_mb": null,
       "duration_ms": 1
     },
-    "timestamp": "2026-02-16T08:31:05.353745705Z",
+    "timestamp": "2026-02-16T08:37:24.169046168Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -84,13 +84,13 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001894ace7dfb05e1e",
+    "id": "00000000000000001894ad4012d72179",
     "gate_id": "G0-DIM-NUM_LAYERS",
     "scenario": {
-      "id": "Phi-4-mini-instruct_run_cpu_safetensors_0000000000000000",
+      "id": "granite-3b-code-instruct-128k_run_cpu_safetensors_0000000000000000",
       "model": {
-        "org": "microsoft",
-        "name": "Phi-4-mini-instruct",
+        "org": "ibm-granite",
+        "name": "granite-3b-code-instruct-128k",
         "variant": null
       },
       "modality": "run",
@@ -115,7 +115,7 @@
       "memory_peak_mb": null,
       "duration_ms": 1
     },
-    "timestamp": "2026-02-16T08:31:05.353748269Z",
+    "timestamp": "2026-02-16T08:37:24.169048702Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -126,13 +126,13 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001894ace7dfb06728",
+    "id": "00000000000000001894ad4012d729f6",
     "gate_id": "G0-DIM-NUM_HEADS",
     "scenario": {
-      "id": "Phi-4-mini-instruct_run_cpu_safetensors_0000000000000000",
+      "id": "granite-3b-code-instruct-128k_run_cpu_safetensors_0000000000000000",
       "model": {
-        "org": "microsoft",
-        "name": "Phi-4-mini-instruct",
+        "org": "ibm-granite",
+        "name": "granite-3b-code-instruct-128k",
         "variant": null
       },
       "modality": "run",
@@ -147,7 +147,7 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "G0 PASS: num_heads expected=24 actual=24",
+    "output": "G0 PASS: num_heads expected=32 actual=32",
     "stderr": null,
     "exit_code": 0,
     "metrics": {
@@ -157,7 +157,7 @@
       "memory_peak_mb": null,
       "duration_ms": 1
     },
-    "timestamp": "2026-02-16T08:31:05.353750632Z",
+    "timestamp": "2026-02-16T08:37:24.169050935Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -168,13 +168,13 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001894ace7dfb07013",
+    "id": "00000000000000001894ad4012d732b0",
     "gate_id": "G0-DIM-NUM_KV_HEADS",
     "scenario": {
-      "id": "Phi-4-mini-instruct_run_cpu_safetensors_0000000000000000",
+      "id": "granite-3b-code-instruct-128k_run_cpu_safetensors_0000000000000000",
       "model": {
-        "org": "microsoft",
-        "name": "Phi-4-mini-instruct",
+        "org": "ibm-granite",
+        "name": "granite-3b-code-instruct-128k",
         "variant": null
       },
       "modality": "run",
@@ -189,7 +189,7 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "G0 PASS: num_kv_heads expected=8 actual=8",
+    "output": "G0 PASS: num_kv_heads expected=32 actual=32",
     "stderr": null,
     "exit_code": 0,
     "metrics": {
@@ -199,7 +199,7 @@
       "memory_peak_mb": null,
       "duration_ms": 1
     },
-    "timestamp": "2026-02-16T08:31:05.353752886Z",
+    "timestamp": "2026-02-16T08:37:24.169053088Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -210,13 +210,13 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001894ace7dfb079ef",
+    "id": "00000000000000001894ad4012d73d68",
     "gate_id": "G0-DIM-VOCAB_SIZE",
     "scenario": {
-      "id": "Phi-4-mini-instruct_run_cpu_safetensors_0000000000000000",
+      "id": "granite-3b-code-instruct-128k_run_cpu_safetensors_0000000000000000",
       "model": {
-        "org": "microsoft",
-        "name": "Phi-4-mini-instruct",
+        "org": "ibm-granite",
+        "name": "granite-3b-code-instruct-128k",
         "variant": null
       },
       "modality": "run",
@@ -231,7 +231,7 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "G0 PASS: vocab_size expected=200064 actual=200064",
+    "output": "G0 PASS: vocab_size expected=49152 actual=49152",
     "stderr": null,
     "exit_code": 0,
     "metrics": {
@@ -241,7 +241,7 @@
       "memory_peak_mb": null,
       "duration_ms": 1
     },
-    "timestamp": "2026-02-16T08:31:05.353755430Z",
+    "timestamp": "2026-02-16T08:37:24.169055862Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -252,13 +252,13 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001894ace7dfb08367",
+    "id": "00000000000000001894ad4012d746e0",
     "gate_id": "G0-DIM-SAFETENSORS_FOUND",
     "scenario": {
-      "id": "Phi-4-mini-instruct_run_cpu_safetensors_0000000000000000",
+      "id": "granite-3b-code-instruct-128k_run_cpu_safetensors_0000000000000000",
       "model": {
-        "org": "microsoft",
-        "name": "Phi-4-mini-instruct",
+        "org": "ibm-granite",
+        "name": "granite-3b-code-instruct-128k",
         "variant": null
       },
       "modality": "run",
@@ -283,7 +283,7 @@
       "memory_peak_mb": null,
       "duration_ms": 1
     },
-    "timestamp": "2026-02-16T08:31:05.353757813Z",
+    "timestamp": "2026-02-16T08:37:24.169058286Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
@@ -294,13 +294,13 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001894ace7dfb08b94",
+    "id": "00000000000000001894ad4012d74fa3",
     "gate_id": "G0-DIM-SAFETENSORS_HEADER",
     "scenario": {
-      "id": "Phi-4-mini-instruct_run_cpu_safetensors_0000000000000000",
+      "id": "granite-3b-code-instruct-128k_run_cpu_safetensors_0000000000000000",
       "model": {
-        "org": "microsoft",
-        "name": "Phi-4-mini-instruct",
+        "org": "ibm-granite",
+        "name": "granite-3b-code-instruct-128k",
         "variant": null
       },
       "modality": "run",
@@ -315,7 +315,7 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "G0 PASS: safetensors_header expected=>= 1 tensor actual=83 tensor(s)",
+    "output": "G0 PASS: safetensors_header expected=>= 1 tensor actual=151 tensor(s)",
     "stderr": null,
     "exit_code": 0,
     "metrics": {
@@ -325,7 +325,7 @@
       "memory_peak_mb": null,
       "duration_ms": 1
     },
-    "timestamp": "2026-02-16T08:31:05.353759936Z",
+    "timestamp": "2026-02-16T08:37:24.169060530Z",
     "host": {
       "hostname": "noah-Lambda-Vector",
       "os": "linux",
