@@ -602,7 +602,7 @@ pub fn find_and_load_config(model_path: &Path) -> LayoutModelConfig {
                     vocab_size: get_usize(&json, "vocab_size"),
                     hidden_size: get_usize_or(
                         &json,
-                        &["hidden_size", "n_embd", "n_embed", "d_model"],
+                        &["hidden_size", "n_embd", "n_embed", "d_model", "model_dim"],
                     ),
                     intermediate_size: get_usize_or(
                         &json,
@@ -620,7 +620,12 @@ pub fn find_and_load_config(model_path: &Path) -> LayoutModelConfig {
                     num_key_value_heads: get_usize(&json, "num_key_value_heads"),
                     num_hidden_layers: get_usize_or(
                         &json,
-                        &["num_hidden_layers", "n_layer", "num_layers"],
+                        &[
+                            "num_hidden_layers",
+                            "n_layer",
+                            "num_layers",
+                            "num_transformer_layers",
+                        ],
                     ),
                 };
             }

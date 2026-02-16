@@ -14,7 +14,7 @@ use std::str::FromStr;
 /// Class A covers ~70% of all models (GQA+RMSNorm+SiLU+SwiGLU+RoPE).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum KernelClass {
-    /// GQA + RMSNorm + SiLU + SwiGLU + RoPE (LLaMA 3, Qwen2, Mistral, Yi, DeepSeek, InternLM2, Gemma)
+    /// GQA + RMSNorm + SiLU + SwiGLU + RoPE (LLaMA 3, Qwen2, Mistral, Yi, DeepSeek, InternLM2, Gemma, Falcon-H1)
     A,
     /// MHA + LayerNorm + GELU (GPT-2, GPT-Neo, GPT-NeoX, GPT-J, OPT, GPT-BigCode, CodeGen, XGLM, Falcon 7B)
     B,
@@ -38,7 +38,8 @@ impl KernelClass {
             | "qwen2" | "qwen2.5" | "qwen3" | "qwen-coder" | "mistral" | "yi" | "deepseek"
             | "deepseek-v2" | "deepseek-coder" | "deepseek-r1" | "internlm2" | "internlm"
             | "gemma" | "gemma2" | "gemma3" | "codegemma" | "smollm" | "smollm2" | "olmo" | "olmo2"
-            | "granite" | "granite-code" | "starcoder2" | "nemotron" => Some(Self::A),
+            | "granite" | "granite-code" | "starcoder2" | "nemotron" | "falcon-h1"
+            | "falcon_h1" => Some(Self::A),
 
             // Class B: MHA + LayerNorm + GELU
             "gpt2" | "gpt-2" | "gpt-neo" | "gpt_neo" | "gpt-neox" | "gptneox" | "gpt-j"
@@ -171,6 +172,8 @@ mod tests {
         );
         assert_eq!(KernelClass::from_family("starcoder2"), Some(KernelClass::A));
         assert_eq!(KernelClass::from_family("nemotron"), Some(KernelClass::A));
+        assert_eq!(KernelClass::from_family("falcon-h1"), Some(KernelClass::A));
+        assert_eq!(KernelClass::from_family("falcon_h1"), Some(KernelClass::A));
     }
 
     #[test]
