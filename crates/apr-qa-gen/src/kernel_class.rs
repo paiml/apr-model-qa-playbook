@@ -16,7 +16,7 @@ use std::str::FromStr;
 pub enum KernelClass {
     /// GQA + RMSNorm + SiLU + SwiGLU + RoPE (LLaMA 3, Qwen2, Mistral, Yi, DeepSeek, InternLM2, Gemma)
     A,
-    /// MHA + LayerNorm + GELU (GPT-2, GPT-Neo, GPT-NeoX, GPT-J, OPT, GPT-BigCode, Falcon 7B)
+    /// MHA + LayerNorm + GELU (GPT-2, GPT-Neo, GPT-NeoX, GPT-J, OPT, GPT-BigCode, CodeGen, XGLM, Falcon 7B)
     B,
     /// MQA + LayerNorm + GELU + ALiBi (BLOOM, Falcon-40B)
     C,
@@ -37,13 +37,13 @@ impl KernelClass {
             "llama" | "llama3" | "llama-3" | "llama3.2" | "codellama" | "tinyllama" | "qwen"
             | "qwen2" | "qwen2.5" | "qwen3" | "qwen-coder" | "mistral" | "yi" | "deepseek"
             | "deepseek-v2" | "deepseek-coder" | "deepseek-r1" | "internlm2" | "internlm"
-            | "gemma" | "gemma2" | "gemma3" | "codegemma" | "smollm" | "olmo" | "olmo2"
+            | "gemma" | "gemma2" | "gemma3" | "codegemma" | "smollm" | "smollm2" | "olmo" | "olmo2"
             | "granite" | "granite-code" | "starcoder2" | "nemotron" => Some(Self::A),
 
             // Class B: MHA + LayerNorm + GELU
             "gpt2" | "gpt-2" | "gpt-neo" | "gpt_neo" | "gpt-neox" | "gptneox" | "gpt-j"
             | "gptj" | "opt" | "galactica" | "gpt-bigcode" | "gpt_bigcode" | "falcon-7b"
-            | "falcon7b" => Some(Self::B),
+            | "falcon7b" | "codegen" | "xglm" => Some(Self::B),
 
             // Class C: MQA + LayerNorm + GELU + ALiBi
             "bloom" | "bloomz" | "falcon-40b" | "falcon40b" | "falcon" => Some(Self::C),
@@ -160,6 +160,7 @@ mod tests {
         assert_eq!(KernelClass::from_family("gemma3"), Some(KernelClass::A));
         assert_eq!(KernelClass::from_family("codegemma"), Some(KernelClass::A));
         assert_eq!(KernelClass::from_family("smollm"), Some(KernelClass::A));
+        assert_eq!(KernelClass::from_family("smollm2"), Some(KernelClass::A));
         assert_eq!(KernelClass::from_family("olmo"), Some(KernelClass::A));
         assert_eq!(KernelClass::from_family("olmo2"), Some(KernelClass::A));
         assert_eq!(KernelClass::from_family("internlm"), Some(KernelClass::A));
@@ -185,6 +186,8 @@ mod tests {
         assert_eq!(KernelClass::from_family("gpt-bigcode"), Some(KernelClass::B));
         assert_eq!(KernelClass::from_family("gpt_bigcode"), Some(KernelClass::B));
         assert_eq!(KernelClass::from_family("falcon-7b"), Some(KernelClass::B));
+        assert_eq!(KernelClass::from_family("codegen"), Some(KernelClass::B));
+        assert_eq!(KernelClass::from_family("xglm"), Some(KernelClass::B));
     }
 
     #[test]
