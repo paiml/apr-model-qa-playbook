@@ -569,6 +569,11 @@ fn get_usize(json: &serde_json::Value, key: &str) -> Option<usize> {
         .map(|n| n as usize)
 }
 
+/// Helper to extract usize from JSON with fallback keys (e.g., GPT-2 uses `n_embd` for `hidden_size`)
+fn get_usize_or(json: &serde_json::Value, keys: &[&str]) -> Option<usize> {
+    keys.iter().find_map(|k| get_usize(json, k))
+}
+
 /// Find and load config.json
 #[must_use]
 pub fn find_and_load_config(model_path: &Path) -> LayoutModelConfig {
@@ -595,11 +600,20 @@ pub fn find_and_load_config(model_path: &Path) -> LayoutModelConfig {
             if let Ok(json) = serde_json::from_str::<serde_json::Value>(&content) {
                 return LayoutModelConfig {
                     vocab_size: get_usize(&json, "vocab_size"),
-                    hidden_size: get_usize(&json, "hidden_size"),
-                    intermediate_size: get_usize(&json, "intermediate_size"),
-                    num_attention_heads: get_usize(&json, "num_attention_heads"),
+                    hidden_size: get_usize_or(&json, &["hidden_size", "n_embd"]),
+                    intermediate_size: get_usize_or(
+                        &json,
+                        &["intermediate_size", "n_inner"],
+                    ),
+                    num_attention_heads: get_usize_or(
+                        &json,
+                        &["num_attention_heads", "n_head"],
+                    ),
                     num_key_value_heads: get_usize(&json, "num_key_value_heads"),
-                    num_hidden_layers: get_usize(&json, "num_hidden_layers"),
+                    num_hidden_layers: get_usize_or(
+                        &json,
+                        &["num_hidden_layers", "n_layer"],
+                    ),
                 };
             }
         }

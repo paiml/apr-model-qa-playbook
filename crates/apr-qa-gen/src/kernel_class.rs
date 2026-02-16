@@ -16,7 +16,7 @@ use std::str::FromStr;
 pub enum KernelClass {
     /// GQA + RMSNorm + SiLU + SwiGLU + RoPE (LLaMA 3, Qwen2, Mistral, Yi, DeepSeek, InternLM2, Gemma)
     A,
-    /// MHA + LayerNorm + GELU (GPT-NeoX, GPT-J, Falcon 7B)
+    /// MHA + LayerNorm + GELU (GPT-2, GPT-NeoX, GPT-J, Falcon 7B)
     B,
     /// MQA + LayerNorm + GELU + ALiBi (Falcon-40B)
     C,
@@ -46,7 +46,8 @@ impl KernelClass {
             | "nemotron" => Some(Self::A),
 
             // Class B: MHA + LayerNorm + GELU
-            "gpt-neox" | "gptneox"
+            "gpt2" | "gpt-2"
+            | "gpt-neox" | "gptneox"
             | "gpt-j" | "gptj"
             | "falcon-7b" | "falcon7b" => Some(Self::B),
 
@@ -170,6 +171,8 @@ mod tests {
 
     #[test]
     fn test_from_family_class_b() {
+        assert_eq!(KernelClass::from_family("gpt2"), Some(KernelClass::B));
+        assert_eq!(KernelClass::from_family("gpt-2"), Some(KernelClass::B));
         assert_eq!(KernelClass::from_family("gpt-neox"), Some(KernelClass::B));
         assert_eq!(KernelClass::from_family("gpt-j"), Some(KernelClass::B));
         assert_eq!(

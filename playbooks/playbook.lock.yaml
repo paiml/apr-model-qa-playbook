@@ -1,181 +1,6 @@
 entries:
-  llama-3.2-1b:
-    sha256: af4f134c9b34f1e3c96177c921727df47e2959cf6e90cf2c3bc8f7f6da801064
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  deepseek-coder-1.3b-dim-smoke:
-    sha256: eaaf214f046e4f936137c51154322c8ff12b173fb01704682579b98394c15a0e
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  nemotron-70b-mvp:
-    sha256: 36bd00eb95b0d5d2c62c70e995b7a970bf09dc415456dbdcae52756e6894ccd7
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-coder-3b:
-    sha256: 72763d3a8bbf0301e2aa9c818d789f806e81c953cc9d3d33a5fdaaf5698a52d1
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen3-14b-mvp:
-    sha256: e324d720fe04d81913b56a5ed10d718cb0c4b90e3d6b158ce567428852407678
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-7b-dim-smoke:
-    sha256: 6a8a81006da06d166c372a6d4d77a7a35205f7ae91d06a08da24a6c3e8271240
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwq-32b-mvp:
-    sha256: 391b0cae3c0003882b8bc5a569da853a53d69bb7fbb89869556c5baad44326d6
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-coder-1.5b-mvp:
-    sha256: 8b58cbd5bc2c668d2a50dd001563b5c113f34f67e7d8e3c2ada64f974c5e371b
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  gemma-3-12b-mvp:
-    sha256: a4e4bea40180c29cb4720e3bf165187ea62133c4c6a676a986fd5b13ad870f66
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  falcon-7b-mvp:
-    sha256: 84f23c321da15ab39c50feeb4865c02b79c99676e28525fe764b4f4a69e11de9
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen3-1.7b-mvp:
-    sha256: 017c13db33d0db85c2dbce0b7b37f133a3de8f4ae3c4ba2df29bf38fd71dd98a
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  stablelm-zephyr-3b-dim-smoke:
-    sha256: 8309432197578f4b1a08f7c1a094e4eee3178ddd9ae8096721782bd130998004
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-coder-1.5b-ci:
-    sha256: 04410ed8141399300833b09e58e48e8ca0aa148f29c9946c0f32866cd0eeff9e
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  smollm2-1.7b-mvp:
-    sha256: 59e319b454927b3d9f7d9a59d8f22b11b50bcfafbb9cabeb8f6124ae4382b3cb
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-1.5b-mvp:
-    sha256: 97931a5832bacbe2bcd50b4e951d3b1fdc9c045c2cf00c44ebee0c310f59934f
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  mistral-nemo-12b-mvp:
-    sha256: 8c9ddb0f900d83c75a9bb40027e455b342d18fc050d311787e0ad97dfa0e3833
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  deepseek-coder-1.3b-mvp:
-    sha256: 978ddc7568c39bfea56f4972bc3886ea15c984cc2f050727c9e71cbd13a0bad1
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-coder-3b-mvp:
-    sha256: 5613882fafee6adac71b24f6a95fd70036763da6047e44c6dd8c563e91ab244f
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  phi-3-mini-4k-dim-smoke:
-    sha256: 5c7e86d1486a3845f5318e0a1d3b3eb30be0e6419cb99984881e93da19d92f97
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-coder-1.5b:
-    sha256: 9ba37be9c2878ab56784cf985fcb7dec765eb9a6c778160c1d6fe51050c38749
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  openhermes-2.5-mistral-7b-mvp:
-    sha256: 6e7d079fb5b3a244a12a452d79fbe56e2facf5e45327c450710142c084cf8101
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  zephyr-7b-beta-mvp:
-    sha256: 7c8985e1acf59aa60bbda82d005194b0ee9810fed765249435477ac11fd3d9e0
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  deepseek-coder-1.3b-quick:
-    sha256: 494237e2e233332b176402b298f95b5f85602652026afa00f17ffed634471703
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-coder-14b-dim-smoke:
-    sha256: 6b9deec9d6f55ee4c5b1624854cf534000d8b881eb4af79bdc99c98b4b79b11a
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  internlm2.5-7b-mvp:
-    sha256: 5d334f936d494ff65f24f49f15808740090d54aef98b5cab13fa174dc70775f7
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-7b-mvp:
-    sha256: a3f24a28cc5b2ddab8fee93b2cb77739039a14c33fbfc20c23bc3279de87c337
+  qwen2.5-coder-32b-mvp:
+    sha256: d00f7df0bcec8e157bc5867e243b1757723011c8d02ada12c1f37e7c647f2ca2
     locked_fields:
     - model.hf_repo
     - model.formats
@@ -188,484 +13,8 @@ entries:
     - model.formats
     - test_matrix
     - falsification_gates
-  olmo-2-13b-mvp:
-    sha256: 9c7f8320775152818ae5319e7c05509375883621db58f0687ae370dd39c026f8
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  stablelm-2-zephyr-1_6b-dim-smoke:
-    sha256: 9efcd496032f449929633aef57d36768db0d399eb7cf61d6d6504237e695164b
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  deepseek-r1-distill-qwen-1.5b-mvp:
-    sha256: caca288777494e009a394e720c9f55be6dc4c82cfceaa192e6be1e7914259372
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  deepseek-coder-33b-mvp:
-    sha256: b44f5154175105178f37b22e5c7d5be8ecb77274f9943a8804011afbe7759bdd
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-coder-0.5b-dim-smoke:
-    sha256: 0495bc354a8775c6f3f8ce14632437edccff3967ca8661c2a2ddc8e32e2ec24e
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  internlm2.5-20b-mvp:
-    sha256: 81bf5a9724dd0e460021a628359563aa200d8f4865671d6acd524c8923283ec0
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  granite-3.1-2b-dim-smoke:
-    sha256: 37143fa823588b01bd76283fc71a740dafe39aa117549466684df136eaeb713d
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-coder-0.5b-smoke:
-    sha256: dd563beae644492521ebd4446e6ae1db715092a33eaf0bf4a89398e1f5300796
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  gemma-2-27b-mvp:
-    sha256: d50d1ed36091e03e7e4cbe0b7830674504f3bef8bf03044ad6a528dc9ae7b38d
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-coder-14b-mvp:
-    sha256: 97973e8b6d7aaab36971e59a47327465c916aba2320be3f4617054bf8f782349
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  starcoder2-3b-mvp:
-    sha256: bc1170e112b7919b380c66a68df6f173f7198718c87588a01d9124c96a363b6c
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-coder-3b-quick:
-    sha256: 833c4762bbd89ab91c0011cd8276f2a9371e272d6a4ea09b8c1997d6df834079
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  deepseek-r1-distill-qwen-14b-mvp:
-    sha256: ba0f822c755d1e859c33c2a774729e280ab2896fe6acb7c20cb12f7010365cb3
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  llama-3.1-nemotron-nano-4b-v1.1-dim-smoke:
-    sha256: 7d1a4db14ec8de2374a9032724ad10ecff4e03e6a895750b2d9f0c19ec1c238b
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  openchat-3.5-mvp:
-    sha256: 4d4f3039c5d5b8f4003d5fef1584669d37ede3e24fef75ec7e4c23b5efa94039
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  phi-3.5-mini-mvp:
-    sha256: ae1e81d2911d43a6561e54c9e9e18149511b1a17967e53f6cfc5e3248224e0be
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  granite-3b-code-128k-dim-smoke:
-    sha256: ab3a9520e790fe536fa157d502221f5f2b7ef05b04c207c08bcb2ac9b2bebfc0
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-coder-1.5b-quick:
-    sha256: 77e8970cf3a3ba8daa0552224c9654da3cc2d46b0fa5f4fac23716b64c354b73
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  deepseek-coder-1.3b:
-    sha256: 83341b05aa48985eb95dec21d2705e08e5c0c13b7e980840155816c43723e309
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2-0.5b-dim-smoke:
-    sha256: 4d29ece34d6311a2fbe56f56d4970f4dcbf5ad412a9a568522e2b5310da4992d
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  llama-3.3-70b-mvp:
-    sha256: db1873baf8e09b847cb3588b9dc832e192738fb53f802d695fd1937e6ea5d636
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-coder-3b-smoke:
-    sha256: c8aa6a383904a45ec994f3dd4cfc16eff677d3ed2d8b5997010922754aab55e6
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  starcoder2-7b-mvp:
-    sha256: 8348d0db457f97d16e4c8ee2fe67f56671337360508da2c346c7192027b56a5f
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  smollm2-360m-mvp:
-    sha256: a2229d40203bc43c94e55288a8137146c21a9b2436fcb2f264bd3eead1223ada
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  llama-3.2-3b:
-    sha256: 30b3ce085496daa75e074bcd33e894213e1ae6a4cd155a8b23f442ed810e19dc
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  mistral-7b:
-    sha256: 742307d7f5e8252c80101daf547a3efd70cec42ff41f12fcfb4c74dfe1485fb7
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  deepseek-coder-7b-ci:
-    sha256: 3ddbecb9ecbf61fe9d6168cde54b9374ab2c6fa618ff35686ebb2496c6b16ee5
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  codellama-13b-mvp:
-    sha256: 6992520fb279ec71f2e6684bfae78dfdce6636513de68b48d0681dd311ce86d1
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  granite-3b-code-mvp:
-    sha256: 8799ffacf8f93ad0bf575b61e5dd809ec97745a99797fd6558df2bc0d1ff3e58
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-coder-0.5b:
-    sha256: b46ec90ceb5058330e75facf7c90aecdd1a5eb598d0410fb9f8e3b817ece834d
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  codellama-70b-mvp:
-    sha256: 4c4623021c5503d17320b5b528d5f481393098914685da7b40a51fda62ae2852
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-coder-14b-quick:
-    sha256: e85231d11da09cf48b5a64133ba0027527942197bce28b5e92055b0fe580ab79
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  granite-3.1-8b-mvp:
-    sha256: fc926144c1092c5fe4183153b008d28e426eafe21130b3a4acd12bd1ec139819
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-coder-32b-quick:
-    sha256: e626257bc264304ba3a42d7d1d85fd2525ffc18903fd1f34d8da5815926ecbf5
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  stablelm-zephyr-3b-mvp:
-    sha256: a41b15ae18a5ea6a67b6838368c7ed49b3f33951a885e05ef09da27908c4d76a
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
   pythia-410m-deduped-dim-smoke:
     sha256: e885dbe3b4cddd67e971e93c8d9f539157a0fb3ef7caee2566189c3a5c0214d0
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  nemotron-nano-4b-mvp:
-    sha256: 33a77cb8e84b9e9a7c49ee724c3c860638d17309eafe662fde66bddfd10f3ef7
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  phi-4-mini-dim-smoke:
-    sha256: cd376cec54390604bd620149e12419630336dbddd4414a243d7da8cb745753c5
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  codestral-22b-mvp:
-    sha256: 8b98cf4099b5f992797020edc805c6202172ca48315791df0ad3c71953301d11
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-coder-7b-mvp:
-    sha256: 6e5f682fae146bf34448fea89b4487aa2a4add17b072535dffdd21a4443c8dca
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  deepseek-coder-1.3b-ci:
-    sha256: f7235d55fa1cdd7df92b778814bc57a1170a53926eee9f74cc2f2317c5265176
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-32b-mvp:
-    sha256: d85e22ad21b7f6b8a98f4a6fc90fbc5f9e218a6bebef2f1a877244df46d454f8
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  gemma-2-9b-mvp:
-    sha256: 7389e915d673b7e272d123879d58089f6fe937c758e1f25c5c99ee4d4ec88d5f
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  llama-3.1-8b-mvp:
-    sha256: 9245eef15b2e3771cab33fcee970b9477faaed66d1bfd7283d5379ee2b17f9e0
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  starcoder2-15b-mvp:
-    sha256: 4ca39911d6d621008971a2d3c453b1db7cfe61fd10afe7827e11fcc5265cd107
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  deepseek-r1-distill-llama-8b-mvp:
-    sha256: 4e7f4e470767f00361fc335d3893e982877381313a214a61c6861436f9a05be1
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  deepseek-coder-7b-smoke:
-    sha256: 42eb55f09182a2fc580dce15f95d277cda502ca68f6dafd825ef3e1602791f14
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  wizardcoder-33b-mvp:
-    sha256: 8008a98f8ec725d0d6f15456daa207a26a626c53be590abb4bfe59d9d546bcbb
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-72b-mvp:
-    sha256: 8f07de9295cfc7a79865fca60b7ca9c75d13f3b53d9f728507daa458a8eb0009
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  deepseek-r1-distill-llama-70b-mvp:
-    sha256: 4931a41928576678f77ebd1605cf9152e37f57a4e872071eb5d128f3b4eeffbd
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  phi-3.5-mini-dim-smoke:
-    sha256: 900a214fe40c757b4bc1232545a5f85e3718b5184e19dff79dd05615117c283f
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  phi-1_5-dim-smoke:
-    sha256: f3b91d5635329bd3605f5029c354214242d89dc0059b3790ed36901a21b5c7b0
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-coder-7b-full:
-    sha256: a8ff561bd1f4cebd7db844457ca7ec497c4240d53a88217ed8cb83da98f6ef69
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  deepseek-coder-7b-mvp:
-    sha256: e0591838b15dc0eb1762b14ccf21de1b13d48fa4d7ecae92894219efdf572677
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-coder-7b:
-    sha256: d4d3a406ccd365f31254ab99c8436381b38a5d3c75f129cbf12229f9fdd25a02
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  vicuna-7b-mvp:
-    sha256: 0f0d85a418be781d6149825cc89218ec0d4e7ef7048e85e7fd839202fcfd4184
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-coder-7b-dim-smoke:
-    sha256: e9bde8c24a8d1d4f1ae209bd45ff4159ebedae62dccba36519c604b2da02fb62
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-coder-7b-quick:
-    sha256: 45ff1a1d6dbbc1ff9e63cbadd8135c034fe319c1318c6f9dc9bdbb33015d9254
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  codegemma-7b-mvp:
-    sha256: e1223cfedfa0fe94787a45a3d3435b3d3fd4747630300a462ec3cdb9bb032c33
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-coder-1.5b-smoke:
-    sha256: 6e65a5babdc8b71674f22317c5f0809485fb649736d5e741ec0e7abfea453ba9
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  stablelm-2-zephyr-1.6b-mvp:
-    sha256: 65902ca248edc02e130a34e34d12284ec6f82e3c25a19fd9022001bf942237fb
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-coder-14b:
-    sha256: a6ef815c6817b5657a1f48a6ce095acd21725e25c83f927f4a2cd6618f3ab64b
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  llama-3.1-70b-mvp:
-    sha256: 01104bc563c14c45ad55a9327c7effa7438180d397b6b2a41d794440d50c8cf7
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  falcon-40b-mvp:
-    sha256: 105e7f91390ba3d677ed5ce87e7149105b8a851de6efce91fb318441b9ab5d72
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  gemma-2-2b:
-    sha256: d1d6596f58cc07fad4da5751e7a3c278cb74ee85ee51177840605434d9b4d567
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen3-4b-mvp:
-    sha256: 7a42fbbdcdef1655273418a577933123c929bf46a7bc3c72aecd39c1acd097ed
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-coder-1.5b-dim-smoke:
-    sha256: 3f52c4e48baa24ae82bfac7ecb60498d919c612df4c7b23ead33af3ace11921e
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  vicuna-13b-mvp:
-    sha256: f9edcc394bd52b5f7d60ca30a62708e9dee1e6b66fb26b8b5787e11473fc200b
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  starcoder2-3b-dim-smoke:
-    sha256: 35d947338b664a6c331cd0e708706673702f1f5a3a08e12a3f29969a2a582021
     locked_fields:
     - model.hf_repo
     - model.formats
@@ -678,190 +27,15 @@ entries:
     - model.formats
     - test_matrix
     - falsification_gates
-  smollm2-135m-mvp:
-    sha256: 9a83c8476ad320c4b68937a2072f95a9f2f2baae1bb6332d55d0ffa50799d0ef
+  qwen2.5-coder-1.5b-ci:
+    sha256: 04410ed8141399300833b09e58e48e8ca0aa148f29c9946c0f32866cd0eeff9e
     locked_fields:
     - model.hf_repo
     - model.formats
     - test_matrix
     - falsification_gates
-  qwen2.5-coder-32b:
-    sha256: df0ee46cebdbce60d0a5abfbbd05c6f0f2283e324711ff9a0d4062d8f268b79c
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-3b-mvp:
-    sha256: dcfdbd47c1de2c8bf030681f3f6c43a6cf98934d3a420817f4120757c8cdda23
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  tinyllama-1.1b-mvp:
-    sha256: 62a7fb920bff566501f12bd01d03899f72b1ff9ed53c7dd9ea7be15059b69272
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  deepseek-coder-v2-lite-mvp:
-    sha256: e350a03b07ca9d051dc9677bfaabd6173731f25614ee8d7717b07970fd4a0c9f
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  phi-3-medium-4k-mvp:
-    sha256: 71a1d32794dbbda2c0657f9335c4954d203d89f4ebef7282c3113baa1845e0a1
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  hermes-3-llama-3.1-8b-mvp:
-    sha256: 3ff6f098cdaaed86e0f0b13d226d093caa646f3082454b0700233cc3b3941a79
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-coder-0.5b-quick:
-    sha256: 8d30f0be755c82510858432ecfacb34e92db535694b61c497b28c2d66657e4b4
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  gemma-3-27b-mvp:
-    sha256: 4e419fad79db8c5933e0b3cf19f6a328c385d576d50a6b20ff226020057a9bbf
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  granite-3.1-2b-mvp:
-    sha256: 2879de06f63be52b8dbdb776c1fc30b098a4f90652e95d1398dab16ea70dd1c5
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  codellama-7b-mvp:
-    sha256: 7526114fef21f746a3b811cc3d14154da7c27c2882f12bb5cce238a21ce3ca54
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  wizardcoder-15b-mvp:
-    sha256: bca3ac3b83a97a2779cfc18d38ae53c44f46c5f52ea1498bd230add8edf3ee45
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  dolphin3.0-llama3.1-8b-mvp:
-    sha256: 919b49d1e15ef6b2e5f8c0ed519e21ea0a24b2b36fbbed997fcbd6d4fc4ea0f1
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  yi-1.5-34b-mvp:
-    sha256: a1b5f159d9d1e8618d0a47670933d1f7de36eb810bfdb2c02cf5226161d49333
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  phi-3-mini:
-    sha256: 3a565668e315205ac060891129bf71518610d35d5bbefd5dc012f489eb7cc866
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  mistral-small-24b-mvp:
-    sha256: 47dee66fc88dd55bba3485f7f5fb89acf4281a615f7644bee9487ce19237e16a
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen3-4b-dim-smoke:
-    sha256: 4f772c1d9989ed5b2b45f776b4c52d7cb5c887fb2f98df61366da91290896d06
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  tinyllama-1.1b-chat-v1.0-dim-smoke:
-    sha256: dd8cc0da5ec7b4777bd00cefed5f6ac920eaa19e731917dbf8e4e3e8a7b6addf
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  deepseek-r1-distill-qwen-32b-mvp:
-    sha256: c1ac451800e65b00ae5a92b5db571b0c3d9b9f16cf3e59632eecba165213d07a
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen3-30b-a3b-mvp:
-    sha256: 4ba5fc50d813b971804ed4f963bfa4401017d9182be5098c581da6fbc0df18f8
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  phi-4-mini-mvp:
-    sha256: 9784b22a287cc1204c2bbad4012d0d4c38ab9ab2607e678235342d2474bca54b
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  gemma-3-4b-mvp:
-    sha256: 3957ea81bc85cce5262f9e6aece5a34415b3097658f53f56cb4d8cf6bb87b94e
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-0.5b-dim-smoke:
-    sha256: 226fc329ca33f240a28032f720f7b447c3ad9ade7f1cdc02a7d6c221b4708434
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-coder-7b-smoke:
-    sha256: 1350258057f5b5e646187100a77a16eb3333f510ab7dc0e310376b2bebf09679
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  dolphin-2.6-mistral-7b-mvp:
-    sha256: c2b7c2cb716e57a7668f8b8f812933e122439ed9a6cf6bcd273bf8903526870f
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  deepseek-r1-distill-qwen-7b-mvp:
-    sha256: 31ffb9225fe935a31b2da3ab505414124041a04a5b878f6b7d4c1abac496d158
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen3-coder-30b-a3b-mvp:
-    sha256: 862d2fab202bf370eb9e0075af0a73b9b911e48c099fa0774d300880c0eb3cdb
+  codellama-13b-mvp:
+    sha256: 6992520fb279ec71f2e6684bfae78dfdce6636513de68b48d0681dd311ce86d1
     locked_fields:
     - model.hf_repo
     - model.formats
@@ -874,99 +48,57 @@ entries:
     - model.formats
     - test_matrix
     - falsification_gates
-  gemma-3-1b-mvp:
-    sha256: be54398a921ea1349771aed46abdf757bc1cf29ff3ec0fd91fdb15acb0997f10
+  starcoder2-7b-mvp:
+    sha256: 8348d0db457f97d16e4c8ee2fe67f56671337360508da2c346c7192027b56a5f
     locked_fields:
     - model.hf_repo
     - model.formats
     - test_matrix
     - falsification_gates
-  mistral-7b-v0.3-dim-smoke:
-    sha256: 1aa6bf5878cb8aa1605555b4556e8e00db973c615effc1676dda8ff5c33d469a
+  qwen3-1.7b-mvp:
+    sha256: 017c13db33d0db85c2dbce0b7b37f133a3de8f4ae3c4ba2df29bf38fd71dd98a
     locked_fields:
     - model.hf_repo
     - model.formats
     - test_matrix
     - falsification_gates
-  qwen3-0.6b-mvp:
-    sha256: 8bc9e627e4e69b13365ddb337f20630529da4a3a99029a3fbabbecfc9110bbc7
+  qwen3-30b-a3b-mvp:
+    sha256: 4ba5fc50d813b971804ed4f963bfa4401017d9182be5098c581da6fbc0df18f8
     locked_fields:
     - model.hf_repo
     - model.formats
     - test_matrix
     - falsification_gates
-  qwen2.5-14b-mvp:
-    sha256: 0db0b345a6f8beec06584594a8cfbe6670169aab332d76b0a8f2642d90bb31fe
+  smollm2-360m-mvp:
+    sha256: a2229d40203bc43c94e55288a8137146c21a9b2436fcb2f264bd3eead1223ada
     locked_fields:
     - model.hf_repo
     - model.formats
     - test_matrix
     - falsification_gates
-  qwen3-32b-mvp:
-    sha256: 4d5a3c4fa4792c929d426c743646921e768cd6e0eada985c9c0115987564116e
+  gemma-2-27b-mvp:
+    sha256: d50d1ed36091e03e7e4cbe0b7830674504f3bef8bf03044ad6a528dc9ae7b38d
     locked_fields:
     - model.hf_repo
     - model.formats
     - test_matrix
     - falsification_gates
-  codellama-34b-mvp:
-    sha256: ebaba144281de2ccdc2f4a5e2b974a20d65ee1435d3731cf0cf3afd90965a9bd
+  deepseek-coder-1.3b:
+    sha256: 83341b05aa48985eb95dec21d2705e08e5c0c13b7e980840155816c43723e309
     locked_fields:
     - model.hf_repo
     - model.formats
     - test_matrix
     - falsification_gates
-  olmo-2-7b-mvp:
-    sha256: e8d7644ef908c87599be4e7be72b7f73dfa35b15d874b9f1113c7709fbefd8c6
+  deepseek-coder-33b-mvp:
+    sha256: b44f5154175105178f37b22e5c7d5be8ecb77274f9943a8804011afbe7759bdd
     locked_fields:
     - model.hf_repo
     - model.formats
     - test_matrix
     - falsification_gates
-  deepseek-coder-1.3b-smoke:
-    sha256: d3a769a9791a0c5a001b4fd0065a722ca527beac409e7cb872c0bac979c72f43
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-coder-32b-mvp:
-    sha256: d00f7df0bcec8e157bc5867e243b1757723011c8d02ada12c1f37e7c647f2ca2
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  yi-1.5-9b-mvp:
-    sha256: 8c54551ca1cbfa7eab789fd691bb32133770861bdf3217ef2bbe07205d0ffc65
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  deepseek-coder-7b:
-    sha256: 29af5a3b7939e720b4c2c0eb9e6832227b867697e9b017253b511778d60b72e8
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen2.5-coder-3b-dim-smoke:
-    sha256: 62778bbf11c3fbc615bb5eccfafd96df90069008a90d9fedbf285d65ebc23f9a
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  qwen3-0.6b-dim-smoke:
-    sha256: 2e6b3427ff257a54278f2606df94d0a03b10925bd025b49eea1348774e496d18
-    locked_fields:
-    - model.hf_repo
-    - model.formats
-    - test_matrix
-    - falsification_gates
-  phi-3-small-8k-mvp:
-    sha256: 2228f4fb259f6fdfda1afef713df37f150350698f05ea54cbfe30886cfd97065
+  qwen2.5-7b-mvp:
+    sha256: a3f24a28cc5b2ddab8fee93b2cb77739039a14c33fbfc20c23bc3279de87c337
     locked_fields:
     - model.hf_repo
     - model.formats
@@ -979,8 +111,890 @@ entries:
     - model.formats
     - test_matrix
     - falsification_gates
+  deepseek-coder-1.3b-quick:
+    sha256: 494237e2e233332b176402b298f95b5f85602652026afa00f17ffed634471703
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  granite-3b-code-mvp:
+    sha256: 8799ffacf8f93ad0bf575b61e5dd809ec97745a99797fd6558df2bc0d1ff3e58
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-coder-7b-smoke:
+    sha256: 1350258057f5b5e646187100a77a16eb3333f510ab7dc0e310376b2bebf09679
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  zephyr-7b-beta-mvp:
+    sha256: 7c8985e1acf59aa60bbda82d005194b0ee9810fed765249435477ac11fd3d9e0
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-coder-1.5b:
+    sha256: 9ba37be9c2878ab56784cf985fcb7dec765eb9a6c778160c1d6fe51050c38749
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  gemma-3-1b-mvp:
+    sha256: be54398a921ea1349771aed46abdf757bc1cf29ff3ec0fd91fdb15acb0997f10
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  smollm-135m-dim-smoke:
+    sha256: b8c5418dd9d2115a5d7af5161e5f16012f873d4a0c4375c19bfb24b27e654d88
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-coder-14b-dim-smoke:
+    sha256: 6b9deec9d6f55ee4c5b1624854cf534000d8b881eb4af79bdc99c98b4b79b11a
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  openhermes-2.5-mistral-7b-mvp:
+    sha256: 6e7d079fb5b3a244a12a452d79fbe56e2facf5e45327c450710142c084cf8101
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  phi-3.5-mini-dim-smoke:
+    sha256: 900a214fe40c757b4bc1232545a5f85e3718b5184e19dff79dd05615117c283f
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  wizardcoder-15b-mvp:
+    sha256: bca3ac3b83a97a2779cfc18d38ae53c44f46c5f52ea1498bd230add8edf3ee45
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  tinyllama-1.1b-mvp:
+    sha256: 62a7fb920bff566501f12bd01d03899f72b1ff9ed53c7dd9ea7be15059b69272
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  deepseek-r1-distill-qwen-32b-mvp:
+    sha256: c1ac451800e65b00ae5a92b5db571b0c3d9b9f16cf3e59632eecba165213d07a
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  starcoder2-15b-mvp:
+    sha256: 4ca39911d6d621008971a2d3c453b1db7cfe61fd10afe7827e11fcc5265cd107
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  deepseek-r1-distill-llama-70b-mvp:
+    sha256: 4931a41928576678f77ebd1605cf9152e37f57a4e872071eb5d128f3b4eeffbd
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  falcon-40b-mvp:
+    sha256: 105e7f91390ba3d677ed5ce87e7149105b8a851de6efce91fb318441b9ab5d72
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  llama-3.2-1b:
+    sha256: af4f134c9b34f1e3c96177c921727df47e2959cf6e90cf2c3bc8f7f6da801064
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-coder-1.5b-smoke:
+    sha256: 6e65a5babdc8b71674f22317c5f0809485fb649736d5e741ec0e7abfea453ba9
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  deepseek-coder-1.3b-smoke:
+    sha256: d3a769a9791a0c5a001b4fd0065a722ca527beac409e7cb872c0bac979c72f43
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
   qwen2.5-coder-0.5b-mvp:
     sha256: 3bd835de73acf9e6ab48ece7aaeeefc4cf7f0d23821345c98b4d50f6ad38e581
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2-0.5b-dim-smoke:
+    sha256: 4d29ece34d6311a2fbe56f56d4970f4dcbf5ad412a9a568522e2b5310da4992d
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-coder-0.5b-smoke:
+    sha256: dd563beae644492521ebd4446e6ae1db715092a33eaf0bf4a89398e1f5300796
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-coder-3b-mvp:
+    sha256: 5613882fafee6adac71b24f6a95fd70036763da6047e44c6dd8c563e91ab244f
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  stablelm-2-zephyr-1_6b-dim-smoke:
+    sha256: 9efcd496032f449929633aef57d36768db0d399eb7cf61d6d6504237e695164b
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-coder-0.5b:
+    sha256: b46ec90ceb5058330e75facf7c90aecdd1a5eb598d0410fb9f8e3b817ece834d
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  nemotron-70b-mvp:
+    sha256: 36bd00eb95b0d5d2c62c70e995b7a970bf09dc415456dbdcae52756e6894ccd7
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  yi-1.5-34b-mvp:
+    sha256: a1b5f159d9d1e8618d0a47670933d1f7de36eb810bfdb2c02cf5226161d49333
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-coder-1.5b-quick:
+    sha256: 77e8970cf3a3ba8daa0552224c9654da3cc2d46b0fa5f4fac23716b64c354b73
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  granite-3b-code-128k-dim-smoke:
+    sha256: ab3a9520e790fe536fa157d502221f5f2b7ef05b04c207c08bcb2ac9b2bebfc0
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  llama-3.1-8b-mvp:
+    sha256: 9245eef15b2e3771cab33fcee970b9477faaed66d1bfd7283d5379ee2b17f9e0
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-7b-dim-smoke:
+    sha256: 6a8a81006da06d166c372a6d4d77a7a35205f7ae91d06a08da24a6c3e8271240
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  mistral-7b:
+    sha256: 742307d7f5e8252c80101daf547a3efd70cec42ff41f12fcfb4c74dfe1485fb7
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen3-32b-mvp:
+    sha256: 4d5a3c4fa4792c929d426c743646921e768cd6e0eada985c9c0115987564116e
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  openchat-3.5-mvp:
+    sha256: 4d4f3039c5d5b8f4003d5fef1584669d37ede3e24fef75ec7e4c23b5efa94039
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-coder-32b-quick:
+    sha256: e626257bc264304ba3a42d7d1d85fd2525ffc18903fd1f34d8da5815926ecbf5
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  deepseek-r1-distill-qwen-7b-mvp:
+    sha256: 31ffb9225fe935a31b2da3ab505414124041a04a5b878f6b7d4c1abac496d158
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  llama-3.1-nemotron-nano-4b-v1.1-dim-smoke:
+    sha256: 7d1a4db14ec8de2374a9032724ad10ecff4e03e6a895750b2d9f0c19ec1c238b
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  dolphin3.0-llama3.1-8b-mvp:
+    sha256: 919b49d1e15ef6b2e5f8c0ed519e21ea0a24b2b36fbbed997fcbd6d4fc4ea0f1
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  mistral-small-24b-mvp:
+    sha256: 47dee66fc88dd55bba3485f7f5fb89acf4281a615f7644bee9487ce19237e16a
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  codellama-34b-mvp:
+    sha256: ebaba144281de2ccdc2f4a5e2b974a20d65ee1435d3731cf0cf3afd90965a9bd
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  deepseek-coder-7b:
+    sha256: 29af5a3b7939e720b4c2c0eb9e6832227b867697e9b017253b511778d60b72e8
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-coder-14b:
+    sha256: a6ef815c6817b5657a1f48a6ce095acd21725e25c83f927f4a2cd6618f3ab64b
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  olmo-2-7b-mvp:
+    sha256: e8d7644ef908c87599be4e7be72b7f73dfa35b15d874b9f1113c7709fbefd8c6
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  olmo-2-13b-mvp:
+    sha256: 9c7f8320775152818ae5319e7c05509375883621db58f0687ae370dd39c026f8
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  deepseek-r1-distill-qwen-1.5b-mvp:
+    sha256: caca288777494e009a394e720c9f55be6dc4c82cfceaa192e6be1e7914259372
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  vicuna-13b-mvp:
+    sha256: f9edcc394bd52b5f7d60ca30a62708e9dee1e6b66fb26b8b5787e11473fc200b
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  hermes-3-llama-3.1-8b-mvp:
+    sha256: 3ff6f098cdaaed86e0f0b13d226d093caa646f3082454b0700233cc3b3941a79
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  phi-3-mini:
+    sha256: 3a565668e315205ac060891129bf71518610d35d5bbefd5dc012f489eb7cc866
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-32b-mvp:
+    sha256: d85e22ad21b7f6b8a98f4a6fc90fbc5f9e218a6bebef2f1a877244df46d454f8
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-coder-7b-full:
+    sha256: a8ff561bd1f4cebd7db844457ca7ec497c4240d53a88217ed8cb83da98f6ef69
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  deepseek-coder-v2-lite-mvp:
+    sha256: e350a03b07ca9d051dc9677bfaabd6173731f25614ee8d7717b07970fd4a0c9f
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-coder-1.5b-mvp:
+    sha256: 8b58cbd5bc2c668d2a50dd001563b5c113f34f67e7d8e3c2ada64f974c5e371b
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  gpt2-dim-smoke:
+    sha256: e9b9fe76a0e8930e32d05fa7f5c6b9bbf0fe87b19e24352201fcd85068f01991
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  llama-3.3-70b-mvp:
+    sha256: db1873baf8e09b847cb3588b9dc832e192738fb53f802d695fd1937e6ea5d636
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-coder-3b:
+    sha256: 72763d3a8bbf0301e2aa9c818d789f806e81c953cc9d3d33a5fdaaf5698a52d1
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  llama-3.1-70b-mvp:
+    sha256: 01104bc563c14c45ad55a9327c7effa7438180d397b6b2a41d794440d50c8cf7
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-coder-32b:
+    sha256: df0ee46cebdbce60d0a5abfbbd05c6f0f2283e324711ff9a0d4062d8f268b79c
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  codestral-22b-mvp:
+    sha256: 8b98cf4099b5f992797020edc805c6202172ca48315791df0ad3c71953301d11
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen3-coder-30b-a3b-mvp:
+    sha256: 862d2fab202bf370eb9e0075af0a73b9b911e48c099fa0774d300880c0eb3cdb
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-coder-7b:
+    sha256: d4d3a406ccd365f31254ab99c8436381b38a5d3c75f129cbf12229f9fdd25a02
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  mistral-nemo-12b-mvp:
+    sha256: 8c9ddb0f900d83c75a9bb40027e455b342d18fc050d311787e0ad97dfa0e3833
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  smollm2-135m-mvp:
+    sha256: 9a83c8476ad320c4b68937a2072f95a9f2f2baae1bb6332d55d0ffa50799d0ef
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  dolphin-2.6-mistral-7b-mvp:
+    sha256: c2b7c2cb716e57a7668f8b8f812933e122439ed9a6cf6bcd273bf8903526870f
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  stablelm-zephyr-3b-mvp:
+    sha256: a41b15ae18a5ea6a67b6838368c7ed49b3f33951a885e05ef09da27908c4d76a
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  gemma-3-12b-mvp:
+    sha256: a4e4bea40180c29cb4720e3bf165187ea62133c4c6a676a986fd5b13ad870f66
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwq-32b-mvp:
+    sha256: 391b0cae3c0003882b8bc5a569da853a53d69bb7fbb89869556c5baad44326d6
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-coder-14b-mvp:
+    sha256: 97973e8b6d7aaab36971e59a47327465c916aba2320be3f4617054bf8f782349
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  deepseek-r1-distill-qwen-14b-mvp:
+    sha256: ba0f822c755d1e859c33c2a774729e280ab2896fe6acb7c20cb12f7010365cb3
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-3b-mvp:
+    sha256: dcfdbd47c1de2c8bf030681f3f6c43a6cf98934d3a420817f4120757c8cdda23
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  internlm2.5-20b-mvp:
+    sha256: 81bf5a9724dd0e460021a628359563aa200d8f4865671d6acd524c8923283ec0
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  nemotron-nano-4b-mvp:
+    sha256: 33a77cb8e84b9e9a7c49ee724c3c860638d17309eafe662fde66bddfd10f3ef7
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-coder-0.5b-dim-smoke:
+    sha256: 0495bc354a8775c6f3f8ce14632437edccff3967ca8661c2a2ddc8e32e2ec24e
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  deepseek-coder-1.3b-ci:
+    sha256: f7235d55fa1cdd7df92b778814bc57a1170a53926eee9f74cc2f2317c5265176
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  stablelm-zephyr-3b-dim-smoke:
+    sha256: 8309432197578f4b1a08f7c1a094e4eee3178ddd9ae8096721782bd130998004
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  starcoder2-3b-dim-smoke:
+    sha256: 35d947338b664a6c331cd0e708706673702f1f5a3a08e12a3f29969a2a582021
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-72b-mvp:
+    sha256: 8f07de9295cfc7a79865fca60b7ca9c75d13f3b53d9f728507daa458a8eb0009
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  codellama-70b-mvp:
+    sha256: 4c4623021c5503d17320b5b528d5f481393098914685da7b40a51fda62ae2852
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  tinyllama-1.1b-chat-v1.0-dim-smoke:
+    sha256: dd8cc0da5ec7b4777bd00cefed5f6ac920eaa19e731917dbf8e4e3e8a7b6addf
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen3-0.6b-mvp:
+    sha256: 8bc9e627e4e69b13365ddb337f20630529da4a3a99029a3fbabbecfc9110bbc7
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-coder-0.5b-quick:
+    sha256: 8d30f0be755c82510858432ecfacb34e92db535694b61c497b28c2d66657e4b4
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  granite-3.1-2b-dim-smoke:
+    sha256: 37143fa823588b01bd76283fc71a740dafe39aa117549466684df136eaeb713d
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-14b-mvp:
+    sha256: 0db0b345a6f8beec06584594a8cfbe6670169aab332d76b0a8f2642d90bb31fe
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  phi-3-small-8k-mvp:
+    sha256: 2228f4fb259f6fdfda1afef713df37f150350698f05ea54cbfe30886cfd97065
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  granite-3.1-2b-mvp:
+    sha256: 2879de06f63be52b8dbdb776c1fc30b098a4f90652e95d1398dab16ea70dd1c5
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen3-4b-mvp:
+    sha256: 7a42fbbdcdef1655273418a577933123c929bf46a7bc3c72aecd39c1acd097ed
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-coder-7b-mvp:
+    sha256: 6e5f682fae146bf34448fea89b4487aa2a4add17b072535dffdd21a4443c8dca
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  falcon-7b-mvp:
+    sha256: 84f23c321da15ab39c50feeb4865c02b79c99676e28525fe764b4f4a69e11de9
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  mistral-7b-v0.3-dim-smoke:
+    sha256: 1aa6bf5878cb8aa1605555b4556e8e00db973c615effc1676dda8ff5c33d469a
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  starcoder2-3b-mvp:
+    sha256: bc1170e112b7919b380c66a68df6f173f7198718c87588a01d9124c96a363b6c
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-coder-7b-dim-smoke:
+    sha256: e9bde8c24a8d1d4f1ae209bd45ff4159ebedae62dccba36519c604b2da02fb62
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  deepseek-coder-1.3b-mvp:
+    sha256: 978ddc7568c39bfea56f4972bc3886ea15c984cc2f050727c9e71cbd13a0bad1
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  deepseek-r1-distill-llama-8b-mvp:
+    sha256: 4e7f4e470767f00361fc335d3893e982877381313a214a61c6861436f9a05be1
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen3-14b-mvp:
+    sha256: e324d720fe04d81913b56a5ed10d718cb0c4b90e3d6b158ce567428852407678
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  smollm2-1.7b-mvp:
+    sha256: 59e319b454927b3d9f7d9a59d8f22b11b50bcfafbb9cabeb8f6124ae4382b3cb
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen3-0.6b-dim-smoke:
+    sha256: 2e6b3427ff257a54278f2606df94d0a03b10925bd025b49eea1348774e496d18
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  codellama-7b-mvp:
+    sha256: 7526114fef21f746a3b811cc3d14154da7c27c2882f12bb5cce238a21ce3ca54
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  phi-4-mini-mvp:
+    sha256: 9784b22a287cc1204c2bbad4012d0d4c38ab9ab2607e678235342d2474bca54b
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  phi-3-medium-4k-mvp:
+    sha256: 71a1d32794dbbda2c0657f9335c4954d203d89f4ebef7282c3113baa1845e0a1
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  phi-4-mini-dim-smoke:
+    sha256: cd376cec54390604bd620149e12419630336dbddd4414a243d7da8cb745753c5
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  internlm2.5-7b-mvp:
+    sha256: 5d334f936d494ff65f24f49f15808740090d54aef98b5cab13fa174dc70775f7
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  deepseek-coder-7b-ci:
+    sha256: 3ddbecb9ecbf61fe9d6168cde54b9374ab2c6fa618ff35686ebb2496c6b16ee5
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-coder-3b-quick:
+    sha256: 833c4762bbd89ab91c0011cd8276f2a9371e272d6a4ea09b8c1997d6df834079
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-coder-7b-quick:
+    sha256: 45ff1a1d6dbbc1ff9e63cbadd8135c034fe319c1318c6f9dc9bdbb33015d9254
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  gemma-3-4b-mvp:
+    sha256: 3957ea81bc85cce5262f9e6aece5a34415b3097658f53f56cb4d8cf6bb87b94e
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-coder-14b-quick:
+    sha256: e85231d11da09cf48b5a64133ba0027527942197bce28b5e92055b0fe580ab79
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  gemma-2-9b-mvp:
+    sha256: 7389e915d673b7e272d123879d58089f6fe937c758e1f25c5c99ee4d4ec88d5f
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  codegemma-7b-mvp:
+    sha256: e1223cfedfa0fe94787a45a3d3435b3d3fd4747630300a462ec3cdb9bb032c33
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  vicuna-7b-mvp:
+    sha256: 0f0d85a418be781d6149825cc89218ec0d4e7ef7048e85e7fd839202fcfd4184
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-0.5b-dim-smoke:
+    sha256: 226fc329ca33f240a28032f720f7b447c3ad9ade7f1cdc02a7d6c221b4708434
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  yi-1.5-9b-mvp:
+    sha256: 8c54551ca1cbfa7eab789fd691bb32133770861bdf3217ef2bbe07205d0ffc65
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-coder-1.5b-dim-smoke:
+    sha256: 3f52c4e48baa24ae82bfac7ecb60498d919c612df4c7b23ead33af3ace11921e
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  deepseek-coder-1.3b-dim-smoke:
+    sha256: eaaf214f046e4f936137c51154322c8ff12b173fb01704682579b98394c15a0e
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  phi-3.5-mini-mvp:
+    sha256: ae1e81d2911d43a6561e54c9e9e18149511b1a17967e53f6cfc5e3248224e0be
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  wizardcoder-33b-mvp:
+    sha256: 8008a98f8ec725d0d6f15456daa207a26a626c53be590abb4bfe59d9d546bcbb
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  deepseek-coder-7b-smoke:
+    sha256: 42eb55f09182a2fc580dce15f95d277cda502ca68f6dafd825ef3e1602791f14
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-coder-3b-smoke:
+    sha256: c8aa6a383904a45ec994f3dd4cfc16eff677d3ed2d8b5997010922754aab55e6
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  phi-1_5-dim-smoke:
+    sha256: f3b91d5635329bd3605f5029c354214242d89dc0059b3790ed36901a21b5c7b0
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-coder-3b-dim-smoke:
+    sha256: 62778bbf11c3fbc615bb5eccfafd96df90069008a90d9fedbf285d65ebc23f9a
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  gemma-3-27b-mvp:
+    sha256: 4e419fad79db8c5933e0b3cf19f6a328c385d576d50a6b20ff226020057a9bbf
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  phi-3-mini-4k-dim-smoke:
+    sha256: 5c7e86d1486a3845f5318e0a1d3b3eb30be0e6419cb99984881e93da19d92f97
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen3-4b-dim-smoke:
+    sha256: 4f772c1d9989ed5b2b45f776b4c52d7cb5c887fb2f98df61366da91290896d06
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  stablelm-2-zephyr-1.6b-mvp:
+    sha256: 65902ca248edc02e130a34e34d12284ec6f82e3c25a19fd9022001bf942237fb
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  gemma-2-2b:
+    sha256: d1d6596f58cc07fad4da5751e7a3c278cb74ee85ee51177840605434d9b4d567
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  llama-3.2-3b:
+    sha256: 30b3ce085496daa75e074bcd33e894213e1ae6a4cd155a8b23f442ed810e19dc
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  granite-3.1-8b-mvp:
+    sha256: fc926144c1092c5fe4183153b008d28e426eafe21130b3a4acd12bd1ec139819
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  qwen2.5-1.5b-mvp:
+    sha256: 97931a5832bacbe2bcd50b4e951d3b1fdc9c045c2cf00c44ebee0c310f59934f
+    locked_fields:
+    - model.hf_repo
+    - model.formats
+    - test_matrix
+    - falsification_gates
+  deepseek-coder-7b-mvp:
+    sha256: e0591838b15dc0eb1762b14ccf21de1b13d48fa4d7ecae92894219efdf572677
     locked_fields:
     - model.hf_repo
     - model.formats
