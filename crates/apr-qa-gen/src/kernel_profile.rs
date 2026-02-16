@@ -167,8 +167,9 @@ pub struct ArchSizeVariant {
     pub hidden_dim: u32,
     /// Number of transformer layers
     pub num_layers: u32,
-    /// Number of attention heads
-    pub num_heads: u32,
+    /// Number of attention heads (None for non-attention architectures like SSM/RWKV)
+    #[serde(default)]
+    pub num_heads: Option<u32>,
     /// Number of KV heads (for GQA)
     pub num_kv_heads: Option<u32>,
     /// FFN intermediate dimension
@@ -679,7 +680,7 @@ mod tests {
         let v = ArchSizeVariant::default();
         assert_eq!(v.hidden_dim, 0);
         assert_eq!(v.num_layers, 0);
-        assert_eq!(v.num_heads, 0);
+        assert_eq!(v.num_heads, None);
         assert!(v.parameters.is_empty());
     }
 

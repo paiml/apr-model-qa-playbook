@@ -444,7 +444,7 @@ impl ModelConfig {
         self.size_variant = Some(size.to_string());
         self.expected_hidden_dim = Some(variant.hidden_dim);
         self.expected_num_layers = Some(variant.num_layers);
-        self.expected_num_heads = Some(variant.num_heads);
+        self.expected_num_heads = variant.num_heads;
         self.expected_num_kv_heads = variant.num_kv_heads;
         self.expected_vocab_size = variant.vocab_size;
         self.expected_intermediate_dim = variant.intermediate_dim;
@@ -478,7 +478,7 @@ impl ModelConfig {
         &self,
         hidden_dim: u32,
         num_layers: u32,
-        num_heads: u32,
+        num_heads: Option<u32>,
         num_kv_heads: Option<u32>,
     ) -> Vec<String> {
         let mut mismatches = Vec::new();
@@ -499,10 +499,10 @@ impl ModelConfig {
             }
         }
 
-        if let Some(expected) = self.expected_num_heads {
-            if expected != num_heads {
+        if let (Some(expected), Some(actual)) = (self.expected_num_heads, num_heads) {
+            if expected != actual {
                 mismatches.push(format!(
-                    "num_heads mismatch: expected {expected}, got {num_heads}"
+                    "num_heads mismatch: expected {expected}, got {actual}"
                 ));
             }
         }
@@ -2396,7 +2396,7 @@ size_variants:
         };
 
         // All match
-        let mismatches = config.validate_architecture(896, 24, 14, Some(2));
+        let mismatches = config.validate_architecture(896, 24, Some(14), Some(2));
         assert!(mismatches.is_empty());
     }
 
@@ -2419,7 +2419,7 @@ size_variants:
         };
 
         // All wrong
-        let mismatches = config.validate_architecture(1024, 12, 16, Some(4));
+        let mismatches = config.validate_architecture(1024, 12, Some(16), Some(4));
         assert_eq!(mismatches.len(), 4);
         assert!(mismatches[0].contains("hidden_dim"));
         assert!(mismatches[1].contains("num_layers"));
@@ -2446,7 +2446,7 @@ size_variants:
         };
 
         // Only hidden_dim is checked
-        let mismatches = config.validate_architecture(896, 999, 999, Some(999));
+        let mismatches = config.validate_architecture(896, 999, Some(999), Some(999));
         assert!(mismatches.is_empty()); // hidden_dim matches, others not checked
     }
 

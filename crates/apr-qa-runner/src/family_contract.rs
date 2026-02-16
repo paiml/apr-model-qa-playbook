@@ -33,8 +33,9 @@ pub struct SizeVariant {
     /// Number of transformer layers
     pub num_layers: u32,
 
-    /// Number of attention heads
-    pub num_heads: u32,
+    /// Number of attention heads (None for non-attention architectures like SSM/RWKV)
+    #[serde(default)]
+    pub num_heads: Option<u32>,
 
     /// Number of KV heads (for GQA; may equal num_heads for MHA)
     #[serde(default)]
@@ -503,7 +504,7 @@ certification:
         let v05b = contract.get_size_variant("0.5b").expect("0.5b");
         assert_eq!(v05b.hidden_dim, 896);
         assert_eq!(v05b.num_layers, 24);
-        assert_eq!(v05b.num_heads, 14);
+        assert_eq!(v05b.num_heads, Some(14));
         assert_eq!(v05b.num_kv_heads, Some(2));
 
         let v15b = contract.get_size_variant("1.5b").expect("1.5b");
@@ -774,7 +775,7 @@ size_variants:
         assert_eq!(arch.parameters, "1.5B");
         assert_eq!(arch.hidden_dim, 1536);
         assert_eq!(arch.num_layers, 28);
-        assert_eq!(arch.num_heads, 12);
+        assert_eq!(arch.num_heads, Some(12));
         assert_eq!(arch.num_kv_heads, Some(2));
     }
 

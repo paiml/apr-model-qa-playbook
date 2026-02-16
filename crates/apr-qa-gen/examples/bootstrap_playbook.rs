@@ -84,7 +84,7 @@ fn main() {
         parameters: "1.5B".to_string(),
         hidden_dim: 1536,
         num_layers: 28,
-        num_heads: 12,
+        num_heads: Some(12),
         num_kv_heads: Some(2),
         intermediate_dim: Some(8960),
         vocab_size: Some(151_936),
@@ -94,7 +94,7 @@ fn main() {
     println!("Parameters: {}", size_variant.parameters);
     println!("Hidden dim: {}", size_variant.hidden_dim);
     println!("Layers:     {}", size_variant.num_layers);
-    println!("Heads:      {}", size_variant.num_heads);
+    println!("Heads:      {:?}", size_variant.num_heads);
     println!("KV heads:   {:?}", size_variant.num_kv_heads);
     println!();
 
