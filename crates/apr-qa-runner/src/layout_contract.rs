@@ -615,9 +615,13 @@ pub fn find_and_load_config(model_path: &Path) -> LayoutModelConfig {
                             "n_head",
                             "num_heads",
                             "attention_heads",
+                            "num_query_heads",
                         ],
                     ),
-                    num_key_value_heads: get_usize(&json, "num_key_value_heads"),
+                    num_key_value_heads: get_usize_or(
+                        &json,
+                        &["num_key_value_heads", "num_kv_heads"],
+                    ),
                     num_hidden_layers: get_usize_or(
                         &json,
                         &[

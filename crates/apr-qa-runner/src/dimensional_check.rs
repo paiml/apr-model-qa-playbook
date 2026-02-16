@@ -478,4 +478,150 @@ test_matrix:
         let result = run_dimensional_check(dir.path(), &playbook);
         assert_eq!(result.model_id, "Qwen/Qwen2.5-Coder-0.5B-Instruct");
     }
+
+    /// GH-266: Mamba SSM has no attention heads — dim-smoke should skip head checks
+    #[test]
+    fn test_mamba_ssm_no_attention_heads() {
+        let dir = TempDir::new().unwrap();
+        let config = serde_json::json!({
+            "model_type": "mamba",
+            "hidden_size": 1024,
+            "num_hidden_layers": 48,
+            "vocab_size": 50280,
+            "state_size": 16,
+            "conv_kernel": 4,
+            "expand": 2
+        });
+        write_config_json(dir.path(), &config);
+        write_minimal_safetensors(
+            dir.path(),
+            &[
+                ("backbone.embedding.weight", &[50280, 1024]),
+                ("lm_head.weight", &[50280, 1024]),
+            ],
+        );
+
+        let yaml = r#"
+name: mamba-370m-dim-smoke
+version: "1.0"
+model:
+  hf_repo: "state-spaces/mamba-370m-hf"
+  expected_hidden_dim: 1024
+  expected_num_layers: 48
+  expected_vocab_size: 50280
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  formats: [safetensors]
+  prompts:
+    - "hello"
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("valid mamba playbook");
+        let result = run_dimensional_check(dir.path(), &playbook);
+
+        // Should pass — no num_heads expected, none present
+        assert!(
+            result.passed,
+            "Mamba SSM should pass without attention head checks: {:#?}",
+            result.checks
+        );
+        // Verify no num_heads check was emitted
+        let head_check = result.checks.iter().find(|c| c.name == "num_heads");
+        assert!(
+            head_check.is_none(),
+            "Mamba should not have a num_heads check"
+        );
+    }
+
+    /// GH-266: OpenELM has array-valued num_query_heads — should return None, skip check
+    #[test]
+    fn test_openelm_array_heads_skipped() {
+        let dir = TempDir::new().unwrap();
+        let config = serde_json::json!({
+            "model_type": "openelm",
+            "model_dim": 1280,
+            "num_transformer_layers": 16,
+            "vocab_size": 32000,
+            "num_query_heads": [12, 12, 12, 12, 12, 16, 16, 16, 16, 16, 16, 16, 20, 20, 20, 20],
+            "num_kv_heads": [3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5]
+        });
+        write_config_json(dir.path(), &config);
+        write_minimal_safetensors(
+            dir.path(),
+            &[
+                ("transformer.token_embeddings.weight", &[32000, 1280]),
+                ("lm_head.weight", &[32000, 1280]),
+            ],
+        );
+
+        let yaml = r#"
+name: openelm-270m-dim-smoke
+version: "1.0"
+model:
+  hf_repo: "apple/OpenELM-270M-Instruct"
+  expected_hidden_dim: 1280
+  expected_num_layers: 16
+  expected_vocab_size: 32000
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  formats: [safetensors]
+  prompts:
+    - "hello"
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("valid openelm playbook");
+        let result = run_dimensional_check(dir.path(), &playbook);
+
+        // Should pass — array-valued heads return None from get_usize, no expected set
+        assert!(
+            result.passed,
+            "OpenELM should pass without scalar head checks: {:#?}",
+            result.checks
+        );
+    }
+
+    /// GH-270: RWKV7 has explicit null num_heads — dim-smoke should skip head checks
+    #[test]
+    fn test_rwkv7_null_num_heads() {
+        let dir = TempDir::new().unwrap();
+        let config = serde_json::json!({
+            "model_type": "rwkv7",
+            "hidden_size": 768,
+            "num_hidden_layers": 12,
+            "num_attention_heads": null,
+            "vocab_size": 65536
+        });
+        write_config_json(dir.path(), &config);
+        write_minimal_safetensors(
+            dir.path(),
+            &[
+                ("rwkv.embeddings.weight", &[65536, 768]),
+                ("head.weight", &[65536, 768]),
+            ],
+        );
+
+        let yaml = r#"
+name: rwkv7-dim-smoke
+version: "1.0"
+model:
+  hf_repo: "RWKV/rwkv-7-world-0.1b"
+  expected_hidden_dim: 768
+  expected_num_layers: 12
+  expected_vocab_size: 65536
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  formats: [safetensors]
+  prompts:
+    - "hello"
+"#;
+        let playbook = Playbook::from_yaml(yaml).expect("valid rwkv7 playbook");
+        let result = run_dimensional_check(dir.path(), &playbook);
+
+        assert!(
+            result.passed,
+            "RWKV7 should pass with null num_heads: {:#?}",
+            result.checks
+        );
+    }
 }
