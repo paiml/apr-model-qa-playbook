@@ -16,9 +16,9 @@ use std::str::FromStr;
 pub enum KernelClass {
     /// GQA + RMSNorm + SiLU + SwiGLU + RoPE (LLaMA 3, Qwen2, Mistral, Yi, DeepSeek, InternLM2, Gemma)
     A,
-    /// MHA + LayerNorm + GELU (GPT-2, GPT-NeoX, GPT-J, Falcon 7B)
+    /// MHA + LayerNorm + GELU (GPT-2, GPT-Neo, GPT-NeoX, GPT-J, OPT, GPT-BigCode, Falcon 7B)
     B,
-    /// MQA + LayerNorm + GELU + ALiBi (Falcon-40B)
+    /// MQA + LayerNorm + GELU + ALiBi (BLOOM, Falcon-40B)
     C,
     /// GQA + LayerNorm + GELU/SiLU (Phi-3, StableLM)
     D,
@@ -41,11 +41,12 @@ impl KernelClass {
             | "granite" | "granite-code" | "starcoder2" | "nemotron" => Some(Self::A),
 
             // Class B: MHA + LayerNorm + GELU
-            "gpt2" | "gpt-2" | "gpt-neox" | "gptneox" | "gpt-j" | "gptj" | "falcon-7b"
+            "gpt2" | "gpt-2" | "gpt-neo" | "gpt_neo" | "gpt-neox" | "gptneox" | "gpt-j"
+            | "gptj" | "opt" | "galactica" | "gpt-bigcode" | "gpt_bigcode" | "falcon-7b"
             | "falcon7b" => Some(Self::B),
 
             // Class C: MQA + LayerNorm + GELU + ALiBi
-            "falcon-40b" | "falcon40b" | "falcon" => Some(Self::C),
+            "bloom" | "bloomz" | "falcon-40b" | "falcon40b" | "falcon" => Some(Self::C),
 
             // Class D: GQA + LayerNorm + GELU/SiLU
             "phi" | "phi-3" | "phi3" | "phi3small" | "phi-3-small" | "phi4" | "stablelm"
@@ -175,13 +176,21 @@ mod tests {
     fn test_from_family_class_b() {
         assert_eq!(KernelClass::from_family("gpt2"), Some(KernelClass::B));
         assert_eq!(KernelClass::from_family("gpt-2"), Some(KernelClass::B));
+        assert_eq!(KernelClass::from_family("gpt-neo"), Some(KernelClass::B));
+        assert_eq!(KernelClass::from_family("gpt_neo"), Some(KernelClass::B));
         assert_eq!(KernelClass::from_family("gpt-neox"), Some(KernelClass::B));
         assert_eq!(KernelClass::from_family("gpt-j"), Some(KernelClass::B));
+        assert_eq!(KernelClass::from_family("opt"), Some(KernelClass::B));
+        assert_eq!(KernelClass::from_family("galactica"), Some(KernelClass::B));
+        assert_eq!(KernelClass::from_family("gpt-bigcode"), Some(KernelClass::B));
+        assert_eq!(KernelClass::from_family("gpt_bigcode"), Some(KernelClass::B));
         assert_eq!(KernelClass::from_family("falcon-7b"), Some(KernelClass::B));
     }
 
     #[test]
     fn test_from_family_class_c() {
+        assert_eq!(KernelClass::from_family("bloom"), Some(KernelClass::C));
+        assert_eq!(KernelClass::from_family("bloomz"), Some(KernelClass::C));
         assert_eq!(KernelClass::from_family("falcon-40b"), Some(KernelClass::C));
         assert_eq!(KernelClass::from_family("falcon"), Some(KernelClass::C));
     }
