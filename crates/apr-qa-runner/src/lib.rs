@@ -50,7 +50,6 @@ pub use provenance::{
 pub mod test_fixtures;
 
 pub use command::{CommandOutput, CommandRunner, MockCommandRunner, RealCommandRunner};
-pub use dimensional_check::{DimensionalCheck, DimensionalCheckResult, run_dimensional_check};
 pub use contract::{
     ContractTestConfig, DtypeByteEntry, DtypeByteSection, FormatContract, InvariantDef,
     InvariantId, NamingExample, TensorNamingContract, ToleranceEntry, load_format_contract,
@@ -77,6 +76,7 @@ pub use differential::{
     run_bench_throughput, run_diff_benchmark, run_inspect, run_profile_ci, run_six_column_profile,
     verify_comparison_provenance,
 };
+pub use dimensional_check::{DimensionalCheck, DimensionalCheckResult, run_dimensional_check};
 pub use error::{Error, Result};
 pub use evidence::{Evidence, EvidenceCollector, Outcome, PerformanceMetrics};
 pub use executor::{

@@ -395,13 +395,10 @@ impl Executor {
         // Resolve model path: prefer explicit --model-path, then try HF cache, then apr pull
         let model_path = if let Some(ref path) = self.config.model_path {
             PathBuf::from(path)
-        } else if let Ok(p) =
-            crate::conversion::resolve_hf_repo_to_cache(&playbook.model.hf_repo)
-        {
+        } else if let Ok(p) = crate::conversion::resolve_hf_repo_to_cache(&playbook.model.hf_repo) {
             p
         } else {
-            let (pp, pf, pulled_path) =
-                self.run_g0_pull_check(&playbook.model.hf_repo, &model_id);
+            let (pp, pf, pulled_path) = self.run_g0_pull_check(&playbook.model.hf_repo, &model_id);
             if pf > 0 {
                 return Ok(ExecutionResult {
                     playbook_name: playbook.name.clone(),
@@ -410,17 +407,14 @@ impl Executor {
                     failed: pf,
                     skipped: 0,
                     duration_ms: start.elapsed().as_millis() as u64,
-                    gateway_failed: Some(
-                        "G0-PULL-001: Model acquisition failed".to_string(),
-                    ),
+                    gateway_failed: Some("G0-PULL-001: Model acquisition failed".to_string()),
                     evidence: self.collector.clone(),
                 });
             }
             PathBuf::from(pulled_path.unwrap_or_default())
         };
 
-        let check_result =
-            crate::dimensional_check::run_dimensional_check(&model_path, playbook);
+        let check_result = crate::dimensional_check::run_dimensional_check(&model_path, playbook);
 
         let mut passed = 0usize;
         let mut failed = 0usize;
@@ -11041,8 +11035,7 @@ test_matrix:
   prompts:
     - "hello"
 "#;
-        let playbook =
-            crate::playbook::Playbook::from_yaml(playbook_yaml).expect("valid playbook");
+        let playbook = crate::playbook::Playbook::from_yaml(playbook_yaml).expect("valid playbook");
 
         let exec_config = ExecutionConfig {
             metadata_only: true,
@@ -11053,7 +11046,11 @@ test_matrix:
         let result = executor.execute(&playbook).expect("should succeed");
 
         // All dimensional checks should pass
-        assert_eq!(result.failed, 0, "no checks should fail: gateway={:?}", result.gateway_failed);
+        assert_eq!(
+            result.failed, 0,
+            "no checks should fail: gateway={:?}",
+            result.gateway_failed
+        );
         assert!(result.passed > 0, "should have passing checks");
         assert!(result.gateway_failed.is_none());
     }
@@ -11086,8 +11083,7 @@ test_matrix:
   prompts:
     - "hello"
 "#;
-        let playbook =
-            crate::playbook::Playbook::from_yaml(playbook_yaml).expect("valid playbook");
+        let playbook = crate::playbook::Playbook::from_yaml(playbook_yaml).expect("valid playbook");
 
         let exec_config = ExecutionConfig {
             metadata_only: true,

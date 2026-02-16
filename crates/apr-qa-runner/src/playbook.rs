@@ -62,7 +62,16 @@ static PLAYBOOK_NAME_REGEX: LazyLock<Regex> = LazyLock::new(|| {
 });
 
 /// Valid tier values for playbook naming
-pub const VALID_TIERS: &[&str] = &["dim-smoke", "mvp", "smoke", "quick", "ci", "full", "nightly", "release"];
+pub const VALID_TIERS: &[&str] = &[
+    "dim-smoke",
+    "mvp",
+    "smoke",
+    "quick",
+    "ci",
+    "full",
+    "nightly",
+    "release",
+];
 
 /// Parsed components from a playbook filename
 #[derive(Debug, Clone, PartialEq, Eq)]

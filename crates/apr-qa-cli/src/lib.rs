@@ -1914,10 +1914,8 @@ test_matrix:
 
     #[test]
     fn test_playbook_path_for_model_dim_smoke() {
-        let path = playbook_path_for_model(
-            "Qwen/Qwen2.5-Coder-7B-Instruct",
-            CertTier::DimensionalSmoke,
-        );
+        let path =
+            playbook_path_for_model("Qwen/Qwen2.5-Coder-7B-Instruct", CertTier::DimensionalSmoke);
         assert_eq!(
             path,
             "playbooks/models/qwen2.5-coder-7b-dim-smoke.playbook.yaml"

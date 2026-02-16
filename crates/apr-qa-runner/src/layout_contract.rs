@@ -601,19 +601,10 @@ pub fn find_and_load_config(model_path: &Path) -> LayoutModelConfig {
                 return LayoutModelConfig {
                     vocab_size: get_usize(&json, "vocab_size"),
                     hidden_size: get_usize_or(&json, &["hidden_size", "n_embd"]),
-                    intermediate_size: get_usize_or(
-                        &json,
-                        &["intermediate_size", "n_inner"],
-                    ),
-                    num_attention_heads: get_usize_or(
-                        &json,
-                        &["num_attention_heads", "n_head"],
-                    ),
+                    intermediate_size: get_usize_or(&json, &["intermediate_size", "n_inner"]),
+                    num_attention_heads: get_usize_or(&json, &["num_attention_heads", "n_head"]),
                     num_key_value_heads: get_usize(&json, "num_key_value_heads"),
-                    num_hidden_layers: get_usize_or(
-                        &json,
-                        &["num_hidden_layers", "n_layer"],
-                    ),
+                    num_hidden_layers: get_usize_or(&json, &["num_hidden_layers", "n_layer"]),
                 };
             }
         }

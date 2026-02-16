@@ -254,8 +254,7 @@ pub fn bootstrap_playbook(
 
     let kernel_proof_ref = if is_dim_smoke {
         use crate::kernel_class::KernelClass;
-        KernelClass::from_family(&config.family)
-            .map(|kc| kc.representative_model().to_string())
+        KernelClass::from_family(&config.family).map(|kc| kc.representative_model().to_string())
     } else {
         None
     };

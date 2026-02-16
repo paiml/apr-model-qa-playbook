@@ -34,33 +34,25 @@ impl KernelClass {
     pub fn from_family(family: &str) -> Option<Self> {
         match family.to_lowercase().as_str() {
             // Class A: GQA + RMSNorm + SiLU + SwiGLU + RoPE
-            "llama" | "llama3" | "llama-3" | "llama3.2" | "codellama" | "tinyllama"
-            | "qwen" | "qwen2" | "qwen2.5" | "qwen3" | "qwen-coder"
-            | "mistral" | "yi"
-            | "deepseek" | "deepseek-v2" | "deepseek-coder" | "deepseek-r1"
-            | "internlm2" | "internlm"
-            | "gemma" | "gemma2" | "gemma3" | "codegemma"
-            | "smollm" | "olmo"
-            | "granite" | "granite-code"
-            | "starcoder2"
-            | "nemotron" => Some(Self::A),
+            "llama" | "llama3" | "llama-3" | "llama3.2" | "codellama" | "tinyllama" | "qwen"
+            | "qwen2" | "qwen2.5" | "qwen3" | "qwen-coder" | "mistral" | "yi" | "deepseek"
+            | "deepseek-v2" | "deepseek-coder" | "deepseek-r1" | "internlm2" | "internlm"
+            | "gemma" | "gemma2" | "gemma3" | "codegemma" | "smollm" | "olmo" | "olmo2"
+            | "granite" | "granite-code" | "starcoder2" | "nemotron" => Some(Self::A),
 
             // Class B: MHA + LayerNorm + GELU
-            "gpt2" | "gpt-2"
-            | "gpt-neox" | "gptneox"
-            | "gpt-j" | "gptj"
-            | "falcon-7b" | "falcon7b" => Some(Self::B),
+            "gpt2" | "gpt-2" | "gpt-neox" | "gptneox" | "gpt-j" | "gptj" | "falcon-7b"
+            | "falcon7b" => Some(Self::B),
 
             // Class C: MQA + LayerNorm + GELU + ALiBi
             "falcon-40b" | "falcon40b" | "falcon" => Some(Self::C),
 
             // Class D: GQA + LayerNorm + GELU/SiLU
-            "phi" | "phi-3" | "phi3" | "phi4"
-            | "stablelm" | "stable-lm" => Some(Self::D),
+            "phi" | "phi-3" | "phi3" | "phi3small" | "phi-3-small" | "phi4" | "stablelm"
+            | "stable-lm" => Some(Self::D),
 
             // Class E: MoE + GQA + RMSNorm + SwiGLU
-            "mixtral"
-            | "qwen-moe" | "qwenmoe" => Some(Self::E),
+            "mixtral" | "qwen-moe" | "qwenmoe" => Some(Self::E),
 
             _ => None,
         }
@@ -156,15 +148,25 @@ mod tests {
         assert_eq!(KernelClass::from_family("internlm2"), Some(KernelClass::A));
         assert_eq!(KernelClass::from_family("codellama"), Some(KernelClass::A));
         assert_eq!(KernelClass::from_family("tinyllama"), Some(KernelClass::A));
-        assert_eq!(KernelClass::from_family("deepseek-coder"), Some(KernelClass::A));
-        assert_eq!(KernelClass::from_family("deepseek-r1"), Some(KernelClass::A));
+        assert_eq!(
+            KernelClass::from_family("deepseek-coder"),
+            Some(KernelClass::A)
+        );
+        assert_eq!(
+            KernelClass::from_family("deepseek-r1"),
+            Some(KernelClass::A)
+        );
         assert_eq!(KernelClass::from_family("gemma3"), Some(KernelClass::A));
         assert_eq!(KernelClass::from_family("codegemma"), Some(KernelClass::A));
         assert_eq!(KernelClass::from_family("smollm"), Some(KernelClass::A));
         assert_eq!(KernelClass::from_family("olmo"), Some(KernelClass::A));
+        assert_eq!(KernelClass::from_family("olmo2"), Some(KernelClass::A));
         assert_eq!(KernelClass::from_family("internlm"), Some(KernelClass::A));
         assert_eq!(KernelClass::from_family("granite"), Some(KernelClass::A));
-        assert_eq!(KernelClass::from_family("granite-code"), Some(KernelClass::A));
+        assert_eq!(
+            KernelClass::from_family("granite-code"),
+            Some(KernelClass::A)
+        );
         assert_eq!(KernelClass::from_family("starcoder2"), Some(KernelClass::A));
         assert_eq!(KernelClass::from_family("nemotron"), Some(KernelClass::A));
     }
@@ -175,18 +177,12 @@ mod tests {
         assert_eq!(KernelClass::from_family("gpt-2"), Some(KernelClass::B));
         assert_eq!(KernelClass::from_family("gpt-neox"), Some(KernelClass::B));
         assert_eq!(KernelClass::from_family("gpt-j"), Some(KernelClass::B));
-        assert_eq!(
-            KernelClass::from_family("falcon-7b"),
-            Some(KernelClass::B)
-        );
+        assert_eq!(KernelClass::from_family("falcon-7b"), Some(KernelClass::B));
     }
 
     #[test]
     fn test_from_family_class_c() {
-        assert_eq!(
-            KernelClass::from_family("falcon-40b"),
-            Some(KernelClass::C)
-        );
+        assert_eq!(KernelClass::from_family("falcon-40b"), Some(KernelClass::C));
         assert_eq!(KernelClass::from_family("falcon"), Some(KernelClass::C));
     }
 
@@ -195,6 +191,8 @@ mod tests {
         assert_eq!(KernelClass::from_family("phi"), Some(KernelClass::D));
         assert_eq!(KernelClass::from_family("phi-3"), Some(KernelClass::D));
         assert_eq!(KernelClass::from_family("phi4"), Some(KernelClass::D));
+        assert_eq!(KernelClass::from_family("phi3small"), Some(KernelClass::D));
+        assert_eq!(KernelClass::from_family("phi-3-small"), Some(KernelClass::D));
         assert_eq!(KernelClass::from_family("stablelm"), Some(KernelClass::D));
     }
 
@@ -255,7 +253,10 @@ mod tests {
     fn test_models_in_class() {
         let data = vec![
             ("qwen".to_string(), "Qwen/Qwen2.5-0.5B".to_string()),
-            ("qwen-coder".to_string(), "Qwen/Qwen2.5-Coder-1.5B".to_string()),
+            (
+                "qwen-coder".to_string(),
+                "Qwen/Qwen2.5-Coder-1.5B".to_string(),
+            ),
             ("llama".to_string(), "meta-llama/Llama-3-8B".to_string()),
             ("phi".to_string(), "microsoft/Phi-3-mini".to_string()),
             ("mixtral".to_string(), "mistralai/Mixtral-8x7B".to_string()),
