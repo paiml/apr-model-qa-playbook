@@ -1,0 +1,34 @@
+# Dim-Smoke Example: Mamba-130M (SSM Architecture)
+#
+# Demonstrates dimensional smoke qualification — metadata-only verification
+# that completes in ~2-5 seconds with no inference required.
+#
+# This playbook verifies:
+#   1. config.json is parseable and contains expected dimensions
+#   2. SafeTensors files exist and have valid headers
+#   3. All 7 G0-DIM gateway checks pass
+#
+# Mamba is a State Space Model (SSM) with no attention mechanism,
+# so expected_num_heads is omitted (the checker skips it gracefully).
+#
+# Run with:
+#   cargo run --bin apr-qa -- certify --tier dim-smoke state-spaces/mamba-130m-hf
+
+name: mamba-130m-dim-smoke
+version: "1.0.0"
+description: "Dimensional smoke check for Mamba-130M (metadata-only, SSM)"
+
+model:
+  hf_repo: "state-spaces/mamba-130m-hf"
+  formats:
+    - safetensors
+  quantizations:
+    - q4_k_m
+  size_category: tiny
+  expected_hidden_dim: 768
+  expected_num_layers: 24
+  expected_vocab_size: 50280
+  expected_intermediate_dim: 1536
+  family: mamba
+  size_variant: "130m"
+  # No expected_num_heads — Mamba uses selective state spaces, not attention

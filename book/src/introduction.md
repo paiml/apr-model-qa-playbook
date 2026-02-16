@@ -58,7 +58,7 @@ apr-model-qa-playbook/
 │   ├── apr-qa-runner/   # Playbook execution
 │   ├── apr-qa-report/   # MQS scoring + reports
 │   ├── apr-qa-certify/  # Tier-aware scoring + README sync
-│   └── apr-qa-cli/      # CLI binary (13 subcommands)
+│   └── apr-qa-cli/      # CLI binary (14 subcommands)
 ├── certifications/      # Model certification evidence
 ├── playbooks/
 │   ├── models/          # Per-model playbooks

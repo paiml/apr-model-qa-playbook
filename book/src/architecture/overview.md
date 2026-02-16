@@ -33,7 +33,7 @@
 1. **apr-qa-gen** generates `QaScenario` instances via proptest
 2. **apr-qa-runner** executes scenarios in parallel, produces `Evidence`
 3. **apr-qa-report** calculates `MqsScore`, generates JUnit/HTML/Markdown reports
-4. **apr-qa-cli** orchestrates the pipeline with 13 subcommands (certify, run, report, etc.)
+4. **apr-qa-cli** orchestrates the pipeline with 14 subcommands (certify, run, report, etc.)
 5. **apr-qa-certify** handles tier-aware scoring and README certification table sync
 
 ## Key Types

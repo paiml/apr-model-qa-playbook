@@ -935,6 +935,86 @@ apr-qa bootstrap llama 8b \
     --dry-run
 ```
 
+## Dimensional Smoke Certification (Metadata-Only)
+
+The dim-smoke tier provides the fastest possible model qualification by verifying only
+metadata: `config.json` fields and SafeTensors header integrity. No inference is required,
+making it complete in ~2-5 seconds per model.
+
+### Playbook Format
+
+Dim-smoke playbooks specify expected dimensions from the model's `config.json`:
+
+```yaml
+# Mamba-130M Dimensional Smoke Playbook
+# Metadata-only: verifies config.json + SafeTensors headers (~2-5s, no inference)
+# SSM (State Space Model, no attention)
+name: mamba-130m-dim-smoke
+version: "1.0.0"
+description: "Dimensional smoke check for Mamba-130M (metadata-only, SSM)"
+model:
+  hf_repo: "state-spaces/mamba-130m-hf"
+  formats:
+    - safetensors
+  quantizations:
+    - q4_k_m
+  size_category: tiny
+  expected_hidden_dim: 768
+  expected_num_layers: 24
+  expected_vocab_size: 50280
+  expected_intermediate_dim: 1536
+  family: mamba
+  size_variant: "130m"
+# Note: no expected_num_heads — Mamba has no attention mechanism
+```
+
+For models without attention heads (SSMs like Mamba/Mamba2), omit the
+`expected_num_heads` field entirely. The dimensional checker gracefully skips
+the heads verification when the expected value is `None`.
+
+### Running Dim-Smoke Certification
+
+```bash
+# Single model
+apr-qa certify --tier dim-smoke state-spaces/mamba-130m-hf
+
+# All models in a kernel equivalence class
+apr-qa certify --kernel-class A --tier dim-smoke
+
+# All kernel classes
+for class in A B C D; do
+  apr-qa certify --kernel-class "$class" --tier dim-smoke
+done
+```
+
+### Kernel Equivalence Classes
+
+Dim-smoke certification groups model families into kernel equivalence classes
+based on shared compute patterns:
+
+| Class | Architectures | Compute Pattern |
+|-------|--------------|-----------------|
+| A | Qwen2, Llama, Gemma, Phi, Falcon-H1, SmolLM | GQA + RMSNorm + SiLU + RoPE |
+| B | GPT-2, GPT-Neo, OPT, CodeGen, XGLM | MHA + LayerNorm + GELU |
+| C | BLOOM, Falcon-7B, StarCoder | MHA + LayerNorm + GELU (ALiBi) |
+| D | Mamba, Mamba2 | SSM (no attention) |
+
+### Gateway Checks (G0-DIM)
+
+Dim-smoke runs 7 dimensional checks under the G0 gateway:
+
+| Gate ID | Check | Description |
+|---------|-------|-------------|
+| `G0-DIM-CONFIG_PARSE` | Config parse | `config.json` is valid JSON |
+| `G0-DIM-HIDDEN_SIZE` | Hidden size | Matches `hidden_size` / `n_embd` / `d_model` |
+| `G0-DIM-NUM_LAYERS` | Layer count | Matches `num_hidden_layers` / `n_layer` |
+| `G0-DIM-NUM_HEADS` | Head count | Matches `num_attention_heads` (skipped for SSMs) |
+| `G0-DIM-VOCAB_SIZE` | Vocab size | Matches `vocab_size` |
+| `G0-DIM-SAFETENSORS_FOUND` | File present | At least 1 `.safetensors` file exists |
+| `G0-DIM-SAFETENSORS_HEADER` | Header valid | Header parses with >= 1 tensor |
+
+All 7 checks must pass (Corroborated) for A+ 1000/1000 certification.
+
 ## YAML Playbook Examples
 
 The `playbooks/` directory contains YAML playbooks:
@@ -942,6 +1022,8 @@ The `playbooks/` directory contains YAML playbooks:
 - `playbooks/models/qwen2.5-coder-*-mvp.playbook.yaml` - MVP tier playbooks
 - `playbooks/models/qwen2.5-coder-7b-full.playbook.yaml` - 7B full qualification (5-quant ladder)
 - `playbooks/models/qwen2.5-coder-1.5b-smoke.playbook.yaml` - CI smoke test
+- `playbooks/models/*-dim-smoke.playbook.yaml` - Dimensional smoke (metadata-only, ~2-5s)
+- `examples/dim-smoke-mamba.yaml` - SSM dim-smoke example (no attention heads)
 - `playbooks/templates/` - Reusable templates
 
 Run a specific playbook:
