@@ -481,7 +481,7 @@ impl MqsCalculator {
         gate_id
             .split('-')
             .nth(1)
-            .map(|s| s.to_uppercase())
+            .map(str::to_uppercase)
             .filter(|s| CATEGORIES.contains(&s.as_str()))
             .unwrap_or_else(|| "QUAL".to_string())
     }
