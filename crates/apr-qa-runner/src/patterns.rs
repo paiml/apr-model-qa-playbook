@@ -23,7 +23,7 @@
 //! - Missing companion metadata (config.json, tokenizer.json)
 //!
 //! ## Error Handling (aprender PMAT-189)
-//! - `.unwrap()` on fallible operations (mutex lock, file I/O)
+//! - Unchecked fallible operations (mutex lock, file I/O)
 //! - Missing error propagation on alternate paths
 
 #![allow(clippy::trivially_copy_pass_by_ref)]
@@ -69,7 +69,7 @@ pub enum BugPattern {
     MissingCompanionData,
 
     // === Error Handling ===
-    /// `.unwrap()` on fallible operation causes panic instead of error
+    /// Unchecked fallible operation causes panic instead of error
     /// Example: PMAT-189 - mutex lock poisoning crashes server
     UnwrapOnFallible,
 
@@ -145,7 +145,7 @@ impl BugPattern {
                 "Primary data saved but required companion/metadata files missing"
             }
             Self::UnwrapOnFallible => {
-                ".unwrap() on fallible operation causes panic instead of graceful error"
+                "Unchecked fallible operation causes panic instead of graceful error"
             }
             Self::ErrorPropagationGap => "Error not propagated correctly on alternate code path",
             Self::PathTraversal => "Untrusted path not validated, allows reading arbitrary files",
