@@ -1,7 +1,7 @@
 {
-  "tree_hash": "14c9f22c361b6a2f79bf59326b6a62b4d32770e3",
-  "pmat_version": "2.215.0",
-  "timestamp": "2026-02-04T11:11:36.833428231Z",
+  "tree_hash": "f67d6c5ee4210c46327f78bf77860d57c9fb3acf",
+  "pmat_version": "3.4.0",
+  "timestamp": "2026-02-19T21:56:21.069301203Z",
   "report": {
     "files_with_dead_code": [
       {
@@ -15,28 +15,15 @@
             "message": "struct `OracleWrapper` has #[allow(dead_code)] suppression (explicit dead code admission)"
           }
         ],
-        "file_dead_percentage": 0.3952569169960474
-      },
-      {
-        "file_path": "crates/apr-qa-runner/src/executor.rs",
-        "dead_items": [
-          {
-            "name": "ToolExecutor",
-            "kind": "Suppressed",
-            "line": 1128,
-            "column": 1,
-            "message": "struct `ToolExecutor` has #[allow(dead_code)] suppression (explicit dead code admission)"
-          }
-        ],
-        "file_dead_percentage": 0.06555227794165848
+        "file_dead_percentage": 0.9153318077803204
       }
     ],
-    "total_dead_items": 2,
-    "dead_code_percentage": 0.009394302355621316,
-    "total_lines": 42579,
-    "dead_lines": 4,
+    "total_dead_items": 1,
+    "dead_code_percentage": 0.0029274433173787674,
+    "total_lines": 68319,
+    "dead_lines": 2,
     "dead_by_type": {
-      "suppressed": 2
+      "suppressed": 1
     }
   }
 }

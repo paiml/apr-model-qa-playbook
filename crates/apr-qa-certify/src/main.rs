@@ -67,9 +67,7 @@ fn print_help() {
     eprintln!("Updates README.md certification table from models.csv");
     eprintln!();
     eprintln!("Options:");
-    eprintln!(
-        "  --csv PATH     Path to models.csv (default: docs/certifications/models.csv)"
-    );
+    eprintln!("  --csv PATH     Path to models.csv (default: docs/certifications/models.csv)");
     eprintln!("  --readme PATH  Path to README.md (default: README.md)");
     eprintln!("  --help, -h     Show this help");
 }
@@ -103,7 +101,9 @@ fn run() -> Result<(), CertifyError> {
         )
     })?;
 
-    let csv_path = args.csv_path.unwrap_or_else(|| root.join("docs/certifications/models.csv"));
+    let csv_path = args
+        .csv_path
+        .unwrap_or_else(|| root.join("docs/certifications/models.csv"));
     let readme_path = args.readme_path.unwrap_or_else(|| root.join("README.md"));
 
     // Read CSV
