@@ -1,0 +1,378 @@
+
+fn print_playbook_results(result: &apr_qa_runner::ExecutionResult) {
+    println!("\n{}", "=== Execution Results ===".bold().cyan());
+    println!(
+        "  {} {}",
+        "Total scenarios:".dimmed(),
+        result.total_scenarios
+    );
+    println!(
+        "  {} {}",
+        "Passed:".dimmed(),
+        result.passed.to_string().bold().green()
+    );
+    println!(
+        "  {} {}",
+        "Failed:".dimmed(),
+        if result.failed > 0 {
+            result.failed.to_string().bold().red()
+        } else {
+            result.failed.to_string().dimmed()
+        }
+    );
+    println!(
+        "  {} {}",
+        "Skipped:".dimmed(),
+        if result.skipped > 0 {
+            result.skipped.to_string().yellow()
+        } else {
+            result.skipped.to_string().dimmed()
+        }
+    );
+    println!("  {} {}ms", "Duration:".dimmed(), result.duration_ms);
+    let pass_rate = result.pass_rate();
+    let rate_str = format!("{pass_rate:.1}%");
+    let colored_rate = if pass_rate >= 90.0 {
+        rate_str.green()
+    } else if pass_rate >= 70.0 {
+        rate_str.yellow()
+    } else {
+        rate_str.red()
+    };
+    println!("  {} {colored_rate}", "Pass rate:".dimmed());
+
+    if let Some(ref gateway_fail) = result.gateway_failed {
+        println!("  {} {gateway_fail}", "Gateway FAILED:".bold().red());
+    }
+}
+
+fn save_playbook_evidence(result: &apr_qa_runner::ExecutionResult, output_dir: &PathBuf) {
+    // GH-212: If --output ends with .json, treat as file path, not directory
+    let evidence_path = if output_dir
+        .extension()
+        .is_some_and(|ext| ext.eq_ignore_ascii_case("json"))
+    {
+        let parent = output_dir.parent().unwrap_or_else(|| Path::new("."));
+        if let Err(e) = std::fs::create_dir_all(parent) {
+            eprintln!("Error creating output directory: {e}");
+            return;
+        }
+        output_dir.clone()
+    } else {
+        if let Err(e) = std::fs::create_dir_all(output_dir) {
+            eprintln!("Error creating output directory: {e}");
+            return;
+        }
+        output_dir.join("evidence.json")
+    };
+    match result.evidence.to_json() {
+        Ok(json) => {
+            if let Err(e) = std::fs::write(&evidence_path, json) {
+                eprintln!("Error writing evidence: {e}");
+            } else {
+                println!(
+                    "\n{} {}",
+                    "Evidence saved to:".green(),
+                    evidence_path.display().to_string().cyan()
+                );
+            }
+        }
+        Err(e) => eprintln!("Error serializing evidence: {e}"),
+    }
+}
+
+/// Log environment information for fail-fast diagnostics (§12.5.3)
+fn log_environment() {
+    let tag = "[ENVIRONMENT]".dimmed().cyan();
+    eprintln!("\n{tag} {}", "=== Diagnostic Context ===".dimmed());
+    eprintln!(
+        "{tag} {} {} {}",
+        "OS:".dimmed(),
+        std::env::consts::OS.dimmed(),
+        std::env::consts::ARCH.dimmed()
+    );
+    eprintln!(
+        "{tag} {} {}",
+        "apr-qa version:".dimmed(),
+        env!("CARGO_PKG_VERSION").dimmed()
+    );
+
+    // Git context
+    if let Ok(output) = std::process::Command::new("git")
+        .args(["rev-parse", "--short", "HEAD"])
+        .output()
+    {
+        if output.status.success() {
+            let commit = String::from_utf8_lossy(&output.stdout);
+            eprintln!(
+                "{tag} {} {}",
+                "Git commit:".dimmed(),
+                commit.trim().dimmed()
+            );
+        }
+    }
+
+    if let Ok(output) = std::process::Command::new("git")
+        .args(["branch", "--show-current"])
+        .output()
+    {
+        if output.status.success() {
+            let branch = String::from_utf8_lossy(&output.stdout);
+            eprintln!(
+                "{tag} {} {}",
+                "Git branch:".dimmed(),
+                branch.trim().dimmed()
+            );
+        }
+    }
+
+    // Check for dirty files
+    if let Ok(output) = std::process::Command::new("git")
+        .args(["status", "--porcelain"])
+        .output()
+    {
+        if output.status.success() {
+            let status = String::from_utf8_lossy(&output.stdout);
+            let dirty_count = status.lines().count();
+            if dirty_count > 0 {
+                eprintln!(
+                    "{tag} {} {}",
+                    "Git dirty:".dimmed(),
+                    format!("{dirty_count} file(s) modified").dimmed()
+                );
+            }
+        }
+    }
+
+    // apr CLI version
+    if let Ok(output) = std::process::Command::new("apr").arg("--version").output() {
+        if output.status.success() {
+            let version = String::from_utf8_lossy(&output.stdout);
+            eprintln!("{tag} {} {}", "apr-cli:".dimmed(), version.trim().dimmed());
+        }
+    }
+
+    // Rust version
+    if let Ok(output) = std::process::Command::new("rustc")
+        .arg("--version")
+        .output()
+    {
+        if output.status.success() {
+            let version = String::from_utf8_lossy(&output.stdout);
+            eprintln!("{tag} {}", version.trim().dimmed());
+        }
+    }
+
+    eprintln!("{tag} {}\n", "===========================".dimmed());
+}
+
+fn generate_scenarios(model_id: &str, count: usize, format: &str) {
+    let scenarios = generate_model_scenarios(model_id, count);
+
+    println!("Generated {} scenarios for {model_id}", scenarios.len());
+
+    match format {
+        "yaml" => match scenarios_to_yaml(&scenarios) {
+            Ok(yaml) => println!("{yaml}"),
+            Err(e) => eprintln!("{e}"),
+        },
+        "json" => match scenarios_to_json(&scenarios) {
+            Ok(json) => println!("{json}"),
+            Err(e) => eprintln!("{e}"),
+        },
+        _ => {
+            eprintln!("Unknown format: {format}");
+            std::process::exit(1);
+        }
+    }
+}
+
+fn calculate_score(evidence_path: &PathBuf, model_id: &str) {
+    let evidence_json = match std::fs::read_to_string(evidence_path) {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("Error reading evidence file: {e}");
+            std::process::exit(1);
+        }
+    };
+
+    let evidence = match parse_evidence(&evidence_json) {
+        Ok(e) => e,
+        Err(e) => {
+            eprintln!("{e}");
+            std::process::exit(1);
+        }
+    };
+
+    let collector = collect_evidence(evidence);
+
+    match calculate_mqs_score(model_id, &collector) {
+        Ok(score) => {
+            println!("=== Model Qualification Score (MQS) ===");
+            println!("Model: {}", score.model_id);
+            println!("Raw Score: {}/1000", score.raw_score);
+            println!("Normalized Score: {:.1}/100", score.normalized_score);
+            println!("Grade: {}", score.grade);
+            println!("Gateways Passed: {}", score.gateways_passed);
+            println!("Qualifies: {}", score.qualifies());
+            println!("Production Ready: {}", score.is_production_ready());
+
+            println!("\n--- Category Breakdown ---");
+            let breakdown = score.categories.breakdown();
+            for (cat, (pts, max)) in &breakdown {
+                println!("  {cat}: {pts}/{max}");
+            }
+
+            if !score.penalties.is_empty() {
+                println!("\n--- Penalties ---");
+                for penalty in &score.penalties {
+                    println!(
+                        "  {}: {} (-{} pts)",
+                        penalty.code, penalty.description, penalty.points
+                    );
+                }
+            }
+        }
+        Err(e) => {
+            eprintln!("{e}");
+            std::process::exit(1);
+        }
+    }
+}
+
+fn generate_report(evidence_path: &PathBuf, output_dir: &PathBuf, formats: &str, model_id: &str) {
+    let evidence_json = read_file_or_exit(evidence_path, "evidence file");
+    let evidence = parse_evidence_or_exit(&evidence_json);
+    let collector = collect_evidence(evidence);
+    let mqs_score = calculate_mqs_or_exit(model_id, &collector);
+    let popperian_score = calculate_popperian_score(model_id, &collector);
+
+    create_dir_or_exit(output_dir);
+    write_report_formats(
+        output_dir,
+        formats,
+        model_id,
+        &mqs_score,
+        &popperian_score,
+        &collector,
+    );
+}
+
+fn read_file_or_exit(path: &PathBuf, desc: &str) -> String {
+    std::fs::read_to_string(path).unwrap_or_else(|e| {
+        eprintln!("Error reading {desc}: {e}");
+        std::process::exit(1);
+    })
+}
+
+fn parse_evidence_or_exit(json: &str) -> Vec<Evidence> {
+    parse_evidence(json).unwrap_or_else(|e| {
+        eprintln!("{e}");
+        std::process::exit(1);
+    })
+}
+
+fn calculate_mqs_or_exit(model_id: &str, collector: &EvidenceCollector) -> MqsScore {
+    calculate_mqs_score(model_id, collector).unwrap_or_else(|e| {
+        eprintln!("{e}");
+        std::process::exit(1);
+    })
+}
+
+fn create_dir_or_exit(dir: &PathBuf) {
+    if let Err(e) = std::fs::create_dir_all(dir) {
+        eprintln!("Error creating output directory: {e}");
+        std::process::exit(1);
+    }
+}
+
+fn write_report_formats(
+    output_dir: &PathBuf,
+    formats: &str,
+    model_id: &str,
+    mqs_score: &MqsScore,
+    popperian_score: &PopperianScore,
+    collector: &EvidenceCollector,
+) {
+    let gen_html = formats == "all" || formats == "html";
+    let gen_junit = formats == "all" || formats == "junit";
+
+    if gen_html {
+        write_html_report(output_dir, model_id, mqs_score, popperian_score, collector);
+    }
+    if gen_junit {
+        write_junit_report(output_dir, model_id, collector, mqs_score);
+    }
+    write_mqs_json(output_dir, mqs_score);
+}
+
+fn write_html_report(
+    output_dir: &PathBuf,
+    model_id: &str,
+    mqs_score: &MqsScore,
+    popperian_score: &PopperianScore,
+    collector: &EvidenceCollector,
+) {
+    let result = generate_html_report(
+        &format!("MQS Report: {model_id}"),
+        mqs_score,
+        popperian_score,
+        collector,
+    );
+    write_report_file(output_dir, "report.html", "HTML report", result);
+}
+
+fn write_junit_report(
+    output_dir: &PathBuf,
+    model_id: &str,
+    collector: &EvidenceCollector,
+    mqs_score: &MqsScore,
+) {
+    let result = generate_junit_report(model_id, collector, mqs_score);
+    write_report_file(output_dir, "junit.xml", "JUnit report", result);
+}
+
+fn write_report_file<E: std::fmt::Display>(
+    output_dir: &PathBuf,
+    filename: &str,
+    desc: &str,
+    result: Result<String, E>,
+) {
+    match result {
+        Ok(content) => {
+            let path = output_dir.join(filename);
+            match std::fs::write(&path, content) {
+                Ok(()) => println!("{desc}: {}", path.display()),
+                Err(e) => eprintln!("Error writing {desc}: {e}"),
+            }
+        }
+        Err(e) => eprintln!("{e}"),
+    }
+}
+
+fn write_mqs_json(output_dir: &PathBuf, mqs_score: &MqsScore) {
+    let score_path = output_dir.join("mqs.json");
+    match serde_json::to_string_pretty(mqs_score) {
+        Ok(json) => match std::fs::write(&score_path, json) {
+            Ok(()) => println!("MQS score: {}", score_path.display()),
+            Err(e) => eprintln!("Error writing MQS JSON: {e}"),
+        },
+        Err(e) => eprintln!("Error serializing MQS: {e}"),
+    }
+}
+
+fn list_models(size_filter: Option<&str>) {
+    let models = list_all_models();
+
+    println!("=== Available Models ===\n");
+
+    let filtered_models = if let Some(filter) = size_filter {
+        filter_models_by_size(&models, filter)
+    } else {
+        models
+    };
+
+    for model in filtered_models {
+        println!("  {} ({:?})", model.id.hf_repo(), model.size);
+    }
+}
