@@ -1,6 +1,5 @@
 use super::*;
 
-use super::*;
 use apr_qa_gen::{Backend, Format, Modality, ModelId, QaScenario};
 use apr_qa_runner::Evidence;
 
@@ -104,34 +103,27 @@ fn test_popperian_black_swan_detection() {
 
 #[test]
 fn test_severity_determination() {
-    let calculator = PopperianCalculator::new();
-
-    assert_eq!(calculator.determine_severity("G1-LOAD"), 5);
-    assert_eq!(calculator.determine_severity("F-QUAL-P0-001"), 5);
-    assert_eq!(calculator.determine_severity("F-QUAL-P1-001"), 4);
-    assert_eq!(calculator.determine_severity("F-QUAL-P2-001"), 3);
-    assert_eq!(calculator.determine_severity("F-EDGE-001"), 3);
-    assert_eq!(calculator.determine_severity("F-PERF-001"), 2);
-    assert_eq!(calculator.determine_severity("F-OTHER-001"), 1);
+    assert_eq!(PopperianCalculator::determine_severity("G1-LOAD"), 5);
+    assert_eq!(PopperianCalculator::determine_severity("F-QUAL-P0-001"), 5);
+    assert_eq!(PopperianCalculator::determine_severity("F-QUAL-P1-001"), 4);
+    assert_eq!(PopperianCalculator::determine_severity("F-QUAL-P2-001"), 3);
+    assert_eq!(PopperianCalculator::determine_severity("F-EDGE-001"), 3);
+    assert_eq!(PopperianCalculator::determine_severity("F-PERF-001"), 2);
+    assert_eq!(PopperianCalculator::determine_severity("F-OTHER-001"), 1);
 }
 
 #[test]
 fn test_gate_to_hypothesis() {
-    let calculator = PopperianCalculator::new();
-
     assert!(
-        calculator
-            .gate_to_hypothesis("F-QUAL-001")
+        PopperianCalculator::gate_to_hypothesis("F-QUAL-001")
             .contains("valid output")
     );
     assert!(
-        calculator
-            .gate_to_hypothesis("F-PERF-001")
+        PopperianCalculator::gate_to_hypothesis("F-PERF-001")
             .contains("performance")
     );
     assert!(
-        calculator
-            .gate_to_hypothesis("F-STAB-001")
+        PopperianCalculator::gate_to_hypothesis("F-STAB-001")
             .contains("stable")
     );
 }
@@ -234,38 +226,31 @@ fn test_confidence_zero_samples() {
 
 #[test]
 fn test_gate_to_hypothesis_comp() {
-    let calculator = PopperianCalculator::new();
     assert!(
-        calculator
-            .gate_to_hypothesis("F-COMP-001")
+        PopperianCalculator::gate_to_hypothesis("F-COMP-001")
             .contains("compatible")
     );
 }
 
 #[test]
 fn test_gate_to_hypothesis_edge() {
-    let calculator = PopperianCalculator::new();
     assert!(
-        calculator
-            .gate_to_hypothesis("F-EDGE-001")
+        PopperianCalculator::gate_to_hypothesis("F-EDGE-001")
             .contains("edge cases")
     );
 }
 
 #[test]
 fn test_gate_to_hypothesis_regr() {
-    let calculator = PopperianCalculator::new();
     assert!(
-        calculator
-            .gate_to_hypothesis("F-REGR-001")
+        PopperianCalculator::gate_to_hypothesis("F-REGR-001")
             .contains("consistent")
     );
 }
 
 #[test]
 fn test_gate_to_hypothesis_unknown() {
-    let calculator = PopperianCalculator::new();
-    let result = calculator.gate_to_hypothesis("F-UNKNOWN-001");
+    let result = PopperianCalculator::gate_to_hypothesis("F-UNKNOWN-001");
     assert!(result.contains("F-UNKNOWN-001"));
 }
 
@@ -307,8 +292,7 @@ fn test_popperian_score_no_black_swans() {
 
 #[test]
 fn test_severity_stab() {
-    let calculator = PopperianCalculator::new();
-    assert_eq!(calculator.determine_severity("F-STAB-001"), 3);
+    assert_eq!(PopperianCalculator::determine_severity("F-STAB-001"), 3);
 }
 
 #[test]

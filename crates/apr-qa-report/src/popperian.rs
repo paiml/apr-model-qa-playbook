@@ -12,6 +12,57 @@
 use apr_qa_runner::{EvidenceCollector, Outcome};
 use serde::{Deserialize, Serialize};
 
+/// A gate classification rule: a predicate on the gate ID mapped to a value.
+struct GateRule<T: Clone> {
+    /// How to match the gate ID
+    matcher: GateMatcher,
+    /// Value to return when matched
+    value: T,
+}
+
+/// How a gate rule matches against a gate ID string.
+enum GateMatcher {
+    /// Match if gate_id.contains(pattern)
+    Contains(&'static str),
+    /// Match if gate_id.starts_with(prefix)
+    StartsWith(&'static str),
+}
+
+/// Classify a gate ID by scanning rules in order, returning the first match or a default.
+fn classify_gate<T: Clone>(gate_id: &str, rules: &[GateRule<T>], default: T) -> T {
+    for rule in rules {
+        let matched = match &rule.matcher {
+            GateMatcher::Contains(pat) => gate_id.contains(pat),
+            GateMatcher::StartsWith(prefix) => gate_id.starts_with(prefix),
+        };
+        if matched {
+            return rule.value.clone();
+        }
+    }
+    default
+}
+
+/// Severity classification rules (checked in priority order).
+const SEVERITY_RULES: &[GateRule<u8>] = &[
+    GateRule { matcher: GateMatcher::Contains("-P0-"), value: 5 },
+    GateRule { matcher: GateMatcher::StartsWith("G"), value: 5 },
+    GateRule { matcher: GateMatcher::Contains("-P1-"), value: 4 },
+    GateRule { matcher: GateMatcher::Contains("-P2-"), value: 3 },
+    GateRule { matcher: GateMatcher::Contains("EDGE"), value: 3 },
+    GateRule { matcher: GateMatcher::Contains("STAB"), value: 3 },
+    GateRule { matcher: GateMatcher::Contains("PERF"), value: 2 },
+];
+
+/// Hypothesis classification rules (checked in priority order).
+const HYPOTHESIS_RULES: &[GateRule<&str>] = &[
+    GateRule { matcher: GateMatcher::Contains("QUAL"), value: "Model produces valid output" },
+    GateRule { matcher: GateMatcher::Contains("PERF"), value: "Model meets performance requirements" },
+    GateRule { matcher: GateMatcher::Contains("STAB"), value: "Model is stable under stress" },
+    GateRule { matcher: GateMatcher::Contains("COMP"), value: "Model is compatible with configuration" },
+    GateRule { matcher: GateMatcher::Contains("EDGE"), value: "Model handles edge cases correctly" },
+    GateRule { matcher: GateMatcher::Contains("REGR"), value: "Model behavior is consistent" },
+];
+
 /// Popperian score with falsification details
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PopperianScore {
@@ -120,7 +171,7 @@ impl PopperianCalculator {
             std::collections::HashMap::new();
 
         for e in all_evidence {
-            let severity = self.determine_severity(&e.gate_id);
+            let severity = Self::determine_severity(&e.gate_id);
             let weight = self.severity_weights[severity.saturating_sub(1) as usize];
             severity_total += weight;
 
@@ -141,7 +192,7 @@ impl PopperianCalculator {
 
                     falsifications.push(FalsificationDetail {
                         gate_id: e.gate_id.clone(),
-                        hypothesis: self.gate_to_hypothesis(&e.gate_id),
+                        hypothesis: Self::gate_to_hypothesis(&e.gate_id),
                         evidence: e.reason.clone(),
                         severity,
                         is_black_swan,
@@ -200,40 +251,18 @@ impl PopperianCalculator {
         }
     }
 
-    /// Determine severity from gate ID
-    fn determine_severity(&self, gate_id: &str) -> u8 {
-        // P0 gates are highest severity
-        if gate_id.contains("-P0-") || gate_id.starts_with("G") {
-            5
-        } else if gate_id.contains("-P1-") {
-            4
-        } else if gate_id.contains("-P2-") {
-            3
-        } else if gate_id.contains("EDGE") || gate_id.contains("STAB") {
-            3
-        } else if gate_id.contains("PERF") {
-            2
-        } else {
-            1
-        }
+    /// Determine severity from gate ID using data-driven rules.
+    fn determine_severity(gate_id: &str) -> u8 {
+        classify_gate(gate_id, SEVERITY_RULES, 1)
     }
 
-    /// Convert gate ID to human-readable hypothesis
-    fn gate_to_hypothesis(&self, gate_id: &str) -> String {
-        if gate_id.contains("QUAL") {
-            "Model produces valid output".to_string()
-        } else if gate_id.contains("PERF") {
-            "Model meets performance requirements".to_string()
-        } else if gate_id.contains("STAB") {
-            "Model is stable under stress".to_string()
-        } else if gate_id.contains("COMP") {
-            "Model is compatible with configuration".to_string()
-        } else if gate_id.contains("EDGE") {
-            "Model handles edge cases correctly".to_string()
-        } else if gate_id.contains("REGR") {
-            "Model behavior is consistent".to_string()
-        } else {
+    /// Convert gate ID to human-readable hypothesis using data-driven rules.
+    fn gate_to_hypothesis(gate_id: &str) -> String {
+        let hypothesis = classify_gate(gate_id, HYPOTHESIS_RULES, "");
+        if hypothesis.is_empty() {
             format!("Hypothesis for {gate_id}")
+        } else {
+            hypothesis.to_string()
         }
     }
 
