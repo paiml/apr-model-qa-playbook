@@ -1240,3 +1240,7 @@ fn find_model_file(dir: &Path) -> Result<std::path::PathBuf> {
 #[cfg(test)]
 #[path = "differential_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "differential_tests_b.rs"]
+mod tests_b;
