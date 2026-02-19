@@ -294,10 +294,7 @@ impl MqsCalculator {
         }
 
         // Calculate raw score with penalties + proof bonus
-        let bonus_points = self
-            .proof_bonus
-            .as_ref()
-            .map_or(0, |b| b.bonus_points);
+        let bonus_points = self.proof_bonus.as_ref().map_or(0, |b| b.bonus_points);
         let raw_score = categories
             .total()
             .saturating_sub(total_penalty)

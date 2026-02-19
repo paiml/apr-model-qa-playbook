@@ -37,8 +37,8 @@ impl KernelClass {
             "llama" | "llama3" | "llama-3" | "llama3.2" | "codellama" | "tinyllama" | "qwen"
             | "qwen2" | "qwen2.5" | "qwen3" | "qwen-coder" | "mistral" | "yi" | "deepseek"
             | "deepseek-v2" | "deepseek-coder" | "deepseek-r1" | "internlm2" | "internlm"
-            | "gemma" | "gemma2" | "gemma3" | "codegemma" | "smollm" | "smollm2" | "olmo" | "olmo2"
-            | "granite" | "granite-code" | "starcoder2" | "nemotron" | "falcon-h1"
+            | "gemma" | "gemma2" | "gemma3" | "codegemma" | "smollm" | "smollm2" | "olmo"
+            | "olmo2" | "granite" | "granite-code" | "starcoder2" | "nemotron" | "falcon-h1"
             | "falcon_h1" => Some(Self::A),
 
             // Class B: MHA + LayerNorm + GELU
@@ -186,8 +186,14 @@ mod tests {
         assert_eq!(KernelClass::from_family("gpt-j"), Some(KernelClass::B));
         assert_eq!(KernelClass::from_family("opt"), Some(KernelClass::B));
         assert_eq!(KernelClass::from_family("galactica"), Some(KernelClass::B));
-        assert_eq!(KernelClass::from_family("gpt-bigcode"), Some(KernelClass::B));
-        assert_eq!(KernelClass::from_family("gpt_bigcode"), Some(KernelClass::B));
+        assert_eq!(
+            KernelClass::from_family("gpt-bigcode"),
+            Some(KernelClass::B)
+        );
+        assert_eq!(
+            KernelClass::from_family("gpt_bigcode"),
+            Some(KernelClass::B)
+        );
         assert_eq!(KernelClass::from_family("falcon-7b"), Some(KernelClass::B));
         assert_eq!(KernelClass::from_family("codegen"), Some(KernelClass::B));
         assert_eq!(KernelClass::from_family("xglm"), Some(KernelClass::B));
@@ -207,7 +213,10 @@ mod tests {
         assert_eq!(KernelClass::from_family("phi-3"), Some(KernelClass::D));
         assert_eq!(KernelClass::from_family("phi4"), Some(KernelClass::D));
         assert_eq!(KernelClass::from_family("phi3small"), Some(KernelClass::D));
-        assert_eq!(KernelClass::from_family("phi-3-small"), Some(KernelClass::D));
+        assert_eq!(
+            KernelClass::from_family("phi-3-small"),
+            Some(KernelClass::D)
+        );
         assert_eq!(KernelClass::from_family("stablelm"), Some(KernelClass::D));
     }
 

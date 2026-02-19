@@ -156,10 +156,7 @@ fn write_test_results_section(md: &mut String, collector: &EvidenceCollector) {
 }
 
 fn write_category_failures(md: &mut String, evidence: &[&Evidence]) {
-    let failures: Vec<_> = evidence
-        .iter()
-        .filter(|e| e.outcome.is_fail())
-        .collect();
+    let failures: Vec<_> = evidence.iter().filter(|e| e.outcome.is_fail()).collect();
 
     if failures.is_empty() {
         return;

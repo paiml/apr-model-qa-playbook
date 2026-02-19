@@ -369,7 +369,11 @@ fn parse_csv_record(record: &csv::StringRecord, idx: usize) -> Result<Certificat
         provenance_verified: parse_bool(19, "provenance_verified")?,
         kernel_proof_level: record.get(20).and_then(|s| {
             let s = s.trim();
-            if s.is_empty() { None } else { Some(s.to_string()) }
+            if s.is_empty() {
+                None
+            } else {
+                Some(s.to_string())
+            }
         }),
     })
 }
