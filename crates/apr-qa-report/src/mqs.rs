@@ -457,39 +457,33 @@ impl MqsCalculator {
 
     /// Extract MQS category from gate ID.
     ///
-    /// Maps gate IDs to the 6 MQS categories using two strategies:
-    /// 1. Prefix matching for real playbook gate IDs (F-A1, G0-*, F-CONV-*, etc.)
-    /// 2. Direct category name extraction for canonical F-{CATEGORY}-xxx pattern
+    /// Maps gate IDs to the 6 MQS categories via prefix lookup table,
+    /// then falls back to parsing `F-{CATEGORY}-xxx` patterns.
     fn extract_category(gate_id: &str) -> String {
-        // Strategy 1: Prefix matching for real playbook gate IDs
+        // Prefix → category mapping (order matters: longer prefixes first)
+        const PREFIX_MAP: &[(&str, &str)] = &[
+            ("F-CONV-RT", "REGR"),
+            ("F-CONV-IDEM", "REGR"),
+            ("F-CONV-COM", "REGR"),
+            ("F-CONV", "COMP"),
+            ("F-CONTRACT", "COMP"),
+            ("G0-", "STAB"),
+        ];
 
-        // Regression invariants (round-trip, idempotency, commutativity)
-        if gate_id.starts_with("F-CONV-RT")
-            || gate_id.starts_with("F-CONV-IDEM")
-            || gate_id.starts_with("F-CONV-COM")
-        {
-            return "REGR".to_string();
-        }
-        // Format conversion and contract compatibility
-        if gate_id.starts_with("F-CONV") || gate_id.starts_with("F-CONTRACT") {
-            return "COMP".to_string();
-        }
-        // Gateway/infrastructure stability
-        if gate_id.starts_with("G0-") {
-            return "STAB".to_string();
-        }
-
-        // Strategy 2: Direct category name from F-{CATEGORY}-xxx pattern
-        let categories = ["QUAL", "PERF", "STAB", "COMP", "EDGE", "REGR"];
-        if let Some(second) = gate_id.split('-').nth(1) {
-            let upper = second.to_uppercase();
-            if categories.contains(&upper.as_str()) {
-                return upper;
+        for &(prefix, cat) in PREFIX_MAP {
+            if gate_id.starts_with(prefix) {
+                return cat.to_string();
             }
         }
 
-        // Default: quality (F-A1..F-A6, F-GOLDEN-*, etc.)
-        "QUAL".to_string()
+        // Parse F-{CATEGORY}-xxx pattern
+        const CATEGORIES: [&str; 6] = ["QUAL", "PERF", "STAB", "COMP", "EDGE", "REGR"];
+        gate_id
+            .split('-')
+            .nth(1)
+            .map(|s| s.to_uppercase())
+            .filter(|s| CATEGORIES.contains(&s.as_str()))
+            .unwrap_or_else(|| "QUAL".to_string())
     }
 
     /// Calculate proportional score, awarding full credit when no tests exist.
