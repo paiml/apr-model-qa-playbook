@@ -35,10 +35,21 @@ pub fn generate_rag_markdown(
 ) -> String {
     let mut md = String::with_capacity(8192);
 
-    // Title with model ID (RAG: searchable by model name)
     md.push_str(&format!("# Model Qualification: {}\n\n", mqs.model_id));
 
-    // Summary section (RAG: high-level overview chunk)
+    write_summary_section(&mut md, mqs, popperian);
+    write_gateway_section(&mut md, mqs);
+    write_category_section(&mut md, mqs);
+    write_falsifications_section(&mut md, popperian);
+    write_test_results_section(&mut md, collector);
+    write_penalties_section(&mut md, mqs);
+    write_popperian_section(&mut md, popperian);
+    write_metadata_section(&mut md, mqs);
+
+    md
+}
+
+fn write_summary_section(md: &mut String, mqs: &MqsScore, popperian: &PopperianScore) {
     md.push_str("## Summary\n\n");
     md.push_str(&format!(
         "- **MQS Score**: {}/1000 ({:.1} normalized, {})\n",
@@ -57,8 +68,9 @@ pub fn generate_rag_markdown(
         "- **Corroboration Rate**: {:.1}%\n\n",
         popperian.corroboration_ratio * 100.0
     ));
+}
 
-    // Gateway section (RAG: critical pass/fail info)
+fn write_gateway_section(md: &mut String, mqs: &MqsScore) {
     md.push_str("## Gateway Checks\n\n");
     md.push_str("| Gateway | Status | Description |\n");
     md.push_str("|---------|--------|-------------|\n");
@@ -72,8 +84,9 @@ pub fn generate_rag_markdown(
         md.push_str(&format!("| {} | {} | {} |\n", gw.id, status, desc));
     }
     md.push('\n');
+}
 
-    // Category breakdown (RAG: detailed scoring)
+fn write_category_section(md: &mut String, mqs: &MqsScore) {
     md.push_str("## Category Scores\n\n");
     md.push_str("| Category | Score | Max | Percentage |\n");
     md.push_str("|----------|-------|-----|------------|\n");
@@ -89,26 +102,29 @@ pub fn generate_rag_markdown(
         ));
     }
     md.push('\n');
+}
 
-    // Falsifications section (RAG: failure analysis)
-    if !popperian.falsifications.is_empty() {
-        md.push_str("## Falsifications\n\n");
-        for (i, falsification) in popperian.falsifications.iter().enumerate() {
-            md.push_str(&format!("### {}: {}\n\n", i + 1, falsification.gate_id));
-            md.push_str(&format!("- **Hypothesis**: {}\n", falsification.hypothesis));
-            md.push_str(&format!("- **Evidence**: {}\n", falsification.evidence));
-            md.push_str(&format!("- **Severity**: {}/5\n", falsification.severity));
-            if falsification.is_black_swan {
-                md.push_str("- **Black Swan**: Yes (rare, high-impact failure)\n");
-            }
-            md.push_str(&format!(
-                "- **Occurrences**: {}\n\n",
-                falsification.occurrence_count
-            ));
-        }
+fn write_falsifications_section(md: &mut String, popperian: &PopperianScore) {
+    if popperian.falsifications.is_empty() {
+        return;
     }
+    md.push_str("## Falsifications\n\n");
+    for (i, falsification) in popperian.falsifications.iter().enumerate() {
+        md.push_str(&format!("### {}: {}\n\n", i + 1, falsification.gate_id));
+        md.push_str(&format!("- **Hypothesis**: {}\n", falsification.hypothesis));
+        md.push_str(&format!("- **Evidence**: {}\n", falsification.evidence));
+        md.push_str(&format!("- **Severity**: {}/5\n", falsification.severity));
+        if falsification.is_black_swan {
+            md.push_str("- **Black Swan**: Yes (rare, high-impact failure)\n");
+        }
+        md.push_str(&format!(
+            "- **Occurrences**: {}\n\n",
+            falsification.occurrence_count
+        ));
+    }
+}
 
-    // Test Results by Category (RAG: detailed gate results)
+fn write_test_results_section(md: &mut String, collector: &EvidenceCollector) {
     md.push_str("## Test Results by Category\n\n");
     for category in &["QUAL", "PERF", "STAB", "COMP", "EDGE", "REGR"] {
         let category_evidence: Vec<&Evidence> = collector
@@ -135,49 +151,56 @@ pub fn generate_rag_markdown(
             (passed as f64 / total as f64) * 100.0
         ));
 
-        // Show failures first (more relevant for RAG queries about problems)
-        let failures: Vec<_> = category_evidence
-            .iter()
-            .filter(|e| e.outcome.is_fail())
-            .collect();
+        write_category_failures(md, &category_evidence);
+    }
+}
 
-        if !failures.is_empty() {
-            md.push_str("**Failures:**\n\n");
-            for e in failures.iter().take(10) {
-                // Limit to avoid huge files
-                md.push_str(&format!(
-                    "- `{}`: {} ({:?}, {}ms)\n",
-                    e.gate_id, e.reason, e.outcome, e.metrics.duration_ms
-                ));
-            }
-            if failures.len() > 10 {
-                md.push_str(&format!(
-                    "- ... and {} more failures\n",
-                    failures.len() - 10
-                ));
-            }
-            md.push('\n');
-        }
+fn write_category_failures(md: &mut String, evidence: &[&Evidence]) {
+    let failures: Vec<_> = evidence
+        .iter()
+        .filter(|e| e.outcome.is_fail())
+        .collect();
+
+    if failures.is_empty() {
+        return;
     }
 
-    // Penalties section
-    if !mqs.penalties.is_empty() {
-        md.push_str("## Penalties Applied\n\n");
-        md.push_str("| Code | Description | Points |\n");
-        md.push_str("|------|-------------|--------|\n");
-        for penalty in &mqs.penalties {
-            md.push_str(&format!(
-                "| {} | {} | -{} |\n",
-                penalty.code, penalty.description, penalty.points
-            ));
-        }
+    md.push_str("**Failures:**\n\n");
+    for e in failures.iter().take(10) {
         md.push_str(&format!(
-            "\n**Total Penalty**: -{} points\n\n",
-            mqs.total_penalty
+            "- `{}`: {} ({:?}, {}ms)\n",
+            e.gate_id, e.reason, e.outcome, e.metrics.duration_ms
         ));
     }
+    if failures.len() > 10 {
+        md.push_str(&format!(
+            "- ... and {} more failures\n",
+            failures.len() - 10
+        ));
+    }
+    md.push('\n');
+}
 
-    // Popperian Analysis (RAG: scientific methodology)
+fn write_penalties_section(md: &mut String, mqs: &MqsScore) {
+    if mqs.penalties.is_empty() {
+        return;
+    }
+    md.push_str("## Penalties Applied\n\n");
+    md.push_str("| Code | Description | Points |\n");
+    md.push_str("|------|-------------|--------|\n");
+    for penalty in &mqs.penalties {
+        md.push_str(&format!(
+            "| {} | {} | -{} |\n",
+            penalty.code, penalty.description, penalty.points
+        ));
+    }
+    md.push_str(&format!(
+        "\n**Total Penalty**: -{} points\n\n",
+        mqs.total_penalty
+    ));
+}
+
+fn write_popperian_section(md: &mut String, popperian: &PopperianScore) {
     md.push_str("## Popperian Analysis\n\n");
     md.push_str(&format!(
         "- **Hypotheses Tested**: {}\n",
@@ -197,8 +220,9 @@ pub fn generate_rag_markdown(
         "- **Reproducibility Index**: {:.2}\n\n",
         popperian.reproducibility_index
     ));
+}
 
-    // Metadata footer (RAG: versioning and timestamps)
+fn write_metadata_section(md: &mut String, mqs: &MqsScore) {
     md.push_str("## Metadata\n\n");
     md.push_str(&format!("- **Model ID**: {}\n", mqs.model_id));
     md.push_str(&format!("- **Gateways Passed**: {}\n", mqs.gateways_passed));
@@ -207,8 +231,6 @@ pub fn generate_rag_markdown(
         "- **Production Ready**: {}\n",
         mqs.is_production_ready()
     ));
-
-    md
 }
 
 /// Generate a compact summary for index files
@@ -336,6 +358,7 @@ mod tests {
                 points: 30,
             }],
             total_penalty: 30,
+            proof_bonus: None,
         }
     }
 
