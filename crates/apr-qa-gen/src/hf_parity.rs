@@ -627,7 +627,6 @@ fn truncate(s: &str, max_len: usize) -> &str {
     }
 }
 
-
 #[cfg(test)]
 #[allow(clippy::panic, clippy::unreadable_literal, clippy::needless_range_loop)]
 #[path = "hf_parity_tests.rs"]

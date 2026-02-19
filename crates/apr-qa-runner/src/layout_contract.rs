@@ -876,7 +876,6 @@ pub fn parse_shape_dims(shape: &str) -> Vec<String> {
         .collect()
 }
 
-
 #[cfg(test)]
 #[path = "layout_contract_tests.rs"]
 mod tests;

@@ -1476,7 +1476,6 @@ impl Executor {
             0,
         )
     }
-
 }
 
 // G0 gateway checks — see executor_gates.rs
@@ -1756,12 +1755,10 @@ impl Executor {
 
         (generated_text, final_stderr, final_exit_code, tps, false)
     }
-
 }
 
 // Model resolution + workspace — see executor_resolution.rs
 include!("executor_resolution.rs");
-
 
 impl Default for Executor {
     fn default() -> Self {

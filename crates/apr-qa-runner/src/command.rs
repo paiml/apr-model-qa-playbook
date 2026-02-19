@@ -1423,7 +1423,6 @@ impl CommandRunner for MockCommandRunner {
     }
 }
 
-
 #[cfg(test)]
 #[path = "command_tests.rs"]
 mod tests;

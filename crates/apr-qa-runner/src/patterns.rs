@@ -1556,7 +1556,6 @@ pub struct PromptSafetyResult {
     pub found_patterns: Vec<PromptPattern>,
 }
 
-
 #[cfg(test)]
 #[path = "patterns_tests.rs"]
 mod tests;

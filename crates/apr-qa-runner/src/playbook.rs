@@ -1128,7 +1128,6 @@ pub fn detect_implicit_skips(
     implicit
 }
 
-
 #[cfg(test)]
 #[path = "playbook_tests.rs"]
 mod tests;
