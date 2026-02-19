@@ -116,20 +116,64 @@ pub struct ModelPreparationResult {
     pub conversions: Vec<FormatConversionResult>,
 }
 
+/// Resolve or create provenance for a model source
+///
+/// Loads existing provenance if available and matching the current source hash,
+/// otherwise creates a new provenance record.
+fn resolve_provenance(
+    safetensors_path: &Path,
+    hf_repo: &str,
+    output_dir: &Path,
+) -> Result<Provenance> {
+    match load_provenance(output_dir) {
+        Ok(existing) => {
+            let current_hash = crate::provenance::compute_sha256(safetensors_path)?;
+            if existing.source.sha256 == current_hash {
+                Ok(existing)
+            } else {
+                create_source_provenance(safetensors_path, hf_repo)
+            }
+        }
+        Err(_) => create_source_provenance(safetensors_path, hf_repo),
+    }
+}
+
+/// Convert a single format and track it in provenance
+///
+/// Returns the conversion result and, if successful, the target path.
+#[allow(clippy::too_many_arguments)]
+fn convert_and_track(
+    apr_binary: &str,
+    safetensors_path: &Path,
+    target_path: &Path,
+    hash_path: &Path,
+    format_name: &str,
+    quantization: Option<&str>,
+    cli_version: &str,
+    provenance: &mut Provenance,
+) -> Result<(FormatConversionResult, Option<std::path::PathBuf>)> {
+    let conv = convert_format_cached(apr_binary, safetensors_path, target_path, hash_path)?;
+    let result_path = if conv.success {
+        let already_tracked = provenance
+            .derived
+            .iter()
+            .any(|d| d.format == format_name && d.quantization.as_deref() == quantization);
+        if !already_tracked {
+            add_derived(provenance, format_name, target_path, quantization, cli_version)?;
+        }
+        Some(target_path.to_path_buf())
+    } else {
+        None
+    };
+    Ok((conv, result_path))
+}
+
 /// Prepare a model from SafeTensors source with full provenance tracking
 ///
 /// Implements spec 7.4 (Ground Truth Policy) and 7.5 (Provenance Validation):
 /// 1. SafeTensors is the canonical source (PROV-003)
 /// 2. All conversions use apr-cli (PROV-002)
 /// 3. Provenance tracks all derived formats
-///
-/// # Arguments
-///
-/// * `apr_binary` - Path to apr binary
-/// * `safetensors_path` - Path to source SafeTensors file
-/// * `hf_repo` - HuggingFace repository ID (e.g., "Qwen/Qwen2.5-Coder-0.5B-Instruct")
-/// * `output_dir` - Directory to write converted files and provenance
-/// * `quantization` - Optional quantization level (e.g., "q4_k_m")
 ///
 /// # Errors
 ///
@@ -141,91 +185,36 @@ pub fn prepare_model_with_provenance(
     output_dir: &Path,
     quantization: Option<&str>,
 ) -> Result<ModelPreparationResult> {
-    // Check for existing provenance (resume workflow)
-    let prov_result = load_provenance(output_dir);
-    let mut provenance = if let Ok(existing) = prov_result {
-        // Verify existing provenance matches source
-        let current_hash = crate::provenance::compute_sha256(safetensors_path)?;
-        if existing.source.sha256 == current_hash {
-            existing
-        } else {
-            // Source changed, recreate provenance
-            create_source_provenance(safetensors_path, hf_repo)?
-        }
-    } else {
-        // Create new provenance
-        create_source_provenance(safetensors_path, hf_repo)?
-    };
-
-    let cli_version = get_apr_cli_version();
-    let mut conversions = Vec::new();
-    let mut gguf_path = None;
-    let mut apr_path = None;
+    let mut provenance = resolve_provenance(safetensors_path, hf_repo, output_dir)?;
 
     // Create output directories
     std::fs::create_dir_all(output_dir)?;
 
-    // Convert SafeTensors → GGUF
+    // Convert SafeTensors -> GGUF
     let gguf_target = quantization.map_or_else(
         || output_dir.join("model.gguf"),
         |q| output_dir.join(format!("model-{q}.gguf")),
     );
     let gguf_hash_path = output_dir.join(".gguf_conversion_hash");
+    let cli_version = get_apr_cli_version();
+    let (gguf_conv, gguf_path) = convert_and_track(
+        apr_binary, safetensors_path, &gguf_target, &gguf_hash_path,
+        "gguf", quantization, &cli_version, &mut provenance,
+    )?;
 
-    let gguf_conv =
-        convert_format_cached(apr_binary, safetensors_path, &gguf_target, &gguf_hash_path)?;
-    if gguf_conv.success {
-        // Check if we need to add this derived format
-        let already_tracked = provenance
-            .derived
-            .iter()
-            .any(|d| d.format == "gguf" && d.quantization.as_deref() == quantization);
-
-        if !already_tracked {
-            add_derived(
-                &mut provenance,
-                "gguf",
-                &gguf_target,
-                quantization,
-                &cli_version,
-            )?;
-        }
-        gguf_path = Some(gguf_target.clone());
-    }
-    conversions.push(gguf_conv);
-
-    // Convert SafeTensors → APR
+    // Convert SafeTensors -> APR
     let apr_target = quantization.map_or_else(
         || output_dir.join("model.apr"),
         |q| output_dir.join(format!("model-{q}.apr")),
     );
     let apr_hash_path = output_dir.join(".apr_conversion_hash");
+    let (apr_conv, apr_path) = convert_and_track(
+        apr_binary, safetensors_path, &apr_target, &apr_hash_path,
+        "apr", quantization, &cli_version, &mut provenance,
+    )?;
 
-    let apr_conv =
-        convert_format_cached(apr_binary, safetensors_path, &apr_target, &apr_hash_path)?;
-    if apr_conv.success {
-        let already_tracked = provenance
-            .derived
-            .iter()
-            .any(|d| d.format == "apr" && d.quantization.as_deref() == quantization);
-
-        if !already_tracked {
-            add_derived(
-                &mut provenance,
-                "apr",
-                &apr_target,
-                quantization,
-                &cli_version,
-            )?;
-        }
-        apr_path = Some(apr_target.clone());
-    }
-    conversions.push(apr_conv);
-
-    // Validate provenance
+    // Validate and save provenance
     validate_provenance(&provenance)?;
-
-    // Save provenance
     save_provenance(output_dir, &provenance)?;
 
     Ok(ModelPreparationResult {
@@ -233,7 +222,7 @@ pub fn prepare_model_with_provenance(
         safetensors_path: safetensors_path.to_path_buf(),
         gguf_path,
         apr_path,
-        conversions,
+        conversions: vec![gguf_conv, apr_conv],
     })
 }
 

@@ -26,43 +26,74 @@ fn find_project_root() -> Option<PathBuf> {
     }
 }
 
-fn run() -> Result<(), CertifyError> {
-    let args: Vec<String> = env::args().collect();
+/// Parsed CLI arguments
+struct CliArgs {
+    csv_path: Option<PathBuf>,
+    readme_path: Option<PathBuf>,
+    show_help: bool,
+}
 
-    // Parse arguments
-    let mut csv_path: Option<PathBuf> = None;
-    let mut readme_path: Option<PathBuf> = None;
+fn parse_args() -> CliArgs {
+    let args: Vec<String> = env::args().collect();
+    let mut result = CliArgs {
+        csv_path: None,
+        readme_path: None,
+        show_help: false,
+    };
     let mut i = 1;
     while i < args.len() {
         match args[i].as_str() {
-            "--csv" => {
+            "--csv" if i + 1 < args.len() => {
                 i += 1;
-                if i < args.len() {
-                    csv_path = Some(PathBuf::from(&args[i]));
-                }
+                result.csv_path = Some(PathBuf::from(&args[i]));
             }
-            "--readme" => {
+            "--readme" if i + 1 < args.len() => {
                 i += 1;
-                if i < args.len() {
-                    readme_path = Some(PathBuf::from(&args[i]));
-                }
+                result.readme_path = Some(PathBuf::from(&args[i]));
             }
             "--help" | "-h" => {
-                eprintln!("Usage: apr-qa-readme-sync [--csv PATH] [--readme PATH]");
-                eprintln!();
-                eprintln!("Updates README.md certification table from models.csv");
-                eprintln!();
-                eprintln!("Options:");
-                eprintln!(
-                    "  --csv PATH     Path to models.csv (default: docs/certifications/models.csv)"
-                );
-                eprintln!("  --readme PATH  Path to README.md (default: README.md)");
-                eprintln!("  --help, -h     Show this help");
-                return Ok(());
+                result.show_help = true;
             }
             _ => {}
         }
         i += 1;
+    }
+    result
+}
+
+fn print_help() {
+    eprintln!("Usage: apr-qa-readme-sync [--csv PATH] [--readme PATH]");
+    eprintln!();
+    eprintln!("Updates README.md certification table from models.csv");
+    eprintln!();
+    eprintln!("Options:");
+    eprintln!(
+        "  --csv PATH     Path to models.csv (default: docs/certifications/models.csv)"
+    );
+    eprintln!("  --readme PATH  Path to README.md (default: README.md)");
+    eprintln!("  --help, -h     Show this help");
+}
+
+fn validate_readme_markers(content: &str) -> Result<(), CertifyError> {
+    if !content.contains(START_MARKER) {
+        return Err(CertifyError::MarkerNotFound(format!(
+            "README is missing start marker: {START_MARKER}"
+        )));
+    }
+    if !content.contains(END_MARKER) {
+        return Err(CertifyError::MarkerNotFound(format!(
+            "README is missing end marker: {END_MARKER}"
+        )));
+    }
+    Ok(())
+}
+
+fn run() -> Result<(), CertifyError> {
+    let args = parse_args();
+
+    if args.show_help {
+        print_help();
+        return Ok(());
     }
 
     // Find project root
@@ -72,8 +103,8 @@ fn run() -> Result<(), CertifyError> {
         )
     })?;
 
-    let csv_path = csv_path.unwrap_or_else(|| root.join("docs/certifications/models.csv"));
-    let readme_path = readme_path.unwrap_or_else(|| root.join("README.md"));
+    let csv_path = args.csv_path.unwrap_or_else(|| root.join("docs/certifications/models.csv"));
+    let readme_path = args.readme_path.unwrap_or_else(|| root.join("README.md"));
 
     // Read CSV
     eprintln!("Reading CSV from: {}", csv_path.display());
@@ -90,18 +121,7 @@ fn run() -> Result<(), CertifyError> {
     // Read and update README
     eprintln!("Reading README from: {}", readme_path.display());
     let readme_content = fs::read_to_string(&readme_path)?;
-
-    // Validate markers exist
-    if !readme_content.contains(START_MARKER) {
-        return Err(CertifyError::MarkerNotFound(format!(
-            "README is missing start marker: {START_MARKER}"
-        )));
-    }
-    if !readme_content.contains(END_MARKER) {
-        return Err(CertifyError::MarkerNotFound(format!(
-            "README is missing end marker: {END_MARKER}"
-        )));
-    }
+    validate_readme_markers(&readme_content)?;
 
     let updated_readme = update_readme(&readme_content, &full_content)?;
 

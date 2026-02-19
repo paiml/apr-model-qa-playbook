@@ -93,67 +93,74 @@ pub fn run_inspect(model_path: &Path, apr_binary: &str) -> Result<InspectResult>
     parse_inspect_text(&stdout)
 }
 
+/// Try to parse a tensor count from a line (e.g., "Tensors: 338" or "tensor_count: 338")
+fn parse_tensor_count_line(line: &str) -> Option<usize> {
+    line.strip_prefix("Tensors:")
+        .or_else(|| line.strip_prefix("tensor_count:"))
+        .and_then(|s| s.trim().parse::<usize>().ok())
+}
+
+/// Try to extract a tensor name from a dimension line
+///
+/// Lines like "model.layers.0.self_attn.q_proj.weight [4096, 4096]"
+fn try_extract_tensor_name(line: &str) -> Option<String> {
+    if !line.contains('[') || !line.contains(']') || line.starts_with('{') {
+        return None;
+    }
+    let name = line.split_whitespace().next()?;
+    if name.contains('.') {
+        Some(name.to_string())
+    } else {
+        None
+    }
+}
+
+/// Parse architecture metadata fields from a single line
+fn parse_architecture_line(line: &str, result: &mut InspectResult) {
+    if let Some(val) = line.strip_prefix("num_attention_heads:") {
+        result.num_attention_heads = val.trim().parse().ok();
+    } else if let Some(val) = line.strip_prefix("num_key_value_heads:") {
+        result.num_key_value_heads = val.trim().parse().ok();
+    } else if let Some(val) = line.strip_prefix("hidden_size:") {
+        result.hidden_size = val.trim().parse().ok();
+    } else if let Some(val) = line.strip_prefix("architecture:") {
+        result.architecture = Some(val.trim().to_string());
+    }
+}
+
 /// Parse text-mode output from `apr rosetta inspect`
 ///
 /// Extracts tensor count and tensor names from human-readable output.
 fn parse_inspect_text(output: &str) -> Result<InspectResult> {
-    let mut tensor_count = 0;
-    let mut tensor_names = Vec::new();
-    let mut num_attention_heads = None;
-    let mut num_key_value_heads = None;
-    let mut hidden_size = None;
-    let mut architecture = None;
+    let mut result = InspectResult {
+        tensor_count: 0,
+        tensor_names: Vec::new(),
+        num_attention_heads: None,
+        num_key_value_heads: None,
+        hidden_size: None,
+        architecture: None,
+    };
 
     for line in output.lines() {
         let line = line.trim();
 
-        // Parse "Tensors: 338" or "tensor_count: 338"
-        if let Some(count_str) = line
-            .strip_prefix("Tensors:")
-            .or_else(|| line.strip_prefix("tensor_count:"))
-        {
-            if let Ok(count) = count_str.trim().parse::<usize>() {
-                tensor_count = count;
-            }
+        if let Some(count) = parse_tensor_count_line(line) {
+            result.tensor_count = count;
         }
 
-        // Parse tensor names from lines like "  model.layers.0.self_attn.q_proj.weight [4096, 4096]"
-        if line.contains('[') && line.contains(']') && !line.starts_with('{') {
-            if let Some(name) = line.split_whitespace().next() {
-                if name.contains('.') {
-                    tensor_names.push(name.to_string());
-                }
-            }
+        if let Some(name) = try_extract_tensor_name(line) {
+            result.tensor_names.push(name);
         }
 
-        // Parse architecture metadata
-        if let Some(val) = line.strip_prefix("num_attention_heads:") {
-            num_attention_heads = val.trim().parse().ok();
-        }
-        if let Some(val) = line.strip_prefix("num_key_value_heads:") {
-            num_key_value_heads = val.trim().parse().ok();
-        }
-        if let Some(val) = line.strip_prefix("hidden_size:") {
-            hidden_size = val.trim().parse().ok();
-        }
-        if let Some(val) = line.strip_prefix("architecture:") {
-            architecture = Some(val.trim().to_string());
-        }
+        parse_architecture_line(line, &mut result);
     }
 
     // If we found tensor names but no explicit count, use the name count
-    if tensor_count == 0 && !tensor_names.is_empty() {
-        tensor_count = tensor_names.len();
+    if result.tensor_count == 0 && !result.tensor_names.is_empty() {
+        result.tensor_count = result.tensor_names.len();
     }
 
-    Ok(InspectResult {
-        tensor_count,
-        tensor_names,
-        num_attention_heads,
-        num_key_value_heads,
-        hidden_size,
-        architecture,
-    })
+    Ok(result)
 }
 
 /// Result of tensor diff operation

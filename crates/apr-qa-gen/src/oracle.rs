@@ -387,6 +387,27 @@ fn has_char_ngram_repetition(output: &str) -> bool {
         .any(|word| word.len() >= 6 && check_substring_repetition(word))
 }
 
+/// Check if words contain a 2-word repeating pattern
+///
+/// Returns true if a 2-word bigram repeats for at least half the chunks.
+fn has_two_word_repetition(words: &[&str]) -> bool {
+    if words.len() < 6 {
+        return false;
+    }
+    let pattern: Vec<_> = words.iter().take(2).collect();
+    let matches = words
+        .chunks(2)
+        .filter(|chunk| chunk.len() == 2 && chunk[0] == *pattern[0] && chunk[1] == *pattern[1])
+        .count();
+    matches >= words.len() / 2 / 2
+}
+
+/// Check if all words in a slice are identical
+fn all_words_identical(words: &[&str]) -> bool {
+    let first = words.first();
+    first.is_some() && words.iter().all(|w| Some(w) == first)
+}
+
 /// Check if output is highly repetitive
 fn is_repetitive(output: &str) -> bool {
     // Character-level n-gram check catches patterns like "VILLEVILLEVILLE"
@@ -400,27 +421,7 @@ fn is_repetitive(output: &str) -> bool {
         return false;
     }
 
-    // Check if all words are the same
-    let first = words.first();
-    if first.is_some() && words.iter().all(|w| Some(w) == first) {
-        return true;
-    }
-
-    // Check for 2-word repeating patterns
-    if words.len() >= 6 {
-        let pattern: Vec<_> = words.iter().take(2).collect();
-        let mut matches = 0;
-        for chunk in words.chunks(2) {
-            if chunk.len() == 2 && chunk[0] == *pattern[0] && chunk[1] == *pattern[1] {
-                matches += 1;
-            }
-        }
-        if matches >= words.len() / 2 / 2 {
-            return true;
-        }
-    }
-
-    false
+    all_words_identical(&words) || has_two_word_repetition(&words)
 }
 
 /// Truncate string for display
