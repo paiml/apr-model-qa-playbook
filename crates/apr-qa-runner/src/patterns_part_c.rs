@@ -1,4 +1,41 @@
 
+// Builder helpers that eliminate repetitive passed/failed branching.
+
+impl PerformanceCheckResult {
+    fn check(gate: SpecGate, passed: bool, measured: f64, threshold: f64, pass_desc: String, fail_desc: String) -> Self {
+        Self {
+            gate_id: gate.id().to_string(),
+            passed,
+            measured,
+            threshold,
+            description: if passed { pass_desc } else { fail_desc },
+        }
+    }
+}
+
+impl ParityCheckResult {
+    fn check(gate: SpecGate, passed: bool, max_diff: f64, threshold: f64, pass_desc: String, fail_desc: String) -> Self {
+        Self {
+            gate_id: gate.id().to_string(),
+            passed,
+            max_diff,
+            threshold,
+            description: if passed { pass_desc } else { fail_desc },
+        }
+    }
+}
+
+impl IntegrityCheckResult {
+    fn check(gate: SpecGate, passed: bool, description: String, evidence: Option<String>) -> Self {
+        Self {
+            gate_id: gate.id().to_string(),
+            passed,
+            description,
+            evidence,
+        }
+    }
+}
+
 /// Performance validator
 pub struct PerformanceValidator;
 
@@ -6,35 +43,23 @@ impl PerformanceValidator {
     /// F-PERF-001: Check minimum TPS
     #[must_use]
     pub fn check_tps(measured_tps: f64, threshold: f64) -> PerformanceCheckResult {
-        let passed = measured_tps >= threshold;
-        PerformanceCheckResult {
-            gate_id: SpecGate::PerfMinimumTps.id().to_string(),
-            passed,
-            measured: measured_tps,
-            threshold,
-            description: if passed {
-                format!("TPS {measured_tps:.1} >= {threshold:.1}")
-            } else {
-                format!("TPS {measured_tps:.1} < {threshold:.1} minimum")
-            },
-        }
+        let p = measured_tps >= threshold;
+        PerformanceCheckResult::check(
+            SpecGate::PerfMinimumTps, p, measured_tps, threshold,
+            format!("TPS {measured_tps:.1} >= {threshold:.1}"),
+            format!("TPS {measured_tps:.1} < {threshold:.1} minimum"),
+        )
     }
 
     /// F-PERF-002: Check time to first token
     #[must_use]
     pub fn check_ttft(ttft_ms: u64, max_ttft_ms: u64) -> PerformanceCheckResult {
-        let passed = ttft_ms <= max_ttft_ms;
-        PerformanceCheckResult {
-            gate_id: SpecGate::PerfTtft.id().to_string(),
-            passed,
-            measured: ttft_ms as f64,
-            threshold: max_ttft_ms as f64,
-            description: if passed {
-                format!("TTFT {ttft_ms}ms <= {max_ttft_ms}ms")
-            } else {
-                format!("TTFT {ttft_ms}ms > {max_ttft_ms}ms maximum")
-            },
-        }
+        let p = ttft_ms <= max_ttft_ms;
+        PerformanceCheckResult::check(
+            SpecGate::PerfTtft, p, ttft_ms as f64, max_ttft_ms as f64,
+            format!("TTFT {ttft_ms}ms <= {max_ttft_ms}ms"),
+            format!("TTFT {ttft_ms}ms > {max_ttft_ms}ms maximum"),
+        )
     }
 
     /// F-PERF-003: Check memory leak (RSS growth over N requests)
@@ -49,35 +74,23 @@ impl PerformanceValidator {
         } else {
             0.0
         };
-        let passed = growth <= max_growth_percent;
-        PerformanceCheckResult {
-            gate_id: SpecGate::PerfMemoryLeak.id().to_string(),
-            passed,
-            measured: growth,
-            threshold: max_growth_percent,
-            description: if passed {
-                format!("Memory growth {growth:.1}% <= {max_growth_percent}%")
-            } else {
-                format!("Memory leak: {growth:.1}% > {max_growth_percent}% threshold")
-            },
-        }
+        let p = growth <= max_growth_percent;
+        PerformanceCheckResult::check(
+            SpecGate::PerfMemoryLeak, p, growth, max_growth_percent,
+            format!("Memory growth {growth:.1}% <= {max_growth_percent}%"),
+            format!("Memory leak: {growth:.1}% > {max_growth_percent}% threshold"),
+        )
     }
 
     /// F-PERF-004: Check GPU utilization
     #[must_use]
     pub fn check_gpu_utilization(utilization: f64, min_utilization: f64) -> PerformanceCheckResult {
-        let passed = utilization >= min_utilization;
-        PerformanceCheckResult {
-            gate_id: SpecGate::PerfGpuUtilization.id().to_string(),
-            passed,
-            measured: utilization,
-            threshold: min_utilization,
-            description: if passed {
-                format!("GPU utilization {utilization:.1}% >= {min_utilization}%")
-            } else {
-                format!("GPU utilization {utilization:.1}% < {min_utilization}% minimum")
-            },
-        }
+        let p = utilization >= min_utilization;
+        PerformanceCheckResult::check(
+            SpecGate::PerfGpuUtilization, p, utilization, min_utilization,
+            format!("GPU utilization {utilization:.1}% >= {min_utilization}%"),
+            format!("GPU utilization {utilization:.1}% < {min_utilization}% minimum"),
+        )
     }
 }
 
@@ -116,18 +129,12 @@ impl ParityChecker {
             .zip(gpu_output.iter())
             .map(|(a, b)| f64::from((a - b).abs()))
             .fold(0.0f64, f64::max);
-        let passed = max_diff <= epsilon;
-        ParityCheckResult {
-            gate_id: SpecGate::ParCpuGpuEquivalence.id().to_string(),
-            passed,
-            max_diff,
-            threshold: epsilon,
-            description: if passed {
-                format!("CPU/GPU diff {max_diff:.2e} <= {epsilon:.2e}")
-            } else {
-                format!("CPU/GPU mismatch: {max_diff:.2e} > {epsilon:.2e}")
-            },
-        }
+        let p = max_diff <= epsilon;
+        ParityCheckResult::check(
+            SpecGate::ParCpuGpuEquivalence, p, max_diff, epsilon,
+            format!("CPU/GPU diff {max_diff:.2e} <= {epsilon:.2e}"),
+            format!("CPU/GPU mismatch: {max_diff:.2e} > {epsilon:.2e}"),
+        )
     }
 
     /// F-PAR-002: Check format parity (GGUF vs SafeTensors)
@@ -136,23 +143,17 @@ impl ParityChecker {
         gguf_tokens: &[u32],
         safetensors_tokens: &[u32],
     ) -> ParityCheckResult {
-        let passed = gguf_tokens == safetensors_tokens;
         let diff_count = gguf_tokens
             .iter()
             .zip(safetensors_tokens.iter())
             .filter(|(a, b)| a != b)
             .count();
-        ParityCheckResult {
-            gate_id: SpecGate::ParFormatParity.id().to_string(),
-            passed,
-            max_diff: diff_count as f64,
-            threshold: 0.0,
-            description: if passed {
-                "GGUF/SafeTensors output identical".to_string()
-            } else {
-                format!("{diff_count} token differences found")
-            },
-        }
+        let p = gguf_tokens == safetensors_tokens;
+        ParityCheckResult::check(
+            SpecGate::ParFormatParity, p, diff_count as f64, 0.0,
+            "GGUF/SafeTensors output identical".to_string(),
+            format!("{diff_count} token differences found"),
+        )
     }
 
     /// F-PAR-003: Check quantization impact on perplexity
@@ -167,18 +168,12 @@ impl ParityChecker {
         } else {
             0.0
         };
-        let passed = degradation <= max_degradation_percent;
-        ParityCheckResult {
-            gate_id: SpecGate::ParQuantizationImpact.id().to_string(),
-            passed,
-            max_diff: degradation,
-            threshold: max_degradation_percent,
-            description: if passed {
-                format!("Perplexity degradation {degradation:.1}% <= {max_degradation_percent}%")
-            } else {
-                format!("Perplexity degradation {degradation:.1}% > {max_degradation_percent}% max")
-            },
-        }
+        let p = degradation <= max_degradation_percent;
+        ParityCheckResult::check(
+            SpecGate::ParQuantizationImpact, p, degradation, max_degradation_percent,
+            format!("Perplexity degradation {degradation:.1}% <= {max_degradation_percent}%"),
+            format!("Perplexity degradation {degradation:.1}% > {max_degradation_percent}% max"),
+        )
     }
 }
 
@@ -202,41 +197,35 @@ pub struct IntegrityCheckResult {
 /// Fundamental integrity checker
 pub struct IntegrityChecker;
 
+/// Signal-based error classification for memory safety checks.
+fn classify_signal_error(segfault: bool, bus_error: bool, abort: bool) -> &'static str {
+    if segfault { "Segmentation fault detected" }
+    else if bus_error { "Bus error detected" }
+    else if abort { "Abort signal detected" }
+    else { "Memory safety violation in stderr" }
+}
+
 impl IntegrityChecker {
     /// F-INT-001: Check for memory safety violations
-    /// Returns true if no unsafe memory access detected
     #[must_use]
     pub fn check_memory_safety(exit_signal: Option<i32>, stderr: &str) -> IntegrityCheckResult {
         // SIGSEGV = 11, SIGBUS = 7, SIGABRT = 6
         let segfault = exit_signal == Some(11) || exit_signal == Some(139); // 139 = 128 + 11
         let bus_error = exit_signal == Some(7) || exit_signal == Some(135);
         let abort = exit_signal == Some(6) || exit_signal == Some(134);
-        let stderr_indicators = stderr.contains("SIGSEGV")
+        let stderr_bad = stderr.contains("SIGSEGV")
             || stderr.contains("Segmentation fault")
             || stderr.contains("buffer overflow")
             || stderr.contains("stack smashing");
 
-        let passed = !segfault && !bus_error && !abort && !stderr_indicators;
-        IntegrityCheckResult {
-            gate_id: SpecGate::IntMemorySafety.id().to_string(),
-            passed,
-            description: if passed {
-                "No memory safety violations".to_string()
-            } else if segfault {
-                "Segmentation fault detected".to_string()
-            } else if bus_error {
-                "Bus error detected".to_string()
-            } else if abort {
-                "Abort signal detected".to_string()
-            } else {
-                "Memory safety violation in stderr".to_string()
-            },
-            evidence: if passed {
-                None
-            } else {
-                Some(format!("Signal: {exit_signal:?}"))
-            },
-        }
+        let passed = !segfault && !bus_error && !abort && !stderr_bad;
+        let desc = if passed {
+            "No memory safety violations".to_string()
+        } else {
+            classify_signal_error(segfault, bus_error, abort).to_string()
+        };
+        let evidence = if passed { None } else { Some(format!("Signal: {exit_signal:?}")) };
+        IntegrityCheckResult::check(SpecGate::IntMemorySafety, passed, desc, evidence)
     }
 
     /// F-INT-002: Check process termination
@@ -248,102 +237,75 @@ impl IntegrityChecker {
     ) -> IntegrityCheckResult {
         let clean_exit = exit_code == Some(0) && has_output;
         let error_exit = exit_code.is_some() && exit_code != Some(0);
-        let passed = clean_exit || (error_exit && has_output);
+        let passed = !timed_out && (clean_exit || (error_exit && has_output));
 
-        IntegrityCheckResult {
-            gate_id: SpecGate::IntProcessTermination.id().to_string(),
-            passed: !timed_out && passed,
-            description: if timed_out {
-                "Process timed out (hang detected)".to_string()
-            } else if exit_code.is_none() {
-                "Zombie process (no exit code)".to_string()
-            } else if exit_code != Some(0) && !has_output {
-                "Unclean exit without error output".to_string()
-            } else {
-                "Clean process termination".to_string()
-            },
-            evidence: exit_code.map(|c| format!("Exit code: {c}")),
-        }
+        let desc = if timed_out {
+            "Process timed out (hang detected)"
+        } else if exit_code.is_none() {
+            "Zombie process (no exit code)"
+        } else if exit_code != Some(0) && !has_output {
+            "Unclean exit without error output"
+        } else {
+            "Clean process termination"
+        };
+        IntegrityCheckResult::check(
+            SpecGate::IntProcessTermination, passed, desc.to_string(),
+            exit_code.map(|c| format!("Exit code: {c}")),
+        )
     }
 
     /// F-INT-003: Check tensor validity (delegates to PatternDetector)
     #[must_use]
     pub fn check_tensor_validity(values: &[f32]) -> IntegrityCheckResult {
-        let detector = PatternDetector::new();
-        let result = detector.check_tensor_validity(values);
-        IntegrityCheckResult {
-            gate_id: SpecGate::IntTensorValidity.id().to_string(),
-            passed: result.is_valid,
-            description: if result.is_valid {
-                "Tensor values valid".to_string()
-            } else if result.nan_count > 0 {
-                format!("Found {} NaN values", result.nan_count)
-            } else if result.inf_count > 0 {
-                format!("Found {} Inf values", result.inf_count)
-            } else {
-                "Tensor validation failed".to_string()
-            },
-            evidence: Some(format!(
-                "NaN: {}, Inf: {}, Mean: {:.4}",
-                result.nan_count, result.inf_count, result.mean
-            )),
-        }
+        let result = PatternDetector::new().check_tensor_validity(values);
+        let desc = if result.is_valid {
+            "Tensor values valid".to_string()
+        } else if result.nan_count > 0 {
+            format!("Found {} NaN values", result.nan_count)
+        } else if result.inf_count > 0 {
+            format!("Found {} Inf values", result.inf_count)
+        } else {
+            "Tensor validation failed".to_string()
+        };
+        IntegrityCheckResult::check(
+            SpecGate::IntTensorValidity, result.is_valid, desc,
+            Some(format!("NaN: {}, Inf: {}, Mean: {:.4}", result.nan_count, result.inf_count, result.mean)),
+        )
     }
 
     /// F-INT-004: Check format fidelity (round-trip)
     #[must_use]
-    pub fn check_format_fidelity(
-        original_hash: &str,
-        roundtrip_hash: &str,
-    ) -> IntegrityCheckResult {
-        let passed = original_hash == roundtrip_hash;
-        IntegrityCheckResult {
-            gate_id: SpecGate::IntFormatFidelity.id().to_string(),
-            passed,
-            description: if passed {
-                "Round-trip conversion bitwise identical".to_string()
-            } else {
-                "Round-trip conversion altered weights".to_string()
-            },
-            evidence: if passed {
-                None
-            } else {
-                Some(format!(
-                    "Original: {}, After: {}",
-                    &original_hash[..8.min(original_hash.len())],
-                    &roundtrip_hash[..8.min(roundtrip_hash.len())]
-                ))
-            },
-        }
+    pub fn check_format_fidelity(original_hash: &str, roundtrip_hash: &str) -> IntegrityCheckResult {
+        let p = original_hash == roundtrip_hash;
+        let evidence = if p { None } else {
+            Some(format!(
+                "Original: {}, After: {}",
+                &original_hash[..8.min(original_hash.len())],
+                &roundtrip_hash[..8.min(roundtrip_hash.len())]
+            ))
+        };
+        IntegrityCheckResult::check(
+            SpecGate::IntFormatFidelity, p,
+            if p { "Round-trip conversion bitwise identical" } else { "Round-trip conversion altered weights" }.to_string(),
+            evidence,
+        )
     }
 
     /// F-INT-005: Check determinism (same seed = same output)
     #[must_use]
-    pub fn check_determinism(
-        run1_output: &str,
-        run2_output: &str,
-        seed: u64,
-    ) -> IntegrityCheckResult {
-        let passed = run1_output == run2_output;
-        IntegrityCheckResult {
-            gate_id: SpecGate::IntDeterminism.id().to_string(),
-            passed,
-            description: if passed {
-                format!("Deterministic output with seed {seed}")
-            } else {
-                format!("Non-deterministic output with seed {seed}")
-            },
-            evidence: if passed {
-                None
-            } else {
-                let diff_pos = run1_output
-                    .chars()
-                    .zip(run2_output.chars())
-                    .position(|(a, b)| a != b)
-                    .unwrap_or_else(|| run1_output.len().min(run2_output.len()));
-                Some(format!("First difference at position {diff_pos}"))
-            },
-        }
+    pub fn check_determinism(run1_output: &str, run2_output: &str, seed: u64) -> IntegrityCheckResult {
+        let p = run1_output == run2_output;
+        let evidence = if p { None } else {
+            let diff_pos = run1_output.chars().zip(run2_output.chars())
+                .position(|(a, b)| a != b)
+                .unwrap_or_else(|| run1_output.len().min(run2_output.len()));
+            Some(format!("First difference at position {diff_pos}"))
+        };
+        IntegrityCheckResult::check(
+            SpecGate::IntDeterminism, p,
+            if p { format!("Deterministic output with seed {seed}") } else { format!("Non-deterministic output with seed {seed}") },
+            evidence,
+        )
     }
 }
 
