@@ -54,11 +54,11 @@ where
 /// - size: digits optionally with decimal, followed by `b` (e.g., 0.5b, 1b, 7b)
 /// - tier (optional): dim-smoke, mvp, smoke, quick, ci, full, nightly, release
 static PLAYBOOK_NAME_REGEX: LazyLock<Regex> = LazyLock::new(|| {
-    // This regex pattern is verified at compile time, unwrap is safe here
-    #[allow(clippy::unwrap_used)]
+    // Static regex pattern verified at compile time — expect is safe here
+    #[allow(clippy::expect_used)]
     Regex::new(
         r"^(?P<family>(?:[a-z0-9]+\.?)+(?:-[a-z0-9]+\.?)*)-(?P<size>\d+(?:\.\d+)?b)(?:-(?P<tier>dim-smoke|mvp|smoke|quick|ci|full|nightly|release))?\.playbook\.yaml$"
-    ).unwrap()
+    ).expect("PLAYBOOK_NAME_REGEX is a valid, compile-time-verified regex pattern")
 });
 
 /// Valid tier values for playbook naming
