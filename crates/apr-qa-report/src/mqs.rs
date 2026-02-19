@@ -24,6 +24,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use crate::error::Result;
+use crate::proof_status::ProofBonus;
 
 /// Gateway check result
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -146,6 +147,9 @@ pub struct MqsScore {
     pub penalties: Vec<Penalty>,
     /// Total penalty points deducted
     pub total_penalty: u32,
+    /// Proof bonus from provable-contracts integration (optional).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub proof_bonus: Option<ProofBonus>,
 }
 
 impl MqsScore {
@@ -181,6 +185,8 @@ pub struct MqsCalculator {
     /// Minimum tests required per category
     #[allow(dead_code)]
     min_tests_per_category: usize,
+    /// Optional proof bonus from provable-contracts
+    proof_bonus: Option<ProofBonus>,
 }
 
 impl Default for MqsCalculator {
@@ -196,6 +202,7 @@ impl MqsCalculator {
         Self {
             failure_multiplier: 1.5,
             min_tests_per_category: 10,
+            proof_bonus: None,
         }
     }
 
@@ -203,6 +210,17 @@ impl MqsCalculator {
     #[must_use]
     pub fn with_failure_multiplier(mut self, multiplier: f64) -> Self {
         self.failure_multiplier = multiplier;
+        self
+    }
+
+    /// Set proof bonus from provable-contracts integration.
+    ///
+    /// Bonus points are added to the raw score before normalization.
+    /// The normalization denominator becomes `MAX_TOTAL + 50` when present.
+    /// Gateway failures still zero everything — bonus cannot override.
+    #[must_use]
+    pub fn with_proof_bonus(mut self, bonus: ProofBonus) -> Self {
+        self.proof_bonus = Some(bonus);
         self
     }
 
@@ -218,7 +236,7 @@ impl MqsCalculator {
         let gateways = self.check_gateways(all_evidence);
         let gateways_passed = gateways.iter().all(|g| g.passed);
 
-        // If gateways fail, score is zero
+        // If gateways fail, score is zero — bonus cannot override
         if !gateways_passed {
             return Ok(MqsScore {
                 model_id: model_id.to_string(),
@@ -237,6 +255,7 @@ impl MqsCalculator {
                     points: 1000,
                 }],
                 total_penalty: 1000,
+                proof_bonus: self.proof_bonus.clone(),
             });
         }
 
@@ -274,12 +293,25 @@ impl MqsCalculator {
             total_penalty += penalty;
         }
 
-        // Calculate raw score with penalties
-        let raw_score = categories.total().saturating_sub(total_penalty);
+        // Calculate raw score with penalties + proof bonus
+        let bonus_points = self
+            .proof_bonus
+            .as_ref()
+            .map_or(0, |b| b.bonus_points);
+        let raw_score = categories
+            .total()
+            .saturating_sub(total_penalty)
+            .saturating_add(bonus_points);
 
         // Normalize to 0-100 using logarithmic scaling
         // This makes 100/100 extremely difficult to achieve
-        let normalized = self.normalize_score(raw_score, categories.total());
+        // When proof bonus is present, denominator expands to MAX_TOTAL + 50
+        let max_possible = if self.proof_bonus.is_some() {
+            CategoryScores::MAX_TOTAL + crate::proof_status::MAX_PROOF_BONUS
+        } else {
+            CategoryScores::MAX_TOTAL
+        };
+        let normalized = self.normalize_score_with_max(raw_score, categories.total(), max_possible);
 
         let grade = Self::calculate_grade(normalized);
 
@@ -296,6 +328,7 @@ impl MqsCalculator {
             tests_failed: evidence.fail_count(),
             penalties,
             total_penalty,
+            proof_bonus: self.proof_bonus.clone(),
         })
     }
 
@@ -475,12 +508,19 @@ impl MqsCalculator {
 
     /// Normalize raw score to 0-100 using logarithmic scaling
     /// This makes achieving 100/100 extremely difficult
+    #[cfg(test)]
     fn normalize_score(&self, raw: u32, pre_penalty: u32) -> f64 {
+        self.normalize_score_with_max(raw, pre_penalty, CategoryScores::MAX_TOTAL)
+    }
+
+    /// Normalize with explicit max possible score.
+    /// When proof bonus is active, max includes the bonus cap.
+    fn normalize_score_with_max(&self, raw: u32, pre_penalty: u32, max_possible: u32) -> f64 {
         if pre_penalty == 0 {
             return 0.0;
         }
 
-        let ratio = f64::from(raw) / f64::from(CategoryScores::MAX_TOTAL);
+        let ratio = f64::from(raw) / f64::from(max_possible);
 
         // Apply logarithmic scaling to make high scores harder
         // f(x) = 100 * (log(1 + 9x) / log(10))
@@ -688,6 +728,7 @@ mod tests {
             tests_failed: 20,
             penalties: vec![],
             total_penalty: 0,
+            proof_bonus: None,
         };
 
         assert!(score.qualifies());
@@ -745,6 +786,7 @@ mod tests {
             tests_failed: 5,
             penalties: vec![],
             total_penalty: 0,
+            proof_bonus: None,
         };
         assert!(score.is_production_ready());
     }
@@ -764,6 +806,7 @@ mod tests {
             tests_failed: 50,
             penalties: vec![],
             total_penalty: 0,
+            proof_bonus: None,
         };
         assert!(!score.qualifies());
     }
@@ -783,6 +826,7 @@ mod tests {
             tests_failed: 10,
             penalties: vec![],
             total_penalty: 0,
+            proof_bonus: None,
         };
         assert!(!score.qualifies());
     }
@@ -847,6 +891,7 @@ mod tests {
             tests_failed: 20,
             penalties: vec![],
             total_penalty: 0,
+            proof_bonus: None,
         };
         let json = serde_json::to_string(&score).expect("serialize");
         assert!(json.contains("test"));
@@ -1090,6 +1135,7 @@ mod tests {
             tests_failed: 20,
             penalties: vec![],
             total_penalty: 0,
+            proof_bonus: None,
         };
         let debug_str = format!("{score:?}");
         assert!(debug_str.contains("MqsScore"));
@@ -1110,6 +1156,7 @@ mod tests {
             tests_failed: 20,
             penalties: vec![],
             total_penalty: 0,
+            proof_bonus: None,
         };
         let cloned = score.clone();
         assert_eq!(cloned.model_id, score.model_id);
@@ -1295,5 +1342,99 @@ mod tests {
         assert_eq!(gateways[2].id, "G2");
         assert_eq!(gateways[3].id, "G3");
         assert_eq!(gateways[4].id, "G4");
+    }
+
+    #[test]
+    fn test_with_proof_bonus_adds_points() {
+        let bonus = ProofBonus {
+            kernel_class: Some("A".to_string()),
+            proof_level: Some("L3".to_string()),
+            bonus_points: 25,
+        };
+        let calculator = MqsCalculator::new().with_proof_bonus(bonus);
+        let mut collector = EvidenceCollector::new();
+
+        for i in 0..10 {
+            collector.add(test_evidence_passed(&format!("F-QUAL-{i:03}")));
+        }
+
+        let score = calculator
+            .calculate("test/model", &collector)
+            .expect("Calculation failed");
+
+        assert!(score.gateways_passed);
+        // Raw score should include the 25-point bonus
+        assert!(score.raw_score > 200); // QUAL-only max is 200
+        assert!(score.proof_bonus.is_some());
+        assert_eq!(score.proof_bonus.as_ref().unwrap().bonus_points, 25);
+    }
+
+    #[test]
+    fn test_proof_bonus_zeroed_on_gateway_failure() {
+        let bonus = ProofBonus {
+            kernel_class: Some("A".to_string()),
+            proof_level: Some("L5".to_string()),
+            bonus_points: 50,
+        };
+        let calculator = MqsCalculator::new().with_proof_bonus(bonus);
+        let mut collector = EvidenceCollector::new();
+
+        // Crash triggers gateway failure
+        collector.add(Evidence::crashed(
+            "F-QUAL-001",
+            test_scenario(),
+            "SIGSEGV",
+            -11,
+            0,
+        ));
+
+        let score = calculator
+            .calculate("test/model", &collector)
+            .expect("Calculation failed");
+
+        assert!(!score.gateways_passed);
+        assert_eq!(score.raw_score, 0);
+        // Bonus is still recorded but didn't help
+        assert!(score.proof_bonus.is_some());
+    }
+
+    #[test]
+    fn test_no_proof_bonus_backward_compatible() {
+        let calculator = MqsCalculator::new();
+        let mut collector = EvidenceCollector::new();
+
+        for i in 0..10 {
+            collector.add(test_evidence_passed(&format!("F-QUAL-{i:03}")));
+        }
+
+        let score = calculator
+            .calculate("test/model", &collector)
+            .expect("Calculation failed");
+
+        assert!(score.proof_bonus.is_none());
+        // Without bonus, raw max is still 1000
+        assert!(score.raw_score <= 1000);
+    }
+
+    #[test]
+    fn test_proof_bonus_json_omitted_when_none() {
+        let score = MqsScore {
+            model_id: "test".to_string(),
+            raw_score: 800,
+            normalized_score: 80.0,
+            grade: "B".to_string(),
+            gateways: vec![],
+            gateways_passed: true,
+            categories: CategoryScores::default(),
+            total_tests: 0,
+            tests_passed: 0,
+            tests_failed: 0,
+            penalties: vec![],
+            total_penalty: 0,
+            proof_bonus: None,
+        };
+        let json = serde_json::to_string(&score).unwrap();
+        // proof_bonus should NOT appear in JSON when None
+        assert!(!json.contains("proof_bonus"));
     }
 }

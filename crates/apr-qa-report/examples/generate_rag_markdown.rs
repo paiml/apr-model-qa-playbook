@@ -71,6 +71,7 @@ fn create_sample_mqs() -> MqsScore {
             points: 15,
         }],
         total_penalty: 15,
+        proof_bonus: None,
     }
 }
 

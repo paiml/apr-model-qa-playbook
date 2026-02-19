@@ -411,6 +411,7 @@ mod tests {
             tests_failed: 5,
             penalties: vec![],
             total_penalty: 0,
+            proof_bonus: None,
         }
     }
 

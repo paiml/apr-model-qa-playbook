@@ -713,6 +713,7 @@ mod tests {
             tests_failed: 15,
             penalties: vec![],
             total_penalty: 0,
+            proof_bonus: None,
         };
 
         let model = ModelMeta {
@@ -784,6 +785,7 @@ mod tests {
             tests_failed: 25,
             penalties: vec![],
             total_penalty: 0,
+            proof_bonus: None,
         };
 
         let export = EvidenceExport::from_mqs_score(
@@ -825,6 +827,7 @@ mod tests {
             tests_failed: 20,
             penalties: vec![],
             total_penalty: 0,
+            proof_bonus: None,
         };
 
         let export = EvidenceExport::from_mqs_score(
@@ -1065,6 +1068,7 @@ mod tests {
             tests_failed: 15,
             penalties: vec![],
             total_penalty: 0,
+            proof_bonus: None,
         };
 
         let model = ModelMeta {

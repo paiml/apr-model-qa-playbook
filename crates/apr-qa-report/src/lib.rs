@@ -44,6 +44,7 @@ pub mod junit;
 pub mod markdown;
 pub mod mqs;
 pub mod popperian;
+pub mod proof_status;
 pub mod ticket;
 
 pub use certificate::{Certificate, CertificateGenerator, CertificationStatus};
@@ -59,3 +60,4 @@ pub use evidence_export::{
 pub use markdown::{generate_evidence_detail, generate_index_entry, generate_rag_markdown};
 pub use mqs::{GatewayResult, MqsCalculator, MqsScore};
 pub use popperian::PopperianScore;
+pub use proof_status::{ExternalProofStatus, ProofBonus, proof_bonus_for_class, read_proof_status};

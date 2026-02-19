@@ -182,6 +182,10 @@ pub struct CertificationRow {
 
     /// Whether model provenance has been verified
     pub provenance_verified: bool,
+
+    /// Kernel proof level from provable-contracts (optional, L1–L5).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub kernel_proof_level: Option<String>,
 }
 
 impl Default for CertificationRow {
@@ -207,6 +211,7 @@ impl Default for CertificationRow {
             tps_st_cpu: None,
             tps_st_gpu: None,
             provenance_verified: false,
+            kernel_proof_level: None,
         }
     }
 }
@@ -362,6 +367,10 @@ fn parse_csv_record(record: &csv::StringRecord, idx: usize) -> Result<Certificat
         tps_st_cpu: parse_optional_f64(17),
         tps_st_gpu: parse_optional_f64(18),
         provenance_verified: parse_bool(19, "provenance_verified")?,
+        kernel_proof_level: record.get(20).and_then(|s| {
+            let s = s.trim();
+            if s.is_empty() { None } else { Some(s.to_string()) }
+        }),
     })
 }
 
