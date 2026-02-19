@@ -56,7 +56,7 @@ impl Executor {
             return Some(model_path.to_string());
         }
 
-        // Bug 202: Try sibling file with target extension
+        // Fix 202: Try sibling file with target extension
         let target_ext = match scenario.format {
             Format::Gguf => "gguf",
             Format::SafeTensors => "safetensors",

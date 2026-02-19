@@ -438,6 +438,48 @@ apr-model-qa-playbook/
     └── troubleshooting/   # Debugging guides
 ```
 
+## Installation
+
+Install the CLI from source:
+
+```bash
+cargo install --path crates/apr-qa-runner
+```
+
+Or build the entire workspace:
+
+```bash
+cargo build --release --workspace
+```
+
+## Usage
+
+Run model qualification against a playbook:
+
+```bash
+# Run a single model playbook
+apr-qa run playbooks/models/qwen-coder-0.5b.yaml
+
+# Certify a model family (MVP tier, ≤10 min)
+apr-qa certify --family qwen-coder --tier mvp
+
+# Generate HTML report
+apr-qa report --format html --output report.html
+```
+
+See `apr-qa --help` for the full list of commands and options.
+
+## Contributing
+
+Contributions are welcome. Please follow these steps:
+
+1. Fork the repository
+2. Make changes on your fork
+3. Run `make check` (fmt + lint + test) before submitting
+4. Open a pull request with a clear description of the change
+
+All pull requests must pass CI quality gates (clippy, tests, coverage ≥ 95%).
+
 ## Development
 
 ```bash

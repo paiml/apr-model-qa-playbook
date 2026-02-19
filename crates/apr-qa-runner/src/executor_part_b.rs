@@ -97,10 +97,10 @@ impl Executor {
             return (String::new(), None, 0, None, true);
         };
 
-        // Bug 201: Use per-scenario backend, not global no_gpu flag
+        // Fix 201: Use per-scenario backend, not global no_gpu flag
         let no_gpu = scenario.backend == Backend::Cpu;
 
-        // Bug 200: Dispatch by modality instead of always using `apr run`
+        // Fix 200: Dispatch by modality instead of always using `apr run`
         let output = match scenario.modality {
             Modality::Run => self.command_runner.run_inference(
                 Path::new(&model_path),

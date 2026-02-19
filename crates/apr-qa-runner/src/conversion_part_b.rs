@@ -49,7 +49,7 @@ impl SemanticConversionTest {
         let has_tokenizer_error = target_output.stderr.contains("PMAT-172")
             || target_output.stderr.contains("missing embedded tokenizer");
 
-        // Classify the bug type
+        // Classify the failure type
         let bug_type = self.classify_bug(
             &source_output.stdout,
             &target_output.stdout,
@@ -103,7 +103,7 @@ impl SemanticConversionTest {
             return Some(ConversionBugType::WeightCorruption);
         }
 
-        // Outputs match - no bug
+        // Outputs match - no defect detected
         if source.trim() == target.trim() {
             return None;
         }
