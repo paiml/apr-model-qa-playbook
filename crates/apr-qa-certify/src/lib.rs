@@ -459,7 +459,6 @@ pub fn write_csv(models: &[ModelCertification]) -> String {
     lines.join("\n") + "\n"
 }
 
-
 // Certification tier scoring logic
 include!("lib_scoring.rs");
 

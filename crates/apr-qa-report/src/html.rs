@@ -379,7 +379,6 @@ impl HtmlDashboard {
     }
 }
 
-
 #[cfg(test)]
 #[path = "html_tests.rs"]
 mod html_tests;

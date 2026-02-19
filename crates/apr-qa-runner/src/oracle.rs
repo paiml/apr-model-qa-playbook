@@ -487,5 +487,4 @@ impl OracleEnhancer {
     }
 }
 
-
 include!("oracle_part_a.rs");

@@ -358,7 +358,6 @@ pub fn to_yaml(playbook: &BootstrappedPlaybook) -> Result<String, String> {
     Ok(yaml)
 }
 
-
 #[cfg(test)]
 #[path = "bootstrapper_tests.rs"]
 mod bootstrapper_tests;

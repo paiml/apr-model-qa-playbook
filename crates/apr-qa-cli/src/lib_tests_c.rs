@@ -206,8 +206,7 @@ fn test_playbook_path_for_model_various_tiers() {
 
 #[test]
 fn test_build_certification_config_with_model_path() {
-    let config =
-        build_certification_config(CertTier::Deep, Some("/path/to/models".to_string()));
+    let config = build_certification_config(CertTier::Deep, Some("/path/to/models".to_string()));
     assert_eq!(config.model_path, Some("/path/to/models".to_string()));
     assert!(config.run_profile_ci); // Deep tier enables profile CI
 }

@@ -432,7 +432,6 @@ fn truncate(s: &str, max_len: usize) -> String {
     }
 }
 
-
 #[cfg(test)]
 #[path = "oracle_tests.rs"]
 mod oracle_tests;

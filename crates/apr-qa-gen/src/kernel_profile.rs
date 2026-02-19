@@ -424,7 +424,6 @@ fn code_prompts() -> PromptCategory {
     }
 }
 
-
 #[cfg(test)]
 #[path = "kernel_profile_tests.rs"]
 mod kernel_profile_tests;

@@ -188,7 +188,6 @@ impl Default for JunitReport {
     }
 }
 
-
 #[cfg(test)]
 #[path = "junit_tests.rs"]
 mod junit_tests;

@@ -99,8 +99,8 @@ fn test_evidence_with_metrics() {
         memory_peak_mb: Some(512),
         duration_ms: 200,
     };
-    let evidence = Evidence::corroborated("F-TEST-001", test_scenario(), "output", 100)
-        .with_metrics(metrics);
+    let evidence =
+        Evidence::corroborated("F-TEST-001", test_scenario(), "output", 100).with_metrics(metrics);
     assert_eq!(evidence.metrics.tokens_per_second, Some(100.0));
     assert_eq!(evidence.metrics.total_tokens, Some(1000));
     assert_eq!(evidence.metrics.duration_ms, 200);

@@ -95,8 +95,7 @@ fn test_bootstrap_playbook_kernel_profile() {
 fn test_bootstrap_smoke_tier() {
     let mut config = qwen_config();
     config.tier = "smoke".to_string();
-    let playbook =
-        bootstrap_playbook(&config, &qwen_constraints(), &qwen_size_variant(), "small");
+    let playbook = bootstrap_playbook(&config, &qwen_constraints(), &qwen_size_variant(), "small");
     assert_eq!(playbook.test_matrix.scenario_count, 1);
     assert_eq!(playbook.test_matrix.modalities, vec!["run"]);
     assert_eq!(playbook.test_matrix.backends, vec!["cpu"]);
@@ -128,8 +127,7 @@ fn test_bootstrap_mvp_tier() {
 fn test_bootstrap_deep_tier() {
     let mut config = qwen_config();
     config.tier = "deep".to_string();
-    let playbook =
-        bootstrap_playbook(&config, &qwen_constraints(), &qwen_size_variant(), "small");
+    let playbook = bootstrap_playbook(&config, &qwen_constraints(), &qwen_size_variant(), "small");
     assert_eq!(playbook.test_matrix.scenario_count, 50);
 }
 
@@ -157,8 +155,7 @@ fn test_bootstrap_gates() {
 fn test_bootstrap_size_aware_thresholds_tiny() {
     let mut config = qwen_config();
     config.tier = "mvp".to_string();
-    let playbook =
-        bootstrap_playbook(&config, &qwen_constraints(), &qwen_size_variant(), "tiny");
+    let playbook = bootstrap_playbook(&config, &qwen_constraints(), &qwen_size_variant(), "tiny");
     let ci = playbook.profile_ci.expect("profile_ci");
     assert!((ci.min_throughput - 50.0).abs() < f64::EPSILON);
     assert!((ci.max_p99_ms - 200.0).abs() < f64::EPSILON);
@@ -168,8 +165,7 @@ fn test_bootstrap_size_aware_thresholds_tiny() {
 fn test_bootstrap_size_aware_thresholds_large() {
     let mut config = qwen_config();
     config.tier = "mvp".to_string();
-    let playbook =
-        bootstrap_playbook(&config, &qwen_constraints(), &qwen_size_variant(), "large");
+    let playbook = bootstrap_playbook(&config, &qwen_constraints(), &qwen_size_variant(), "large");
     let ci = playbook.profile_ci.expect("profile_ci");
     assert!((ci.min_throughput - 5.0).abs() < f64::EPSILON);
     assert!((ci.max_p99_ms - 3000.0).abs() < f64::EPSILON);
@@ -273,8 +269,7 @@ fn test_bootstrap_differential_checks() {
 fn test_bootstrap_quick_tier() {
     let mut config = qwen_config();
     config.tier = "quick".to_string();
-    let playbook =
-        bootstrap_playbook(&config, &qwen_constraints(), &qwen_size_variant(), "small");
+    let playbook = bootstrap_playbook(&config, &qwen_constraints(), &qwen_size_variant(), "small");
     assert_eq!(playbook.test_matrix.scenario_count, 5);
 }
 
@@ -282,8 +277,7 @@ fn test_bootstrap_quick_tier() {
 fn test_bootstrap_standard_tier() {
     let mut config = qwen_config();
     config.tier = "standard".to_string();
-    let playbook =
-        bootstrap_playbook(&config, &qwen_constraints(), &qwen_size_variant(), "small");
+    let playbook = bootstrap_playbook(&config, &qwen_constraints(), &qwen_size_variant(), "small");
     assert_eq!(playbook.test_matrix.scenario_count, 10);
 }
 
@@ -291,8 +285,7 @@ fn test_bootstrap_standard_tier() {
 fn test_bootstrap_unknown_tier_defaults() {
     let mut config = qwen_config();
     config.tier = "unknown".to_string();
-    let playbook =
-        bootstrap_playbook(&config, &qwen_constraints(), &qwen_size_variant(), "small");
+    let playbook = bootstrap_playbook(&config, &qwen_constraints(), &qwen_size_variant(), "small");
     // Should default to mvp-level
     assert_eq!(playbook.test_matrix.scenario_count, 3);
 }
@@ -321,8 +314,7 @@ fn test_bootstrap_playbook_serialize_roundtrip() {
 fn test_bootstrap_dim_smoke_tier() {
     let mut config = qwen_config();
     config.tier = "dim-smoke".to_string();
-    let playbook =
-        bootstrap_playbook(&config, &qwen_constraints(), &qwen_size_variant(), "small");
+    let playbook = bootstrap_playbook(&config, &qwen_constraints(), &qwen_size_variant(), "small");
 
     // 1 scenario, single modality/backend, safetensors only
     assert_eq!(playbook.test_matrix.scenario_count, 1);
@@ -344,8 +336,7 @@ fn test_bootstrap_dim_smoke_tier() {
 fn test_bootstrap_dim_smoke_name() {
     let mut config = qwen_config();
     config.tier = "dim-smoke".to_string();
-    let playbook =
-        bootstrap_playbook(&config, &qwen_constraints(), &qwen_size_variant(), "small");
+    let playbook = bootstrap_playbook(&config, &qwen_constraints(), &qwen_size_variant(), "small");
     assert_eq!(playbook.name, "qwen2-1.5b-dim-smoke");
 }
 

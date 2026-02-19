@@ -424,7 +424,6 @@ impl FamilyRegistry {
     }
 }
 
-
 #[cfg(test)]
 #[path = "family_contract_tests.rs"]
 mod family_contract_tests;

@@ -1,6 +1,5 @@
 use super::*;
 
-
 #[test]
 fn test_model_id_display() {
     let id = ModelId::new("Qwen", "Qwen2.5-Coder-1.5B");

@@ -439,5 +439,4 @@ Max Tokens: {}
     }
 }
 
-
 include!("ticket_part_a.rs");

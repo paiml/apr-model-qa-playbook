@@ -474,7 +474,6 @@ pub fn lookup_family<'a>(rows: &'a [CertificationRow], family: &str) -> Vec<&'a 
     rows.iter().filter(|r| r.family == family).collect()
 }
 
-
 #[cfg(test)]
 #[path = "certification_data_tests.rs"]
 mod certification_data_tests;

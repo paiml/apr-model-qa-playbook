@@ -29,6 +29,5 @@ fn test_scenarios(count: usize) -> Vec<QaScenario> {
         .collect()
 }
 
-
 include!("parallel_tests_part_a.rs");
 include!("parallel_tests_part_b.rs");

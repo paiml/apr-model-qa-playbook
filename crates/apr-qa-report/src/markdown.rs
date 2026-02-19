@@ -307,7 +307,6 @@ pub fn generate_evidence_detail(evidence: &Evidence) -> String {
     md
 }
 
-
 #[cfg(test)]
 #[path = "markdown_tests.rs"]
 mod markdown_tests;

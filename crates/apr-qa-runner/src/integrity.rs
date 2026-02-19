@@ -474,5 +474,4 @@ fn find_embedding_shape(tensors: &HashMap<String, Vec<usize>>) -> (Option<usize>
     (None, None)
 }
 
-
 include!("integrity_part_a.rs");

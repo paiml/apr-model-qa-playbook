@@ -328,7 +328,6 @@ impl MqsCalculator {
             proof_bonus: self.proof_bonus.clone(),
         })
     }
-
 }
 
 // Gateway checks, category scoring, normalization, and grading

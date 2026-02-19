@@ -333,7 +333,6 @@ fn uuid_v4() -> String {
     format!("{timestamp:032x}")
 }
 
-
 #[cfg(test)]
 #[path = "evidence_tests.rs"]
 mod evidence_tests;

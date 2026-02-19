@@ -470,7 +470,6 @@ impl ModelRegistry {
             },
         });
     }
-
 }
 
 // Additional model families (llama, mistral, gemma, phi, deepseek-coder)

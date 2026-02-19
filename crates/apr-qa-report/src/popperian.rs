@@ -278,7 +278,6 @@ impl PopperianCalculator {
     }
 }
 
-
 #[cfg(test)]
 #[path = "popperian_tests.rs"]
 mod popperian_tests;

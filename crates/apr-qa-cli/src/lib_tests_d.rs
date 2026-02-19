@@ -334,8 +334,7 @@ fn test_build_dimensional_smoke_config_with_model_path() {
 #[test]
 fn test_build_dimensional_smoke_ignores_fail_fast_flag() {
     // DimensionalSmoke always uses FailFast regardless of the flag
-    let config =
-        build_certification_config_with_policy(CertTier::DimensionalSmoke, None, false);
+    let config = build_certification_config_with_policy(CertTier::DimensionalSmoke, None, false);
     assert!(matches!(config.failure_policy, FailurePolicy::FailFast));
 }
 
