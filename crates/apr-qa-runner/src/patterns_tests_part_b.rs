@@ -45,7 +45,7 @@ fn test_api_chat_template_clean() {
 fn test_api_chat_template_leakage() {
     let result = ApiComplianceChecker::check_chat_template("Hello<|im_end|>");
     assert!(!result.passed);
-    assert!(result.details.unwrap().contains("im_end"));
+    assert!(result.details.expect("details should be present").contains("im_end"));
 }
 
 #[test]
@@ -369,7 +369,7 @@ fn test_execution_isolation() {
     }
 
     for h in handles {
-        h.join().unwrap();
+        h.join().expect("thread should not panic");
     }
 
     // All 4 threads completed without interference
