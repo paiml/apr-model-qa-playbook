@@ -1,3 +1,4 @@
+/// Verify default_formats returns gguf, safetensors, and apr
 #[test]
 fn test_default_formats() {
     let formats = default_formats();
@@ -7,12 +8,14 @@ fn test_default_formats() {
     assert!(formats.contains(&Format::Apr));
 }
 
+/// Verify default_quantizations returns q4_k_m
 #[test]
 fn test_default_quantizations() {
     let quants = default_quantizations();
     assert_eq!(quants, vec!["q4_k_m"]);
 }
 
+/// Verify default_modalities returns run, chat, and serve
 #[test]
 fn test_default_modalities() {
     let modalities = default_modalities();
@@ -22,6 +25,7 @@ fn test_default_modalities() {
     assert!(modalities.contains(&Modality::Serve));
 }
 
+/// Verify default_backends returns cpu and gpu
 #[test]
 fn test_default_backends() {
     let backends = default_backends();
@@ -30,26 +34,31 @@ fn test_default_backends() {
     assert!(backends.contains(&Backend::Gpu));
 }
 
+/// Verify default scenario count is 100
 #[test]
 fn test_default_scenario_count() {
     assert_eq!(default_scenario_count(), 100);
 }
 
+/// Verify default proptest count is 100
 #[test]
 fn test_default_proptest_count() {
     assert_eq!(default_proptest_count(), 100);
 }
 
+/// Verify default timeout is 60 seconds (60000 ms)
 #[test]
 fn test_default_timeout() {
     assert_eq!(default_timeout(), 60000);
 }
 
+/// Verify default severity is P1
 #[test]
 fn test_default_severity() {
     assert_eq!(default_severity(), "P1");
 }
 
+/// Verify TestMatrix::default populates modalities, backends, and scenario_count
 #[test]
 fn test_test_matrix_default() {
     let matrix = TestMatrix::default();
@@ -58,6 +67,7 @@ fn test_test_matrix_default() {
     assert_eq!(matrix.scenario_count, 100);
 }
 
+/// Verify Playbook roundtrips through to_yaml preserving name and model
 #[test]
 fn test_playbook_to_yaml() {
     let yaml = r#"
@@ -77,6 +87,7 @@ test_matrix:
     assert!(output.contains("test/model"));
 }
 
+/// Verify Playbook applies default formats and quantizations when omitted
 #[test]
 fn test_playbook_with_defaults() {
     // Test playbook that uses default values for model config
@@ -96,6 +107,7 @@ test_matrix:
     assert_eq!(playbook.test_matrix.scenario_count, 100);
 }
 
+/// Verify Playbook parses state machine with states, transitions, and guards
 #[test]
 fn test_playbook_with_state_machine() {
     let yaml = r#"
@@ -139,6 +151,7 @@ state_machine:
     assert_eq!(transition.guards.len(), 1);
 }
 
+/// Verify Playbook parses property tests with generator, oracle, and count
 #[test]
 fn test_playbook_with_property_tests() {
     let yaml = r#"
@@ -171,6 +184,7 @@ property_tests:
     assert_eq!(second.count, 100); // default
 }
 
+/// Verify Playbook parses falsification gates with severity defaults
 #[test]
 fn test_playbook_with_falsification_gates() {
     let yaml = r#"
@@ -201,6 +215,7 @@ falsification_gates:
     assert_eq!(second.severity, "P1"); // default
 }
 
+/// Verify ModelConfig returns model-name for both org and name when no slash
 #[test]
 fn test_model_config_no_slash() {
     let config = ModelConfig {
@@ -222,6 +237,7 @@ fn test_model_config_no_slash() {
     assert_eq!(config.hf_name(), "model-name");
 }
 
+/// Verify ModelConfig preserves optional local_path field
 #[test]
 fn test_model_config_with_local_path() {
     let config = ModelConfig {
@@ -242,6 +258,7 @@ fn test_model_config_with_local_path() {
     assert!(config.local_path.is_some());
 }
 
+/// Verify PlaybookStep stores timeout and expected exit code
 #[test]
 fn test_playbook_step() {
     let step = PlaybookStep {
@@ -256,6 +273,7 @@ fn test_playbook_step() {
     assert_eq!(step.expected_exit_code, 0);
 }
 
+/// Verify Playbook parses full YAML with model, test matrix, and gates
 #[test]
 fn test_playbook_parse() {
     let yaml = r#"
@@ -281,6 +299,7 @@ falsification_gates:
     assert_eq!(playbook.falsification_gates.len(), 1);
 }
 
+/// Verify generate_scenarios produces correct count from matrix dimensions
 #[test]
 fn test_playbook_generate_scenarios() {
     let yaml = r#"
@@ -298,10 +317,11 @@ test_matrix:
     let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
     let scenarios = playbook.generate_scenarios();
 
-    // 1 modality × 1 backend × 1 format × 5 scenarios = 5
+    // 1 modality x 1 backend x 1 format x 5 scenarios = 5
     assert_eq!(scenarios.len(), 5);
 }
 
+/// Verify ModelConfig splits hf_repo into org and name correctly
 #[test]
 fn test_model_config_parse() {
     let config = ModelConfig {
@@ -324,6 +344,7 @@ fn test_model_config_parse() {
     assert_eq!(config.hf_name(), "Qwen2.5-Coder-1.5B-Instruct");
 }
 
+/// Verify total_tests computes modalities x backends x formats x scenario_count
 #[test]
 fn test_total_tests() {
     let yaml = r#"
@@ -339,10 +360,11 @@ test_matrix:
 "#;
 
     let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
-    // 3 modalities × 2 backends × 3 formats × 100 = 1800
+    // 3 modalities x 2 backends x 3 formats x 100 = 1800
     assert_eq!(playbook.total_tests(), 1800);
 }
 
+/// Verify Playbook parses differential test config with tensor diff and inference compare
 #[test]
 fn test_playbook_with_differential_tests() {
     let yaml = r#"
@@ -384,6 +406,7 @@ differential_tests:
     assert_eq!(inf.max_tokens, 10);
 }
 
+/// Verify Playbook parses profile_ci with warmup, measure, and assertions
 #[test]
 fn test_playbook_with_profile_ci() {
     let yaml = r#"
@@ -417,6 +440,7 @@ profile_ci:
     assert_eq!(profile.gates.len(), 2);
 }
 
+/// Verify Playbook parses trace_payload with prompt and gates
 #[test]
 fn test_playbook_with_trace_payload() {
     let yaml = r#"
@@ -441,6 +465,7 @@ trace_payload:
     assert_eq!(trace.gates.len(), 2);
 }
 
+/// Verify default_max_tokens returns 10
 #[test]
 fn test_default_max_tokens() {
     assert_eq!(default_max_tokens(), 10);

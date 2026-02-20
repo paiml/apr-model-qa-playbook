@@ -1,4 +1,5 @@
 
+/// Print color-coded playbook execution results including pass rate and gateway status
 fn print_playbook_results(result: &apr_qa_runner::ExecutionResult) {
     println!("\n{}", "=== Execution Results ===".bold().cyan());
     println!(
@@ -46,6 +47,7 @@ fn print_playbook_results(result: &apr_qa_runner::ExecutionResult) {
     }
 }
 
+/// Serialize and write execution evidence to a JSON file or directory
 fn save_playbook_evidence(result: &apr_qa_runner::ExecutionResult, output_dir: &PathBuf) {
     // GH-212: If --output ends with .json, treat as file path, not directory
     let evidence_path = if output_dir
@@ -166,6 +168,7 @@ fn log_environment() {
     eprintln!("{tag} {}\n", "===========================".dimmed());
 }
 
+/// Generate QA scenarios for a model and print them in the requested format
 fn generate_scenarios(model_id: &str, count: usize, format: &str) {
     let scenarios = generate_model_scenarios(model_id, count);
 
@@ -187,6 +190,7 @@ fn generate_scenarios(model_id: &str, count: usize, format: &str) {
     }
 }
 
+/// Load evidence from file and compute the full MQS score breakdown
 fn calculate_score(evidence_path: &PathBuf, model_id: &str) {
     let evidence_json = match std::fs::read_to_string(evidence_path) {
         Ok(s) => s,
@@ -240,6 +244,7 @@ fn calculate_score(evidence_path: &PathBuf, model_id: &str) {
     }
 }
 
+/// Generate HTML and/or JUnit reports from evidence and write them to the output directory
 fn generate_report(evidence_path: &PathBuf, output_dir: &PathBuf, formats: &str, model_id: &str) {
     let evidence_json = read_file_or_exit(evidence_path, "evidence file");
     let evidence = parse_evidence_or_exit(&evidence_json);
@@ -258,6 +263,7 @@ fn generate_report(evidence_path: &PathBuf, output_dir: &PathBuf, formats: &str,
     );
 }
 
+/// Read a file to string or exit with an error message
 fn read_file_or_exit(path: &PathBuf, desc: &str) -> String {
     std::fs::read_to_string(path).unwrap_or_else(|e| {
         eprintln!("Error reading {desc}: {e}");
@@ -265,6 +271,7 @@ fn read_file_or_exit(path: &PathBuf, desc: &str) -> String {
     })
 }
 
+/// Parse evidence JSON or exit with an error message
 fn parse_evidence_or_exit(json: &str) -> Vec<Evidence> {
     parse_evidence(json).unwrap_or_else(|e| {
         eprintln!("{e}");
@@ -272,6 +279,7 @@ fn parse_evidence_or_exit(json: &str) -> Vec<Evidence> {
     })
 }
 
+/// Calculate MQS score or exit with an error message
 fn calculate_mqs_or_exit(model_id: &str, collector: &EvidenceCollector) -> MqsScore {
     calculate_mqs_score(model_id, collector).unwrap_or_else(|e| {
         eprintln!("{e}");
@@ -279,6 +287,7 @@ fn calculate_mqs_or_exit(model_id: &str, collector: &EvidenceCollector) -> MqsSc
     })
 }
 
+/// Create directory tree or exit with an error message
 fn create_dir_or_exit(dir: &PathBuf) {
     if let Err(e) = std::fs::create_dir_all(dir) {
         eprintln!("Error creating output directory: {e}");
@@ -286,6 +295,7 @@ fn create_dir_or_exit(dir: &PathBuf) {
     }
 }
 
+/// Dispatch report generation to the requested format writers (HTML, JUnit, MQS JSON)
 fn write_report_formats(
     output_dir: &PathBuf,
     formats: &str,
@@ -306,6 +316,7 @@ fn write_report_formats(
     write_mqs_json(output_dir, mqs_score);
 }
 
+/// Generate and write the HTML report file
 fn write_html_report(
     output_dir: &PathBuf,
     model_id: &str,
@@ -322,6 +333,7 @@ fn write_html_report(
     write_report_file(output_dir, "report.html", "HTML report", result);
 }
 
+/// Generate and write the JUnit XML report file
 fn write_junit_report(
     output_dir: &PathBuf,
     model_id: &str,
@@ -332,6 +344,7 @@ fn write_junit_report(
     write_report_file(output_dir, "junit.xml", "JUnit report", result);
 }
 
+/// Write a generated report string to the output directory, handling errors
 fn write_report_file<E: std::fmt::Display>(
     output_dir: &PathBuf,
     filename: &str,
@@ -350,6 +363,7 @@ fn write_report_file<E: std::fmt::Display>(
     }
 }
 
+/// Serialize and write the MQS score as pretty-printed JSON
 fn write_mqs_json(output_dir: &PathBuf, mqs_score: &MqsScore) {
     let score_path = output_dir.join("mqs.json");
     match serde_json::to_string_pretty(mqs_score) {
@@ -361,6 +375,7 @@ fn write_mqs_json(output_dir: &PathBuf, mqs_score: &MqsScore) {
     }
 }
 
+/// List all available models, optionally filtered by size category
 fn list_models(size_filter: Option<&str>) {
     let models = list_all_models();
 

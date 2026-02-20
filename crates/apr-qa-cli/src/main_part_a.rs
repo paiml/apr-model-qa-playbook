@@ -13,6 +13,7 @@ fn setup_signal_handler() {
     }
 }
 
+/// Entry point that dispatches CLI subcommands to their handlers
 #[allow(clippy::too_many_lines)]
 fn main() {
     setup_signal_handler();
@@ -230,6 +231,7 @@ fn main() {
     }
 }
 
+/// Print playbook execution status including model, workers, and test configuration
 #[allow(clippy::fn_params_excessive_bools)]
 #[allow(clippy::too_many_lines)]
 #[allow(clippy::too_many_arguments)]
@@ -298,6 +300,7 @@ fn print_run_status(
     }
 }
 
+/// Load, validate, and execute a playbook with the given configuration
 #[allow(clippy::fn_params_excessive_bools)]
 fn run_playbook(
     playbook_path: &PathBuf,

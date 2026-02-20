@@ -1,3 +1,4 @@
+/// Verify SpecGate priority assignments for P0, P1, and P2
 #[test]
 fn test_spec_gate_priorities() {
     assert_eq!(SpecGate::IntMemorySafety.priority(), "P0");
@@ -8,6 +9,7 @@ fn test_spec_gate_priorities() {
     assert_eq!(SpecGate::PerfMinimumTps.priority(), "P2");
 }
 
+/// Verify SpecGate point values for different gate types
 #[test]
 fn test_spec_gate_points() {
     assert_eq!(SpecGate::IntMemorySafety.points(), 10);
@@ -20,6 +22,7 @@ fn test_spec_gate_points() {
 // API COMPLIANCE TESTS (F-API-001..005)
 // ========================================================================
 
+/// Verify valid JSON passes F-API-001 compliance check
 #[test]
 fn test_api_json_compliance_valid() {
     let result = ApiComplianceChecker::check_json_compliance(r#"{"status":"ok"}"#);
@@ -27,6 +30,7 @@ fn test_api_json_compliance_valid() {
     assert_eq!(result.gate_id, "F-API-001");
 }
 
+/// Verify invalid JSON fails F-API-001 compliance check
 #[test]
 fn test_api_json_compliance_invalid() {
     let result = ApiComplianceChecker::check_json_compliance("not json {");
@@ -34,6 +38,7 @@ fn test_api_json_compliance_invalid() {
     assert!(result.details.is_some());
 }
 
+/// Verify clean chat output passes F-API-002 template check
 #[test]
 fn test_api_chat_template_clean() {
     let result = ApiComplianceChecker::check_chat_template("Hello, how can I help you?");
@@ -41,6 +46,7 @@ fn test_api_chat_template_clean() {
     assert_eq!(result.gate_id, "F-API-002");
 }
 
+/// Verify template token leakage fails F-API-002 check
 #[test]
 fn test_api_chat_template_leakage() {
     let result = ApiComplianceChecker::check_chat_template("Hello<|im_end|>");
@@ -48,6 +54,7 @@ fn test_api_chat_template_leakage() {
     assert!(result.details.expect("details should be present").contains("im_end"));
 }
 
+/// Verify healthy status code and fast response passes F-API-003
 #[test]
 fn test_api_health_check_ok() {
     let result = ApiComplianceChecker::check_health_response(200, 50);
@@ -55,6 +62,7 @@ fn test_api_health_check_ok() {
     assert_eq!(result.gate_id, "F-API-003");
 }
 
+/// Verify slow health response fails F-API-003 check
 #[test]
 fn test_api_health_check_slow() {
     let result = ApiComplianceChecker::check_health_response(200, 2000);
@@ -62,12 +70,14 @@ fn test_api_health_check_slow() {
     assert!(result.description.contains("slow"));
 }
 
+/// Verify HTTP 500 status code fails F-API-003 check
 #[test]
 fn test_api_health_check_bad_status() {
     let result = ApiComplianceChecker::check_health_response(500, 50);
     assert!(!result.passed);
 }
 
+/// Verify proper error response passes F-API-004 check
 #[test]
 fn test_api_error_handling_correct() {
     let result = ApiComplianceChecker::check_error_handling(400, false, true);
@@ -75,6 +85,7 @@ fn test_api_error_handling_correct() {
     assert_eq!(result.gate_id, "F-API-004");
 }
 
+/// Verify crash on error input fails F-API-004 check
 #[test]
 fn test_api_error_handling_crash() {
     let result = ApiComplianceChecker::check_error_handling(0, true, false);
@@ -82,6 +93,7 @@ fn test_api_error_handling_crash() {
     assert!(result.description.contains("crashed"));
 }
 
+/// Verify valid SSE stream passes F-API-005 format check
 #[test]
 fn test_api_sse_format_valid() {
     let stream = "data: {\"token\":\"hello\"}\n\ndata: {\"token\":\"world\"}\n\n";
@@ -90,6 +102,7 @@ fn test_api_sse_format_valid() {
     assert_eq!(result.gate_id, "F-API-005");
 }
 
+/// Verify invalid SSE stream fails F-API-005 format check
 #[test]
 fn test_api_sse_format_invalid() {
     let stream = "data: hello\nbad line without data prefix\n";
@@ -101,6 +114,7 @@ fn test_api_sse_format_invalid() {
 // PERFORMANCE VALIDATION TESTS (F-PERF-001..004)
 // ========================================================================
 
+/// Verify throughput above threshold passes F-PERF-001
 #[test]
 fn test_perf_tps_pass() {
     let result = PerformanceValidator::check_tps(15.0, 10.0);
@@ -108,12 +122,14 @@ fn test_perf_tps_pass() {
     assert_eq!(result.gate_id, "F-PERF-001");
 }
 
+/// Verify throughput below threshold fails F-PERF-001
 #[test]
 fn test_perf_tps_fail() {
     let result = PerformanceValidator::check_tps(5.0, 10.0);
     assert!(!result.passed);
 }
 
+/// Verify time-to-first-token within limit passes F-PERF-002
 #[test]
 fn test_perf_ttft_pass() {
     let result = PerformanceValidator::check_ttft(500, 2000);
@@ -121,12 +137,14 @@ fn test_perf_ttft_pass() {
     assert_eq!(result.gate_id, "F-PERF-002");
 }
 
+/// Verify time-to-first-token exceeding limit fails F-PERF-002
 #[test]
 fn test_perf_ttft_fail() {
     let result = PerformanceValidator::check_ttft(3000, 2000);
     assert!(!result.passed);
 }
 
+/// Verify memory within growth threshold passes F-PERF-003
 #[test]
 fn test_perf_memory_leak_pass() {
     let result = PerformanceValidator::check_memory_leak(100.0, 103.0, 5.0);
@@ -134,6 +152,7 @@ fn test_perf_memory_leak_pass() {
     assert_eq!(result.gate_id, "F-PERF-003");
 }
 
+/// Verify memory exceeding growth threshold fails F-PERF-003
 #[test]
 fn test_perf_memory_leak_fail() {
     let result = PerformanceValidator::check_memory_leak(100.0, 120.0, 5.0);
@@ -141,6 +160,7 @@ fn test_perf_memory_leak_fail() {
     assert!(result.description.contains("leak"));
 }
 
+/// Verify GPU utilization above threshold passes F-PERF-004
 #[test]
 fn test_perf_gpu_utilization_pass() {
     let result = PerformanceValidator::check_gpu_utilization(75.0, 50.0);
@@ -148,6 +168,7 @@ fn test_perf_gpu_utilization_pass() {
     assert_eq!(result.gate_id, "F-PERF-004");
 }
 
+/// Verify GPU utilization below threshold fails F-PERF-004
 #[test]
 fn test_perf_gpu_utilization_fail() {
     let result = PerformanceValidator::check_gpu_utilization(30.0, 50.0);
@@ -158,6 +179,7 @@ fn test_perf_gpu_utilization_fail() {
 // CROSS-PLATFORM PARITY TESTS (F-PAR-001..003)
 // ========================================================================
 
+/// Verify CPU/GPU logit equivalence within tolerance passes F-PAR-001
 #[test]
 fn test_parity_cpu_gpu_pass() {
     let cpu = vec![0.1, 0.2, 0.3];
@@ -167,6 +189,7 @@ fn test_parity_cpu_gpu_pass() {
     assert_eq!(result.gate_id, "F-PAR-001");
 }
 
+/// Verify CPU/GPU logit divergence beyond tolerance fails F-PAR-001
 #[test]
 fn test_parity_cpu_gpu_fail() {
     let cpu = vec![0.1, 0.2, 0.3];
@@ -175,6 +198,7 @@ fn test_parity_cpu_gpu_fail() {
     assert!(!result.passed);
 }
 
+/// Verify identical token sequences across formats passes F-PAR-002
 #[test]
 fn test_parity_format_pass() {
     let gguf = vec![1, 2, 3, 4, 5];
@@ -184,6 +208,7 @@ fn test_parity_format_pass() {
     assert_eq!(result.gate_id, "F-PAR-002");
 }
 
+/// Verify token mismatch across formats fails F-PAR-002
 #[test]
 fn test_parity_format_fail() {
     let gguf = vec![1, 2, 3, 4, 5];
@@ -193,6 +218,7 @@ fn test_parity_format_fail() {
     assert!(result.description.contains("1 token"));
 }
 
+/// Verify quantization perplexity within threshold passes F-PAR-003
 #[test]
 fn test_parity_quantization_pass() {
     let result = ParityChecker::check_quantization_impact(5.0, 5.3, 10.0);
@@ -200,6 +226,7 @@ fn test_parity_quantization_pass() {
     assert_eq!(result.gate_id, "F-PAR-003");
 }
 
+/// Verify quantization perplexity exceeding threshold fails F-PAR-003
 #[test]
 fn test_parity_quantization_fail() {
     let result = ParityChecker::check_quantization_impact(5.0, 6.0, 10.0);
@@ -210,6 +237,7 @@ fn test_parity_quantization_fail() {
 // INTEGRITY TESTS (F-INT-001..005)
 // ========================================================================
 
+/// Verify clean exit with code 0 passes F-INT-001 memory safety
 #[test]
 fn test_integrity_memory_safety_pass() {
     let result = IntegrityChecker::check_memory_safety(Some(0), "");
@@ -217,6 +245,7 @@ fn test_integrity_memory_safety_pass() {
     assert_eq!(result.gate_id, "F-INT-001");
 }
 
+/// Verify SIGSEGV signal fails F-INT-001 memory safety check
 #[test]
 fn test_integrity_memory_safety_segfault() {
     let result = IntegrityChecker::check_memory_safety(Some(139), "SIGSEGV");
@@ -224,12 +253,14 @@ fn test_integrity_memory_safety_segfault() {
     assert!(result.description.contains("Segmentation"));
 }
 
+/// Verify buffer overflow detection fails F-INT-001 memory safety
 #[test]
 fn test_integrity_memory_safety_buffer_overflow() {
     let result = IntegrityChecker::check_memory_safety(Some(6), "buffer overflow detected");
     assert!(!result.passed);
 }
 
+/// Verify clean process exit passes F-INT-002
 #[test]
 fn test_integrity_process_termination_clean() {
     let result = IntegrityChecker::check_process_termination(Some(0), false, true);
@@ -237,6 +268,7 @@ fn test_integrity_process_termination_clean() {
     assert_eq!(result.gate_id, "F-INT-002");
 }
 
+/// Verify process timeout fails F-INT-002
 #[test]
 fn test_integrity_process_termination_timeout() {
     let result = IntegrityChecker::check_process_termination(None, true, false);
@@ -244,6 +276,7 @@ fn test_integrity_process_termination_timeout() {
     assert!(result.description.contains("timed out"));
 }
 
+/// Verify zombie process detection fails F-INT-002
 #[test]
 fn test_integrity_process_termination_zombie() {
     let result = IntegrityChecker::check_process_termination(None, false, false);
@@ -251,6 +284,7 @@ fn test_integrity_process_termination_zombie() {
     assert!(result.description.contains("Zombie"));
 }
 
+/// Verify clean tensor values pass F-INT-003
 #[test]
 fn test_integrity_tensor_validity_clean() {
     let result = IntegrityChecker::check_tensor_validity(&[0.1, 0.2, 0.3]);
@@ -258,6 +292,7 @@ fn test_integrity_tensor_validity_clean() {
     assert_eq!(result.gate_id, "F-INT-003");
 }
 
+/// Verify NaN in tensors fails F-INT-003
 #[test]
 fn test_integrity_tensor_validity_nan() {
     let result = IntegrityChecker::check_tensor_validity(&[0.1, f32::NAN, 0.3]);
@@ -265,6 +300,7 @@ fn test_integrity_tensor_validity_nan() {
     assert!(result.description.contains("NaN"));
 }
 
+/// Verify matching checksums pass F-INT-004 format fidelity
 #[test]
 fn test_integrity_format_fidelity_pass() {
     let result = IntegrityChecker::check_format_fidelity("abc123", "abc123");
@@ -272,6 +308,7 @@ fn test_integrity_format_fidelity_pass() {
     assert_eq!(result.gate_id, "F-INT-004");
 }
 
+/// Verify mismatched checksums fail F-INT-004 format fidelity
 #[test]
 fn test_integrity_format_fidelity_fail() {
     let result = IntegrityChecker::check_format_fidelity("abc123", "def456");
@@ -279,6 +316,7 @@ fn test_integrity_format_fidelity_fail() {
     assert!(result.description.contains("altered"));
 }
 
+/// Verify identical outputs with same seed passes F-INT-005 determinism
 #[test]
 fn test_integrity_determinism_pass() {
     let result = IntegrityChecker::check_determinism("hello world", "hello world", 42);
@@ -287,6 +325,7 @@ fn test_integrity_determinism_pass() {
     assert!(result.description.contains("42"));
 }
 
+/// Verify different outputs with same seed fails F-INT-005 determinism
 #[test]
 fn test_integrity_determinism_fail() {
     let result = IntegrityChecker::check_determinism("hello world", "hello moon", 42);
@@ -397,6 +436,7 @@ fn test_execution_determinism() {
     );
 }
 
+/// Verify default performance thresholds have expected values
 #[test]
 fn test_performance_thresholds_default() {
     let thresholds = PerformanceThresholds::default();
@@ -406,6 +446,7 @@ fn test_performance_thresholds_default() {
     assert!((thresholds.min_gpu_utilization - 50.0).abs() < f64::EPSILON);
 }
 
+/// Verify companion file checker finds all expected files
 #[test]
 fn test_companion_files_found() {
     // Create temp directory with companion files
@@ -429,6 +470,7 @@ fn test_companion_files_found() {
     assert!(result.found.contains(&"tokenizer.json".to_string()));
 }
 
+/// Verify companion file checker reports missing files correctly
 #[test]
 fn test_companion_files_mixed() {
     // Create temp directory with only some companion files

@@ -331,7 +331,7 @@ fn test_execute_tool_tests() {
     let _ = results;
 }
 
-// Helper functions shared with other test parts
+/// Create a minimal test scenario for unit testing
 fn make_test_scenario() -> apr_qa_gen::QaScenario {
     apr_qa_gen::QaScenario::new(
         ModelId::new("test", "model"),
@@ -343,6 +343,7 @@ fn make_test_scenario() -> apr_qa_gen::QaScenario {
     )
 }
 
+/// Create a falsified evidence instance for testing
 fn make_falsified_evidence() -> Evidence {
     Evidence::falsified("F-TEST-002", make_test_scenario(), "failed", "error", 200)
 }

@@ -1,3 +1,4 @@
+/// Executor gate methods for tensor template validation
 impl Executor {
 
     /// G0-TENSOR Pre-flight Check: Validates tensor names against family YAML template (PMAT-271)

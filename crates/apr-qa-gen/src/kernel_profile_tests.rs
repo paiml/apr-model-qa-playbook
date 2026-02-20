@@ -2,6 +2,7 @@ use super::*;
 
 use super::*;
 
+/// Create Qwen2-style architecture constraints with GQA and SwiGLU
 fn qwen_constraints() -> ArchConstraints {
     ArchConstraints {
         attention_type: Some("gqa".to_string()),
@@ -14,6 +15,7 @@ fn qwen_constraints() -> ArchConstraints {
     }
 }
 
+/// Create Falcon-style architecture constraints with MHA and ALiBi
 fn falcon_constraints() -> ArchConstraints {
     ArchConstraints {
         attention_type: Some("mha".to_string()),
@@ -26,6 +28,7 @@ fn falcon_constraints() -> ArchConstraints {
     }
 }
 
+/// Verify Qwen2 profile includes GQA, RmsNorm, SiLU, SwiGLU, RoPE, BiasAdd
 #[test]
 fn test_qwen_profile_kernel_ops() {
     let profile = profile_from_constraints("qwen2", &qwen_constraints(), Some(32768));
@@ -45,6 +48,7 @@ fn test_qwen_profile_kernel_ops() {
     assert!(!profile.kernel_ops.contains(&KernelOp::MultiHeadAttention));
 }
 
+/// Verify Falcon profile includes MHA, LayerNorm, GELU, ALiBi
 #[test]
 fn test_falcon_profile_kernel_ops() {
     let profile = profile_from_constraints("falcon", &falcon_constraints(), Some(2048));
@@ -64,12 +68,14 @@ fn test_falcon_profile_kernel_ops() {
     assert!(!profile.kernel_ops.contains(&KernelOp::Rope));
 }
 
+/// Verify Qwen2 with 32K context is flagged as long_context
 #[test]
 fn test_qwen_long_context() {
     let profile = profile_from_constraints("qwen2", &qwen_constraints(), Some(32768));
     assert!(profile.long_context);
 }
 
+/// Verify Falcon with 2K context is not flagged as long_context
 #[test]
 fn test_falcon_no_long_context() {
     let profile = profile_from_constraints("falcon", &falcon_constraints(), Some(2048));
@@ -81,6 +87,7 @@ fn has_category(profile: &KernelProfile, name: &str) -> bool {
     profile.prompt_categories.iter().any(|c| c.name == name)
 }
 
+/// Verify Qwen2 profile includes GQA prompts and excludes MHA prompts
 #[test]
 fn test_qwen_has_gqa_prompts() {
     let profile = profile_from_constraints("qwen2", &qwen_constraints(), Some(32768));
@@ -88,6 +95,7 @@ fn test_qwen_has_gqa_prompts() {
     assert!(!has_category(&profile, "mha_long_dependency"));
 }
 
+/// Verify Falcon profile includes MHA prompts and excludes GQA prompts
 #[test]
 fn test_falcon_has_mha_prompts() {
     let profile = profile_from_constraints("falcon", &falcon_constraints(), Some(2048));
@@ -95,12 +103,14 @@ fn test_falcon_has_mha_prompts() {
     assert!(!has_category(&profile, "gqa_multi_turn"));
 }
 
+/// Verify RoPE long-context prompts are added for 32K context
 #[test]
 fn test_rope_long_context_prompts_added() {
     let profile = profile_from_constraints("qwen2", &qwen_constraints(), Some(32768));
     assert!(has_category(&profile, "rope_long_context"));
 }
 
+/// Verify RoPE short-context profile omits long-context prompts
 #[test]
 fn test_rope_short_context_no_long_prompts() {
     let mut constraints = qwen_constraints();
@@ -109,18 +119,21 @@ fn test_rope_short_context_no_long_prompts() {
     assert!(!has_category(&profile, "rope_long_context"));
 }
 
+/// Verify bias precision prompts are included when has_bias is true
 #[test]
 fn test_bias_prompts_when_has_bias() {
     let profile = profile_from_constraints("qwen2", &qwen_constraints(), Some(4096));
     assert!(has_category(&profile, "bias_precision"));
 }
 
+/// Verify bias precision prompts are excluded when has_bias is false
 #[test]
 fn test_no_bias_prompts_when_no_bias() {
     let profile = profile_from_constraints("falcon", &falcon_constraints(), Some(2048));
     assert!(!has_category(&profile, "bias_precision"));
 }
 
+/// Verify all profiles include arithmetic and code completion categories
 #[test]
 fn test_always_has_arithmetic_and_code() {
     let profile = profile_from_constraints("test", &ArchConstraints::default(), None);
@@ -128,6 +141,7 @@ fn test_always_has_arithmetic_and_code() {
     assert!(has_category(&profile, "code_completion"));
 }
 
+/// Verify all_prompts returns non-empty list matching prompt_count
 #[test]
 fn test_all_prompts_flattened() {
     let profile = profile_from_constraints("qwen2", &qwen_constraints(), Some(32768));
@@ -136,6 +150,7 @@ fn test_all_prompts_flattened() {
     assert_eq!(all.len(), profile.prompt_count());
 }
 
+/// Verify Qwen2 profile has at least 15 prompts across all categories
 #[test]
 fn test_prompt_count() {
     let profile = profile_from_constraints("qwen2", &qwen_constraints(), Some(32768));
@@ -144,6 +159,7 @@ fn test_prompt_count() {
     assert!(profile.prompt_count() >= 15);
 }
 
+/// Verify default constraints produce MHA, RMSNorm, SiLU profile without long_context
 #[test]
 fn test_default_constraints_profile() {
     let profile = profile_from_constraints("unknown", &ArchConstraints::default(), None);
@@ -154,6 +170,7 @@ fn test_default_constraints_profile() {
     assert!(!profile.long_context);
 }
 
+/// Verify TiedEmbeddings kernel op is included when tied_embeddings is true
 #[test]
 fn test_tied_embeddings() {
     let constraints = ArchConstraints {
@@ -164,6 +181,7 @@ fn test_tied_embeddings() {
     assert!(profile.kernel_ops.contains(&KernelOp::TiedEmbeddings));
 }
 
+/// Verify TiedEmbeddings kernel op is excluded when tied_embeddings is false
 #[test]
 fn test_no_tied_embeddings() {
     let constraints = ArchConstraints {
@@ -174,6 +192,7 @@ fn test_no_tied_embeddings() {
     assert!(!profile.kernel_ops.contains(&KernelOp::TiedEmbeddings));
 }
 
+/// Verify MQA attention type maps to MultiQueryAttention and KV efficiency prompts
 #[test]
 fn test_mqa_attention() {
     let constraints = ArchConstraints {
@@ -185,6 +204,7 @@ fn test_mqa_attention() {
     assert!(has_category(&profile, "mqa_kv_efficiency"));
 }
 
+/// Verify KernelOp Display impl produces human-readable names
 #[test]
 fn test_kernel_op_display() {
     assert_eq!(
@@ -194,6 +214,7 @@ fn test_kernel_op_display() {
     assert_eq!(format!("{}", KernelOp::RmsNorm), "RMS normalization");
 }
 
+/// Verify KernelOp description returns detailed kernel descriptions
 #[test]
 fn test_kernel_op_description() {
     assert_eq!(
@@ -206,24 +227,28 @@ fn test_kernel_op_description() {
     );
 }
 
+/// Verify profile stores the model family name from constraints
 #[test]
 fn test_profile_family_name() {
     let profile = profile_from_constraints("qwen2", &qwen_constraints(), Some(32768));
     assert_eq!(profile.family, "qwen2");
 }
 
+/// Verify long-context profile suggests 128 max tokens
 #[test]
 fn test_suggested_max_tokens_long_context() {
     let profile = profile_from_constraints("qwen2", &qwen_constraints(), Some(32768));
     assert_eq!(profile.suggested_max_tokens, 128);
 }
 
+/// Verify short-context profile suggests 64 max tokens
 #[test]
 fn test_suggested_max_tokens_short_context() {
     let profile = profile_from_constraints("falcon", &falcon_constraints(), Some(2048));
     assert_eq!(profile.suggested_max_tokens, 64);
 }
 
+/// Verify KernelOp serializes to snake_case JSON string
 #[test]
 fn test_kernel_op_serialize() {
     let op = KernelOp::GroupedQueryAttention;
@@ -231,12 +256,14 @@ fn test_kernel_op_serialize() {
     assert_eq!(json, "\"grouped_query_attention\"");
 }
 
+/// Verify KernelOp deserializes from snake_case JSON string
 #[test]
 fn test_kernel_op_deserialize() {
     let op: KernelOp = serde_json::from_str("\"fused_q4k_matvec\"").expect("deserialize");
     assert_eq!(op, KernelOp::FusedQ4kMatvec);
 }
 
+/// Verify ArchConstraints default has all fields set to None
 #[test]
 fn test_arch_constraints_default() {
     let c = ArchConstraints::default();
@@ -249,6 +276,7 @@ fn test_arch_constraints_default() {
     assert!(c.mlp_type.is_none());
 }
 
+/// Verify ArchSizeVariant default has zeroed dimensions and empty parameters
 #[test]
 fn test_arch_size_variant_default() {
     let v = ArchSizeVariant::default();
@@ -258,6 +286,7 @@ fn test_arch_size_variant_default() {
     assert!(v.parameters.is_empty());
 }
 
+/// Verify all prompt categories use valid oracle types
 #[test]
 fn test_prompt_category_oracle_types() {
     let profile = profile_from_constraints("qwen2", &qwen_constraints(), Some(32768));
@@ -270,6 +299,7 @@ fn test_prompt_category_oracle_types() {
     }
 }
 
+/// Verify all prompt categories have a positive max_tokens value
 #[test]
 fn test_prompt_category_max_tokens_positive() {
     let profile = profile_from_constraints("qwen2", &qwen_constraints(), Some(32768));
@@ -278,6 +308,7 @@ fn test_prompt_category_max_tokens_positive() {
     }
 }
 
+/// Verify every prompt category contains at least one prompt
 #[test]
 fn test_prompt_category_has_prompts() {
     let profile = profile_from_constraints("qwen2", &qwen_constraints(), Some(32768));
@@ -290,6 +321,7 @@ fn test_prompt_category_has_prompts() {
     }
 }
 
+/// Verify absolute positional encoding maps to AbsolutePosition kernel op
 #[test]
 fn test_absolute_position_encoding() {
     let constraints = ArchConstraints {
@@ -301,6 +333,7 @@ fn test_absolute_position_encoding() {
     assert!(!profile.long_context);
 }
 
+/// Verify KernelProfile survives JSON serialize/deserialize roundtrip
 #[test]
 fn test_kernel_profile_serialize_roundtrip() {
     let profile = profile_from_constraints("qwen2", &qwen_constraints(), Some(32768));

@@ -1,3 +1,4 @@
+/// Verify ARITHMETIC_EXPECTED constant is populated with expected values
 #[test]
 fn test_arithmetic_expected_constant() {
     assert!(!ARITHMETIC_EXPECTED.is_empty());
@@ -7,6 +8,7 @@ fn test_arithmetic_expected_constant() {
 
 // Additional tests for coverage
 
+/// Verify all ConversionBugType variants survive serde round-trip
 #[test]
 fn test_conversion_bug_type_serialization() {
     let bug_types = [
@@ -24,6 +26,7 @@ fn test_conversion_bug_type_serialization() {
     }
 }
 
+/// Verify ConversionTest serialization preserves format fields
 #[test]
 fn test_conversion_test_serialization() {
     let test = ConversionTest {
@@ -42,6 +45,7 @@ fn test_conversion_test_serialization() {
     assert_eq!(parsed.target_format, Format::Apr);
 }
 
+/// Verify Corroborated result serialization preserves max_diff
 #[test]
 fn test_conversion_result_serialization_corroborated() {
     let result = ConversionResult::Corroborated {
@@ -60,6 +64,7 @@ fn test_conversion_result_serialization_corroborated() {
     }
 }
 
+/// Verify Falsified result serialization preserves gate_id and evidence
 #[test]
 fn test_conversion_result_serialization_falsified() {
     let result = ConversionResult::Falsified {
@@ -87,6 +92,7 @@ fn test_conversion_result_serialization_falsified() {
     }
 }
 
+/// Verify ConversionEvidence serialization preserves hashes and indices
 #[test]
 fn test_conversion_evidence_serialization() {
     let evidence = ConversionEvidence {
@@ -106,6 +112,7 @@ fn test_conversion_evidence_serialization() {
     assert_eq!(parsed.diff_indices.len(), 3);
 }
 
+/// Verify SemanticTestResult::Falsified clone preserves bug_type and stderr
 #[test]
 fn test_semantic_test_result_clone() {
     let result = SemanticTestResult::Falsified {
@@ -126,6 +133,7 @@ fn test_semantic_test_result_clone() {
     }
 }
 
+/// Verify classify_bug returns Unknown when source is empty but target has content
 #[test]
 fn test_classify_bug_source_empty_target_has_content() {
     let test = SemanticConversionTest::new(
@@ -139,6 +147,7 @@ fn test_classify_bug_source_empty_target_has_content() {
     assert_eq!(bug, Some(ConversionBugType::Unknown));
 }
 
+/// Verify classify_bug returns None when both outputs are empty
 #[test]
 fn test_classify_bug_both_empty() {
     let test = SemanticConversionTest::new(
@@ -152,6 +161,7 @@ fn test_classify_bug_both_empty() {
     assert!(bug.is_none());
 }
 
+/// Verify classify_bug returns Unknown when source lacks expected but target has it
 #[test]
 fn test_classify_bug_source_no_expected_target_has_expected() {
     let test = SemanticConversionTest::new(
@@ -166,6 +176,7 @@ fn test_classify_bug_source_no_expected_target_has_expected() {
     assert_eq!(bug, Some(ConversionBugType::Unknown));
 }
 
+/// Verify compute_diff handles unicode characters correctly
 #[test]
 fn test_compute_diff_unicode() {
     let test = ConversionTest::new(
@@ -179,6 +190,7 @@ fn test_compute_diff_unicode() {
     assert!(diff < 1.0);
 }
 
+/// Verify find_diff_indices detects unicode character differences
 #[test]
 fn test_find_diff_indices_unicode() {
     let test = ConversionTest::new(
@@ -192,6 +204,7 @@ fn test_find_diff_indices_unicode() {
     assert!(indices.len() >= 2);
 }
 
+/// Verify hash_output produces deterministic 16-char hex for unicode
 #[test]
 fn test_hash_output_unicode() {
     let hash1 = ConversionTest::hash_output("hello 你好 世界");
@@ -200,6 +213,7 @@ fn test_hash_output_unicode() {
     assert_eq!(hash1.len(), 16); // 16 hex chars
 }
 
+/// Verify pass_rate calculates correct percentage for partial passes
 #[test]
 fn test_conversion_execution_result_pass_rate_partial() {
     let result = ConversionExecutionResult {
@@ -214,6 +228,7 @@ fn test_conversion_execution_result_pass_rate_partial() {
     assert!((rate - 70.0).abs() < f64::EPSILON);
 }
 
+/// Verify ConversionConfig accepts specific backend lists
 #[test]
 fn test_conversion_config_with_specific_backends() {
     let config = ConversionConfig {
@@ -228,6 +243,7 @@ fn test_conversion_config_with_specific_backends() {
     assert!(!config.test_round_trips);
 }
 
+/// Verify SemanticConversionTest preserves constructor fields
 #[test]
 fn test_semantic_conversion_test_fields() {
     let test = SemanticConversionTest::new(
@@ -242,6 +258,7 @@ fn test_semantic_conversion_test_fields() {
     assert_eq!(test.model_id.org, "org");
 }
 
+/// Verify RoundTripTest stores format chain and backend
 #[test]
 fn test_round_trip_test_with_two_formats() {
     let rt = RoundTripTest::new(
@@ -253,6 +270,7 @@ fn test_round_trip_test_with_two_formats() {
     assert_eq!(rt.backend, Backend::Gpu);
 }
 
+/// Verify ConversionEvidence with empty diff_indices and zero max_diff
 #[test]
 fn test_conversion_evidence_with_empty_diff_indices() {
     let evidence = ConversionEvidence {
@@ -270,6 +288,7 @@ fn test_conversion_evidence_with_empty_diff_indices() {
     assert!((evidence.max_diff - 0.0).abs() < f64::EPSILON);
 }
 
+/// Verify all_conversion_pairs returns six bidirectional format pairs
 #[test]
 fn test_all_conversion_pairs_complete() {
     let pairs = all_conversion_pairs();
@@ -286,6 +305,7 @@ fn test_all_conversion_pairs_complete() {
     assert!(pairs.contains(&(Format::SafeTensors, Format::Apr)));
 }
 
+/// Verify generate_conversion_tests preserves model_id across all tests
 #[test]
 fn test_generate_conversion_tests_model_id_preserved() {
     let model_id = ModelId::new("my-org", "my-model-v1");
@@ -297,6 +317,7 @@ fn test_generate_conversion_tests_model_id_preserved() {
     }
 }
 
+/// Verify ConversionTest debug format includes type name and formats
 #[test]
 fn test_conversion_test_debug_format() {
     let test = ConversionTest::new(
@@ -311,6 +332,7 @@ fn test_conversion_test_debug_format() {
     assert!(debug.contains("Apr"));
 }
 
+/// Verify classify_bug detects EmbeddingTransposition for multiple garbage patterns
 #[test]
 fn test_classify_bug_with_multiple_garbage_patterns() {
     let test = SemanticConversionTest::new(
@@ -324,6 +346,7 @@ fn test_classify_bug_with_multiple_garbage_patterns() {
     assert_eq!(bug, Some(ConversionBugType::EmbeddingTransposition));
 }
 
+/// Verify classify_bug detects WeightCorruption for whitespace-only target
 #[test]
 fn test_classify_bug_target_only_whitespace() {
     let test = SemanticConversionTest::new(
@@ -337,6 +360,7 @@ fn test_classify_bug_target_only_whitespace() {
     assert_eq!(bug, Some(ConversionBugType::WeightCorruption));
 }
 
+/// Verify ConversionExecutor preserves custom config settings
 #[test]
 fn test_conversion_executor_custom_config() {
     let config = ConversionConfig {
@@ -352,6 +376,7 @@ fn test_conversion_executor_custom_config() {
     assert!(executor.config.no_gpu);
 }
 
+/// Verify Corroborated semantic result reports as pass
 #[test]
 fn test_semantic_test_result_is_pass_corroborated() {
     let result = SemanticTestResult::Corroborated {
@@ -361,6 +386,7 @@ fn test_semantic_test_result_is_pass_corroborated() {
     assert!(result.is_pass());
 }
 
+/// Verify Falsified semantic result reports as not pass
 #[test]
 fn test_semantic_test_result_is_pass_falsified() {
     let result = SemanticTestResult::Falsified {
@@ -372,6 +398,7 @@ fn test_semantic_test_result_is_pass_falsified() {
     assert!(!result.is_pass());
 }
 
+/// Verify Corroborated semantic result has no bug_type
 #[test]
 fn test_semantic_test_result_bug_type_corroborated() {
     let result = SemanticTestResult::Corroborated {
@@ -381,6 +408,7 @@ fn test_semantic_test_result_bug_type_corroborated() {
     assert!(result.bug_type().is_none());
 }
 
+/// Verify Falsified semantic result returns correct bug_type
 #[test]
 fn test_semantic_test_result_bug_type_falsified() {
     let result = SemanticTestResult::Falsified {
@@ -392,6 +420,7 @@ fn test_semantic_test_result_bug_type_falsified() {
     assert_eq!(result.bug_type(), Some(ConversionBugType::SemanticDrift));
 }
 
+/// Verify Corroborated result round-trips through JSON with max_diff intact
 #[test]
 fn test_conversion_result_corroborated_serialization() {
     let result = ConversionResult::Corroborated {
@@ -410,6 +439,7 @@ fn test_conversion_result_corroborated_serialization() {
     }
 }
 
+/// Verify Falsified result JSON contains variant name and gate_id
 #[test]
 fn test_conversion_result_falsified_serialization() {
     let result = ConversionResult::Falsified {
@@ -432,6 +462,7 @@ fn test_conversion_result_falsified_serialization() {
     assert!(json.contains("F-TEST-001"));
 }
 
+/// Verify ConversionTest accepts custom epsilon values
 #[test]
 fn test_conversion_test_new_with_epsilon() {
     let test = ConversionTest {

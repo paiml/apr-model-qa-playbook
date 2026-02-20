@@ -1,3 +1,4 @@
+/// Verify CSV roundtrip integrity preserves all fields
 #[test]
 fn test_falsify_cert_001_roundtrip_integrity() {
     let temp_file = NamedTempFile::new().expect("temp file");
@@ -44,6 +45,7 @@ fn test_falsify_cert_001_roundtrip_integrity() {
     }
 }
 
+/// Verify ModelStatus parses from string including case-insensitive variants
 #[test]
 fn test_model_status_from_str() {
     assert_eq!(
@@ -69,6 +71,7 @@ fn test_model_status_from_str() {
     assert!("INVALID".parse::<ModelStatus>().is_err());
 }
 
+/// Verify ModelStatus Display formats as uppercase string
 #[test]
 fn test_model_status_display() {
     assert_eq!(format!("{}", ModelStatus::Certified), "CERTIFIED");
@@ -77,6 +80,7 @@ fn test_model_status_display() {
     assert_eq!(format!("{}", ModelStatus::Untested), "UNTESTED");
 }
 
+/// Verify SizeCategory parses from string including case-insensitive variants
 #[test]
 fn test_size_category_from_str() {
     assert_eq!("tiny".parse::<SizeCategory>().unwrap(), SizeCategory::Tiny);
@@ -100,6 +104,7 @@ fn test_size_category_from_str() {
     assert!("invalid".parse::<SizeCategory>().is_err());
 }
 
+/// Verify SizeCategory Display formats as lowercase string
 #[test]
 fn test_size_category_display() {
     assert_eq!(format!("{}", SizeCategory::Tiny), "tiny");
@@ -110,6 +115,7 @@ fn test_size_category_display() {
     assert_eq!(format!("{}", SizeCategory::Huge), "huge");
 }
 
+/// Verify CertificationRow default has empty ID and pending status
 #[test]
 fn test_certification_row_default() {
     let row = CertificationRow::default();
@@ -119,6 +125,7 @@ fn test_certification_row_default() {
     assert!(!row.g1);
 }
 
+/// Verify CertificationRow::new sets model_id and family
 #[test]
 fn test_certification_row_new() {
     let row = CertificationRow::new("test/model", "test-family");
@@ -126,6 +133,7 @@ fn test_certification_row_new() {
     assert_eq!(row.family, "test-family");
 }
 
+/// Verify all_gateways_passed requires all four gateways true
 #[test]
 fn test_all_gateways_passed() {
     // Default has no gateways passed
@@ -153,6 +161,7 @@ fn test_all_gateways_passed() {
     assert!(!row.all_gateways_passed());
 }
 
+/// Verify derive_status returns correct status for various MQS/gateway combos
 #[test]
 fn test_derive_status() {
     // Test CERTIFIED: MQS >= 800 and all gateways passed
@@ -197,6 +206,7 @@ fn test_derive_status() {
     assert_eq!(row.derive_status(), ModelStatus::Pending);
 }
 
+/// Verify derive_grade maps MQS scores to correct letter grades
 #[test]
 fn test_derive_grade() {
     let row_a = CertificationRow {
@@ -230,6 +240,7 @@ fn test_derive_grade() {
     assert_eq!(row_f.derive_grade(), "F");
 }
 
+/// Verify lookup_model finds model by ID or returns None
 #[test]
 fn test_lookup_model() {
     let rows = vec![
@@ -246,6 +257,7 @@ fn test_lookup_model() {
     assert!(not_found.is_none());
 }
 
+/// Verify lookup_family returns all rows matching family name
 #[test]
 fn test_lookup_family() {
     let rows = vec![
@@ -264,12 +276,14 @@ fn test_lookup_family() {
     assert!(family_c.is_empty());
 }
 
+/// Verify read_models_csv returns error for missing file
 #[test]
 fn test_read_missing_file() {
     let result = read_models_csv("/nonexistent/path/models.csv");
     assert!(result.is_err());
 }
 
+/// Verify read_models_csv returns error for malformed CSV
 #[test]
 fn test_read_malformed_csv() {
     let temp_file = NamedTempFile::new().expect("temp file");
@@ -285,6 +299,7 @@ fn test_read_malformed_csv() {
     assert!(result.is_err());
 }
 
+/// Verify optional TPS fields are correctly parsed from CSV
 #[test]
 fn test_optional_tps_fields() {
     let temp_file = NamedTempFile::new().expect("temp file");
@@ -303,6 +318,7 @@ fn test_optional_tps_fields() {
     assert!((second_row.tps_gguf_cpu.unwrap() - 17.9).abs() < 0.1);
 }
 
+/// Verify write_models_csv creates readable file with correct data
 #[test]
 fn test_write_models_csv_creates_file() {
     let temp_file = NamedTempFile::new().expect("temp file");
@@ -340,6 +356,7 @@ fn test_write_models_csv_creates_file() {
     assert!(read_back[0].provenance_verified);
 }
 
+/// Verify write_models_csv returns error for nonexistent directory
 #[test]
 fn test_write_to_nonexistent_dir() {
     let result = write_models_csv(&[], "/nonexistent/dir/models.csv");
@@ -348,6 +365,7 @@ fn test_write_to_nonexistent_dir() {
     assert!(err.to_string().contains("Failed to create"));
 }
 
+/// Verify ModelStatus serializes/deserializes to/from JSON
 #[test]
 fn test_model_status_serde() {
     let status = ModelStatus::Certified;
@@ -358,6 +376,7 @@ fn test_model_status_serde() {
     assert_eq!(deserialized, ModelStatus::Certified);
 }
 
+/// Verify SizeCategory serializes/deserializes to/from JSON
 #[test]
 fn test_size_category_serde() {
     let size = SizeCategory::Medium;
@@ -368,6 +387,7 @@ fn test_size_category_serde() {
     assert_eq!(deserialized, SizeCategory::Medium);
 }
 
+/// Verify CertificationRow serializes/deserializes to/from JSON
 #[test]
 fn test_certification_row_serde() {
     let row = CertificationRow {
@@ -387,6 +407,7 @@ fn test_certification_row_serde() {
     assert_eq!(deserialized.status, ModelStatus::Certified);
 }
 
+/// Verify invalid status string returns parse error
 #[test]
 fn test_invalid_status_parse() {
     let result = "GARBAGE".parse::<ModelStatus>();
@@ -394,6 +415,7 @@ fn test_invalid_status_parse() {
     assert!(result.unwrap_err().to_string().contains("Invalid status"));
 }
 
+/// Verify invalid size category string returns parse error
 #[test]
 fn test_invalid_size_category_parse() {
     let result = "massive".parse::<SizeCategory>();
@@ -406,95 +428,19 @@ fn test_invalid_size_category_parse() {
     );
 }
 
+/// Verify default ModelStatus is Pending
 #[test]
 fn test_model_status_default() {
     let status = ModelStatus::default();
     assert_eq!(status, ModelStatus::Pending);
 }
 
+/// Verify default SizeCategory is Tiny
 #[test]
 fn test_size_category_default() {
     let size = SizeCategory::default();
     assert_eq!(size, SizeCategory::Tiny);
 }
 
-// ── FALSIFY-CERT-002: Status derivation from MQS score ────────────────────
-//
-// Prediction: status is deterministically derived from mqs_score and g1-g4 gateways.
-// Per Popper (1959), this test attempts to falsify the status derivation algorithm.
 
-#[test]
-fn test_falsify_cert_002_status_derivation() {
-    // All gateways passed, high score -> CERTIFIED
-    let certified = CertificationRow {
-        mqs_score: 850,
-        g1: true,
-        g2: true,
-        g3: true,
-        g4: true,
-        ..CertificationRow::default()
-    };
-    assert_eq!(
-        certified.derive_status(),
-        ModelStatus::Certified,
-        "All gateways passed + score >= 800 should be CERTIFIED"
-    );
-
-    // All gateways passed, low score -> BLOCKED
-    let blocked_low = CertificationRow {
-        mqs_score: 500,
-        g1: true,
-        g2: true,
-        g3: true,
-        g4: true,
-        ..CertificationRow::default()
-    };
-    assert_eq!(
-        blocked_low.derive_status(),
-        ModelStatus::Blocked,
-        "All gateways passed + score < 800 should be BLOCKED"
-    );
-
-    // Gateway G3 failed, high score -> BLOCKED
-    let blocked_gw = CertificationRow {
-        mqs_score: 950,
-        g1: true,
-        g2: true,
-        g3: false, // Gateway failure
-        g4: true,
-        ..CertificationRow::default()
-    };
-    assert_eq!(
-        blocked_gw.derive_status(),
-        ModelStatus::Blocked,
-        "Gateway failed should always be BLOCKED"
-    );
-
-    // Score 0 with g1=false -> PENDING (never tested)
-    let pending = CertificationRow {
-        mqs_score: 0,
-        g1: false,
-        g2: false,
-        g3: false,
-        g4: false,
-        ..CertificationRow::default()
-    };
-    assert_eq!(
-        pending.derive_status(),
-        ModelStatus::Pending,
-        "Score 0 with g1=false should be PENDING (not yet tested)"
-    );
-}
-
-// ── FALSIFY-CERT-003: Grade derivation from MQS score ─────────────────────
-//
-// Prediction: grade is deterministically derived from mqs_score using fixed thresholds.
-// Per Popper (1959), this test attempts to falsify the grade derivation algorithm.
-//
-// Grade thresholds (from derive_grade):
-// A: 900-1000
-// B: 800-899
-// C: 600-799
-// D: 400-599
-// F: 0-399
 

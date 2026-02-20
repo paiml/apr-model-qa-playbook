@@ -81,7 +81,9 @@ impl KernelOp {
     }
 }
 
+/// Display a kernel operation as its human-readable description
 impl std::fmt::Display for KernelOp {
+    /// Format the kernel op using its description string
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.description())
     }

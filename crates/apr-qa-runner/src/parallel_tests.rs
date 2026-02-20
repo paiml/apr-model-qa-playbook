@@ -3,6 +3,7 @@ use super::*;
 use super::*;
 use apr_qa_gen::{Backend, Format, Modality, ModelId};
 
+/// Create a default test scenario for parallel execution tests
 fn test_scenario() -> QaScenario {
     QaScenario::new(
         ModelId::new("test", "model"),
@@ -14,6 +15,7 @@ fn test_scenario() -> QaScenario {
     )
 }
 
+/// Create a vector of test scenarios with sequential prompts
 fn test_scenarios(count: usize) -> Vec<QaScenario> {
     (0..count)
         .map(|i| {

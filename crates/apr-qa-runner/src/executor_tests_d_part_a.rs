@@ -1,3 +1,4 @@
+/// Verify profile flamegraph reports failure when runner returns error
 #[test]
 fn test_execute_profile_flamegraph_unsupported() {
     let mock_runner = MockCommandRunner::new().with_profile_flamegraph_failure();
@@ -12,6 +13,7 @@ fn test_execute_profile_flamegraph_unsupported() {
     assert!(!result.passed);
 }
 
+/// Verify profile focus fails when apr binary is not available
 #[test]
 fn test_execute_profile_focus_no_apr() {
     let executor = ToolExecutor::new("test-model.gguf".to_string(), true, 5000);
@@ -21,6 +23,7 @@ fn test_execute_profile_focus_no_apr() {
     assert_eq!(result.gate_id, "F-PROFILE-003");
 }
 
+/// Verify profile focus passes with mock runner returning success
 #[test]
 fn test_execute_profile_focus_with_mock_success() {
     let mock_runner = MockCommandRunner::new();
@@ -36,6 +39,7 @@ fn test_execute_profile_focus_with_mock_success() {
     assert_eq!(result.gate_id, "F-PROFILE-003");
 }
 
+/// Verify profile focus reports failure when runner returns error
 #[test]
 fn test_execute_profile_focus_unsupported() {
     let mock_runner = MockCommandRunner::new().with_profile_focus_failure();
@@ -49,6 +53,7 @@ fn test_execute_profile_focus_unsupported() {
     assert!(!result.passed);
 }
 
+/// Verify backend equivalence test fails when apr is not available
 #[test]
 fn test_execute_backend_equivalence_no_apr() {
     let executor = ToolExecutor::new("test-model.gguf".to_string(), false, 5000);
@@ -58,6 +63,7 @@ fn test_execute_backend_equivalence_no_apr() {
     assert_eq!(result.gate_id, "F-CONV-BE-001");
 }
 
+/// Verify serve lifecycle test fails when apr binary is not available
 #[test]
 fn test_execute_serve_lifecycle_no_apr() {
     let executor = ToolExecutor::new("test-model.gguf".to_string(), true, 5000);
@@ -67,6 +73,7 @@ fn test_execute_serve_lifecycle_no_apr() {
     assert_eq!(result.gate_id, "F-INTEG-003");
 }
 
+/// Verify execute_all omits serve-lifecycle from default tool execution
 #[test]
 fn test_execute_all_with_serve() {
     let mock_runner = MockCommandRunner::new();
@@ -87,6 +94,7 @@ fn test_execute_all_with_serve() {
 // Conversion infrastructure failure
 // =========================================================================
 
+/// Verify executor handles conversion infrastructure failure with mock runner
 #[test]
 #[allow(clippy::too_many_lines)]
 fn test_executor_conversion_infrastructure_failure() {
@@ -269,6 +277,7 @@ test_matrix:
 // G0 INTEGRITY CHECK TESTS
 // ========================================================================
 
+/// Verify find_safetensors_dir locates safetensors in a subdirectory
 #[test]
 fn test_find_safetensors_dir_with_subdir() {
     use tempfile::TempDir;
@@ -282,6 +291,7 @@ fn test_find_safetensors_dir_with_subdir() {
     assert_eq!(result.unwrap(), st_dir);
 }
 
+/// Verify find_safetensors_dir locates safetensors in the root directory
 #[test]
 fn test_find_safetensors_dir_direct() {
     use tempfile::TempDir;
@@ -293,6 +303,7 @@ fn test_find_safetensors_dir_direct() {
     assert_eq!(result.unwrap(), dir.path());
 }
 
+/// Verify find_safetensors_dir returns None when no safetensors files exist
 #[test]
 fn test_find_safetensors_dir_none() {
     use tempfile::TempDir;
@@ -303,6 +314,7 @@ fn test_find_safetensors_dir_none() {
     assert!(result.is_none());
 }
 
+/// Verify has_safetensors_files returns true when safetensors file exists
 #[test]
 fn test_has_safetensors_files_true() {
     use tempfile::TempDir;
@@ -312,6 +324,7 @@ fn test_has_safetensors_files_true() {
     assert!(Executor::has_safetensors_files(dir.path()));
 }
 
+/// Verify has_safetensors_files returns false for non-safetensors files
 #[test]
 fn test_has_safetensors_files_false() {
     use tempfile::TempDir;
@@ -321,6 +334,7 @@ fn test_has_safetensors_files_false() {
     assert!(!Executor::has_safetensors_files(dir.path()));
 }
 
+/// Verify has_safetensors_files returns false for nonexistent directory
 #[test]
 fn test_has_safetensors_files_nonexistent_dir() {
     let nonexistent = std::path::Path::new("/nonexistent/path/xyz123");
@@ -331,6 +345,7 @@ fn test_has_safetensors_files_nonexistent_dir() {
 // G0-VALIDATE Pre-flight Gate Tests
 // =========================================================================
 
+/// Verify validate_scenario creates a SafeTensors scenario with G0 Validate prompt
 #[test]
 fn test_validate_scenario_creation() {
     let model_id = ModelId::new("test", "model");
@@ -342,6 +357,7 @@ fn test_validate_scenario_creation() {
     assert!(scenario.prompt.contains("G0 Validate"));
 }
 
+/// Verify pull_scenario creates a SafeTensors scenario with G0 Pull prompt
 #[test]
 fn test_pull_scenario_creation() {
     let model_id = ModelId::new("test", "model");
@@ -353,6 +369,7 @@ fn test_pull_scenario_creation() {
     assert!(scenario.prompt.contains("G0 Pull"));
 }
 
+/// Verify G0 pull check passes and returns pulled model path on success
 #[test]
 fn test_g0_pull_pass() {
     let mock_runner = MockCommandRunner::new();
@@ -382,6 +399,7 @@ fn test_g0_pull_pass() {
     assert!(pull_ev.output.contains("G0 PASS"));
 }
 
+/// Verify G0 pull check fails and returns None path when runner reports failure
 #[test]
 fn test_g0_pull_fail() {
     let mock_runner = MockCommandRunner::new().with_pull_failure();

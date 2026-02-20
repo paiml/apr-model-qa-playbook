@@ -1,10 +1,9 @@
 use super::*;
-
-use super::*;
 use crate::mqs::{CategoryScores, GatewayResult, Penalty};
 use crate::popperian::FalsificationDetail;
 use apr_qa_gen::{Backend, Format, Modality, ModelId, QaScenario};
 
+/// Create a default QA scenario for markdown tests
 fn test_scenario() -> QaScenario {
     QaScenario::new(
         ModelId::new("test", "model"),
@@ -16,6 +15,7 @@ fn test_scenario() -> QaScenario {
     )
 }
 
+/// Create a sample MQS score for markdown rendering tests
 fn test_mqs_score() -> MqsScore {
     MqsScore {
         model_id: "qwen2.5-coder-7b".to_string(),
@@ -50,6 +50,7 @@ fn test_mqs_score() -> MqsScore {
     }
 }
 
+/// Create a sample Popperian score for markdown rendering tests
 fn test_popperian_score() -> PopperianScore {
     PopperianScore {
         model_id: "qwen2.5-coder-7b".to_string(),
@@ -73,6 +74,7 @@ fn test_popperian_score() -> PopperianScore {
     }
 }
 
+/// Verify basic RAG markdown contains model name and summary
 #[test]
 fn test_generate_rag_markdown_basic() {
     let mqs = test_mqs_score();
@@ -87,6 +89,7 @@ fn test_generate_rag_markdown_basic() {
     assert!(md.contains("B+"));
 }
 
+/// Verify RAG markdown contains gateway check sections
 #[test]
 fn test_generate_rag_markdown_contains_gateways() {
     let mqs = test_mqs_score();
@@ -103,6 +106,7 @@ fn test_generate_rag_markdown_contains_gateways() {
     assert!(md.contains("✓ PASS"));
 }
 
+/// Verify RAG markdown contains category score sections
 #[test]
 fn test_generate_rag_markdown_contains_categories() {
     let mqs = test_mqs_score();
@@ -117,6 +121,7 @@ fn test_generate_rag_markdown_contains_categories() {
     assert!(md.contains("STAB"));
 }
 
+/// Verify RAG markdown contains falsification details
 #[test]
 fn test_generate_rag_markdown_contains_falsifications() {
     let mqs = test_mqs_score();
@@ -130,6 +135,7 @@ fn test_generate_rag_markdown_contains_falsifications() {
     assert!(md.contains("**Severity**: 3/5"));
 }
 
+/// Verify RAG markdown contains penalty section
 #[test]
 fn test_generate_rag_markdown_contains_penalties() {
     let mqs = test_mqs_score();
@@ -143,6 +149,7 @@ fn test_generate_rag_markdown_contains_penalties() {
     assert!(md.contains("-30"));
 }
 
+/// Verify RAG markdown contains Popperian analysis section
 #[test]
 fn test_generate_rag_markdown_contains_popperian() {
     let mqs = test_mqs_score();
@@ -156,6 +163,7 @@ fn test_generate_rag_markdown_contains_popperian() {
     assert!(md.contains("Corroboration Rate"));
 }
 
+/// Verify RAG markdown contains metadata section
 #[test]
 fn test_generate_rag_markdown_contains_metadata() {
     let mqs = test_mqs_score();
@@ -168,6 +176,7 @@ fn test_generate_rag_markdown_contains_metadata() {
     assert!(md.contains("Production Ready"));
 }
 
+/// Verify RAG markdown renders evidence details by category
 #[test]
 fn test_generate_rag_markdown_with_evidence() {
     let mqs = test_mqs_score();
@@ -195,6 +204,7 @@ fn test_generate_rag_markdown_with_evidence() {
     assert!(md.contains("F-QUAL-002"));
 }
 
+/// Verify index entry contains model name, score, and qualification status
 #[test]
 fn test_generate_index_entry() {
     let mqs = test_mqs_score();
@@ -206,6 +216,7 @@ fn test_generate_index_entry() {
     assert!(entry.contains("QUALIFIED (Conditional)"));
 }
 
+/// Verify CERTIFIED status for high-score models
 #[test]
 fn test_qualification_status_certified() {
     let mut mqs = test_mqs_score();
@@ -215,6 +226,7 @@ fn test_qualification_status_certified() {
     assert_eq!(qualification_status(&mqs), "CERTIFIED");
 }
 
+/// Verify all qualification status tiers map to correct labels
 #[test]
 fn test_qualification_status_tiers() {
     // Each (score, gateways_passed, expected_status)
@@ -236,6 +248,7 @@ fn test_qualification_status_tiers() {
     }
 }
 
+/// Verify category extraction from gate IDs
 #[test]
 fn test_extract_category() {
     assert_eq!(extract_category("F-QUAL-001"), "QUAL");
@@ -247,6 +260,7 @@ fn test_extract_category() {
     assert_eq!(extract_category("UNKNOWN"), "UNKNOWN");
 }
 
+/// Verify evidence detail markdown contains gate ID and outcome
 #[test]
 fn test_generate_evidence_detail() {
     let evidence = Evidence::corroborated("F-QUAL-001", test_scenario(), "output text", 150);
@@ -258,6 +272,7 @@ fn test_generate_evidence_detail() {
     assert!(md.contains("150ms"));
 }
 
+/// Verify evidence detail includes performance metrics when present
 #[test]
 fn test_generate_evidence_detail_with_metrics() {
     let mut evidence = Evidence::corroborated("F-PERF-001", test_scenario(), "output", 100);
@@ -272,6 +287,7 @@ fn test_generate_evidence_detail_with_metrics() {
     assert!(md.contains("**Peak Memory**: 4096 MB"));
 }
 
+/// Verify penalties section is omitted when no penalties exist
 #[test]
 fn test_generate_rag_markdown_no_penalties() {
     let mut mqs = test_mqs_score();
@@ -287,6 +303,7 @@ fn test_generate_rag_markdown_no_penalties() {
     assert!(!md.contains("## Penalties Applied"));
 }
 
+/// Verify falsifications section is omitted when none exist
 #[test]
 fn test_generate_rag_markdown_no_falsifications() {
     let mqs = test_mqs_score();
@@ -302,6 +319,7 @@ fn test_generate_rag_markdown_no_falsifications() {
     assert!(!md.contains("### 1:"));
 }
 
+/// Verify markdown renders gateway failure with FAIL marker
 #[test]
 fn test_generate_rag_markdown_gateway_failure() {
     let mut mqs = test_mqs_score();
@@ -322,6 +340,7 @@ fn test_generate_rag_markdown_gateway_failure() {
     assert!(md.contains("Inference failed"));
 }
 
+/// Verify markdown renders black swan events with count and flag
 #[test]
 fn test_generate_rag_markdown_black_swan() {
     let mqs = test_mqs_score();
@@ -344,50 +363,19 @@ fn test_generate_rag_markdown_black_swan() {
     assert!(md.contains("Black Swan**: Yes"));
 }
 
+/// Verify markdown renders evidence for all six test categories
 #[test]
 fn test_generate_rag_markdown_multiple_categories() {
     let mqs = test_mqs_score();
     let popperian = test_popperian_score();
     let mut collector = EvidenceCollector::new();
 
-    // Add evidence for multiple categories
-    collector.add(Evidence::corroborated(
-        "F-QUAL-001",
-        test_scenario(),
-        "ok",
-        100,
-    ));
-    collector.add(Evidence::corroborated(
-        "F-PERF-001",
-        test_scenario(),
-        "ok",
-        100,
-    ));
-    collector.add(Evidence::falsified(
-        "F-STAB-001",
-        test_scenario(),
-        "fail",
-        "",
-        100,
-    ));
-    collector.add(Evidence::corroborated(
-        "F-COMP-001",
-        test_scenario(),
-        "ok",
-        100,
-    ));
-    collector.add(Evidence::corroborated(
-        "F-EDGE-001",
-        test_scenario(),
-        "ok",
-        100,
-    ));
-    collector.add(Evidence::corroborated(
-        "F-REGR-001",
-        test_scenario(),
-        "ok",
-        100,
-    ));
+    collector.add(Evidence::corroborated("F-QUAL-001", test_scenario(), "ok", 100));
+    collector.add(Evidence::corroborated("F-PERF-001", test_scenario(), "ok", 100));
+    collector.add(Evidence::falsified("F-STAB-001", test_scenario(), "fail", "", 100));
+    collector.add(Evidence::corroborated("F-COMP-001", test_scenario(), "ok", 100));
+    collector.add(Evidence::corroborated("F-EDGE-001", test_scenario(), "ok", 100));
+    collector.add(Evidence::corroborated("F-REGR-001", test_scenario(), "ok", 100));
 
     let md = generate_rag_markdown(&mqs, &popperian, &collector);
 
@@ -399,6 +387,7 @@ fn test_generate_rag_markdown_multiple_categories() {
     assert!(md.contains("### REGR Tests"));
 }
 
+/// Verify markdown truncates failure lists beyond 10 items
 #[test]
 fn test_generate_rag_markdown_many_failures() {
     let mqs = test_mqs_score();
@@ -421,6 +410,7 @@ fn test_generate_rag_markdown_many_failures() {
     assert!(md.contains("... and 5 more failures"));
 }
 
+/// Verify falsified evidence detail contains reason text
 #[test]
 fn test_generate_evidence_detail_falsified() {
     let evidence = Evidence::falsified(
@@ -436,6 +426,7 @@ fn test_generate_evidence_detail_falsified() {
     assert!(md.contains("Empty input caused crash"));
 }
 
+/// Verify timeout evidence detail shows duration
 #[test]
 fn test_generate_evidence_detail_timeout() {
     let evidence = Evidence::timeout("F-PERF-001", test_scenario(), 30000);
@@ -445,6 +436,7 @@ fn test_generate_evidence_detail_timeout() {
     assert!(md.contains("30000ms"));
 }
 
+/// Verify crashed evidence detail shows exit code
 #[test]
 fn test_generate_evidence_detail_crashed() {
     let evidence = Evidence::crashed("F-STAB-001", test_scenario(), "SIGSEGV", -11, 100);
@@ -454,6 +446,7 @@ fn test_generate_evidence_detail_crashed() {
     assert!(md.contains("-11"));
 }
 
+/// Verify long output is truncated in evidence detail
 #[test]
 fn test_generate_evidence_detail_with_output() {
     let long_output = "a".repeat(300);
@@ -465,6 +458,7 @@ fn test_generate_evidence_detail_with_output() {
     assert!(!md.contains(&long_output)); // Full output should not be present
 }
 
+/// Verify markdown uses RAG-friendly header hierarchy
 #[test]
 fn test_markdown_uses_correct_headers() {
     let mqs = test_mqs_score();

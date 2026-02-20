@@ -1,3 +1,4 @@
+/// Verify default tolerance values match expected FP32 defaults
 #[test]
 fn test_tolerance_default() {
     let tol = Tolerance::default();
@@ -7,30 +8,35 @@ fn test_tolerance_default() {
     assert!((tol.max_mismatch_ratio - 0.01).abs() < 1e-10);
 }
 
+/// Verify FP32 tolerance preset has correct absolute tolerance
 #[test]
 fn test_tolerance_fp32() {
     let tol = Tolerance::fp32();
     assert!((tol.atol_fp32 - 1e-5).abs() < 1e-10);
 }
 
+/// Verify FP16 tolerance preset uses relaxed absolute tolerance
 #[test]
 fn test_tolerance_fp16() {
     let tol = Tolerance::fp16();
     assert!((tol.atol_fp32 - 1e-3).abs() < 1e-10);
 }
 
+/// Verify INT8 tolerance preset uses wider absolute tolerance
 #[test]
 fn test_tolerance_int8() {
     let tol = Tolerance::int8();
     assert!((tol.atol_fp32 - 1e-1).abs() < 1e-10);
 }
 
+/// Verify INT4 tolerance preset allows largest absolute tolerance
 #[test]
 fn test_tolerance_int4() {
     let tol = Tolerance::int4();
     assert!((tol.atol_fp32 - 5e-1).abs() < 1e-10);
 }
 
+/// Verify identical values are always considered close
 #[test]
 fn test_tolerance_is_close_identical() {
     let tol = Tolerance::default();
@@ -39,6 +45,7 @@ fn test_tolerance_is_close_identical() {
     assert!(tol.is_close(-5.0, -5.0));
 }
 
+/// Verify values within absolute tolerance are considered close
 #[test]
 fn test_tolerance_is_close_within_atol() {
     let tol = Tolerance::default();
@@ -46,6 +53,7 @@ fn test_tolerance_is_close_within_atol() {
     assert!(tol.is_close(1.000001, 1.0));
 }
 
+/// Verify values exceeding both absolute and relative tolerance are rejected
 #[test]
 fn test_tolerance_is_close_outside_tolerance() {
     let tol = Tolerance::default();
@@ -53,6 +61,7 @@ fn test_tolerance_is_close_outside_tolerance() {
     assert!(!tol.is_close(1.1, 1.0));
 }
 
+/// Verify relative tolerance dominates for large magnitude values
 #[test]
 fn test_tolerance_is_close_relative_tolerance() {
     let tol = Tolerance::default();
@@ -61,6 +70,7 @@ fn test_tolerance_is_close_relative_tolerance() {
     assert!(tol.is_close(1_000_100.0, 1_000_000.0));
 }
 
+/// Verify only absolute tolerance applies when expected value is zero
 #[test]
 fn test_tolerance_is_close_zero_expected() {
     let tol = Tolerance::default();
@@ -73,6 +83,7 @@ fn test_tolerance_is_close_zero_expected() {
 // TensorDiff Tests
 // ============================================================
 
+/// Verify ShapeMismatch display includes expected and actual sizes
 #[test]
 fn test_tensor_diff_display_shape_mismatch() {
     let diff = TensorDiff::ShapeMismatch {
@@ -85,6 +96,7 @@ fn test_tensor_diff_display_shape_mismatch() {
     assert!(s.contains("50"));
 }
 
+/// Verify ValueMismatch display includes count ratio and percentage
 #[test]
 fn test_tensor_diff_display_value_mismatch() {
     let diff = TensorDiff::ValueMismatch {
@@ -103,6 +115,7 @@ fn test_tensor_diff_display_value_mismatch() {
     assert!(s.contains("10.00%"));
 }
 
+/// Verify ParseError display includes the error message
 #[test]
 fn test_tensor_diff_display_parse_error() {
     let diff = TensorDiff::ParseError {
@@ -117,6 +130,7 @@ fn test_tensor_diff_display_parse_error() {
 // HfParityOracle Construction Tests
 // ============================================================
 
+/// Verify oracle construction sets corpus path and model family
 #[test]
 fn test_oracle_new() {
     let oracle = HfParityOracle::new("/tmp/corpus", "llama-2-7b");
@@ -124,6 +138,7 @@ fn test_oracle_new() {
     assert_eq!(oracle.model_family(), "llama-2-7b");
 }
 
+/// Verify oracle tolerance can be overridden via builder method
 #[test]
 fn test_oracle_with_tolerance() {
     let tol = Tolerance::int4();
@@ -131,6 +146,7 @@ fn test_oracle_with_tolerance() {
     assert!((oracle.tolerance().atol_fp32 - 0.5).abs() < 1e-10);
 }
 
+/// Verify oracle name returns the expected identifier
 #[test]
 fn test_oracle_name() {
     let oracle = HfParityOracle::new("/tmp", "test");
@@ -141,6 +157,7 @@ fn test_oracle_name() {
 // Tensor Comparison Tests
 // ============================================================
 
+/// Verify identical tensor vectors pass closeness check
 #[test]
 fn test_tensors_close_identical() {
     let oracle = HfParityOracle::new("/tmp", "test");
@@ -149,6 +166,7 @@ fn test_tensors_close_identical() {
     assert!(oracle.tensors_close(&a, &b).is_ok());
 }
 
+/// Verify tensors with sub-tolerance differences pass closeness check
 #[test]
 fn test_tensors_close_within_tolerance() {
     let oracle = HfParityOracle::new("/tmp", "test");
@@ -157,6 +175,7 @@ fn test_tensors_close_within_tolerance() {
     assert!(oracle.tensors_close(&a, &b).is_ok());
 }
 
+/// Verify different-length tensors produce a ShapeMismatch error
 #[test]
 fn test_tensors_close_shape_mismatch() {
     let oracle = HfParityOracle::new("/tmp", "test");
@@ -166,6 +185,7 @@ fn test_tensors_close_shape_mismatch() {
     assert!(matches!(result, Err(TensorDiff::ShapeMismatch { .. })));
 }
 
+/// Verify two empty tensors pass closeness check
 #[test]
 fn test_tensors_close_empty() {
     let oracle = HfParityOracle::new("/tmp", "test");
@@ -174,6 +194,7 @@ fn test_tensors_close_empty() {
     assert!(oracle.tensors_close(&a, &b).is_ok());
 }
 
+/// Verify tensors exceeding the mismatch ratio threshold produce ValueMismatch
 #[test]
 fn test_tensors_close_exceeds_mismatch_ratio() {
     let oracle = HfParityOracle::new("/tmp", "test");
@@ -184,6 +205,7 @@ fn test_tensors_close_exceeds_mismatch_ratio() {
     assert!(matches!(result, Err(TensorDiff::ValueMismatch { .. })));
 }
 
+/// Verify tensors within the int4 mismatch ratio threshold pass
 #[test]
 fn test_tensors_close_within_mismatch_ratio() {
     // Use int4 tolerance which allows 10% mismatch (max_mismatch_ratio = 0.10)
@@ -205,6 +227,7 @@ fn test_tensors_close_within_mismatch_ratio() {
 // Statistical Analysis Tests
 // ============================================================
 
+/// Verify divergence stats are zero for identical vectors
 #[test]
 fn test_compute_divergence_stats_identical() {
     let a = vec![1.0, 2.0, 3.0];
@@ -215,6 +238,7 @@ fn test_compute_divergence_stats_identical() {
     assert!(std < 1e-10);
 }
 
+/// Verify divergence stats compute correct max and mean for known diff
 #[test]
 fn test_compute_divergence_stats_with_diff() {
     let a = vec![1.0, 2.0, 3.0];
@@ -224,6 +248,7 @@ fn test_compute_divergence_stats_with_diff() {
     assert!((mean - 1.0 / 3.0).abs() < 1e-6);
 }
 
+/// Verify divergence stats return zeros for empty vectors
 #[test]
 fn test_compute_divergence_stats_empty() {
     let a: Vec<f32> = vec![];
@@ -234,6 +259,7 @@ fn test_compute_divergence_stats_empty() {
     assert!(std == 0.0);
 }
 
+/// Verify divergence stats return zeros for mismatched-length vectors
 #[test]
 fn test_compute_divergence_stats_mismatched_len() {
     let a = vec![1.0, 2.0];
@@ -244,6 +270,7 @@ fn test_compute_divergence_stats_mismatched_len() {
     assert!(std == 0.0);
 }
 
+/// Verify no bias detected for identical vectors
 #[test]
 fn test_detect_systematic_bias_none() {
     let a = vec![1.0, 2.0, 3.0, 4.0, 5.0];
@@ -251,6 +278,7 @@ fn test_detect_systematic_bias_none() {
     assert!(HfParityOracle::detect_systematic_bias(&a, &b).is_none());
 }
 
+/// Verify zero-std expected vector prevents sigma-based bias detection
 #[test]
 fn test_detect_systematic_bias_mean_shift() {
     let a = vec![0.0, 0.0, 0.0, 0.0, 0.0];
@@ -262,6 +290,7 @@ fn test_detect_systematic_bias_mean_shift() {
     assert!(result.is_none());
 }
 
+/// Verify mean shift bias is detected when variance exists
 #[test]
 fn test_detect_systematic_bias_with_variance() {
     let a = vec![0.0, 1.0, 2.0, 3.0, 4.0];
@@ -271,6 +300,7 @@ fn test_detect_systematic_bias_with_variance() {
     assert!(result.unwrap().contains("Mean shift"));
 }
 
+/// Verify scale drift bias is detected for 2x scaled vectors
 #[test]
 fn test_detect_systematic_bias_scale_drift() {
     let a = vec![0.0, 1.0, 2.0, 3.0, 4.0]; // std ≈ 1.41
@@ -280,6 +310,7 @@ fn test_detect_systematic_bias_scale_drift() {
     assert!(result.unwrap().contains("Scale drift"));
 }
 
+/// Verify no bias detected for empty vectors
 #[test]
 fn test_detect_systematic_bias_empty() {
     let a: Vec<f32> = vec![];
@@ -291,6 +322,7 @@ fn test_detect_systematic_bias_empty() {
 // Hash Function Tests
 // ============================================================
 
+/// Verify hash_prompt returns identical results for identical inputs
 #[test]
 fn test_hash_prompt_deterministic() {
     let h1 = hash_prompt("Hello, world!");
@@ -298,6 +330,7 @@ fn test_hash_prompt_deterministic() {
     assert_eq!(h1, h2);
 }
 
+/// Verify hash_prompt produces different hashes for different inputs
 #[test]
 fn test_hash_prompt_different_inputs() {
     let h1 = hash_prompt("Hello");
@@ -305,6 +338,7 @@ fn test_hash_prompt_different_inputs() {
     assert_ne!(h1, h2);
 }
 
+/// Verify hash_prompt output is 16 hex characters
 #[test]
 fn test_hash_prompt_format() {
     let h = hash_prompt("test");
@@ -312,12 +346,14 @@ fn test_hash_prompt_format() {
     assert!(h.chars().all(|c| c.is_ascii_hexdigit()));
 }
 
+/// Verify hash_prompt handles empty string input
 #[test]
 fn test_hash_prompt_empty() {
     let h = hash_prompt("");
     assert_eq!(h.len(), 16);
 }
 
+/// Verify hash_prompt handles unicode input deterministically
 #[test]
 fn test_hash_prompt_unicode() {
     let h1 = hash_prompt("こんにちは");
@@ -326,6 +362,7 @@ fn test_hash_prompt_unicode() {
     assert_eq!(h1.len(), 16);
 }
 
+/// Verify hash_prompt matches Python generate_golden.py SHA-256 truncated values
 #[test]
 fn test_hash_prompt_cross_language_compatibility() {
     // These hashes are from the Python generate_golden.py script
@@ -341,26 +378,31 @@ fn test_hash_prompt_cross_language_compatibility() {
 // Truncate Tests
 // ============================================================
 
+/// Verify truncate preserves strings shorter than the limit
 #[test]
 fn test_truncate_short_string() {
     assert_eq!(truncate("hello", 10), "hello");
 }
 
+/// Verify truncate preserves strings at exactly the limit
 #[test]
 fn test_truncate_exact_length() {
     assert_eq!(truncate("hello", 5), "hello");
 }
 
+/// Verify truncate clips strings exceeding the byte limit
 #[test]
 fn test_truncate_long_string() {
     assert_eq!(truncate("hello world", 5), "hello");
 }
 
+/// Verify truncate handles empty strings
 #[test]
 fn test_truncate_empty() {
     assert_eq!(truncate("", 10), "");
 }
 
+/// Verify truncate respects multi-byte unicode character boundaries
 #[test]
 fn test_truncate_unicode_boundary() {
     // "こんにちは" is 15 bytes (3 bytes per char)
@@ -373,6 +415,7 @@ fn test_truncate_unicode_boundary() {
 // Oracle Evaluate Tests (without filesystem)
 // ============================================================
 
+/// Verify oracle returns corroborated when no golden output exists
 #[test]
 fn test_oracle_evaluate_no_golden() {
     let oracle = HfParityOracle::new("/nonexistent/path", "test");
@@ -383,6 +426,7 @@ fn test_oracle_evaluate_no_golden() {
     }
 }
 
+/// Verify oracle returns corroborated for plain text without tensors
 #[test]
 fn test_oracle_evaluate_text_no_tensor() {
     let oracle = HfParityOracle::new("/nonexistent", "test");
@@ -394,6 +438,7 @@ fn test_oracle_evaluate_text_no_tensor() {
 // Golden Output Tests
 // ============================================================
 
+/// Verify GoldenOutput serializes to JSON with expected fields
 #[test]
 fn test_golden_output_serialization() {
     let golden = GoldenOutput {
@@ -410,6 +455,7 @@ fn test_golden_output_serialization() {
     assert!(json.contains("test prompt"));
 }
 
+/// Verify GoldenOutput deserializes from JSON with nullable text field
 #[test]
 fn test_golden_output_deserialization() {
     let json = r#"{

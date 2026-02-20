@@ -120,10 +120,12 @@ impl ModelConfig {
     }
 }
 
+/// Return the default model formats: gguf, safetensors, and apr
 fn default_formats() -> Vec<Format> {
     vec![Format::Gguf, Format::SafeTensors, Format::Apr]
 }
 
+/// Return the default quantization list containing q4_k_m
 fn default_quantizations() -> Vec<String> {
     vec!["q4_k_m".to_string()]
 }
@@ -145,19 +147,23 @@ pub struct TestMatrix {
     pub prompts: Option<Vec<String>>,
 }
 
+/// Return the default test modalities: run, chat, and serve
 fn default_modalities() -> Vec<Modality> {
     vec![Modality::Run, Modality::Chat, Modality::Serve]
 }
 
+/// Return the default backends: cpu and gpu
 fn default_backends() -> Vec<Backend> {
     vec![Backend::Cpu, Backend::Gpu]
 }
 
+/// Return the default scenario count of 100
 fn default_scenario_count() -> usize {
     100
 }
 
 impl Default for TestMatrix {
+    /// Create a TestMatrix with default modalities, backends, and scenario count
     fn default() -> Self {
         Self {
             modalities: default_modalities(),
@@ -182,6 +188,7 @@ pub struct PropertyTest {
     pub count: usize,
 }
 
+/// Return the default property test case count of 100
 fn default_proptest_count() -> usize {
     100
 }
@@ -200,6 +207,7 @@ pub struct FalsificationGate {
     pub severity: String,
 }
 
+/// Return the default gate severity of P1
 fn default_severity() -> String {
     "P1".to_string()
 }
@@ -269,6 +277,7 @@ pub struct PlaybookStep {
     pub forbidden_patterns: Vec<String>,
 }
 
+/// Return the default step timeout of 60 seconds
 fn default_timeout() -> u64 {
     60000 // 60 seconds
 }
@@ -341,10 +350,12 @@ pub struct InferenceCompareConfig {
     pub gates: Vec<String>,
 }
 
+/// Return the default max tokens of 10 for inference comparison
 fn default_max_tokens() -> usize {
     10
 }
 
+/// Return the default logit comparison tolerance of 1e-5
 fn default_tolerance() -> f64 {
     1e-5
 }

@@ -1,19 +1,25 @@
 
 // Shared builders — accept pre-computed description to avoid repeated if/else.
 
+/// Constructor for PerformanceCheckResult
 impl PerformanceCheckResult {
+    /// Create a new performance check result from gate, measurements, and description
     fn new(gate: SpecGate, passed: bool, measured: f64, threshold: f64, description: String) -> Self {
         Self { gate_id: gate.id().to_string(), passed, measured, threshold, description }
     }
 }
 
+/// Constructor for ParityCheckResult
 impl ParityCheckResult {
+    /// Create a new parity check result from gate, diff metrics, and description
     fn new(gate: SpecGate, passed: bool, max_diff: f64, threshold: f64, description: String) -> Self {
         Self { gate_id: gate.id().to_string(), passed, max_diff, threshold, description }
     }
 }
 
+/// Constructor for IntegrityCheckResult
 impl IntegrityCheckResult {
+    /// Create a new integrity check result from gate, pass status, and evidence
     fn new(gate: SpecGate, passed: bool, description: String, evidence: Option<String>) -> Self {
         Self { gate_id: gate.id().to_string(), passed, description, evidence }
     }
@@ -36,6 +42,7 @@ fn perf_threshold_check(
 /// Performance validator
 pub struct PerformanceValidator;
 
+/// Performance validation checks for F-PERF gate IDs
 impl PerformanceValidator {
     /// F-PERF-001: Check minimum TPS
     #[must_use]
@@ -93,6 +100,7 @@ pub struct ParityCheckResult {
 /// Cross-platform parity checker
 pub struct ParityChecker;
 
+/// Cross-platform parity checks for F-PAR gate IDs
 impl ParityChecker {
     /// F-PAR-001: Check CPU/GPU equivalence
     #[must_use]
@@ -186,6 +194,7 @@ const SIGNAL_ERRORS: &[(i32, i32, &str)] = &[
 /// Stderr patterns indicating memory safety violations.
 const MEMORY_STDERR_PATTERNS: &[&str] = &["SIGSEGV", "Segmentation fault", "buffer overflow", "stack smashing"];
 
+/// Fundamental integrity checks for F-INT gate IDs
 impl IntegrityChecker {
     /// F-INT-001: Check for memory safety violations
     #[must_use]

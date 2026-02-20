@@ -1,3 +1,4 @@
+/// Verify DiffBenchmarkResult detects improved performance without regression
 #[test]
 fn test_diff_benchmark_improved_performance() {
     let result = DiffBenchmarkResult {
@@ -23,6 +24,7 @@ fn test_diff_benchmark_improved_performance() {
     assert!(result.throughput_delta_pct > 0.0);
 }
 
+/// Verify CiProfileResult passes when all assertions are satisfied
 #[test]
 fn test_ci_profile_all_assertions_pass() {
     let result = CiProfileResult {
@@ -53,6 +55,7 @@ fn test_ci_profile_all_assertions_pass() {
     assert!(result.assertions.iter().all(|a| a.passed));
 }
 
+/// Verify TensorMismatchType implements Copy semantics
 #[test]
 fn test_tensor_mismatch_type_clone() {
     let t = TensorMismatchType::Missing;
@@ -60,6 +63,7 @@ fn test_tensor_mismatch_type_clone() {
     assert_eq!(cloned, TensorMismatchType::Missing);
 }
 
+/// Verify parse_diff_output passes when all tensors report OK
 #[test]
 fn test_parse_diff_output_with_text_only() {
     let config = DiffConfig::default();
@@ -74,6 +78,7 @@ fn test_parse_diff_output_with_text_only() {
     assert!(result.mismatches.is_empty());
 }
 
+/// Verify parse_inference_output falls back to failed result on invalid JSON
 #[test]
 fn test_parse_inference_output_failure_fallback() {
     let config = DiffConfig::default();
@@ -85,6 +90,7 @@ fn test_parse_inference_output_failure_fallback() {
     assert_eq!(result.total_tokens, 0);
 }
 
+/// Verify DiffConfig allows None filter with mismatches_only enabled
 #[test]
 fn test_diff_config_filter_none() {
     let config = DiffConfig {
@@ -96,6 +102,7 @@ fn test_diff_config_filter_none() {
     assert!(config.filter.is_none());
 }
 
+/// Verify DiffBenchmarkResult detects regression with negative throughput delta
 #[test]
 fn test_diff_benchmark_result_delta_calculations() {
     let result = DiffBenchmarkResult {
@@ -122,6 +129,7 @@ fn test_diff_benchmark_result_delta_calculations() {
     assert!(result.latency_p50_delta_pct > 0.0);
 }
 
+/// Verify BenchmarkMetrics stores path, throughput, and latency fields correctly
 #[test]
 fn test_benchmark_metrics_all_fields() {
     let metrics = BenchmarkMetrics {
@@ -135,6 +143,7 @@ fn test_benchmark_metrics_all_fields() {
     assert!(metrics.latency_p99_ms > metrics.latency_p50_ms);
 }
 
+/// Verify TokenComparison stores index, tokens, logit diff, and match flag
 #[test]
 fn test_token_comparison_fields() {
     let tc = TokenComparison {
@@ -149,7 +158,7 @@ fn test_token_comparison_fields() {
     assert!(!tc.matches);
 }
 
-// Tests for run_profile_ci function with nonexistent binary
+/// Verify run_profile_ci returns error when binary does not exist
 #[test]
 fn test_run_profile_ci_nonexistent_binary() {
     let path = std::path::PathBuf::from("model.gguf");
@@ -157,6 +166,7 @@ fn test_run_profile_ci_nonexistent_binary() {
     assert!(result.is_err());
 }
 
+/// Verify run_profile_ci with throughput assertion returns error for missing binary
 #[test]
 fn test_run_profile_ci_with_throughput_assert() {
     let path = std::path::PathBuf::from("model.gguf");
@@ -172,6 +182,7 @@ fn test_run_profile_ci_with_throughput_assert() {
     assert!(result.is_err());
 }
 
+/// Verify run_profile_ci with p99 latency assertion returns error for missing binary
 #[test]
 fn test_run_profile_ci_with_p99_assert() {
     let path = std::path::PathBuf::from("model.gguf");
@@ -187,6 +198,7 @@ fn test_run_profile_ci_with_p99_assert() {
     assert!(result.is_err());
 }
 
+/// Verify run_profile_ci with p50 latency assertion returns error for missing binary
 #[test]
 fn test_run_profile_ci_with_p50_assert() {
     let path = std::path::PathBuf::from("model.gguf");
@@ -202,6 +214,7 @@ fn test_run_profile_ci_with_p50_assert() {
     assert!(result.is_err());
 }
 
+/// Verify run_profile_ci with all three assertions returns error for missing binary
 #[test]
 fn test_run_profile_ci_with_all_asserts() {
     let path = std::path::PathBuf::from("model.gguf");
@@ -217,7 +230,7 @@ fn test_run_profile_ci_with_all_asserts() {
     assert!(result.is_err());
 }
 
-// Tests for run_diff_benchmark function
+/// Verify run_diff_benchmark returns error when binary does not exist
 #[test]
 fn test_run_diff_benchmark_nonexistent_binary() {
     let model_a = std::path::PathBuf::from("model_a.gguf");
@@ -226,7 +239,7 @@ fn test_run_diff_benchmark_nonexistent_binary() {
     assert!(result.is_err());
 }
 
-// Tests for DifferentialExecutor methods with nonexistent binary
+/// Verify DifferentialExecutor diff_tensors returns error for nonexistent binary
 #[test]
 fn test_differential_executor_diff_tensors_error() {
     let config = DiffConfig {
@@ -240,6 +253,7 @@ fn test_differential_executor_diff_tensors_error() {
     assert!(result.is_err());
 }
 
+/// Verify DifferentialExecutor diff_tensors with filter returns error for missing binary
 #[test]
 fn test_differential_executor_diff_tensors_with_filter() {
     let config = DiffConfig {
@@ -255,6 +269,7 @@ fn test_differential_executor_diff_tensors_with_filter() {
     assert!(result.is_err());
 }
 
+/// Verify DifferentialExecutor compare_inference returns error for missing binary
 #[test]
 fn test_differential_executor_compare_inference_error() {
     let config = DiffConfig {
@@ -268,6 +283,7 @@ fn test_differential_executor_compare_inference_error() {
     assert!(result.is_err());
 }
 
+/// Verify DiffConfig stores embedding filter and tight tolerance correctly
 #[test]
 fn test_diff_config_embedding_filter() {
     let config = DiffConfig {
@@ -280,6 +296,7 @@ fn test_diff_config_embedding_filter() {
     assert!((config.tolerance - 1e-6).abs() < 1e-10);
 }
 
+/// Verify CiAssertion captures failed throughput check with expected and actual values
 #[test]
 fn test_ci_assertion_failed() {
     let assertion = CiAssertion {
@@ -294,6 +311,7 @@ fn test_ci_assertion_failed() {
     assert!(assertion.actual.contains("15.5"));
 }
 
+/// Verify CiProfileResult fails when both throughput and p99 assertions fail
 #[test]
 fn test_ci_profile_result_with_failed_assertions() {
     let result = CiProfileResult {
@@ -324,6 +342,7 @@ fn test_ci_profile_result_with_failed_assertions() {
     assert_eq!(result.assertions.iter().filter(|a| a.passed).count(), 0);
 }
 
+/// Verify TensorMismatch reports ShapeMismatch with correct gate ID
 #[test]
 fn test_tensor_mismatch_type_shape_mismatch() {
     let mismatch = TensorMismatch {
@@ -336,6 +355,7 @@ fn test_tensor_mismatch_type_shape_mismatch() {
     assert_ne!(mismatch.shape_a, mismatch.shape_b);
 }
 
+/// Verify TensorMismatch reports Missing tensor type with correct gate ID
 #[test]
 fn test_tensor_mismatch_missing_tensor() {
     let mismatch = TensorMismatch {
@@ -347,6 +367,7 @@ fn test_tensor_mismatch_missing_tensor() {
     assert_eq!(mismatch.mismatch_type.gate_id(), "F-ROSETTA-DIFF-002");
 }
 
+/// Verify InferenceComparisonResult detects partial token match as failure
 #[test]
 fn test_inference_comparison_result_partial_match() {
     let result = InferenceComparisonResult {
@@ -367,6 +388,7 @@ fn test_inference_comparison_result_partial_match() {
     assert!(!result.token_comparisons.is_empty());
 }
 
+/// Verify TokenComparison reports exact match when both tokens are identical
 #[test]
 fn test_token_comparison_exact_match() {
     let tc = TokenComparison {
@@ -380,6 +402,7 @@ fn test_token_comparison_exact_match() {
     assert_eq!(tc.token_a, tc.token_b);
 }
 
+/// Verify parse_diff_output detects TRANSPOSED marker and fails with count
 #[test]
 fn test_parse_diff_output_with_transposed_marker() {
     let config = DiffConfig::default();
@@ -393,6 +416,7 @@ fn test_parse_diff_output_with_transposed_marker() {
     assert_eq!(result.transposed_tensors, 1);
 }
 
+/// Verify parse_diff_output passes when no mismatch markers are present
 #[test]
 fn test_parse_diff_output_with_no_mismatch_marker() {
     let config = DiffConfig::default();
@@ -407,6 +431,7 @@ fn test_parse_diff_output_with_no_mismatch_marker() {
     assert_eq!(result.mismatched_tensors, 0);
 }
 
+/// Verify parse_inference_output parses valid JSON into passing result
 #[test]
 fn test_parse_inference_output_with_valid_json() {
     let config = DiffConfig::default();
@@ -417,6 +442,7 @@ fn test_parse_inference_output_with_valid_json() {
     assert_eq!(result.total_tokens, 10);
 }
 
+/// Verify DiffConfig stores relaxed tolerance with mismatches_only disabled
 #[test]
 fn test_diff_config_relaxed_tolerance() {
     let config = DiffConfig {
@@ -433,6 +459,7 @@ fn test_diff_config_relaxed_tolerance() {
 // SixColumnProfile tests
 // =========================================================================
 
+/// Verify SixColumnProfile default has all None throughputs and empty collections
 #[test]
 fn test_six_column_profile_default() {
     let profile = SixColumnProfile::default();

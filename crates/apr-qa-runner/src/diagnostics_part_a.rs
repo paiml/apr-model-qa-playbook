@@ -1,5 +1,5 @@
 impl FailFastReporter {
-    /// Generate markdown summary
+    /// Generate a comprehensive markdown report from a fail-fast report
     #[must_use]
     #[allow(clippy::too_many_lines)]
     pub fn generate_markdown(&self, report: &FailFastReport) -> String {
@@ -137,6 +137,7 @@ impl FailFastReporter {
 
 // Helper functions for environment collection
 
+/// Get the apr CLI version string by running `apr --version`
 fn get_apr_version() -> String {
     Command::new("apr")
         .arg("--version")
@@ -151,6 +152,7 @@ fn get_apr_version() -> String {
         .unwrap_or_else(|| "unknown".to_string())
 }
 
+/// Get the short git commit hash for the current HEAD
 fn get_git_commit() -> String {
     Command::new("git")
         .args(["rev-parse", "--short", "HEAD"])
@@ -162,6 +164,7 @@ fn get_git_commit() -> String {
         )
 }
 
+/// Get the current git branch name
 fn get_git_branch() -> String {
     Command::new("git")
         .args(["rev-parse", "--abbrev-ref", "HEAD"])
@@ -173,6 +176,7 @@ fn get_git_branch() -> String {
         )
 }
 
+/// Check if the git working tree has uncommitted changes
 fn get_git_dirty() -> bool {
     Command::new("git")
         .args(["status", "--porcelain"])
@@ -181,6 +185,7 @@ fn get_git_dirty() -> bool {
         .is_some_and(|o| !o.stdout.is_empty())
 }
 
+/// Get the rustc compiler version string
 fn get_rustc_version() -> String {
     Command::new("rustc")
         .arg("--version")

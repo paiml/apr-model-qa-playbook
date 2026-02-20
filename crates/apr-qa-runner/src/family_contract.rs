@@ -101,6 +101,7 @@ pub struct Constraints {
     pub mlp_type: Option<String>,
 }
 
+/// Conversion methods for architectural constraints
 impl Constraints {
     /// Convert to `apr_qa_gen::ArchConstraints` for kernel profile generation.
     #[must_use]
@@ -117,6 +118,7 @@ impl Constraints {
     }
 }
 
+/// Conversion methods for size variant parameters
 impl SizeVariant {
     /// Convert to `apr_qa_gen::ArchSizeVariant` for kernel profile generation.
     #[must_use]
@@ -156,6 +158,7 @@ pub struct TensorTemplate {
     pub per_layer: HashMap<String, String>,
 }
 
+/// Methods for resolving tensor name patterns across layers
 impl TensorTemplate {
     /// Get all required tensor names for a model with given number of layers.
     #[must_use]
@@ -242,6 +245,7 @@ pub struct FamilyContract {
     pub certification: Option<CertificationConfig>,
 }
 
+/// Methods for loading, querying, and resolving family contracts
 impl FamilyContract {
     /// Load a family contract from a YAML file.
     ///
@@ -317,6 +321,7 @@ pub struct FamilyRegistry {
     aprender_path: PathBuf,
 }
 
+/// Registry operations for loading and querying family contracts
 impl FamilyRegistry {
     /// Create a new registry with default aprender path.
     #[must_use]

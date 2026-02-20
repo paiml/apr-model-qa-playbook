@@ -196,6 +196,7 @@ pub struct RealCommandRunner {
 }
 
 impl Default for RealCommandRunner {
+    /// Create a default RealCommandRunner with "apr" as the binary
     fn default() -> Self {
         Self::new()
     }
@@ -218,6 +219,7 @@ impl RealCommandRunner {
         }
     }
 
+    /// Execute an apr command with the given arguments and return output
     fn execute(&self, args: &[&str]) -> CommandOutput {
         use std::process::Command;
 

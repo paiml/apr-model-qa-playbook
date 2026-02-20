@@ -67,6 +67,7 @@ pub enum SpecGate {
     SecDenialOfService,
 }
 
+/// Methods for gate identification, scoring, and enumeration
 impl SpecGate {
     /// Get the gate ID string
     #[must_use]
@@ -200,6 +201,7 @@ pub struct ApiComplianceResult {
 /// API compliance checker
 pub struct ApiComplianceChecker;
 
+/// Methods implementing F-API-001 through F-API-005 compliance checks
 impl ApiComplianceChecker {
     /// F-API-001: Check JSON compliance
     #[must_use]
@@ -350,6 +352,7 @@ pub struct PerformanceThresholds {
 }
 
 impl Default for PerformanceThresholds {
+    /// Create performance thresholds with spec-defined default values
     fn default() -> Self {
         Self {
             min_tps: 10.0,

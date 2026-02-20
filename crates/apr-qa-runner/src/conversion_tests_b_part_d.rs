@@ -1,3 +1,4 @@
+/// Verify tagged safetensors extension generation from source path
 #[test]
 fn test_convert_to_format_tagged_safetensors_ext() {
     let source = std::path::PathBuf::from("/tmp/model.apr");
@@ -5,6 +6,7 @@ fn test_convert_to_format_tagged_safetensors_ext() {
     assert!(target.to_str().expect("path").ends_with("tag2.safetensors"));
 }
 
+/// Verify GPU backend flag exercises the GPU code path (fails on missing binary)
 #[test]
 fn test_run_inference_simple_gpu_flag() {
     // Verify GPU backend produces --gpu arg (fails because no binary, but exercises the match)
@@ -16,6 +18,7 @@ fn test_run_inference_simple_gpu_flag() {
     assert!(result.is_err());
 }
 
+/// Verify Falsified result structure for idempotency failures
 #[test]
 fn test_idempotency_falsified_result_structure() {
     // Directly test the Falsified variant construction
@@ -45,6 +48,7 @@ fn test_idempotency_falsified_result_structure() {
     }
 }
 
+/// Verify Falsified result structure for commutativity failures
 #[test]
 fn test_commutativity_falsified_result_structure() {
     let result = ConversionResult::Falsified {
@@ -73,6 +77,7 @@ fn test_commutativity_falsified_result_structure() {
     }
 }
 
+/// Verify convert_to_format_tagged returns error for nonexistent model
 #[test]
 fn test_conversion_test_convert_model_failure() {
     // Exercise the conversion failure error path
@@ -85,6 +90,7 @@ fn test_conversion_test_convert_model_failure() {
     assert!(result.is_err());
 }
 
+/// Verify convert_to_format_tagged handles SafeTensors target format
 #[test]
 fn test_conversion_test_convert_model_safetensors_target() {
     let result = convert_to_format_tagged(
@@ -98,6 +104,7 @@ fn test_conversion_test_convert_model_safetensors_target() {
 
 // ── §3.4 classify_failure tests ────────────────────────────────────
 
+/// Verify classify_failure detects tensor name mismatch patterns
 #[test]
 fn test_classify_failure_tensor_name_mismatch() {
     assert_eq!(
@@ -114,6 +121,7 @@ fn test_classify_failure_tensor_name_mismatch() {
     );
 }
 
+/// Verify classify_failure detects dequantization failure patterns
 #[test]
 fn test_classify_failure_dequantization() {
     assert_eq!(
@@ -134,6 +142,7 @@ fn test_classify_failure_dequantization() {
     );
 }
 
+/// Verify classify_failure detects config metadata mismatch patterns
 #[test]
 fn test_classify_failure_config_metadata() {
     assert_eq!(
@@ -154,6 +163,7 @@ fn test_classify_failure_config_metadata() {
     );
 }
 
+/// Verify classify_failure detects missing artifact patterns
 #[test]
 fn test_classify_failure_missing_artifact() {
     assert_eq!(
@@ -174,6 +184,7 @@ fn test_classify_failure_missing_artifact() {
     );
 }
 
+/// Verify classify_failure detects inference failure patterns including SIGSEGV
 #[test]
 fn test_classify_failure_inference() {
     assert_eq!(
@@ -190,6 +201,7 @@ fn test_classify_failure_inference() {
     );
 }
 
+/// Verify classify_failure falls back to Unknown for unrecognized patterns
 #[test]
 fn test_classify_failure_unknown() {
     assert_eq!(
@@ -199,6 +211,7 @@ fn test_classify_failure_unknown() {
     assert_eq!(classify_failure("", 1), ConversionFailureType::Unknown);
 }
 
+/// Verify classify_failure matches patterns case-insensitively
 #[test]
 fn test_classify_failure_case_insensitive() {
     assert_eq!(
@@ -213,6 +226,7 @@ fn test_classify_failure_case_insensitive() {
 
 // ── §3.7 QuantType + tolerance tests ───────────────────────────────
 
+/// Verify QuantType::from_str_label parses all known label variants
 #[test]
 fn test_quant_type_from_str_label() {
     assert_eq!(QuantType::from_str_label("f32"), QuantType::F32);
@@ -235,6 +249,7 @@ fn test_quant_type_from_str_label() {
     );
 }
 
+/// Verify QuantType::from_str_label is case-insensitive
 #[test]
 fn test_quant_type_from_str_label_case_insensitive() {
     assert_eq!(QuantType::from_str_label("F32"), QuantType::F32);
@@ -243,6 +258,7 @@ fn test_quant_type_from_str_label_case_insensitive() {
     assert_eq!(QuantType::from_str_label("Q5_K_M"), QuantType::Q5KM);
 }
 
+/// Verify QuantType::from_str_label accepts hyphen-separated labels
 #[test]
 fn test_quant_type_from_str_label_with_hyphens() {
     assert_eq!(QuantType::from_str_label("q4-k-m"), QuantType::Q4KM);
@@ -250,24 +266,28 @@ fn test_quant_type_from_str_label_with_hyphens() {
     assert_eq!(QuantType::from_str_label("q6-k"), QuantType::Q6K);
 }
 
+/// Verify F32 tolerance values
 #[test]
 fn test_tolerance_for_f32() {
     let tol = tolerance_for(QuantType::F32);
     assert!((tol.atol - 1e-6).abs() < 1e-10);
 }
 
+/// Verify F16 tolerance values
 #[test]
 fn test_tolerance_for_f16() {
     let tol = tolerance_for(QuantType::F16);
     assert!((tol.atol - 1e-3).abs() < 1e-10);
 }
 
+/// Verify Q4KM tolerance values
 #[test]
 fn test_tolerance_for_q4km() {
     let tol = tolerance_for(QuantType::Q4KM);
     assert!((tol.atol - 1e-1).abs() < 1e-10);
 }
 
+/// Verify Q5KM tolerance values for both atol and rtol
 #[test]
 fn test_tolerance_for_q5km() {
     let tol = tolerance_for(QuantType::Q5KM);
@@ -275,6 +295,7 @@ fn test_tolerance_for_q5km() {
     assert!((tol.rtol - 5e-2).abs() < 1e-10);
 }
 
+/// Verify Q6K tolerance values
 #[test]
 fn test_tolerance_for_q6k() {
     let tol = tolerance_for(QuantType::Q6K);

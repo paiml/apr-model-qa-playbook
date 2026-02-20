@@ -89,6 +89,7 @@ const SCORE_LOW: f64 = 400.0;
 const RATE_HIGH: f64 = 90.0;
 const RATE_LOW: f64 = 70.0;
 
+/// Display color-coded certification tier, score, grade, and status
 fn print_certification_scores(
     tier_str: &str,
     raw_score: u32,
@@ -119,6 +120,7 @@ fn print_certification_scores(
     println!("  {} {colored_status}", "Status:".dimmed());
 }
 
+/// Print scenario counts, pass/fail tallies, and color-coded pass rate
 fn print_execution_summary(result: &apr_qa_runner::ExecutionResult) {
     println!("  {} {}", "Scenarios:".dimmed(), result.total_scenarios);
     println!(
@@ -145,6 +147,7 @@ fn print_execution_summary(result: &apr_qa_runner::ExecutionResult) {
     println!("  {} {colored_rate}", "Pass rate:".dimmed());
 }
 
+/// Compute MQS raw score, certification status, grade, and score breakdown
 fn compute_certification_scores(
     model_id: &str,
     result: &apr_qa_runner::ExecutionResult,
@@ -185,6 +188,7 @@ fn compute_certification_scores(
     Some((raw_score, status, grade.to_string(), mqs))
 }
 
+/// Execute the 6-column profiling phase and return the throughput profile
 fn run_profiling_phase(
     result: &apr_qa_runner::ExecutionResult,
     playbook: &apr_qa_runner::Playbook,
@@ -226,6 +230,7 @@ fn run_profiling_phase(
     profile
 }
 
+/// Print conversion statuses and throughput metrics from the profiling run
 fn print_profiling_results(profile: &apr_qa_runner::SixColumnProfile) {
     for conv in &profile.conversions {
         let status = if conv.cached {
@@ -261,6 +266,7 @@ fn print_profiling_results(profile: &apr_qa_runner::SixColumnProfile) {
     println!("    Total profiling time: {}ms", profile.total_duration_ms);
 }
 
+/// Validate profiling throughput against CI assertion thresholds
 fn check_profiling_assertions(
     profile: &mut apr_qa_runner::SixColumnProfile,
     playbook: &apr_qa_runner::Playbook,
@@ -295,6 +301,7 @@ fn check_profiling_assertions(
     }
 }
 
+/// Write final score, grade, status, gateways, and throughput into the certification record
 #[allow(clippy::too_many_arguments)]
 fn update_certification_record(
     certifications: &mut [apr_qa_certify::ModelCertification],
@@ -344,6 +351,7 @@ fn update_certification_record(
     cert.tps_st_gpu = profile.tps_st_gpu;
 }
 
+/// Persist execution evidence as JSON to the model output directory
 fn save_evidence(model_output: &std::path::Path, result: &apr_qa_runner::ExecutionResult) {
     if let Err(e) = std::fs::create_dir_all(model_output) {
         eprintln!("  Error creating model output dir: {e}");
@@ -355,6 +363,7 @@ fn save_evidence(model_output: &std::path::Path, result: &apr_qa_runner::Executi
     }
 }
 
+/// Generate oracle-enhanced failure checklists from failed evidence
 fn run_oracle_enhancement(
     model_id: &str,
     result: &apr_qa_runner::ExecutionResult,
@@ -409,6 +418,7 @@ fn run_oracle_enhancement(
     }
 }
 
+/// Emit a warning if the playbook lock file is missing and integrity checks are enabled
 fn warn_missing_lock_file(no_integrity_check: bool) {
     if no_integrity_check {
         return;
@@ -421,6 +431,7 @@ fn warn_missing_lock_file(no_integrity_check: bool) {
     }
 }
 
+/// Collect evidence from all models and auto-generate structured GitHub tickets
 fn run_auto_ticket_generation(
     models_to_certify: &[String],
     output_dir: &PathBuf,

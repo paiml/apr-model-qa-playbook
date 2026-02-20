@@ -1,4 +1,6 @@
+/// Register model families into the registry by architecture group
 impl ModelRegistry {
+    /// Register Meta LLaMA and CodeLlama model variants
     fn add_llama_models(&mut self) {
         self.add(ModelMetadata {
             id: ModelId::with_variant("meta-llama", "Llama-3.2-1B", "Instruct"),
@@ -104,6 +106,7 @@ impl ModelRegistry {
         });
     }
 
+    /// Register Mistral AI model variants including Codestral
     fn add_mistral_models(&mut self) {
         self.add(ModelMetadata {
             id: ModelId::with_variant("mistralai", "Mistral-7B", "Instruct-v0.3"),
@@ -149,6 +152,7 @@ impl ModelRegistry {
         });
     }
 
+    /// Register Google Gemma 2, Gemma 3, and CodeGemma model variants
     fn add_gemma_models(&mut self) {
         // Gemma 2 family
         self.add(ModelMetadata {
@@ -236,6 +240,7 @@ impl ModelRegistry {
         });
     }
 
+    /// Register Microsoft Phi-3, Phi-3.5, and Phi-4 model variants
     fn add_phi_models(&mut self) {
         self.add(ModelMetadata {
             id: ModelId::new("microsoft", "Phi-3-mini-4k-instruct"),
@@ -303,6 +308,7 @@ impl ModelRegistry {
         });
     }
 
+    /// Register DeepSeek Coder and V2 model variants
     fn add_deepseek_coder_models(&mut self) {
         self.add(ModelMetadata {
             id: ModelId::new("deepseek-ai", "deepseek-coder-1.3b-instruct"),

@@ -18,6 +18,7 @@ pub enum Modality {
     Serve,
 }
 
+/// Core methods for the Modality enum
 impl Modality {
     /// Get all modalities
     #[must_use]
@@ -36,6 +37,7 @@ impl Modality {
     }
 }
 
+/// Display implementation for Modality
 impl std::fmt::Display for Modality {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -56,6 +58,7 @@ pub enum Backend {
     Gpu,
 }
 
+/// Core methods for the Backend enum
 impl Backend {
     /// Get all backends
     #[must_use]
@@ -73,6 +76,7 @@ impl Backend {
     }
 }
 
+/// Display implementation for Backend
 impl std::fmt::Display for Backend {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -94,6 +98,7 @@ pub enum Format {
     Apr,
 }
 
+/// Core methods for the Format enum
 impl Format {
     /// Get all formats
     #[must_use]
@@ -121,6 +126,7 @@ impl Format {
     }
 }
 
+/// Display implementation for Format
 impl std::fmt::Display for Format {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -157,6 +163,7 @@ pub enum AprTool {
     Canary,
 }
 
+/// Core methods for the AprTool enum
 impl AprTool {
     /// Get all tools
     #[must_use]
@@ -205,6 +212,7 @@ impl AprTool {
     }
 }
 
+/// Display implementation for AprTool
 impl std::fmt::Display for AprTool {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.command())
@@ -225,6 +233,7 @@ pub enum TraceLevel {
     Payload,
 }
 
+/// Core methods for the TraceLevel enum
 impl TraceLevel {
     /// Get all trace levels
     #[must_use]
@@ -271,6 +280,7 @@ pub struct QaScenario {
     pub oracle_type: String,
 }
 
+/// Construction and evaluation methods for QaScenario
 impl QaScenario {
     /// Create a new scenario
     #[must_use]

@@ -1,9 +1,11 @@
+/// Verify Unknown quant type falls back to F32 tolerance
 #[test]
 fn test_tolerance_for_unknown_falls_back_to_f32() {
     let tol = tolerance_for(QuantType::Unknown);
     assert!((tol.atol - 1e-6).abs() < 1e-10);
 }
 
+/// Verify effective_epsilon returns default EPSILON without quant type
 #[test]
 fn test_effective_epsilon_without_quant() {
     let test = ConversionTest::new(
@@ -15,6 +17,7 @@ fn test_effective_epsilon_without_quant() {
     assert!((test.effective_epsilon() - EPSILON).abs() < f64::EPSILON);
 }
 
+/// Verify effective_epsilon returns Q4KM tolerance when quant is set
 #[test]
 fn test_effective_epsilon_with_quant() {
     let mut test = ConversionTest::new(
@@ -27,6 +30,7 @@ fn test_effective_epsilon_with_quant() {
     assert!((test.effective_epsilon() - 1e-1).abs() < 1e-10);
 }
 
+/// Verify effective_epsilon returns F32 tolerance for F32 quant type
 #[test]
 fn test_effective_epsilon_f32_quant() {
     let mut test = ConversionTest::new(
@@ -41,6 +45,7 @@ fn test_effective_epsilon_f32_quant() {
 
 // ── ConversionFailureType / TensorNaming serde tests ───────────────
 
+/// Verify all ConversionFailureType variants survive serde round-trip
 #[test]
 fn test_conversion_failure_type_serde() {
     let types = [
@@ -58,6 +63,7 @@ fn test_conversion_failure_type_serde() {
     }
 }
 
+/// Verify each ConversionFailureType maps to the correct gate ID
 #[test]
 fn test_conversion_failure_type_gate_ids() {
     assert_eq!(
@@ -86,6 +92,7 @@ fn test_conversion_failure_type_gate_ids() {
     );
 }
 
+/// Verify each ConversionFailureType maps to the correct key string
 #[test]
 fn test_conversion_failure_type_keys() {
     assert_eq!(
@@ -95,6 +102,7 @@ fn test_conversion_failure_type_keys() {
     assert_eq!(ConversionFailureType::Unknown.key(), "unknown");
 }
 
+/// Verify all QuantType variants survive serde round-trip
 #[test]
 fn test_quant_type_serde() {
     let types = [
@@ -115,6 +123,7 @@ fn test_quant_type_serde() {
     }
 }
 
+/// Verify all TensorNaming variants survive serde round-trip
 #[test]
 fn test_tensor_naming_serde() {
     let variants = [
@@ -130,6 +139,7 @@ fn test_tensor_naming_serde() {
     }
 }
 
+/// Verify ConversionEvidence serialization preserves failure_type and quant_type
 #[test]
 fn test_conversion_evidence_with_failure_type() {
     let evidence = ConversionEvidence {
@@ -152,6 +162,7 @@ fn test_conversion_evidence_with_failure_type() {
     assert_eq!(parsed.quant_type, Some(QuantType::Q4KM));
 }
 
+/// Verify optional fields default to None when absent from JSON
 #[test]
 fn test_conversion_evidence_default_optional_fields() {
     // Deserialize without optional fields — should default to None
@@ -169,6 +180,7 @@ fn test_conversion_evidence_default_optional_fields() {
     assert!(parsed.quant_type.is_none());
 }
 
+/// Verify DEFAULT_TOLERANCES has entries for all 8 quant types
 #[test]
 fn test_default_tolerances_count() {
     assert_eq!(DEFAULT_TOLERANCES.len(), 8);
@@ -178,6 +190,7 @@ fn test_default_tolerances_count() {
 // Model Path Resolution Tests
 // =========================================================================
 
+/// Verify resolve_model_path finds model in APR cache subdirectory structure
 #[test]
 fn test_resolve_model_path_apr_cache_structure() {
     let tmp = tempfile::TempDir::new().unwrap();
@@ -191,6 +204,7 @@ fn test_resolve_model_path_apr_cache_structure() {
     assert_eq!(result.unwrap(), model_file);
 }
 
+/// Verify resolve_model_path finds model in HF cache flat structure
 #[test]
 fn test_resolve_model_path_hf_cache_flat_structure() {
     let tmp = tempfile::TempDir::new().unwrap();
@@ -203,6 +217,7 @@ fn test_resolve_model_path_hf_cache_flat_structure() {
     assert_eq!(result.unwrap(), model_file);
 }
 
+/// Verify resolve_model_path accepts a direct file path
 #[test]
 fn test_resolve_model_path_file_mode() {
     let tmp = tempfile::TempDir::new().unwrap();
@@ -214,6 +229,7 @@ fn test_resolve_model_path_file_mode() {
     assert_eq!(result.unwrap(), model_file);
 }
 
+/// Verify resolve_model_path rejects file with wrong extension
 #[test]
 fn test_resolve_model_path_file_mode_extension_mismatch() {
     let tmp = tempfile::TempDir::new().unwrap();
@@ -230,6 +246,7 @@ fn test_resolve_model_path_file_mode_extension_mismatch() {
     );
 }
 
+/// Verify resolve_model_path returns error when no matching file exists
 #[test]
 fn test_resolve_model_path_not_found() {
     let tmp = tempfile::TempDir::new().unwrap();
@@ -243,6 +260,7 @@ fn test_resolve_model_path_not_found() {
     );
 }
 
+/// Verify resolve_model_path finds non-standard filenames in subdirectory
 #[test]
 fn test_resolve_model_path_any_extension_in_subdir() {
     let tmp = tempfile::TempDir::new().unwrap();
@@ -257,6 +275,7 @@ fn test_resolve_model_path_any_extension_in_subdir() {
     assert_eq!(result.unwrap(), model_file);
 }
 
+/// Verify resolve_model_path finds non-standard filenames in base directory
 #[test]
 fn test_resolve_model_path_any_extension_in_base_dir() {
     let tmp = tempfile::TempDir::new().unwrap();
@@ -269,6 +288,7 @@ fn test_resolve_model_path_any_extension_in_base_dir() {
     assert_eq!(result.unwrap(), model_file);
 }
 
+/// Verify DEFAULT_TOLERANCES covers all known quant types
 #[test]
 fn test_default_tolerances_all_quant_types() {
     let types: Vec<QuantType> = DEFAULT_TOLERANCES.iter().map(|t| t.quant_type).collect();
@@ -286,6 +306,7 @@ fn test_default_tolerances_all_quant_types() {
 // HuggingFace Cache Resolution Tests (HF-CACHE-001, HF-CACHE-002)
 // =========================================================================
 
+/// Verify split_hf_repo separates org/repo correctly
 #[test]
 fn test_split_hf_repo_with_org() {
     assert_eq!(
@@ -298,23 +319,27 @@ fn test_split_hf_repo_with_org() {
     );
 }
 
+/// Verify split_hf_repo defaults org to "unknown" when no slash present
 #[test]
 fn test_split_hf_repo_without_org() {
     assert_eq!(split_hf_repo("model-only"), ("unknown", "model-only"));
     assert_eq!(split_hf_repo("gpt2"), ("unknown", "gpt2"));
 }
 
+/// Verify split_hf_repo only splits on first slash
 #[test]
 fn test_split_hf_repo_multiple_slashes() {
     // Only splits on first slash
     assert_eq!(split_hf_repo("org/repo/extra"), ("org", "repo/extra"));
 }
 
+/// Verify split_hf_repo handles empty string input
 #[test]
 fn test_split_hf_repo_empty_string() {
     assert_eq!(split_hf_repo(""), ("unknown", ""));
 }
 
+/// Verify find_hf_snapshot locates snapshot directory with model file
 #[test]
 fn test_find_hf_snapshot_found() {
     let tmp = tempfile::TempDir::new().unwrap();
@@ -331,6 +356,7 @@ fn test_find_hf_snapshot_found() {
     assert_eq!(result.unwrap(), snapshot);
 }
 
+/// Verify find_hf_snapshot returns None when model directory is absent
 #[test]
 fn test_find_hf_snapshot_not_found_no_dir() {
     let tmp = tempfile::TempDir::new().unwrap();
@@ -338,6 +364,7 @@ fn test_find_hf_snapshot_not_found_no_dir() {
     assert!(result.is_none());
 }
 
+/// Verify find_hf_snapshot returns None when snapshot has no safetensors
 #[test]
 fn test_find_hf_snapshot_not_found_no_safetensors() {
     let tmp = tempfile::TempDir::new().unwrap();
@@ -353,6 +380,7 @@ fn test_find_hf_snapshot_not_found_no_safetensors() {
     assert!(result.is_none());
 }
 
+/// Verify find_apr_cache locates APR cache directory
 #[test]
 fn test_find_apr_cache_found() {
     let tmp = tempfile::TempDir::new().unwrap();
@@ -364,6 +392,7 @@ fn test_find_apr_cache_found() {
     assert_eq!(result.unwrap(), apr_cache);
 }
 
+/// Verify find_apr_cache returns None when cache directory is absent
 #[test]
 fn test_find_apr_cache_not_found() {
     let tmp = tempfile::TempDir::new().unwrap();
@@ -371,6 +400,7 @@ fn test_find_apr_cache_not_found() {
     assert!(result.is_none());
 }
 
+/// Verify resolve_hf_repo_with_dirs finds model in HF cache first
 #[test]
 fn test_resolve_hf_repo_with_dirs_found_in_hf_cache() {
     let tmp = tempfile::TempDir::new().unwrap();
@@ -388,6 +418,7 @@ fn test_resolve_hf_repo_with_dirs_found_in_hf_cache() {
     assert_eq!(result.unwrap(), snapshot);
 }
 
+/// Verify resolve_hf_repo_with_dirs falls back to APR cache
 #[test]
 fn test_resolve_hf_repo_with_dirs_found_in_apr_cache() {
     let tmp = tempfile::TempDir::new().unwrap();
@@ -403,6 +434,7 @@ fn test_resolve_hf_repo_with_dirs_found_in_apr_cache() {
     assert_eq!(result.unwrap(), apr_cache);
 }
 
+/// Verify resolve_hf_repo_with_dirs returns error when model is in neither cache
 #[test]
 fn test_resolve_hf_repo_with_dirs_not_found() {
     let tmp = tempfile::TempDir::new().unwrap();
@@ -418,6 +450,7 @@ fn test_resolve_hf_repo_with_dirs_not_found() {
     assert!(err_msg.contains("Missing/Model"));
 }
 
+/// Verify resolve_hf_repo_with_dirs fails when snapshot lacks safetensors
 #[test]
 fn test_resolve_hf_repo_with_dirs_snapshot_without_safetensors() {
     let tmp = tempfile::TempDir::new().unwrap();

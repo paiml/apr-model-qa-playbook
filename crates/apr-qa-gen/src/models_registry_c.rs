@@ -1,4 +1,6 @@
+/// Register additional model families into the registry
 impl ModelRegistry {
+    /// Register DeepSeek R1 distilled model variants (Qwen and Llama architectures)
     fn add_deepseek_r1_models(&mut self) {
         // Qwen architecture distills
         self.add(ModelMetadata {
@@ -63,6 +65,7 @@ impl ModelRegistry {
         });
     }
 
+    /// Register BigCode StarCoder2 model variants
     fn add_starcoder_models(&mut self) {
         self.add(ModelMetadata {
             id: ModelId::new("bigcode", "starcoder2-3b"),
@@ -110,6 +113,7 @@ impl ModelRegistry {
         });
     }
 
+    /// Register 01.AI Yi 1.5 model variants
     fn add_yi_models(&mut self) {
         self.add(ModelMetadata {
             id: ModelId::new("01-ai", "Yi-1.5-6B-Chat"),
@@ -142,6 +146,7 @@ impl ModelRegistry {
         });
     }
 
+    /// Register SmolLM2, TinyLlama, and StableLM small model variants
     fn add_small_models(&mut self) {
         // SmolLM2 family
         self.add(ModelMetadata {
@@ -216,6 +221,7 @@ impl ModelRegistry {
         });
     }
 
+    /// Register TII UAE Falcon model variants
     fn add_falcon_models(&mut self) {
         self.add(ModelMetadata {
             id: ModelId::new("tiiuae", "falcon-7b-instruct"),
@@ -238,6 +244,7 @@ impl ModelRegistry {
         });
     }
 
+    /// Register InternLM 2.5 model variants
     fn add_internlm_models(&mut self) {
         self.add(ModelMetadata {
             id: ModelId::new("internlm", "internlm2_5-7b-chat"),
@@ -266,6 +273,7 @@ impl ModelRegistry {
         });
     }
 
+    /// Register IBM Granite 3.1 model variants
     fn add_granite_models(&mut self) {
         self.add(ModelMetadata {
             id: ModelId::new("ibm-granite", "granite-3.1-2b-instruct"),
@@ -307,6 +315,7 @@ impl ModelRegistry {
         });
     }
 
+    /// Register AllenAI OLMo 2 model variants
     fn add_olmo_models(&mut self) {
         self.add(ModelMetadata {
             id: ModelId::new("allenai", "OLMo-2-1124-7B-Instruct"),
@@ -329,6 +338,7 @@ impl ModelRegistry {
         });
     }
 
+    /// Register NVIDIA Nemotron model variants
     fn add_nvidia_models(&mut self) {
         self.add(ModelMetadata {
             id: ModelId::new("nvidia", "Llama-3.1-Nemotron-Nano-4B-v1.1"),
@@ -351,6 +361,7 @@ impl ModelRegistry {
         });
     }
 
+    /// Register community fine-tuned models (Hermes, OpenChat, Zephyr, Dolphin, etc)
     fn add_community_models(&mut self) {
         // NousResearch Hermes
         self.add(ModelMetadata {

@@ -1,3 +1,4 @@
+/// Verify OracleEnhancer default timeout and min_relevance
 #[test]
 fn test_oracle_enhancer_default() {
     let enhancer = OracleEnhancer::new();
@@ -5,6 +6,7 @@ fn test_oracle_enhancer_default() {
     assert!((enhancer.min_relevance - 0.5).abs() < f32::EPSILON);
 }
 
+/// Verify static checklist generation for conversion failure evidence
 #[test]
 fn test_generate_static_checklist_for_conv_failure() {
     let enhancer = OracleEnhancer::new();
@@ -21,6 +23,7 @@ fn test_generate_static_checklist_for_conv_failure() {
     assert_eq!(checklist[0].gate_id, "F-LAYOUT-002");
 }
 
+/// Verify static checklist includes path extension check for path failures
 #[test]
 fn test_generate_static_checklist_for_path_failure() {
     let enhancer = OracleEnhancer::new();
@@ -36,6 +39,7 @@ fn test_generate_static_checklist_for_path_failure() {
     assert!(checklist.iter().any(|c| c.gate_id == "F-PATH-EXT"));
 }
 
+/// Verify CheckStatus Display implementations
 #[test]
 fn test_check_status_display() {
     assert_eq!(format!("{}", CheckStatus::Pending), "PENDING");
@@ -46,6 +50,7 @@ fn test_check_status_display() {
     assert_eq!(format!("{}", CheckStatus::Corroborated), "CORROBORATED");
 }
 
+/// Verify Confidence Display implementations
 #[test]
 fn test_confidence_display() {
     assert_eq!(format!("{}", Confidence::High), "HIGH");
@@ -53,6 +58,7 @@ fn test_confidence_display() {
     assert_eq!(format!("{}", Confidence::Low), "LOW");
 }
 
+/// Verify checklist markdown contains all context sections
 #[test]
 fn test_generate_checklist_markdown() {
     let context = OracleContext {
@@ -90,6 +96,7 @@ fn test_generate_checklist_markdown() {
     assert!(md.contains("apr inspect"));
 }
 
+/// Verify enhance_failure returns empty context for non-failure evidence
 #[test]
 fn test_enhance_failure_non_failure() {
     let enhancer = OracleEnhancer::new();
@@ -100,6 +107,7 @@ fn test_enhance_failure_non_failure() {
     assert!(context.checklist.is_empty());
 }
 
+/// Verify hypotheses generation for conversion gate evidence
 #[test]
 fn test_generate_hypotheses() {
     let enhancer = OracleEnhancer::new();
@@ -116,6 +124,7 @@ fn test_generate_hypotheses() {
     assert!(hypotheses.iter().any(|h| h.id == "H1"));
 }
 
+/// Verify cross-references include spec for conversion gate failures
 #[test]
 fn test_generate_cross_references() {
     let enhancer = OracleEnhancer::new();
@@ -132,6 +141,7 @@ fn test_generate_cross_references() {
     assert!(refs.iter().any(|r| r.source.contains("spec")));
 }
 
+/// Verify investigation commands include apr CLI commands
 #[test]
 fn test_generate_investigation_commands() {
     let enhancer = OracleEnhancer::new();
@@ -148,18 +158,21 @@ fn test_generate_investigation_commands() {
     assert!(commands.iter().any(|c| c.contains("apr")));
 }
 
+/// Verify with_timeout builder sets custom timeout
 #[test]
 fn test_with_timeout() {
     let enhancer = OracleEnhancer::new().with_timeout(Duration::from_secs(10));
     assert_eq!(enhancer.timeout, Duration::from_secs(10));
 }
 
+/// Verify with_min_relevance builder sets custom threshold
 #[test]
 fn test_with_min_relevance() {
     let enhancer = OracleEnhancer::new().with_min_relevance(0.8);
     assert!((enhancer.min_relevance - 0.8).abs() < f32::EPSILON);
 }
 
+/// Verify is_available returns a boolean without panicking
 #[test]
 fn test_is_available() {
     // batuta is unlikely to be available in CI, so just verify it returns a bool
@@ -168,6 +181,7 @@ fn test_is_available() {
     let _ = available;
 }
 
+/// Verify enhance_failures filters out non-failure evidence
 #[test]
 fn test_enhance_failures_filters_non_failures() {
     let enhancer = OracleEnhancer::new();
@@ -180,6 +194,7 @@ fn test_enhance_failures_filters_non_failures() {
     assert!(results.is_empty(), "No failures means no enhanced results");
 }
 
+/// Verify enhance_failures only processes failure evidence
 #[test]
 fn test_enhance_failures_includes_only_failures() {
     let enhancer = OracleEnhancer::new();
@@ -199,6 +214,7 @@ fn test_enhance_failures_includes_only_failures() {
     assert_eq!(results.len(), 1, "Only one failure should be enhanced");
 }
 
+/// Verify build_query includes gate_id and reason in query string
 #[test]
 fn test_build_query_format() {
     let enhancer = OracleEnhancer::new();
@@ -218,6 +234,7 @@ fn test_build_query_format() {
     assert!(query.contains(&format!("{}", evidence.scenario.format)));
 }
 
+/// Verify parse_oracle_output sets oracle_available and latency
 #[test]
 fn test_parse_oracle_output() {
     let enhancer = OracleEnhancer::new();
@@ -236,6 +253,7 @@ fn test_parse_oracle_output() {
     assert!(!context.cross_references.is_empty());
 }
 
+/// Verify checklist generation for inference gate produces INF-EQ check
 #[test]
 fn test_generate_checklist_inference_gate() {
     let enhancer = OracleEnhancer::new();
@@ -261,6 +279,7 @@ fn test_generate_checklist_inference_gate() {
     assert_eq!(inf_item.confidence, Confidence::Medium);
 }
 
+/// Verify checklist generation for CONV + G-A gate produces transpose check
 #[test]
 fn test_generate_checklist_conv_transpose() {
     let enhancer = OracleEnhancer::new();
@@ -286,6 +305,7 @@ fn test_generate_checklist_conv_transpose() {
     assert_eq!(transpose_item.confidence, Confidence::Medium);
 }
 
+/// Verify LAYOUT-002 is auto-falsified when diff appears in reason
 #[test]
 fn test_generate_checklist_conv_with_diff_falsifies_layout() {
     let enhancer = OracleEnhancer::new();
@@ -308,6 +328,7 @@ fn test_generate_checklist_conv_with_diff_falsifies_layout() {
     );
 }
 
+/// Verify LAYOUT-002 stays Pending when no diff in reason
 #[test]
 fn test_generate_checklist_conv_without_diff_is_pending() {
     let enhancer = OracleEnhancer::new();
@@ -330,6 +351,7 @@ fn test_generate_checklist_conv_without_diff_is_pending() {
     );
 }
 
+/// Verify H2 hypothesis generation when diff appears in reason
 #[test]
 fn test_generate_hypotheses_diff_in_reason() {
     let enhancer = OracleEnhancer::new();
@@ -353,6 +375,7 @@ fn test_generate_hypotheses_diff_in_reason() {
     assert!(!h2.evidence_against.is_empty());
 }
 
+/// Verify H3 hypothesis generation for CONV gate failures
 #[test]
 fn test_generate_hypotheses_conv_gate() {
     let enhancer = OracleEnhancer::new();
@@ -374,6 +397,7 @@ fn test_generate_hypotheses_conv_gate() {
     assert_eq!(h3.confidence, Confidence::Low);
 }
 
+/// Verify CONV gate with generic reason only produces H3
 #[test]
 fn test_generate_hypotheses_conv_gate_no_file_ext_no_diff() {
     // CONV gate with neither "No file extension" nor "diff" — only H3
@@ -392,6 +416,7 @@ fn test_generate_hypotheses_conv_gate_no_file_ext_no_diff() {
     assert!(hypotheses.iter().any(|h| h.id == "H3"));
 }
 
+/// Verify non-CONV gate with generic reason produces no hypotheses
 #[test]
 fn test_generate_hypotheses_non_conv_non_special_reason() {
     let enhancer = OracleEnhancer::new();
@@ -410,6 +435,7 @@ fn test_generate_hypotheses_non_conv_non_special_reason() {
     );
 }
 
+/// Verify GH-190 cross-reference for garbage in reason
 #[test]
 fn test_generate_cross_references_garbage_reason() {
     let enhancer = OracleEnhancer::new();
@@ -428,6 +454,7 @@ fn test_generate_cross_references_garbage_reason() {
     );
 }
 
+/// Verify only spec reference when no CONV/garbage/diff keywords
 #[test]
 fn test_generate_cross_references_no_conv_no_garbage_no_diff() {
     let enhancer = OracleEnhancer::new();
@@ -445,6 +472,7 @@ fn test_generate_cross_references_no_conv_no_garbage_no_diff() {
     assert_eq!(refs[0].source, "apr-playbook-spec.md");
 }
 
+/// Verify high min_relevance filters out all cross-references
 #[test]
 fn test_generate_cross_references_high_min_relevance() {
     let enhancer = OracleEnhancer::new().with_min_relevance(0.99);
@@ -463,4 +491,3 @@ fn test_generate_cross_references_high_min_relevance() {
         "With min_relevance 0.99, all refs should be filtered out"
     );
 }
-

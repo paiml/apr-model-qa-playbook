@@ -3,6 +3,7 @@ use super::*;
 use apr_qa_gen::{Backend, Format, Modality, ModelId, QaScenario};
 use apr_qa_runner::Evidence;
 
+/// Create a default QA scenario for Popperian tests
 fn test_scenario() -> QaScenario {
     QaScenario::new(
         ModelId::new("test", "model"),
@@ -14,6 +15,7 @@ fn test_scenario() -> QaScenario {
     )
 }
 
+/// Verify 100% corroboration produces strongly corroborated score
 #[test]
 fn test_popperian_all_corroborated() {
     let calculator = PopperianCalculator::new();
@@ -36,6 +38,7 @@ fn test_popperian_all_corroborated() {
     assert!(score.is_strongly_corroborated());
 }
 
+/// Verify mixed results produce correct corroboration ratio
 #[test]
 fn test_popperian_with_falsifications() {
     let calculator = PopperianCalculator::new();
@@ -70,6 +73,7 @@ fn test_popperian_with_falsifications() {
     assert!(!score.is_strongly_corroborated());
 }
 
+/// Verify crash evidence triggers black swan detection
 #[test]
 fn test_popperian_black_swan_detection() {
     let calculator = PopperianCalculator::new();
@@ -101,6 +105,7 @@ fn test_popperian_black_swan_detection() {
     assert!(!score.is_strongly_corroborated());
 }
 
+/// Verify severity determination for all gate ID patterns
 #[test]
 fn test_severity_determination() {
     assert_eq!(PopperianCalculator::determine_severity("G1-LOAD"), 5);
@@ -112,6 +117,7 @@ fn test_severity_determination() {
     assert_eq!(PopperianCalculator::determine_severity("F-OTHER-001"), 1);
 }
 
+/// Verify gate_to_hypothesis produces meaningful descriptions
 #[test]
 fn test_gate_to_hypothesis() {
     assert!(
@@ -128,6 +134,7 @@ fn test_gate_to_hypothesis() {
     );
 }
 
+/// Verify falsification_summary text for different result states
 #[test]
 fn test_falsification_summary() {
     let score = PopperianScore {
@@ -163,6 +170,7 @@ fn test_falsification_summary() {
     );
 }
 
+/// Verify confidence increases with larger sample sizes
 #[test]
 fn test_confidence_calculation() {
     let calculator = PopperianCalculator::new();
@@ -175,6 +183,7 @@ fn test_confidence_calculation() {
     assert!(large_conf > small_conf);
 }
 
+/// Verify reproducibility index is 1.0 when no failures exist
 #[test]
 fn test_reproducibility_no_failures() {
     let calculator = PopperianCalculator::new();
@@ -184,6 +193,7 @@ fn test_reproducibility_no_failures() {
     assert!((index - 1.0).abs() < 0.001);
 }
 
+/// Verify reproducibility is 1.0 for consistently reproducing failures
 #[test]
 fn test_reproducibility_with_consistent_failures() {
     let calculator = PopperianCalculator::new();
@@ -196,6 +206,7 @@ fn test_reproducibility_with_consistent_failures() {
     assert!((index - 1.0).abs() < 0.001);
 }
 
+/// Verify reproducibility is 0.0 for sporadic single-occurrence failures
 #[test]
 fn test_reproducibility_with_sporadic_failures() {
     let calculator = PopperianCalculator::new();
@@ -208,6 +219,7 @@ fn test_reproducibility_with_sporadic_failures() {
     assert!((index - 0.0).abs() < 0.001);
 }
 
+/// Verify reproducibility defaults to 1.0 for zero total tests
 #[test]
 fn test_reproducibility_zero_total() {
     let calculator = PopperianCalculator::new();
@@ -217,6 +229,7 @@ fn test_reproducibility_zero_total() {
     assert!((index - 1.0).abs() < 0.001);
 }
 
+/// Verify confidence is 0.0 for zero sample size
 #[test]
 fn test_confidence_zero_samples() {
     let calculator = PopperianCalculator::new();
@@ -224,6 +237,7 @@ fn test_confidence_zero_samples() {
     assert!((conf - 0.0).abs() < 0.001);
 }
 
+/// Verify COMP gate maps to compatible hypothesis
 #[test]
 fn test_gate_to_hypothesis_comp() {
     assert!(
@@ -232,6 +246,7 @@ fn test_gate_to_hypothesis_comp() {
     );
 }
 
+/// Verify EDGE gate maps to edge cases hypothesis
 #[test]
 fn test_gate_to_hypothesis_edge() {
     assert!(
@@ -240,6 +255,7 @@ fn test_gate_to_hypothesis_edge() {
     );
 }
 
+/// Verify REGR gate maps to consistent hypothesis
 #[test]
 fn test_gate_to_hypothesis_regr() {
     assert!(
@@ -248,12 +264,14 @@ fn test_gate_to_hypothesis_regr() {
     );
 }
 
+/// Verify unknown gate includes gate ID in hypothesis text
 #[test]
 fn test_gate_to_hypothesis_unknown() {
     let result = PopperianCalculator::gate_to_hypothesis("F-UNKNOWN-001");
     assert!(result.contains("F-UNKNOWN-001"));
 }
 
+/// Verify has_black_swans returns true when count > 0
 #[test]
 fn test_popperian_score_has_black_swans() {
     let score = PopperianScore {
@@ -272,6 +290,7 @@ fn test_popperian_score_has_black_swans() {
     assert!(score.has_black_swans());
 }
 
+/// Verify has_black_swans returns false when count is 0
 #[test]
 fn test_popperian_score_no_black_swans() {
     let score = PopperianScore {
@@ -290,11 +309,13 @@ fn test_popperian_score_no_black_swans() {
     assert!(!score.has_black_swans());
 }
 
+/// Verify STAB gate severity is 3
 #[test]
 fn test_severity_stab() {
     assert_eq!(PopperianCalculator::determine_severity("F-STAB-001"), 3);
 }
 
+/// Verify FalsificationDetail clone preserves gate_id
 #[test]
 fn test_falsification_detail_clone() {
     let detail = FalsificationDetail {
@@ -309,6 +330,7 @@ fn test_falsification_detail_clone() {
     assert_eq!(cloned.gate_id, detail.gate_id);
 }
 
+/// Verify PopperianScore JSON serialization
 #[test]
 fn test_popperian_score_serialize() {
     let score = PopperianScore {
@@ -328,6 +350,7 @@ fn test_popperian_score_serialize() {
     assert!(json.contains("test"));
 }
 
+/// Verify timeout evidence is counted as inconclusive, not falsified
 #[test]
 fn test_popperian_with_timeout() {
     let calculator = PopperianCalculator::new();

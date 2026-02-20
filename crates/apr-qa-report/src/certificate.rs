@@ -47,6 +47,7 @@ pub enum CertificationStatus {
     Rejected,
 }
 
+/// Status determination and badge rendering for certification levels
 impl CertificationStatus {
     /// Get status from score percentage and P0 failure count
     #[must_use]
@@ -75,6 +76,7 @@ impl CertificationStatus {
 }
 
 impl std::fmt::Display for CertificationStatus {
+    /// Format certification status as a human-readable uppercase string
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Certified => write!(f, "CERTIFIED"),
@@ -91,6 +93,7 @@ pub struct CertificateGenerator {
     auditor: String,
 }
 
+/// Certificate creation and markdown rendering from MQS and Popperian scores
 impl CertificateGenerator {
     /// Create a new certificate generator
     #[must_use]
@@ -213,6 +216,7 @@ mod tests {
     use super::*;
     use crate::mqs::{CategoryScores, GatewayResult};
 
+    /// Create a sample MqsScore with 920 raw score for testing
     fn test_mqs_score() -> MqsScore {
         MqsScore {
             model_id: "test/model".to_string(),
@@ -236,6 +240,7 @@ mod tests {
         }
     }
 
+    /// Create a sample PopperianScore with 95% corroboration for testing
     fn test_popperian_score() -> PopperianScore {
         PopperianScore {
             model_id: "test/model".to_string(),
@@ -252,6 +257,7 @@ mod tests {
         }
     }
 
+    /// Verify scores >= 95% with zero P0 failures yield Certified status
     #[test]
     fn test_certification_status_certified() {
         assert_eq!(
@@ -264,6 +270,7 @@ mod tests {
         );
     }
 
+    /// Verify scores between 80% and 95% yield Provisional status
     #[test]
     fn test_certification_status_provisional() {
         assert_eq!(
@@ -276,6 +283,7 @@ mod tests {
         );
     }
 
+    /// Verify scores below 80% or any P0 failures yield Rejected status
     #[test]
     fn test_certification_status_rejected() {
         assert_eq!(
@@ -289,6 +297,7 @@ mod tests {
         );
     }
 
+    /// Verify CertificationStatus Display outputs uppercase status names
     #[test]
     fn test_certification_status_display() {
         assert_eq!(format!("{}", CertificationStatus::Certified), "CERTIFIED");
@@ -299,6 +308,7 @@ mod tests {
         assert_eq!(format!("{}", CertificationStatus::Rejected), "REJECTED");
     }
 
+    /// Verify badge strings contain correct color indicators
     #[test]
     fn test_certification_status_badge() {
         assert!(
@@ -310,6 +320,7 @@ mod tests {
         assert!(CertificationStatus::Rejected.badge().contains("red"));
     }
 
+    /// Verify certificate generation populates all expected fields
     #[test]
     fn test_certificate_generation() {
         let generator = CertificateGenerator::new("APR QA System");
@@ -327,6 +338,7 @@ mod tests {
         assert!(cert.expires_at > cert.certified_at);
     }
 
+    /// Verify markdown output contains all certificate sections
     #[test]
     fn test_certificate_markdown() {
         let generator = CertificateGenerator::new("APR QA System");
@@ -344,6 +356,7 @@ mod tests {
         assert!(markdown.contains("Karl Popper"));
     }
 
+    /// Verify gateway failure produces Rejected certification status
     #[test]
     fn test_certificate_with_gateway_failure() {
         let generator = CertificateGenerator::new("APR QA System");
@@ -356,12 +369,14 @@ mod tests {
         assert_eq!(cert.status, CertificationStatus::Rejected);
     }
 
+    /// Verify default CertificateGenerator has empty auditor
     #[test]
     fn test_certificate_generator_default() {
         let generator = CertificateGenerator::default();
         assert!(generator.auditor.is_empty());
     }
 
+    /// Verify Certificate clone preserves all fields
     #[test]
     fn test_certificate_clone() {
         let generator = CertificateGenerator::new("Test");
@@ -375,6 +390,7 @@ mod tests {
         assert_eq!(cloned.status, cert.status);
     }
 
+    /// Verify perfect MQS of 1000 scales to maximum 170 verification score
     #[test]
     fn test_verification_score_scaling() {
         let generator = CertificateGenerator::new("Test");

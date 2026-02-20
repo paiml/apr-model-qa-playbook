@@ -16,6 +16,7 @@ fn get_workspace_root() -> std::path::PathBuf {
         .to_path_buf()
 }
 
+/// Create a minimal test scenario for unit testing
 fn make_test_scenario() -> apr_qa_gen::QaScenario {
     apr_qa_gen::QaScenario::new(
         apr_qa_gen::ModelId::new("test", "model"),
@@ -27,6 +28,7 @@ fn make_test_scenario() -> apr_qa_gen::QaScenario {
     )
 }
 
+/// Create a corroborated evidence instance for testing
 fn make_corroborated_evidence() -> Evidence {
     Evidence::corroborated("F-TEST-001", make_test_scenario(), "output", 100)
 }

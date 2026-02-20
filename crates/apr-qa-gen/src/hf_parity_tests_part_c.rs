@@ -1,3 +1,4 @@
+/// Verify compare_tensor_file returns ParseError for garbage data
 #[test]
 fn test_compare_tensor_file_invalid_safetensors() {
     let dir = make_test_dir("compare_tensor_invalid");
@@ -24,6 +25,7 @@ fn test_compare_tensor_file_invalid_safetensors() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+/// Verify compare_tensor_file returns ParseError when logits tensor is absent
 #[test]
 fn test_compare_tensor_file_missing_logits() {
     use safetensors::tensor::Dtype;
@@ -78,6 +80,7 @@ fn test_compare_tensor_file_missing_logits() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+/// Verify compare_tensor_file returns ShapeMismatch when dimensions differ
 #[test]
 fn test_compare_tensor_file_shape_mismatch() {
     let dir = make_test_dir("compare_tensor_shape");
@@ -107,6 +110,7 @@ fn test_compare_tensor_file_shape_mismatch() {
 // Oracle evaluate Tests (file-based, covering golden paths)
 // ============================================================
 
+/// Verify oracle evaluate returns Corroborated when output matches golden text
 #[test]
 fn test_oracle_evaluate_text_match() {
     let dir = make_test_dir("evaluate_text_match");
@@ -139,6 +143,7 @@ fn test_oracle_evaluate_text_match() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+/// Verify oracle evaluate returns Falsified when output differs from golden text
 #[test]
 fn test_oracle_evaluate_text_mismatch_falsified() {
     let dir = make_test_dir("evaluate_text_mismatch");
@@ -172,6 +177,7 @@ fn test_oracle_evaluate_text_mismatch_falsified() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+/// Verify oracle evaluate returns Corroborated when tensor logits match golden
 #[test]
 fn test_oracle_evaluate_tensor_file_corroborated() {
     let dir = make_test_dir("evaluate_tensor_ok");
@@ -201,6 +207,7 @@ fn test_oracle_evaluate_tensor_file_corroborated() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+/// Verify oracle evaluate returns Falsified when tensor logits diverge from golden
 #[test]
 fn test_oracle_evaluate_tensor_file_falsified() {
     let dir = make_test_dir("evaluate_tensor_fail");
@@ -230,6 +237,7 @@ fn test_oracle_evaluate_tensor_file_falsified() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+/// Verify oracle evaluate corroborates plain text when no golden text or tensor path
 #[test]
 fn test_oracle_evaluate_plain_text_no_golden_text_no_tensor() {
     // When golden exists but has no expected text, and output is not a
@@ -259,6 +267,7 @@ fn test_oracle_evaluate_plain_text_no_golden_text_no_tensor() {
 // truncate edge case Tests
 // ============================================================
 
+/// Verify truncate backs up to char boundary for 2-byte UTF-8 sequences
 #[test]
 fn test_truncate_mid_multibyte_char() {
     // "é" is 2 bytes in UTF-8. "éé" is 4 bytes.
@@ -268,11 +277,13 @@ fn test_truncate_mid_multibyte_char() {
     assert_eq!(truncated, "é");
 }
 
+/// Verify truncate returns empty string when max_len is zero
 #[test]
 fn test_truncate_at_zero() {
     assert_eq!(truncate("hello", 0), "");
 }
 
+/// Verify truncate backs up to char boundary for 3-byte CJK characters
 #[test]
 fn test_truncate_three_byte_mid_boundary() {
     // Each CJK character is 3 bytes. "漢字" = 6 bytes.
@@ -282,6 +293,7 @@ fn test_truncate_three_byte_mid_boundary() {
     assert_eq!(truncated, "漢");
 }
 
+/// Verify truncate backs up to empty string for 4-byte emoji when max_len is 2
 #[test]
 fn test_truncate_four_byte_emoji() {
     // Emoji like U+1F600 is 4 bytes in UTF-8
@@ -295,6 +307,7 @@ fn test_truncate_four_byte_emoji() {
 // detect_systematic_bias edge case Tests
 // ============================================================
 
+/// Verify detect_systematic_bias returns None for mismatched-length slices
 #[test]
 fn test_detect_systematic_bias_mismatched_len() {
     let a = vec![1.0, 2.0, 3.0];
@@ -302,6 +315,7 @@ fn test_detect_systematic_bias_mismatched_len() {
     assert!(HfParityOracle::detect_systematic_bias(&a, &b).is_none());
 }
 
+/// Verify detect_systematic_bias returns None when drift is within 10% threshold
 #[test]
 fn test_detect_systematic_bias_no_scale_drift_within_threshold() {
     // Scale ratio within 10%: std_a/std_e close to 1.0
@@ -317,6 +331,7 @@ fn test_detect_systematic_bias_no_scale_drift_within_threshold() {
 // Tolerance serialization Tests
 // ============================================================
 
+/// Verify Tolerance roundtrips through JSON serialization
 #[test]
 fn test_tolerance_serialize_deserialize() {
     let tol = Tolerance::fp16();
@@ -325,6 +340,7 @@ fn test_tolerance_serialize_deserialize() {
     assert_eq!(tol, tol2);
 }
 
+/// Verify Tolerance Debug implementation includes field names
 #[test]
 fn test_tolerance_debug() {
     let tol = Tolerance::default();
@@ -337,6 +353,7 @@ fn test_tolerance_debug() {
 // TensorDiff serialization Tests
 // ============================================================
 
+/// Verify TensorDiff::ShapeMismatch roundtrips through JSON serialization
 #[test]
 fn test_tensor_diff_serialize_deserialize_shape() {
     let diff = TensorDiff::ShapeMismatch {
@@ -348,6 +365,7 @@ fn test_tensor_diff_serialize_deserialize_shape() {
     assert_eq!(diff, diff2);
 }
 
+/// Verify TensorDiff::ValueMismatch roundtrips through JSON serialization
 #[test]
 fn test_tensor_diff_serialize_deserialize_value() {
     let diff = TensorDiff::ValueMismatch {
@@ -365,6 +383,7 @@ fn test_tensor_diff_serialize_deserialize_value() {
     assert_eq!(diff, diff2);
 }
 
+/// Verify TensorDiff::ParseError roundtrips through JSON serialization
 #[test]
 fn test_tensor_diff_serialize_deserialize_parse_error() {
     let diff = TensorDiff::ParseError {
@@ -379,6 +398,7 @@ fn test_tensor_diff_serialize_deserialize_parse_error() {
 // load_metadata_json Tests
 // ============================================================
 
+/// Verify load_metadata_json handles empty JSON with serde defaults
 #[test]
 fn test_load_metadata_json_minimal() {
     let dir = make_test_dir("meta_minimal");
@@ -396,6 +416,7 @@ fn test_load_metadata_json_minimal() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+/// Verify load_metadata_json extracts model, version, and generated_text fields
 #[test]
 fn test_load_metadata_json_full() {
     let dir = make_test_dir("meta_full");
@@ -416,6 +437,7 @@ fn test_load_metadata_json_full() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+/// Verify load_metadata_json returns error for nonexistent path
 #[test]
 fn test_load_metadata_json_not_found() {
     let result = HfParityOracle::load_metadata_json(Path::new("/nonexistent/meta.json"));
@@ -423,6 +445,7 @@ fn test_load_metadata_json_not_found() {
     assert!(result.unwrap_err().contains("Failed to read metadata"));
 }
 
+/// Verify load_metadata_json returns error for malformed JSON content
 #[test]
 fn test_load_metadata_json_invalid_json() {
     let dir = make_test_dir("meta_invalid");

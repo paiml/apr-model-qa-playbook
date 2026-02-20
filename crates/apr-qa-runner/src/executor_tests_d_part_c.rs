@@ -1,3 +1,4 @@
+/// Verify G0 integrity check detects layer count mismatch between config and tensors
 #[test]
 fn test_run_g0_integrity_check_layer_mismatch() {
     use tempfile::TempDir;
@@ -90,6 +91,7 @@ fn create_mock_safetensors_for_test(
 // Additional coverage tests — uncovered paths
 // =========================================================================
 
+/// Verify execute_all_with_serve includes serve-lifecycle when flag is true
 #[test]
 fn test_execute_all_with_serve_true() {
     let mock_runner = MockCommandRunner::new();
@@ -105,6 +107,7 @@ fn test_execute_all_with_serve_true() {
     assert!(results.iter().any(|r| r.tool == "serve-lifecycle"));
 }
 
+/// Verify G0 integrity check detects hidden_size mismatch between config and tensors
 #[test]
 fn test_run_g0_integrity_check_hidden_mismatch() {
     use tempfile::TempDir;
@@ -125,6 +128,7 @@ fn test_run_g0_integrity_check_hidden_mismatch() {
     assert!(evidence.all().iter().any(|e| e.gate_id.contains("HIDDEN")));
 }
 
+/// Verify G0 integrity check detects vocab_size mismatch between config and tensors
 #[test]
 fn test_run_g0_integrity_check_vocab_mismatch() {
     use tempfile::TempDir;
@@ -147,6 +151,7 @@ fn test_run_g0_integrity_check_vocab_mismatch() {
 
 // G0-LAYOUT Pre-flight Gate Tests (Issue #4)
 
+/// Verify G0 layout check auto-skips when tensor-layout-v1.yaml is absent
 #[test]
 fn test_run_g0_layout_check_no_contract() {
     // When tensor-layout-v1.yaml is not found, the check should auto-skip (0, 0)
@@ -162,6 +167,7 @@ fn test_run_g0_layout_check_no_contract() {
     assert_eq!(failed, 0);
 }
 
+/// Verify G0 layout check fails when model file does not exist but contract is present
 #[test]
 fn test_run_g0_layout_check_model_not_found() {
     // When model file doesn't exist but contract is found, validation fails
@@ -205,6 +211,7 @@ validation_rules: []
     assert!(!result.critical_failures.is_empty());
 }
 
+/// Verify layout scenario has correct prompt and metadata fields
 #[test]
 fn test_layout_scenario_creation() {
     let model_id = ModelId::new("test", "model");
@@ -219,6 +226,7 @@ fn test_layout_scenario_creation() {
     assert_eq!(scenario.modality, Modality::Run);
 }
 
+/// Verify format_tensor_failure includes expected and actual values when present
 #[test]
 fn test_format_tensor_failure_with_expected_and_actual() {
     let tensor_result = crate::layout_contract::TensorValidationResult {
@@ -237,6 +245,7 @@ fn test_format_tensor_failure_with_expected_and_actual() {
     assert!(formatted.contains("Actual: [hidden, vocab]"));
 }
 
+/// Verify format_tensor_failure omits expected/actual when both are None
 #[test]
 fn test_format_tensor_failure_without_expected() {
     let tensor_result = crate::layout_contract::TensorValidationResult {
@@ -255,6 +264,7 @@ fn test_format_tensor_failure_without_expected() {
     assert!(!formatted.contains("Actual:"));
 }
 
+/// Verify inspect_verified fails gracefully for a nonexistent model path
 #[test]
 fn test_execute_inspect_verified_nonexistent_model() {
     // run_inspect with "apr" binary + nonexistent model → fails → exercises Err path
@@ -267,6 +277,7 @@ fn test_execute_inspect_verified_nonexistent_model() {
     assert!(result.exit_code != 0);
 }
 
+/// Verify StopOnP0 policy halts execution when a P0 gate failure occurs
 #[test]
 fn test_execute_scenario_stop_on_p0_gate() {
     // Create scenarios where gate_id contains "-P0-"
@@ -303,6 +314,7 @@ test_matrix:
     assert!(result.failed >= 1);
 }
 
+/// Verify corroborated evidence propagates stderr from mock runner
 #[test]
 fn test_execute_scenario_corroborated_with_stderr_via_playbook() {
     // Use a mock that returns correct output ("The answer is 4.") with stderr
@@ -348,6 +360,7 @@ test_matrix:
     );
 }
 
+/// Verify conversion tests skip for single-file models (not directories)
 #[test]
 fn test_run_conversion_tests_single_file_model() {
     let dir = tempfile::tempdir().expect("create temp dir");
@@ -368,6 +381,7 @@ fn test_run_conversion_tests_single_file_model() {
     assert_eq!(failed, 0);
 }
 
+/// Verify golden rule test skips for single-file models (not directories)
 #[test]
 fn test_run_golden_rule_single_file_model() {
     let dir = tempfile::tempdir().expect("create temp dir");
@@ -388,6 +402,7 @@ fn test_run_golden_rule_single_file_model() {
     assert_eq!(failed, 0);
 }
 
+/// Verify integrity check rejects execution when lock file hash does not match
 #[test]
 fn test_integrity_check_refuses_on_mismatch() {
     use crate::playbook::{PlaybookLockEntry, PlaybookLockFile, save_lock_file};

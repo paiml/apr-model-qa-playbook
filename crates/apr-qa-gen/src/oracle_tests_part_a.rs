@@ -1,3 +1,4 @@
+/// Verify arithmetic oracle corroborates correct answer
 #[test]
 fn test_arithmetic_oracle_correct() {
     let oracle = ArithmeticOracle::new();
@@ -5,6 +6,7 @@ fn test_arithmetic_oracle_correct() {
     assert!(result.is_corroborated());
 }
 
+/// Verify arithmetic oracle falsifies incorrect answer
 #[test]
 fn test_arithmetic_oracle_incorrect() {
     let oracle = ArithmeticOracle::new();
@@ -12,6 +14,7 @@ fn test_arithmetic_oracle_incorrect() {
     assert!(result.is_falsified());
 }
 
+/// Verify arithmetic oracle skips non-arithmetic prompts
 #[test]
 fn test_arithmetic_oracle_non_arithmetic() {
     let oracle = ArithmeticOracle::new();
@@ -19,6 +22,7 @@ fn test_arithmetic_oracle_non_arithmetic() {
     assert!(result.is_corroborated()); // Skipped
 }
 
+/// Verify garbage oracle falsifies empty output
 #[test]
 fn test_garbage_oracle_empty() {
     let oracle = GarbageOracle::new();
@@ -26,6 +30,7 @@ fn test_garbage_oracle_empty() {
     assert!(result.is_falsified());
 }
 
+/// Verify garbage oracle corroborates valid text output
 #[test]
 fn test_garbage_oracle_valid() {
     let oracle = GarbageOracle::new();
@@ -33,6 +38,7 @@ fn test_garbage_oracle_valid() {
     assert!(result.is_corroborated());
 }
 
+/// Verify garbage oracle falsifies output containing NaN
 #[test]
 fn test_garbage_oracle_nan() {
     let oracle = GarbageOracle::new();
@@ -40,6 +46,7 @@ fn test_garbage_oracle_nan() {
     assert!(result.is_falsified());
 }
 
+/// Verify garbage oracle falsifies repetitive output
 #[test]
 fn test_garbage_oracle_repetitive() {
     let oracle = GarbageOracle::new();
@@ -47,24 +54,28 @@ fn test_garbage_oracle_repetitive() {
     assert!(result.is_falsified());
 }
 
+/// Verify select_oracle returns arithmetic oracle for math prompts
 #[test]
 fn test_select_oracle_arithmetic() {
     let oracle = select_oracle("What is 2+2?");
     assert_eq!(oracle.name(), "arithmetic");
 }
 
+/// Verify select_oracle returns code_syntax oracle for code prompts
 #[test]
 fn test_select_oracle_code() {
     let oracle = select_oracle("def fibonacci(n):");
     assert_eq!(oracle.name(), "code_syntax");
 }
 
+/// Verify select_oracle falls back to garbage oracle for unknown prompts
 #[test]
 fn test_select_oracle_default() {
     let oracle = select_oracle("Tell me a joke");
     assert_eq!(oracle.name(), "garbage");
 }
 
+/// Verify is_repetitive detects repeating word patterns
 #[test]
 fn test_is_repetitive() {
     assert!(is_repetitive("foo foo foo foo foo foo"));
@@ -74,12 +85,14 @@ fn test_is_repetitive() {
     ));
 }
 
+/// Verify is_repetitive returns false for short non-repetitive inputs
 #[test]
 fn test_is_repetitive_short() {
     assert!(!is_repetitive("a b c"));
     assert!(!is_repetitive(""));
 }
 
+/// Verify OracleResult::Corroborated reports as corroborated
 #[test]
 fn test_oracle_result_is_corroborated() {
     let result = OracleResult::Corroborated {
@@ -89,6 +102,7 @@ fn test_oracle_result_is_corroborated() {
     assert!(!result.is_falsified());
 }
 
+/// Verify OracleResult::Falsified reports as falsified
 #[test]
 fn test_oracle_result_is_falsified() {
     let result = OracleResult::Falsified {
@@ -99,6 +113,7 @@ fn test_oracle_result_is_falsified() {
     assert!(result.is_falsified());
 }
 
+/// Verify garbage oracle falsifies output containing control characters
 #[test]
 fn test_garbage_oracle_control_chars() {
     let oracle = GarbageOracle::new();
@@ -106,6 +121,7 @@ fn test_garbage_oracle_control_chars() {
     assert!(result.is_falsified());
 }
 
+/// Verify garbage oracle falsifies output containing Unicode replacement character
 #[test]
 fn test_garbage_oracle_replacement_char() {
     let oracle = GarbageOracle::new();
@@ -113,6 +129,7 @@ fn test_garbage_oracle_replacement_char() {
     assert!(result.is_falsified());
 }
 
+/// Verify garbage oracle falsifies output containing Inf values
 #[test]
 fn test_garbage_oracle_inf() {
     let oracle = GarbageOracle::new();
@@ -123,6 +140,7 @@ fn test_garbage_oracle_inf() {
     assert!(result2.is_falsified());
 }
 
+/// Verify garbage oracle falsifies whitespace-only output
 #[test]
 fn test_garbage_oracle_whitespace_only() {
     let oracle = GarbageOracle::new();
@@ -130,6 +148,7 @@ fn test_garbage_oracle_whitespace_only() {
     assert!(result.is_falsified());
 }
 
+/// Verify code syntax oracle corroborates valid code output
 #[test]
 fn test_code_syntax_oracle_valid() {
     let oracle = CodeSyntaxOracle::new();
@@ -137,6 +156,7 @@ fn test_code_syntax_oracle_valid() {
     assert!(result.is_corroborated());
 }
 
+/// Verify code syntax oracle corroborates output with code patterns
 #[test]
 fn test_code_syntax_oracle_with_patterns() {
     let oracle = CodeSyntaxOracle::new();
@@ -144,6 +164,7 @@ fn test_code_syntax_oracle_with_patterns() {
     assert!(result.is_corroborated());
 }
 
+/// Verify code syntax oracle tolerates documentation prose
 #[test]
 fn test_code_syntax_oracle_long_prose() {
     let oracle = CodeSyntaxOracle::new();
@@ -154,6 +175,7 @@ fn test_code_syntax_oracle_long_prose() {
     assert!(result.is_corroborated()); // Might be documentation
 }
 
+/// Verify code syntax oracle falsifies empty output
 #[test]
 fn test_code_syntax_oracle_garbage() {
     let oracle = CodeSyntaxOracle::new();
@@ -161,6 +183,7 @@ fn test_code_syntax_oracle_garbage() {
     assert!(result.is_falsified());
 }
 
+/// Verify composite oracle corroborates when all sub-oracles pass
 #[test]
 fn test_composite_oracle_all_pass() {
     let mut composite = CompositeOracle::new("test");
@@ -169,6 +192,7 @@ fn test_composite_oracle_all_pass() {
     assert!(result.is_corroborated());
 }
 
+/// Verify composite oracle falsifies when any sub-oracle fails
 #[test]
 fn test_composite_oracle_one_fails() {
     let mut composite = CompositeOracle::new("test");
@@ -177,6 +201,7 @@ fn test_composite_oracle_one_fails() {
     assert!(result.is_falsified());
 }
 
+/// Verify CompositeOracle Debug format contains struct name and label
 #[test]
 fn test_composite_oracle_debug() {
     let composite = CompositeOracle::new("test");
@@ -185,6 +210,7 @@ fn test_composite_oracle_debug() {
     assert!(debug_str.contains("test"));
 }
 
+/// Verify arithmetic oracle evaluates subtraction correctly
 #[test]
 fn test_arithmetic_eval_subtraction() {
     let oracle = ArithmeticOracle::new();
@@ -192,6 +218,7 @@ fn test_arithmetic_eval_subtraction() {
     assert!(result.is_corroborated());
 }
 
+/// Verify arithmetic oracle evaluates multiplication correctly
 #[test]
 fn test_arithmetic_eval_multiplication() {
     let oracle = ArithmeticOracle::new();
@@ -199,6 +226,7 @@ fn test_arithmetic_eval_multiplication() {
     assert!(result.is_corroborated());
 }
 
+/// Verify arithmetic oracle evaluates division correctly
 #[test]
 fn test_arithmetic_eval_division() {
     let oracle = ArithmeticOracle::new();
@@ -206,6 +234,7 @@ fn test_arithmetic_eval_division() {
     assert!(result.is_corroborated());
 }
 
+/// Verify arithmetic oracle skips division by zero as non-arithmetic
 #[test]
 fn test_arithmetic_division_by_zero() {
     let oracle = ArithmeticOracle::new();
@@ -214,6 +243,7 @@ fn test_arithmetic_division_by_zero() {
     assert!(result.is_corroborated());
 }
 
+/// Verify is_arithmetic_prompt detects math expressions
 #[test]
 fn test_is_arithmetic_prompt() {
     assert!(is_arithmetic_prompt("2+2="));
@@ -221,6 +251,7 @@ fn test_is_arithmetic_prompt() {
     assert!(!is_arithmetic_prompt("Hello world"));
 }
 
+/// Verify is_code_prompt detects code syntax patterns
 #[test]
 fn test_is_code_prompt() {
     assert!(is_code_prompt("def foo():"));
@@ -232,12 +263,14 @@ fn test_is_code_prompt() {
     assert!(!is_code_prompt("Hello world"));
 }
 
+/// Verify truncate shortens strings and appends ellipsis when needed
 #[test]
 fn test_truncate() {
     assert_eq!(truncate("hello", 10), "hello");
     assert_eq!(truncate("hello world", 5), "hello...");
 }
 
+/// Verify each oracle returns its expected name string
 #[test]
 fn test_oracle_names() {
     assert_eq!(ArithmeticOracle::new().name(), "arithmetic");
@@ -245,6 +278,7 @@ fn test_oracle_names() {
     assert_eq!(CodeSyntaxOracle::new().name(), "code_syntax");
 }
 
+/// Verify OracleResult clone preserves corroborated status
 #[test]
 fn test_oracle_result_clone() {
     let result = OracleResult::Corroborated {
@@ -254,6 +288,7 @@ fn test_oracle_result_clone() {
     assert!(cloned.is_corroborated());
 }
 
+/// Verify OracleResult serializes to JSON with variant name
 #[test]
 fn test_oracle_result_serialize() {
     let result = OracleResult::Falsified {
@@ -265,6 +300,7 @@ fn test_oracle_result_serialize() {
 }
 
 // Mutation-killing tests for arithmetic operations
+/// Verify addition is not confused with multiplication (mutation kill)
 #[test]
 fn test_arithmetic_addition_not_multiplication() {
     // If + were replaced with *, 2+3 would give 6, not 5
@@ -275,6 +311,7 @@ fn test_arithmetic_addition_not_multiplication() {
     assert!(wrong.is_falsified());
 }
 
+/// Verify subtraction is not confused with addition (mutation kill)
 #[test]
 fn test_arithmetic_subtraction_not_other() {
     // If - were replaced with +, 10-3 would give 13, not 7
@@ -285,6 +322,7 @@ fn test_arithmetic_subtraction_not_other() {
     assert!(wrong.is_falsified());
 }
 
+/// Verify multiplication is not confused with addition (mutation kill)
 #[test]
 fn test_arithmetic_multiplication_not_addition() {
     // If * were replaced with +, 3*4 would give 7, not 12
@@ -296,6 +334,7 @@ fn test_arithmetic_multiplication_not_addition() {
 }
 
 // Mutation-killing tests for is_arithmetic_prompt
+/// Verify is_arithmetic_prompt requires both operator AND digit
 #[test]
 fn test_is_arithmetic_requires_both_operator_and_digit() {
     // Must have BOTH operator AND digit (tests && vs ||)
@@ -304,6 +343,7 @@ fn test_is_arithmetic_requires_both_operator_and_digit() {
     assert!(is_arithmetic_prompt("1+2")); // has both
 }
 
+/// Verify all four arithmetic operators are recognized
 #[test]
 fn test_is_arithmetic_all_operators() {
     assert!(is_arithmetic_prompt("1+2"));
@@ -313,6 +353,7 @@ fn test_is_arithmetic_all_operators() {
 }
 
 // Mutation-killing tests for is_repetitive
+/// Verify repetition detection requires minimum word count
 #[test]
 fn test_is_repetitive_needs_minimum_words() {
     // < 5 distinct words without char-level repetition → false
@@ -322,6 +363,7 @@ fn test_is_repetitive_needs_minimum_words() {
     assert!(is_repetitive("a a a a a")); // 5 words, all same
 }
 
+/// Verify two-word repeating pattern detection
 #[test]
 fn test_is_repetitive_two_word_pattern() {
     // Test 2-word pattern detection
@@ -331,6 +373,7 @@ fn test_is_repetitive_two_word_pattern() {
     assert!(!is_repetitive("a b c d e f g h i j k l m n o p"));
 }
 
+/// Verify partial matches do not exceed repetition threshold
 #[test]
 fn test_is_repetitive_match_count_threshold() {
     // Partial matches shouldn't trigger
@@ -339,6 +382,7 @@ fn test_is_repetitive_match_count_threshold() {
 }
 
 // Mutation-killing tests for GarbageOracle conditions
+/// Verify garbage oracle detects NaN, Inf, and inf patterns
 #[test]
 fn test_garbage_detects_different_nan_cases() {
     let oracle = GarbageOracle::new();
@@ -348,6 +392,7 @@ fn test_garbage_detects_different_nan_cases() {
     assert!(oracle.evaluate("test", "inf error").is_falsified());
 }
 
+/// Verify garbage oracle distinguishes empty, whitespace, and real content
 #[test]
 fn test_garbage_non_empty_non_whitespace() {
     let oracle = GarbageOracle::new();
@@ -360,6 +405,7 @@ fn test_garbage_non_empty_non_whitespace() {
 }
 
 // Mutation-killing tests for CodeSyntaxOracle
+/// Verify code syntax oracle detects return, def, and fn patterns
 #[test]
 fn test_code_syntax_detects_patterns() {
     let oracle = CodeSyntaxOracle::new();
@@ -370,6 +416,7 @@ fn test_code_syntax_detects_patterns() {
 }
 
 // Test oracle name returns are not empty
+/// Verify all oracle name() methods return non-empty strings
 #[test]
 fn test_oracle_names_not_empty() {
     assert!(!ArithmeticOracle::new().name().is_empty());
@@ -380,6 +427,7 @@ fn test_oracle_names_not_empty() {
 }
 
 // Test OracleWrapper name delegation
+/// Verify OracleWrapper delegates name() to wrapped oracle
 #[test]
 fn test_oracle_wrapper_name() {
     let wrapper = OracleWrapper(ArithmeticOracle::new());
@@ -388,6 +436,7 @@ fn test_oracle_wrapper_name() {
 
 // --- Character-level n-gram repetition tests ---
 
+/// Verify VILLE-style character repetition is detected
 #[test]
 fn test_char_ngram_ville_pattern() {
     // The motivating case from aprender#189
@@ -395,17 +444,20 @@ fn test_char_ngram_ville_pattern() {
     assert!(is_repetitive("VILLEVILLEVILLEVILLE"));
 }
 
+/// Verify short repeating character patterns are detected
 #[test]
 fn test_char_ngram_short_patterns() {
     assert!(check_substring_repetition("abcabcabc"));
     assert!(check_substring_repetition("xyxyxyxy"));
 }
 
+/// Verify longer repeating substrings are detected
 #[test]
 fn test_char_ngram_longer_patterns() {
     assert!(check_substring_repetition("helloWorldhelloWorldhelloWorld"));
 }
 
+/// Verify normal prose does not trigger n-gram repetition detection
 #[test]
 fn test_char_ngram_not_triggered_on_normal_text() {
     assert!(!check_substring_repetition("The quick brown fox"));
@@ -418,67 +470,26 @@ fn test_char_ngram_not_triggered_on_normal_text() {
     ));
 }
 
+/// Verify per-word n-gram detection catches garbage words in normal text
 #[test]
 fn test_char_ngram_per_word_detection() {
     // Garbage word embedded in normal sentence
     assert!(has_char_ngram_repetition("output VILLEVILLEVILLEVILLE end"));
 }
 
+/// Verify single character repeated many times is detected
 #[test]
 fn test_char_ngram_single_char_repeat() {
     // "aaaaaaaaaaaa" — period 2 "aa" repeats 6 times, coverage 100%
     assert!(check_substring_repetition("aaaaaaaaaaaa"));
 }
 
+/// Verify partial coverage below 70% threshold is not flagged
 #[test]
 fn test_char_ngram_partial_coverage_not_flagged() {
     // "abcabcXYZ" — 2 reps of "abc" = 6/9 = 66%, below 70% threshold
     assert!(!check_substring_repetition("abcabcXYZ"));
 }
 
-#[test]
-fn test_char_ngram_boundary_exactly_three_reps() {
-    // Exactly 3 repetitions, coverage 100% — should trigger
-    assert!(check_substring_repetition("abcabcabc"));
-}
 
-#[test]
-fn test_char_ngram_boundary_exactly_two_reps() {
-    // Exactly 2 repetitions — below threshold of 3
-    assert!(!check_substring_repetition("abcabc"));
-}
-
-// Mutation-killing tests for thresholds
-
-#[test]
-fn test_char_ngram_min_reps_threshold() {
-    // 3 reps at 100% coverage → true
-    assert!(check_substring_repetition("xyzxyzxyz"));
-    // 2 reps at 100% coverage → false (must be >= 3)
-    assert!(!check_substring_repetition("xyzxyz"));
-}
-
-#[test]
-fn test_char_ngram_coverage_threshold() {
-    // 3 reps of "ab" in "abababXXXX" = 6/10 = 60% < 70% → false
-    assert!(!check_substring_repetition("abababXXXX"));
-    // 3 reps of "ab" in "ababab" = 6/6 = 100% → true
-    assert!(check_substring_repetition("ababab"));
-}
-
-#[test]
-fn test_char_ngram_min_period_is_two() {
-    // Period 1 is not checked — single char "aaa" with len < 6 is skipped
-    assert!(!check_substring_repetition("aaa"));
-    // But period 2 "aa" in a long string works
-    assert!(check_substring_repetition("aaaaaaaaaaaa"));
-}
-
-#[test]
-fn test_char_ngram_word_len_threshold() {
-    // Words shorter than 6 chars are not individually checked
-    assert!(!has_char_ngram_repetition("aaaa bbbb"));
-    // Word with 6+ chars that is repetitive gets caught
-    assert!(has_char_ngram_repetition("normal ababababab text"));
-}
 

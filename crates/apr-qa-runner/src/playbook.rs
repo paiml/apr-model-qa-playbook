@@ -11,8 +11,7 @@ use std::sync::LazyLock;
 
 use crate::error::{Error, Result};
 
-/// Deserialize a bool that may be quoted as a string in YAML (CB-950 compliance).
-/// Accepts both `true`/`false` (YAML boolean) and `"true"`/`"false"` (YAML string).
+/// Deserialize a bool that may be quoted as a string in YAML (CB-950 compliance)
 fn deserialize_bool_or_string<'de, D>(deserializer: D) -> std::result::Result<bool, D::Error>
 where
     D: Deserializer<'de>,
@@ -84,6 +83,7 @@ pub struct PlaybookNameParts {
     pub tier: Option<String>,
 }
 
+/// Filename reconstruction from parsed playbook name components
 impl PlaybookNameParts {
     /// Reconstruct the canonical filename from parts
     #[must_use]
@@ -163,6 +163,7 @@ pub enum SizeCategory {
     Huge,
 }
 
+/// Resource limits and concurrency rules based on model size
 impl SizeCategory {
     /// Maximum workers allowed for this model size
     #[must_use]
@@ -252,6 +253,7 @@ pub struct Playbook {
     pub ollama_parity: Option<OllamaParityConfig>,
 }
 
+/// Playbook loading, parsing, scenario generation, and resource management
 impl Playbook {
     /// Load a playbook from a YAML file
     ///

@@ -4,6 +4,7 @@ use super::*;
 use crate::popperian::FalsificationDetail;
 use apr_qa_gen::{Backend, Format, Modality, ModelId, QaScenario};
 
+/// Build a test QaScenario with fixed model and arithmetic prompt
 fn test_scenario() -> QaScenario {
     QaScenario::new(
         ModelId::new("test", "model"),
@@ -15,6 +16,7 @@ fn test_scenario() -> QaScenario {
     )
 }
 
+/// Verify TicketPriority Display outputs formatted priority label
 #[test]
 fn test_ticket_priority_display() {
     assert_eq!(TicketPriority::P0.to_string(), "P0-Critical");
@@ -23,6 +25,7 @@ fn test_ticket_priority_display() {
     assert_eq!(TicketPriority::P3.to_string(), "P3-Low");
 }
 
+/// Verify TicketCategory Display outputs lowercase category name
 #[test]
 fn test_ticket_category_display() {
     assert_eq!(TicketCategory::Bug.to_string(), "bug");
@@ -30,6 +33,7 @@ fn test_ticket_category_display() {
     assert_eq!(TicketCategory::Performance.to_string(), "performance");
 }
 
+/// Verify generate_from_evidence creates P0 crash ticket with black swan flag
 #[test]
 fn test_generate_from_evidence() {
     let generator = TicketGenerator::new("paiml/aprender");
@@ -49,6 +53,7 @@ fn test_generate_from_evidence() {
     assert!(tickets[0].is_black_swan);
 }
 
+/// Verify generate_from_popperian creates tickets from falsification details
 #[test]
 fn test_generate_from_popperian() {
     let generator = TicketGenerator::new("paiml/aprender");
@@ -81,6 +86,7 @@ fn test_generate_from_popperian() {
     assert!(tickets[0].is_black_swan);
 }
 
+/// Verify min_occurrences filter suppresses tickets below threshold
 #[test]
 fn test_min_occurrences_filter() {
     let generator = TicketGenerator::new("paiml/aprender").with_min_occurrences(3);
@@ -95,6 +101,7 @@ fn test_min_occurrences_filter() {
     assert!(tickets.is_empty());
 }
 
+/// Verify black_swans_only filter excludes non-black-swan failures
 #[test]
 fn test_black_swans_only_filter() {
     let generator = TicketGenerator::new("paiml/aprender").black_swans_only();
@@ -112,6 +119,7 @@ fn test_black_swans_only_filter() {
     assert!(tickets.is_empty());
 }
 
+/// Verify to_gh_command generates valid gh issue create command string
 #[test]
 fn test_gh_command_generation() {
     let ticket = UpstreamTicket {
@@ -134,6 +142,7 @@ fn test_gh_command_generation() {
     assert!(cmd.contains("Test ticket"));
 }
 
+/// Verify determine_category maps gate_id prefixes to correct categories
 #[test]
 fn test_category_determination() {
     let generator = TicketGenerator::new("test");
@@ -164,6 +173,7 @@ fn test_category_determination() {
     );
 }
 
+/// Verify determine_category maps CRASH gate prefix to Crash category
 #[test]
 fn test_category_crash_detection() {
     let generator = TicketGenerator::new("test");
@@ -173,12 +183,14 @@ fn test_category_crash_detection() {
     );
 }
 
+/// Verify TicketGenerator stores and returns the repository name
 #[test]
 fn test_generator_repo() {
     let generator = TicketGenerator::new("owner/repo");
     assert_eq!(generator.repo(), "owner/repo");
 }
 
+/// Verify determine_priority assigns correct priorities for crash, black swan, and gate patterns
 #[test]
 fn test_priority_determination() {
     let generator = TicketGenerator::new("test");
@@ -226,6 +238,7 @@ fn test_priority_determination() {
     );
 }
 
+/// Verify gateway gates (G1-LOAD) are classified as P0
 #[test]
 fn test_gateway_gate_is_p0() {
     let generator = TicketGenerator::new("test");
@@ -236,18 +249,21 @@ fn test_gateway_gate_is_p0() {
     );
 }
 
+/// Verify TicketCategory equality comparisons
 #[test]
 fn test_ticket_category_eq() {
     assert_eq!(TicketCategory::Bug, TicketCategory::Bug);
     assert_ne!(TicketCategory::Bug, TicketCategory::Crash);
 }
 
+/// Verify TicketPriority equality comparisons
 #[test]
 fn test_ticket_priority_eq() {
     assert_eq!(TicketPriority::P0, TicketPriority::P0);
     assert_ne!(TicketPriority::P0, TicketPriority::P1);
 }
 
+/// Verify UpstreamTicket clone preserves all fields
 #[test]
 fn test_upstream_ticket_clone() {
     let ticket = UpstreamTicket {
@@ -266,6 +282,7 @@ fn test_upstream_ticket_clone() {
     assert_eq!(cloned.title, ticket.title);
 }
 
+/// Verify generate_from_evidence creates timeout ticket from timeout evidence
 #[test]
 fn test_generate_from_evidence_with_timeout() {
     let generator = TicketGenerator::new("paiml/aprender");
@@ -277,6 +294,7 @@ fn test_generate_from_evidence_with_timeout() {
     assert!(tickets[0].title.contains("Timeout"));
 }
 
+/// Verify generate_from_evidence creates assertion ticket from falsified evidence
 #[test]
 fn test_generate_from_evidence_falsified() {
     let generator = TicketGenerator::new("paiml/aprender");
@@ -294,6 +312,7 @@ fn test_generate_from_evidence_falsified() {
     assert!(tickets[0].title.contains("Assertion"));
 }
 
+/// Verify generate_from_evidence deduplicates multiple failures with same gate_id
 #[test]
 fn test_generate_deduplication() {
     let generator = TicketGenerator::new("test");
@@ -309,6 +328,7 @@ fn test_generate_deduplication() {
     assert_eq!(tickets.len(), 1);
 }
 
+/// Verify generated tickets include modality and backend labels
 #[test]
 fn test_ticket_labels_include_modality() {
     let generator = TicketGenerator::new("test");
@@ -320,6 +340,7 @@ fn test_ticket_labels_include_modality() {
     assert!(tickets[0].labels.iter().any(|l| l.contains("backend:")));
 }
 
+/// Verify black swan crashes get the black-swan label
 #[test]
 fn test_black_swan_label_added() {
     let generator = TicketGenerator::new("test");
@@ -337,12 +358,14 @@ fn test_black_swan_label_added() {
     assert!(tickets[0].labels.contains(&"black-swan".to_string()));
 }
 
+/// Create a falsified evidence with attached stderr for structured ticket tests
 fn falsified_with_stderr(gate_id: &str, stderr: &str) -> Evidence {
     let mut ev = Evidence::falsified(gate_id, test_scenario(), "failure", "N/A", 100);
     ev.stderr = Some(stderr.to_string());
     ev
 }
 
+/// Verify structured tickets group same-cause failures into one ticket
 #[test]
 fn test_structured_tickets_same_cause_dedup() {
     let defect_map = crate::defect_map::load_defect_fixture_map().expect("load map");
@@ -364,6 +387,7 @@ fn test_structured_tickets_same_cause_dedup() {
     assert!(tickets[0].title.contains("12 occurrences"));
 }
 
+/// Verify structured tickets create separate tickets for distinct root causes
 #[test]
 fn test_structured_tickets_two_causes() {
     let defect_map = crate::defect_map::load_defect_fixture_map().expect("load map");
@@ -390,6 +414,7 @@ fn test_structured_tickets_two_causes() {
     assert_eq!(tickets.len(), 2);
 }
 
+/// Verify structured tickets include upstream fixture and pygmy builder references
 #[test]
 fn test_structured_tickets_fixture_in_body() {
     let defect_map = crate::defect_map::load_defect_fixture_map().expect("load map");
@@ -410,6 +435,7 @@ fn test_structured_tickets_fixture_in_body() {
     );
 }
 
+/// Verify structured tickets returns empty vec when all evidence is corroborated
 #[test]
 fn test_structured_tickets_no_failures() {
     let defect_map = crate::defect_map::load_defect_fixture_map().expect("load map");
@@ -425,6 +451,7 @@ fn test_structured_tickets_no_failures() {
     assert!(tickets.is_empty());
 }
 
+/// Verify structured tickets omit fixture for unknown error patterns
 #[test]
 fn test_structured_tickets_unknown_cause_no_fixture() {
     let defect_map = crate::defect_map::load_defect_fixture_map().expect("load map");
@@ -446,6 +473,7 @@ fn test_structured_tickets_unknown_cause_no_fixture() {
     assert!(tickets[0].pygmy_builder.is_none());
 }
 
+/// Verify structured tickets include failure-type and qa-automated labels
 #[test]
 fn test_structured_tickets_labels() {
     let defect_map = crate::defect_map::load_defect_fixture_map().expect("load map");

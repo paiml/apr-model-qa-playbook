@@ -12,6 +12,7 @@ use apr_qa_runner::{
     CommutativityTest, ConversionConfig, IdempotencyTest, InspectResult, RoundTripTest,
 };
 
+/// Demonstrate Rosetta metamorphic and multi-hop conversion testing types
 fn main() {
     let model = ModelId::new("Qwen", "Qwen2.5-Coder-0.5B-Instruct");
 

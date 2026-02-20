@@ -1,3 +1,4 @@
+/// Verify file integrity passes with hash-prefixed config and safetensors
 #[test]
 fn test_file_integrity_with_hash_prefix_config() {
     let dir = TempDir::new().expect("create temp dir");
@@ -16,6 +17,7 @@ fn test_file_integrity_with_hash_prefix_config() {
     assert!(result.layer_count_match);
 }
 
+/// Verify integrity check uses only matching model config in shared directory
 #[test]
 fn test_file_integrity_ignores_other_models_in_shared_dir() {
     let dir = TempDir::new().expect("create temp dir");
@@ -40,6 +42,7 @@ fn test_file_integrity_ignores_other_models_in_shared_dir() {
     );
 }
 
+/// Verify integrity check fails when no config file is found
 #[test]
 fn test_file_integrity_no_config_found() {
     let dir = TempDir::new().expect("create temp dir");
@@ -58,6 +61,7 @@ fn test_file_integrity_no_config_found() {
     );
 }
 
+/// Verify integrity check falls back to plain config.json when no hash prefix
 #[test]
 fn test_file_integrity_falls_back_to_plain_config() {
     let dir = TempDir::new().expect("create temp dir");
@@ -74,6 +78,7 @@ fn test_file_integrity_falls_back_to_plain_config() {
     );
 }
 
+/// Verify integrity check fails when config and tensor layer counts mismatch
 #[test]
 fn test_file_integrity_layer_mismatch() {
     let dir = TempDir::new().expect("create temp dir");
@@ -87,6 +92,7 @@ fn test_file_integrity_layer_mismatch() {
     assert!(result.errors.iter().any(|e| e.contains("LAYERS")));
 }
 
+/// Verify find_config_for_model_file finds hash-prefixed config
 #[test]
 fn test_find_config_for_model_file_hash_prefix() {
     let dir = TempDir::new().expect("create temp dir");
@@ -106,6 +112,7 @@ fn test_find_config_for_model_file_hash_prefix() {
     );
 }
 
+/// Verify find_config_for_model_file returns None when no config matches
 #[test]
 fn test_find_config_for_model_file_no_match() {
     let dir = TempDir::new().expect("create temp dir");

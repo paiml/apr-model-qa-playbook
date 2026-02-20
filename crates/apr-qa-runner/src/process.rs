@@ -11,6 +11,7 @@ use std::sync::{Arc, Mutex, OnceLock};
 /// Global registry of spawned child processes for cleanup
 static PROCESS_REGISTRY: OnceLock<Arc<Mutex<Vec<Child>>>> = OnceLock::new();
 
+/// Lazily initialize and return the global process registry
 fn get_registry() -> &'static Arc<Mutex<Vec<Child>>> {
     PROCESS_REGISTRY.get_or_init(|| Arc::new(Mutex::new(Vec::new())))
 }
@@ -51,6 +52,7 @@ pub struct ProcessGuard {
     pid: u32,
 }
 
+/// RAII lifecycle operations for managed child processes
 impl ProcessGuard {
     /// Create a new process guard from a spawned child
     #[must_use]
@@ -101,6 +103,7 @@ impl ProcessGuard {
     }
 }
 
+/// Kill and reap child process on guard drop (Jidoka cleanup)
 impl Drop for ProcessGuard {
     fn drop(&mut self) {
         if let Some(ref mut child) = self.child {

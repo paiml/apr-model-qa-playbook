@@ -1,5 +1,6 @@
 use super::*;
 
+/// Sample YAML family contract used across all test cases
 const SAMPLE_YAML: &str = r#"
 family: qwen2
 display_name: "Qwen2 / Qwen2.5-Coder"

@@ -1,18 +1,22 @@
+/// Verify default_tolerance returns 1e-5
 #[test]
 fn test_default_tolerance() {
     assert!((default_tolerance() - 1e-5).abs() < 1e-10);
 }
 
+/// Verify default_warmup returns 3
 #[test]
 fn test_default_warmup() {
     assert_eq!(default_warmup(), 3);
 }
 
+/// Verify default_measure returns 10
 #[test]
 fn test_default_measure() {
     assert_eq!(default_measure(), 10);
 }
 
+/// Verify playbook parsing with fingerprint differential test config
 #[test]
 fn test_playbook_with_fingerprint() {
     let yaml = r#"
@@ -43,6 +47,7 @@ differential_tests:
     assert_eq!(fp.gates.len(), 2);
 }
 
+/// Verify playbook parsing with validate_stats differential test config
 #[test]
 fn test_playbook_with_validate_stats() {
     let yaml = r#"
@@ -78,11 +83,13 @@ differential_tests:
     assert_eq!(stats.gates.len(), 2);
 }
 
+/// Verify default fingerprint tensors is "all"
 #[test]
 fn test_default_fingerprint_tensors() {
     assert_eq!(default_fingerprint_tensors(), "all");
 }
 
+/// Verify default fingerprint stats contains 5 stat types
 #[test]
 fn test_default_fingerprint_stats() {
     let stats = default_fingerprint_stats();
@@ -91,6 +98,7 @@ fn test_default_fingerprint_stats() {
     assert!(stats.contains(&"checksum".to_string()));
 }
 
+/// Verify default tolerance values for layernorm, embedding, and attention
 #[test]
 fn test_default_tolerance_values() {
     assert!((default_layernorm_tolerance() - 0.001).abs() < 1e-10);
@@ -98,6 +106,7 @@ fn test_default_tolerance_values() {
     assert!((default_attention_tolerance() - 0.01).abs() < 1e-10);
 }
 
+/// Verify ProfileCiAssertions returns backend-specific throughput thresholds
 #[test]
 fn test_profile_ci_min_throughput_for() {
     // Test with all fields set
@@ -140,6 +149,7 @@ fn test_profile_ci_min_throughput_for() {
 
 // ── §3.1 Playbook integrity lock tests ─────────────────────────────
 
+/// Verify compute_playbook_hash produces consistent SHA-256 hex output
 #[test]
 fn test_compute_playbook_hash_consistent() {
     let dir = tempfile::tempdir().expect("create temp dir");
@@ -152,6 +162,7 @@ fn test_compute_playbook_hash_consistent() {
     assert_eq!(hash1.len(), 64); // SHA-256 hex
 }
 
+/// Verify compute_playbook_hash produces different hashes for different content
 #[test]
 fn test_compute_playbook_hash_differs() {
     let dir = tempfile::tempdir().expect("create temp dir");
@@ -165,6 +176,7 @@ fn test_compute_playbook_hash_differs() {
     assert_ne!(hash1, hash2);
 }
 
+/// Verify verify_playbook_integrity passes when hash matches lock file
 #[test]
 fn test_verify_playbook_integrity_pass() {
     let dir = tempfile::tempdir().expect("create temp dir");
@@ -184,6 +196,7 @@ fn test_verify_playbook_integrity_pass() {
     assert!(verify_playbook_integrity(&path, &lock, "test").is_ok());
 }
 
+/// Verify verify_playbook_integrity fails on hash mismatch
 #[test]
 fn test_verify_playbook_integrity_fail_mismatch() {
     let dir = tempfile::tempdir().expect("create temp dir");
@@ -209,6 +222,7 @@ fn test_verify_playbook_integrity_fail_mismatch() {
     );
 }
 
+/// Verify verify_playbook_integrity fails when entry is missing from lock file
 #[test]
 fn test_verify_playbook_integrity_missing_entry() {
     let dir = tempfile::tempdir().expect("create temp dir");
@@ -226,6 +240,7 @@ fn test_verify_playbook_integrity_missing_entry() {
     );
 }
 
+/// Verify generate_lock_entry extracts name and computes hash
 #[test]
 fn test_generate_lock_entry() {
     let dir = tempfile::tempdir().expect("create temp dir");
@@ -238,6 +253,7 @@ fn test_generate_lock_entry() {
     assert!(!entry.locked_fields.is_empty());
 }
 
+/// Verify lock file survives save/load round-trip
 #[test]
 fn test_lock_file_save_load_roundtrip() {
     let dir = tempfile::tempdir().expect("create temp dir");
@@ -259,6 +275,7 @@ fn test_lock_file_save_load_roundtrip() {
     assert_eq!(loaded.entries["model-a"].sha256, "abc123");
 }
 
+/// Verify lock file survives serde YAML round-trip
 #[test]
 fn test_lock_file_serde_roundtrip() {
     let mut lock = PlaybookLockFile::default();
@@ -278,6 +295,7 @@ fn test_lock_file_serde_roundtrip() {
 
 // ── §3.3 Skip mechanism tests ──────────────────────────────────────
 
+/// Verify find_skip_files returns empty for directory with no skip files
 #[test]
 fn test_find_skip_files_empty_dir() {
     let dir = tempfile::tempdir().expect("create temp dir");
@@ -285,6 +303,7 @@ fn test_find_skip_files_empty_dir() {
     assert!(skips.is_empty());
 }
 
+/// Verify find_skip_files parses skip YAML correctly
 #[test]
 fn test_find_skip_files_with_skip() {
     let dir = tempfile::tempdir().expect("create temp dir");
@@ -304,6 +323,7 @@ fn test_find_skip_files_with_skip() {
     assert_eq!(skips[0].tracking_issue.as_deref(), Some("GH-123"));
 }
 
+/// Verify detect_implicit_skips identifies formats missing from playbook
 #[test]
 fn test_detect_implicit_skips() {
     let yaml = r#"
@@ -327,6 +347,7 @@ test_matrix:
     assert!(implicit.contains(&"apr".to_string()));
 }
 
+/// Verify detect_implicit_skips excludes explicitly skipped formats
 #[test]
 fn test_detect_implicit_skips_with_explicit() {
     let yaml = r#"
@@ -354,6 +375,7 @@ test_matrix:
     assert_eq!(implicit[0], "apr");
 }
 
+/// Verify detect_implicit_skips returns empty when all formats covered
 #[test]
 fn test_detect_implicit_skips_all_covered() {
     let yaml = r#"
@@ -374,6 +396,7 @@ test_matrix:
     assert!(implicit.is_empty());
 }
 
+/// Verify SkipReason serialization round-trip preserves all fields
 #[test]
 fn test_skip_reason_serde() {
     let reason = SkipReason {
@@ -387,6 +410,7 @@ fn test_skip_reason_serde() {
     assert_eq!(parsed.tracking_issue.as_deref(), Some("GH-100"));
 }
 
+/// Verify SkipType equality comparison
 #[test]
 fn test_skip_type_eq() {
     assert_eq!(SkipType::Explicit, SkipType::Explicit);
@@ -395,6 +419,7 @@ fn test_skip_type_eq() {
 
 // ── §3.4 Resource-aware scheduling tests ────────────────────────────
 
+/// Verify SizeCategory max_workers for each tier
 #[test]
 fn test_size_category_max_workers() {
     assert_eq!(SizeCategory::Tiny.max_workers(), 4);
@@ -405,6 +430,7 @@ fn test_size_category_max_workers() {
     assert_eq!(SizeCategory::Huge.max_workers(), 1);
 }
 
+/// Verify SizeCategory estimated memory for each tier
 #[test]
 fn test_size_category_estimated_memory() {
     assert_eq!(SizeCategory::Tiny.estimated_memory_gb(), 2);
@@ -415,6 +441,7 @@ fn test_size_category_estimated_memory() {
     assert_eq!(SizeCategory::Huge.estimated_memory_gb(), 64);
 }
 
+/// Verify SizeCategory concurrent execution eligibility
 #[test]
 fn test_size_category_can_run_concurrent() {
     assert!(SizeCategory::Tiny.can_run_concurrent());
@@ -425,11 +452,13 @@ fn test_size_category_can_run_concurrent() {
     assert!(!SizeCategory::Huge.can_run_concurrent());
 }
 
+/// Verify SizeCategory default is Tiny
 #[test]
 fn test_size_category_default() {
     assert_eq!(SizeCategory::default(), SizeCategory::Tiny);
 }
 
+/// Verify SizeCategory YAML deserialization from playbook
 #[test]
 fn test_size_category_serde() {
     let yaml = r#"

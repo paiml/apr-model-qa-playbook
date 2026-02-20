@@ -153,7 +153,7 @@ pub struct BootstrappedProfileCi {
     pub max_p99_ms: f64,
 }
 
-/// Scenario count for a given tier.
+/// Return the number of test scenarios appropriate for the given tier
 fn scenario_count_for_tier(tier: &str) -> usize {
     match tier {
         "dim-smoke" | "smoke" => 1,
@@ -165,7 +165,7 @@ fn scenario_count_for_tier(tier: &str) -> usize {
     }
 }
 
-/// Size-aware performance thresholds (min throughput tok/s, max p99 ms).
+/// Return size-aware performance thresholds (min throughput tok/s, max p99 ms)
 fn performance_thresholds(size_category: &str) -> (f64, f64) {
     match size_category {
         "tiny" => (50.0, 200.0),
@@ -177,7 +177,7 @@ fn performance_thresholds(size_category: &str) -> (f64, f64) {
     }
 }
 
-/// Build the standard falsification gates G1-G4.
+/// Build the standard falsification gates G1 through G4
 fn standard_gates() -> Vec<BootstrappedGate> {
     vec![
         BootstrappedGate {

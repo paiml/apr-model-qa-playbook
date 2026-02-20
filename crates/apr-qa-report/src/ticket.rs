@@ -22,6 +22,7 @@ pub enum TicketPriority {
     P3,
 }
 
+/// Display ticket priority as human-readable label
 impl std::fmt::Display for TicketPriority {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -50,6 +51,7 @@ pub enum TicketCategory {
     Regression,
 }
 
+/// Display ticket category as lowercase kebab-case label
 impl std::fmt::Display for TicketCategory {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -90,6 +92,7 @@ pub struct UpstreamTicket {
     pub pygmy_builder: Option<String>,
 }
 
+/// Methods for generating upstream ticket CLI commands
 impl UpstreamTicket {
     /// Generate GitHub CLI command to create this ticket
     #[must_use]
@@ -133,6 +136,7 @@ pub struct TicketGenerator {
     black_swans_only: bool,
 }
 
+/// Ticket generation methods for evidence and Popperian analysis
 impl TicketGenerator {
     /// Create a new ticket generator
     #[must_use]

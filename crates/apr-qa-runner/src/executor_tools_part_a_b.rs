@@ -1,5 +1,5 @@
+/// Backend equivalence and additional tool test methods for ToolExecutor
 impl ToolExecutor {
-
     /// Execute backend equivalence test (F-CONV-BE-001)
     ///
     /// Compares CPU vs GPU output to verify they produce equivalent results.

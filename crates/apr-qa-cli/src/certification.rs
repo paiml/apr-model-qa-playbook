@@ -1,3 +1,4 @@
+/// Run the full certification pipeline for selected models
 #[allow(clippy::too_many_lines)]
 #[allow(clippy::fn_params_excessive_bools)]
 fn run_certification(
@@ -107,6 +108,7 @@ fn run_certification(
     println!("{} {}", "Total:".dimmed(), models_to_certify.len());
 }
 
+/// Resolve the model cache path, defaulting to ~/.cache/apr-models
 fn resolve_default_model_cache(model_cache: Option<PathBuf>) -> Option<PathBuf> {
     if model_cache.is_some() {
         return model_cache;
@@ -117,6 +119,7 @@ fn resolve_default_model_cache(model_cache: Option<PathBuf>) -> Option<PathBuf> 
     Some(default_cache)
 }
 
+/// Print the certification run header with tier, dry-run, and cache info
 fn print_certification_header(
     tier_str: &str,
     dry_run: bool,
@@ -141,6 +144,7 @@ fn print_certification_header(
     println!();
 }
 
+/// Load and parse the models.csv certification tracking file
 fn load_certification_csv() -> (PathBuf, Vec<apr_qa_certify::ModelCertification>) {
     use apr_qa_certify::parse_csv;
     let csv_path = PathBuf::from("docs/certifications/models.csv");
@@ -161,6 +165,7 @@ fn load_certification_csv() -> (PathBuf, Vec<apr_qa_certify::ModelCertification>
     (csv_path, certifications)
 }
 
+/// Select models to certify based on --all, --family, or explicit model IDs
 fn determine_models_to_certify(
     all: bool,
     family: Option<&str>,
@@ -183,6 +188,7 @@ fn determine_models_to_certify(
     }
 }
 
+/// Resolve the final model list, optionally filtering by kernel class
 fn resolve_models_for_certification(
     all: bool,
     family: Option<&str>,
@@ -220,6 +226,7 @@ fn resolve_models_for_certification(
     )
 }
 
+/// Iterate over models, run certification for each, and tally results
 #[allow(clippy::too_many_arguments)]
 fn certify_model_loop(
     models_to_certify: &[String],

@@ -23,6 +23,7 @@ pub struct ConversionConfig {
 }
 
 impl Default for ConversionConfig {
+    /// Create a default config with all test types enabled on CPU and GPU
     fn default() -> Self {
         Self {
             test_all_pairs: true,
@@ -38,6 +39,7 @@ impl Default for ConversionConfig {
     }
 }
 
+/// Configuration constructors for conversion test scenarios
 impl ConversionConfig {
     /// Create config for CPU-only testing
     #[must_use]
@@ -59,7 +61,9 @@ impl ConversionConfig {
 /// Executor for running P0 format conversion tests
 #[derive(Debug)]
 pub struct ConversionExecutor {
+    /// Conversion test configuration flags
     config: ConversionConfig,
+    /// Path to the conversion binary executable
     binary: String,
     /// Output directory for conversion artifacts (ISO-OUT-001)
     output_dir: Option<PathBuf>,

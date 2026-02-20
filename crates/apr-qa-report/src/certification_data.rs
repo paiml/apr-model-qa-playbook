@@ -44,7 +44,9 @@ pub enum ModelStatus {
     Untested,
 }
 
+/// Display model status as an uppercase string
 impl std::fmt::Display for ModelStatus {
+    /// Format the status variant as its canonical uppercase name
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Certified => write!(f, "CERTIFIED"),
@@ -55,9 +57,11 @@ impl std::fmt::Display for ModelStatus {
     }
 }
 
+/// Parse model status from a case-insensitive string
 impl std::str::FromStr for ModelStatus {
     type Err = Error;
 
+    /// Parse a status string like "CERTIFIED", "BLOCKED", etc
     fn from_str(s: &str) -> Result<Self> {
         match s.to_uppercase().as_str() {
             "CERTIFIED" => Ok(Self::Certified),
@@ -90,7 +94,9 @@ pub enum SizeCategory {
     Huge,
 }
 
+/// Display size category as a lowercase string
 impl std::fmt::Display for SizeCategory {
+    /// Format the size category variant as its lowercase name
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Tiny => write!(f, "tiny"),
@@ -103,9 +109,11 @@ impl std::fmt::Display for SizeCategory {
     }
 }
 
+/// Parse size category from a case-insensitive string
 impl std::str::FromStr for SizeCategory {
     type Err = Error;
 
+    /// Parse a size string like "tiny", "small", "medium", etc
     fn from_str(s: &str) -> Result<Self> {
         match s.to_lowercase().as_str() {
             "tiny" => Ok(Self::Tiny),
@@ -188,7 +196,9 @@ pub struct CertificationRow {
     pub kernel_proof_level: Option<String>,
 }
 
+/// Provide default values for a new uncertified model row
 impl Default for CertificationRow {
+    /// Create a default row with pending status and zero scores
     fn default() -> Self {
         Self {
             model_id: String::new(),

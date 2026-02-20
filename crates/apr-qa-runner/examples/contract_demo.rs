@@ -19,6 +19,7 @@ use apr_qa_runner::{
     validate_tensor_name,
 };
 
+/// Run the format contract demo showing YAML contract validation features
 fn main() {
     println!("=== Format Contract Demo (GH-190/191) ===\n");
 

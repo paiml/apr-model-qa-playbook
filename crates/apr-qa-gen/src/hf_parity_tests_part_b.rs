@@ -140,7 +140,7 @@ fn test_tensor_diff_clone() {
 // SafeTensors File I/O Helper
 // ============================================================
 
-/// Create a minimal SafeTensors file with a "logits" tensor from f32 values.
+/// Create a minimal SafeTensors file with a "logits" tensor from f32 values
 fn create_safetensors_file(path: &Path, logits: &[f32], shape: &[usize]) {
     use safetensors::tensor::Dtype;
     use std::borrow::Cow;
@@ -176,7 +176,7 @@ fn create_safetensors_file(path: &Path, logits: &[f32], shape: &[usize]) {
     std::fs::write(path, bytes).expect("failed to write safetensors file");
 }
 
-/// Create a unique temporary directory for a test.
+/// Create a unique temporary directory for a test
 fn make_test_dir(test_name: &str) -> PathBuf {
     let dir = std::env::temp_dir()
         .join("apr-qa-gen-tests")

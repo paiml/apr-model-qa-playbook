@@ -99,6 +99,7 @@ pub struct CiProfileResult {
     pub latency_p99_ms: f64,
 }
 
+/// Accessor methods for CI profile metrics with legacy field fallback
 impl CiProfileResult {
     /// Get throughput in tok/s (from nested metrics or legacy field)
     #[must_use]

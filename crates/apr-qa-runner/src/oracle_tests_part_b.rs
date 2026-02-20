@@ -1,3 +1,4 @@
+/// Verify low min_relevance passes all three cross-references through
 #[test]
 fn test_generate_cross_references_low_min_relevance() {
     let enhancer = OracleEnhancer::new().with_min_relevance(0.0);
@@ -14,6 +15,7 @@ fn test_generate_cross_references_low_min_relevance() {
     assert_eq!(refs.len(), 3);
 }
 
+/// Verify OracleError::ExecutionFailed display format
 #[test]
 fn test_oracle_error_display_execution_failed() {
     let err = OracleError::ExecutionFailed("not found".to_string());
@@ -21,6 +23,7 @@ fn test_oracle_error_display_execution_failed() {
     assert_eq!(display, "Failed to execute batuta: not found");
 }
 
+/// Verify OracleError::QueryFailed display format
 #[test]
 fn test_oracle_error_display_query_failed() {
     let err = OracleError::QueryFailed("bad query".to_string());
@@ -28,6 +31,7 @@ fn test_oracle_error_display_query_failed() {
     assert_eq!(display, "Oracle query failed: bad query");
 }
 
+/// Verify OracleError::Timeout display format
 #[test]
 fn test_oracle_error_display_timeout() {
     let err = OracleError::Timeout;
@@ -35,6 +39,7 @@ fn test_oracle_error_display_timeout() {
     assert_eq!(display, "Oracle query timed out");
 }
 
+/// Verify OracleError implements std::error::Error trait
 #[test]
 fn test_oracle_error_is_error_trait() {
     let err: Box<dyn std::error::Error> =
@@ -45,6 +50,7 @@ fn test_oracle_error_is_error_trait() {
     assert!(display.contains("batuta"));
 }
 
+/// Verify OracleError debug formatting
 #[test]
 fn test_oracle_error_debug() {
     let err = OracleError::Timeout;
@@ -52,6 +58,7 @@ fn test_oracle_error_debug() {
     assert!(debug.contains("Timeout"));
 }
 
+/// Verify static commands generation for CONV gate failures
 #[test]
 fn test_generate_static_commands_conv() {
     let enhancer = OracleEnhancer::new();
@@ -69,6 +76,7 @@ fn test_generate_static_commands_conv() {
     assert!(commands.iter().any(|c| c.contains("apr inspect")));
 }
 
+/// Verify static commands generation is empty for non-CONV gates
 #[test]
 fn test_generate_static_commands_non_conv() {
     let enhancer = OracleEnhancer::new();
@@ -87,6 +95,7 @@ fn test_generate_static_commands_non_conv() {
     );
 }
 
+/// Verify enhance_failure produces non-empty checklist for CONV failures
 #[test]
 fn test_enhance_failure_on_actual_failure() {
     // enhance_failure on a falsified evidence should produce a non-empty context
@@ -122,6 +131,7 @@ fn test_enhance_failure_on_actual_failure() {
     }
 }
 
+/// Verify enhance_failure handles timeout evidence as a failure
 #[test]
 fn test_enhance_failure_on_timeout_evidence() {
     // Timeout evidence is also a failure, so it should be enhanced
@@ -139,6 +149,7 @@ fn test_enhance_failure_on_timeout_evidence() {
     );
 }
 
+/// Verify enhance_failure produces empty checklist for non-CONV crash
 #[test]
 fn test_enhance_failure_on_crashed_evidence() {
     let enhancer = OracleEnhancer::new();
@@ -149,6 +160,7 @@ fn test_enhance_failure_on_crashed_evidence() {
     assert!(context.checklist.is_empty());
 }
 
+/// Verify static fallback path generates LAYOUT and PATH-EXT checklist items
 #[test]
 fn test_enhance_failure_fallback_path() {
     // Force the fallback path by using a very short timeout with an enhancer
@@ -174,6 +186,7 @@ fn test_enhance_failure_fallback_path() {
     assert!(static_commands.iter().any(|c| c.contains("layout")));
 }
 
+/// Verify checklist_from_gate returns empty for unmatched gate patterns
 #[test]
 fn test_generate_checklist_from_gate_no_matches() {
     let enhancer = OracleEnhancer::new();
@@ -192,6 +205,7 @@ fn test_generate_checklist_from_gate_no_matches() {
     );
 }
 
+/// Verify investigation commands include rosetta but not CONV commands for non-CONV
 #[test]
 fn test_generate_investigation_commands_non_conv() {
     let enhancer = OracleEnhancer::new();
@@ -210,6 +224,7 @@ fn test_generate_investigation_commands_non_conv() {
     assert!(!commands.iter().any(|c| c.contains("apr inspect")));
 }
 
+/// Verify investigation commands include G-A specific convert command
 #[test]
 fn test_generate_investigation_commands_conv_with_ga() {
     let enhancer = OracleEnhancer::new();
@@ -229,6 +244,7 @@ fn test_generate_investigation_commands_conv_with_ga() {
     assert!(commands.iter().any(|c| c.contains("apr convert")));
 }
 
+/// Verify CONV commands present but no G-A specific convert for plain CONV
 #[test]
 fn test_generate_investigation_commands_conv_without_ga() {
     let enhancer = OracleEnhancer::new();
@@ -246,6 +262,7 @@ fn test_generate_investigation_commands_conv_without_ga() {
     assert!(!commands.iter().any(|c| c.contains("apr convert")));
 }
 
+/// Verify builder chaining sets both timeout and min_relevance
 #[test]
 fn test_builder_chaining() {
     let enhancer = OracleEnhancer::new()
@@ -255,6 +272,7 @@ fn test_builder_chaining() {
     assert!((enhancer.min_relevance - 0.75).abs() < f32::EPSILON);
 }
 
+/// Verify checklist markdown for empty context
 #[test]
 fn test_generate_checklist_markdown_empty_context() {
     let context = OracleContext::default();
@@ -268,6 +286,7 @@ fn test_generate_checklist_markdown_empty_context() {
     assert!(!md.contains("## Cross-References"));
 }
 
+/// Verify checklist markdown renders evidence_against section
 #[test]
 fn test_generate_checklist_markdown_with_evidence_against() {
     let context = OracleContext {
@@ -292,6 +311,7 @@ fn test_generate_checklist_markdown_with_evidence_against() {
     assert!(md.contains("Counter evidence"));
 }
 
+/// Verify enhance_failures processes multiple failure types
 #[test]
 fn test_enhance_failures_multiple_failures() {
     let enhancer = OracleEnhancer::new();
@@ -306,6 +326,7 @@ fn test_enhance_failures_multiple_failures() {
     assert_eq!(results.len(), 3, "Should have 3 failure enhancements");
 }
 
+/// Verify static checklist is empty for non-CONV non-extension failures
 #[test]
 fn test_generate_static_checklist_no_match() {
     let enhancer = OracleEnhancer::new();
@@ -324,6 +345,7 @@ fn test_generate_static_checklist_no_match() {
     );
 }
 
+/// Verify static checklist matches both CONV and extension branches
 #[test]
 fn test_generate_static_checklist_both_conv_and_extension() {
     let enhancer = OracleEnhancer::new();
@@ -345,6 +367,7 @@ fn test_generate_static_checklist_both_conv_and_extension() {
     assert!(checklist.iter().any(|c| c.gate_id == "F-PATH-EXT"));
 }
 
+/// Verify OracleContext default has all fields empty/false/zero
 #[test]
 fn test_oracle_context_default() {
     let context = OracleContext::default();
@@ -356,6 +379,7 @@ fn test_oracle_context_default() {
     assert_eq!(context.query_latency_ms, 0);
 }
 
+/// Verify checklist generation hits all four branches simultaneously
 #[test]
 fn test_generate_checklist_all_branches_simultaneously() {
     // Craft evidence that hits CONV + G-A + INF + "No file extension" + "diff"

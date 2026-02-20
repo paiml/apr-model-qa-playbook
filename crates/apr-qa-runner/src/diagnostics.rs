@@ -10,11 +10,15 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::{Duration, Instant};
 
-/// Timeout for each diagnostic command
+/// Timeout for the `apr check` diagnostic command
 const CHECK_TIMEOUT: Duration = Duration::from_secs(30);
+/// Timeout for the `apr inspect` diagnostic command
 const INSPECT_TIMEOUT: Duration = Duration::from_secs(10);
+/// Timeout for the `apr trace` diagnostic command
 const TRACE_TIMEOUT: Duration = Duration::from_secs(60);
+/// Timeout for the `apr tensors` diagnostic command
 const TENSORS_TIMEOUT: Duration = Duration::from_secs(10);
+/// Timeout for the `apr explain` diagnostic command
 const EXPLAIN_TIMEOUT: Duration = Duration::from_secs(5);
 
 /// Result of a diagnostic command
@@ -55,6 +59,7 @@ pub struct EnvironmentContext {
     pub rustc_version: String,
 }
 
+/// Collection and construction for environment context
 impl EnvironmentContext {
     /// Collect environment context
     #[must_use]
@@ -95,6 +100,7 @@ pub struct FailureDetails {
     pub stderr: Option<String>,
 }
 
+/// Convert Evidence into FailureDetails for diagnostic reports
 impl From<&Evidence> for FailureDetails {
     fn from(evidence: &Evidence) -> Self {
         Self {
@@ -160,6 +166,7 @@ pub struct FailFastReporter {
     binary: String,
 }
 
+/// Report generation and diagnostic command execution
 impl FailFastReporter {
     /// Create a new reporter
     #[must_use]
@@ -359,7 +366,7 @@ impl FailFastReporter {
         Some(result)
     }
 
-    /// Run a command with timeout
+    /// Run an external command and capture output with timeout detection
     fn run_command_with_timeout(&self, args: &[&str], timeout: Duration) -> DiagnosticResult {
         let start = Instant::now();
         let command_str = args.join(" ");
@@ -389,7 +396,7 @@ impl FailFastReporter {
         }
     }
 
-    /// Save JSON to file
+    /// Serialize data to pretty-printed JSON and write to a file
     fn save_json<T: Serialize>(&self, path: &Path, data: &T) -> std::io::Result<()> {
         let json = serde_json::to_string_pretty(data).map_err(std::io::Error::other)?;
         std::fs::write(path, json)

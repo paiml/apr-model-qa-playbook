@@ -1,3 +1,4 @@
+/// Verify HF repo resolution selects snapshot containing model.safetensors
 #[test]
 fn test_resolve_hf_repo_with_dirs_multiple_snapshots() {
     let tmp = tempfile::TempDir::new().unwrap();
@@ -15,6 +16,7 @@ fn test_resolve_hf_repo_with_dirs_multiple_snapshots() {
     assert!(result.unwrap().join("model.safetensors").exists());
 }
 
+/// Verify HF cache takes priority over APR cache when both exist
 #[test]
 fn test_resolve_hf_repo_with_dirs_hf_cache_priority() {
     let tmp = tempfile::TempDir::new().unwrap();
@@ -37,6 +39,7 @@ fn test_resolve_hf_repo_with_dirs_hf_cache_priority() {
     assert_eq!(result.unwrap(), hf_snapshot);
 }
 
+/// Verify get_hf_cache_dir returns a non-empty path
 #[test]
 fn test_get_hf_cache_dir_returns_path() {
     // Just verify it returns a PathBuf without errors
@@ -45,6 +48,7 @@ fn test_get_hf_cache_dir_returns_path() {
     assert!(!dir.as_os_str().is_empty());
 }
 
+/// Verify cache resolution error message includes repo ID and search paths
 #[test]
 fn test_resolve_hf_repo_to_cache_error_message_format() {
     // Test with nonexistent paths - this tests the error message format
@@ -70,6 +74,7 @@ fn test_resolve_hf_repo_to_cache_error_message_format() {
 // format_extension, classify_failure edge cases, tolerance_for, etc.
 // =========================================================================
 
+/// Verify ConversionOutputDir generates correct subdirectory paths
 #[test]
 fn test_conversion_output_dir_all_paths() {
     let model_id = ModelId::new("my-org", "my-repo");
@@ -83,6 +88,7 @@ fn test_conversion_output_dir_all_paths() {
     assert_eq!(out_dir.round_trip_dir(), base.join("round-trip"));
 }
 
+/// Verify output_path appends correct format extensions for all formats
 #[test]
 fn test_conversion_output_dir_output_path_all_formats() {
     let model_id = ModelId::new("org", "repo");
@@ -98,6 +104,7 @@ fn test_conversion_output_dir_output_path_all_formats() {
     assert!(apr_path.to_str().unwrap().ends_with("model.rt1.apr"));
 }
 
+/// Verify ensure_dir creates directory and cleanup removes it
 #[test]
 fn test_conversion_output_dir_ensure_dir_and_cleanup() {
     let tmp = tempfile::TempDir::new().unwrap();
@@ -114,6 +121,7 @@ fn test_conversion_output_dir_ensure_dir_and_cleanup() {
     assert!(!out_dir.basic_dir().exists());
 }
 
+/// Verify cleanup on nonexistent directory does not error
 #[test]
 fn test_conversion_output_dir_cleanup_nonexistent() {
     let tmp = tempfile::TempDir::new().unwrap();
@@ -124,6 +132,7 @@ fn test_conversion_output_dir_cleanup_nonexistent() {
     assert!(out_dir.cleanup().is_ok());
 }
 
+/// Verify ConversionOutputDir clone produces equivalent paths
 #[test]
 fn test_conversion_output_dir_clone() {
     let model_id = ModelId::new("org", "repo");
@@ -132,6 +141,7 @@ fn test_conversion_output_dir_clone() {
     assert_eq!(out_dir.basic_dir(), cloned.basic_dir());
 }
 
+/// Verify ConversionOutputDir debug output includes type name
 #[test]
 fn test_conversion_output_dir_debug() {
     let model_id = ModelId::new("org", "repo");
@@ -140,6 +150,7 @@ fn test_conversion_output_dir_debug() {
     assert!(debug_str.contains("ConversionOutputDir"));
 }
 
+/// Verify ConversionTest accepts and stores output directory
 #[test]
 fn test_conversion_test_with_output_dir() {
     let model_id = ModelId::new("org", "repo");
@@ -150,6 +161,7 @@ fn test_conversion_test_with_output_dir() {
     assert_eq!(test.output_dir.unwrap().basic_dir(), out.basic_dir());
 }
 
+/// Verify ConversionExecutor accepts and stores output directory
 #[test]
 fn test_conversion_executor_with_output_dir() {
     let executor =
@@ -163,18 +175,21 @@ fn test_conversion_executor_with_output_dir() {
 
 // ── is_garbage_output edge cases ──────────────────────────────────
 
+/// Verify empty and whitespace-only strings are detected as garbage
 #[test]
 fn test_is_garbage_output_empty() {
     assert!(ConversionTest::is_garbage_output(""));
     assert!(ConversionTest::is_garbage_output("  "));
 }
 
+/// Verify very short strings are detected as garbage output
 #[test]
 fn test_is_garbage_output_too_short() {
     assert!(ConversionTest::is_garbage_output("ab"));
     assert!(ConversionTest::is_garbage_output("a"));
 }
 
+/// Verify strings with fewer than 3 unique characters are garbage
 #[test]
 fn test_is_garbage_output_few_unique_chars() {
     // Less than 3 unique characters
@@ -182,12 +197,14 @@ fn test_is_garbage_output_few_unique_chars() {
     assert!(ConversionTest::is_garbage_output("xxxxxx"));
 }
 
+/// Verify highly repetitive trigram patterns are detected as garbage
 #[test]
 fn test_is_garbage_output_repetitive_trigrams() {
     // Highly repetitive pattern with >= 9 chars
     assert!(ConversionTest::is_garbage_output("abcabcabcabcabc"));
 }
 
+/// Verify valid natural language text is not classified as garbage
 #[test]
 fn test_is_garbage_output_valid_text() {
     assert!(!ConversionTest::is_garbage_output("The answer is 4."));
@@ -196,12 +213,14 @@ fn test_is_garbage_output_valid_text() {
     ));
 }
 
+/// Verify short but character-diverse strings are not garbage
 #[test]
 fn test_is_garbage_output_short_but_diverse() {
     // Exactly 3 chars with 3 unique - not garbage
     assert!(!ConversionTest::is_garbage_output("abc"));
 }
 
+/// Verify 9-character string with diverse trigrams is not garbage
 #[test]
 fn test_is_garbage_output_nine_chars_nonrepetitive() {
     // 9 chars, diverse trigrams - should not be garbage
@@ -210,6 +229,7 @@ fn test_is_garbage_output_nine_chars_nonrepetitive() {
 
 // ── format_extension coverage ─────────────────────────────────────
 
+/// Verify format_extension returns correct extension for each format
 #[test]
 fn test_format_extension_all_formats() {
     assert_eq!(format_extension(Format::Gguf), "gguf");
@@ -219,6 +239,7 @@ fn test_format_extension_all_formats() {
 
 // ── resolve_file_by_format edge cases ─────────────────────────────
 
+/// Verify resolve_file_by_format rejects files with wrong extension
 #[test]
 fn test_resolve_file_by_format_no_extension() {
     let tmp = tempfile::TempDir::new().unwrap();
@@ -236,6 +257,7 @@ fn test_resolve_file_by_format_no_extension() {
     );
 }
 
+/// Verify resolve_file_by_format accepts files with matching extension
 #[test]
 fn test_resolve_file_by_format_correct_extension() {
     let tmp = tempfile::TempDir::new().unwrap();
@@ -249,6 +271,7 @@ fn test_resolve_file_by_format_correct_extension() {
 
 // ── classify_failure additional edge cases ────────────────────────
 
+/// Verify segfault in stderr classifies as InferenceFailure
 #[test]
 fn test_classify_failure_segfault() {
     assert_eq!(
@@ -257,6 +280,7 @@ fn test_classify_failure_segfault() {
     );
 }
 
+/// Verify SIGSEGV in stderr classifies as InferenceFailure
 #[test]
 fn test_classify_failure_sigsegv_in_stderr() {
     assert_eq!(
@@ -265,6 +289,7 @@ fn test_classify_failure_sigsegv_in_stderr() {
     );
 }
 
+/// Verify num_hidden_layers mismatch classifies as ConfigMetadataMismatch
 #[test]
 fn test_classify_failure_num_hidden_layers() {
     assert_eq!(
@@ -273,6 +298,7 @@ fn test_classify_failure_num_hidden_layers() {
     );
 }
 
+/// Verify name mismatch keyword classifies as TensorNameMismatch
 #[test]
 fn test_classify_failure_name_mismatch_keyword() {
     assert_eq!(
@@ -281,6 +307,7 @@ fn test_classify_failure_name_mismatch_keyword() {
     );
 }
 
+/// Verify "missing" without "mismatch" classifies as MissingArtifact
 #[test]
 fn test_classify_failure_missing_without_mismatch() {
     // "missing" without "mismatch" should be MissingArtifact
@@ -290,6 +317,7 @@ fn test_classify_failure_missing_without_mismatch() {
     );
 }
 
+/// Verify "tokenizer" without "mismatch" classifies as MissingArtifact
 #[test]
 fn test_classify_failure_tokenizer_without_mismatch() {
     // "tokenizer" without "mismatch" should be MissingArtifact
@@ -299,6 +327,7 @@ fn test_classify_failure_tokenizer_without_mismatch() {
     );
 }
 
+/// Verify overflow keyword classifies as DequantizationFailure
 #[test]
 fn test_classify_failure_overflow_keyword() {
     assert_eq!(
@@ -307,6 +336,7 @@ fn test_classify_failure_overflow_keyword() {
     );
 }
 
+/// Verify forward pass failure classifies as InferenceFailure
 #[test]
 fn test_classify_failure_forward_pass() {
     assert_eq!(
@@ -315,6 +345,7 @@ fn test_classify_failure_forward_pass() {
     );
 }
 
+/// Verify exit code -11 with empty stderr classifies as InferenceFailure
 #[test]
 fn test_classify_failure_exit_code_minus_11_empty_stderr() {
     assert_eq!(
@@ -325,6 +356,7 @@ fn test_classify_failure_exit_code_minus_11_empty_stderr() {
 
 // ── tolerance_for remaining types ──────────────────────────────────
 
+/// Verify BF16 tolerance uses 1e-2 for both atol and rtol
 #[test]
 fn test_tolerance_for_bf16() {
     let tol = tolerance_for(QuantType::BF16);
@@ -332,6 +364,7 @@ fn test_tolerance_for_bf16() {
     assert!((tol.rtol - 1e-2).abs() < 1e-10);
 }
 
+/// Verify Q4_0 tolerance uses 1e-1 for both atol and rtol
 #[test]
 fn test_tolerance_for_q4_0() {
     let tol = tolerance_for(QuantType::Q4_0);
@@ -339,6 +372,7 @@ fn test_tolerance_for_q4_0() {
     assert!((tol.rtol - 1e-1).abs() < 1e-10);
 }
 
+/// Verify Q8_0 tolerance uses 1e-2 for both atol and rtol
 #[test]
 fn test_tolerance_for_q8_0() {
     let tol = tolerance_for(QuantType::Q8_0);
@@ -348,6 +382,7 @@ fn test_tolerance_for_q8_0() {
 
 // ── ConversionFailureType::key() all variants ─────────────────────
 
+/// Verify all ConversionFailureType variants return correct key strings
 #[test]
 fn test_conversion_failure_type_key_all_variants() {
     assert_eq!(
@@ -370,18 +405,21 @@ fn test_conversion_failure_type_key_all_variants() {
 
 // ── ConversionBugType::description() remaining variants ───────────
 
+/// Verify ShapeMismatch bug type description mentions shape
 #[test]
 fn test_bug_type_description_shape_mismatch() {
     let desc = ConversionBugType::ShapeMismatch.description();
     assert!(desc.contains("shape") || desc.contains("Shape"));
 }
 
+/// Verify Unknown bug type description mentions investigation
 #[test]
 fn test_bug_type_description_unknown() {
     let desc = ConversionBugType::Unknown.description();
     assert!(desc.contains("Unknown") || desc.contains("investigation"));
 }
 
+/// Verify SemanticDrift bug type description mentions semantic
 #[test]
 fn test_bug_type_description_semantic_drift() {
     let desc = ConversionBugType::SemanticDrift.description();
@@ -390,6 +428,7 @@ fn test_bug_type_description_semantic_drift() {
 
 // ── Sharded SafeTensors resolution ────────────────────────────────
 
+/// Verify sharded SafeTensors index.json is resolved correctly
 #[test]
 fn test_resolve_model_path_sharded_safetensors_index() {
     let tmp = tempfile::TempDir::new().unwrap();
@@ -403,6 +442,7 @@ fn test_resolve_model_path_sharded_safetensors_index() {
     assert_eq!(result.unwrap(), index_file);
 }
 
+/// Verify sharded index resolution only applies to SafeTensors format
 #[test]
 fn test_resolve_model_path_sharded_not_for_gguf() {
     // Sharded index only applies to safetensors, not gguf
@@ -416,6 +456,7 @@ fn test_resolve_model_path_sharded_not_for_gguf() {
 
 // ── ByteLevelRoundTripTest constructor ─────────────────────────────
 
+/// Verify ByteLevelRoundTripTest constructor sets backend and model
 #[test]
 fn test_byte_level_round_trip_test_new() {
     let bt = ByteLevelRoundTripTest::new(Backend::Cpu, ModelId::new("org", "model"));
@@ -423,6 +464,7 @@ fn test_byte_level_round_trip_test_new() {
     assert_eq!(bt.model_id.org, "org");
 }
 
+/// Verify ByteLevelRoundTripTest clone preserves backend
 #[test]
 fn test_byte_level_round_trip_test_clone() {
     let bt = ByteLevelRoundTripTest::new(Backend::Gpu, ModelId::new("t", "m"));
@@ -430,6 +472,7 @@ fn test_byte_level_round_trip_test_clone() {
     assert_eq!(cloned.backend, Backend::Gpu);
 }
 
+/// Verify ByteLevelRoundTripTest debug output includes type name
 #[test]
 fn test_byte_level_round_trip_test_debug() {
     let bt = ByteLevelRoundTripTest::new(Backend::Cpu, ModelId::new("t", "m"));

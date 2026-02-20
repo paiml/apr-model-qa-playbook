@@ -25,11 +25,13 @@ pub struct GgufBuilder {
 }
 
 impl Default for GgufBuilder {
+    /// Create an empty GGUF builder with no metadata or tensors
     fn default() -> Self {
         Self::new()
     }
 }
 
+/// Builder methods for constructing GGUF v3 files with metadata and tensors
 impl GgufBuilder {
     /// Create a new GGUF builder
     #[must_use]
@@ -308,6 +310,7 @@ pub fn build_pygmy_gguf() -> Vec<u8> {
 /// - `<temp>/apr/model.apr` - Empty placeholder (format testing only)
 /// - `<temp>/safetensors/model.safetensors` - Empty placeholder
 pub struct PygmyModelDir {
+    /// Temporary directory handle (kept alive for cleanup on drop)
     _temp_dir: TempDir,
     /// Path to the root directory containing format subdirs
     pub root: PathBuf,
@@ -319,6 +322,7 @@ pub struct PygmyModelDir {
     pub st_path: PathBuf,
 }
 
+/// Creation and path access for temporary pygmy model directories
 impl PygmyModelDir {
     /// Create a new pygmy model directory with all format files
     ///
@@ -380,6 +384,7 @@ impl PygmyModelDir {
 mod tests {
     use super::*;
 
+    /// Verify pygmy GGUF has correct magic and version in header
     #[test]
     fn test_build_pygmy_gguf_valid_header() {
         let data = build_pygmy_gguf();
@@ -393,6 +398,7 @@ mod tests {
         assert_eq!(version, GGUF_VERSION_V3);
     }
 
+    /// Verify pygmy GGUF size is between 1KB and 50KB
     #[test]
     fn test_build_pygmy_gguf_size() {
         let data = build_pygmy_gguf();
@@ -412,6 +418,7 @@ mod tests {
         );
     }
 
+    /// Verify PygmyModelDir creates all format files on disk
     #[test]
     fn test_pygmy_model_dir_creates_files() {
         let dir = PygmyModelDir::new().expect("Should create temp dir");
@@ -421,6 +428,7 @@ mod tests {
         assert!(dir.st_path.exists(), "SafeTensors file should exist");
     }
 
+    /// Verify PygmyModelDir GGUF file has valid magic bytes
     #[test]
     fn test_pygmy_model_dir_gguf_valid() {
         let dir = PygmyModelDir::new().expect("Should create temp dir");
@@ -430,6 +438,7 @@ mod tests {
         assert_eq!(magic, GGUF_MAGIC);
     }
 
+    /// Verify empty GgufBuilder produces valid header
     #[test]
     fn test_gguf_builder_empty() {
         let data = GgufBuilder::new().build();
@@ -440,6 +449,7 @@ mod tests {
         assert_eq!(magic, GGUF_MAGIC);
     }
 
+    /// Verify GgufBuilder encodes metadata count correctly in header
     #[test]
     fn test_gguf_builder_with_metadata() {
         let data = GgufBuilder::new()
@@ -454,6 +464,7 @@ mod tests {
         assert_eq!(n_metadata, 2);
     }
 
+    /// Verify GgufBuilder default trait produces valid header
     #[test]
     fn test_gguf_builder_default() {
         let builder = GgufBuilder::default();
@@ -464,6 +475,7 @@ mod tests {
         assert_eq!(magic, GGUF_MAGIC);
     }
 
+    /// Verify PygmyModelDir root_str returns non-empty path
     #[test]
     fn test_pygmy_model_dir_root_str() {
         let dir = PygmyModelDir::new().expect("Should create temp dir");

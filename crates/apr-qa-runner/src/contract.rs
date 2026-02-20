@@ -140,6 +140,7 @@ pub struct ContractTestConfig {
     pub invariants: Vec<String>,
 }
 
+/// Return the default set of invariant IDs (I-2 through I-5)
 fn default_invariants() -> Vec<String> {
     vec![
         "I-2".to_string(),
@@ -150,6 +151,7 @@ fn default_invariants() -> Vec<String> {
 }
 
 impl Default for ContractTestConfig {
+    /// Create default config with invariants I-2 through I-5
     fn default() -> Self {
         Self {
             invariants: default_invariants(),

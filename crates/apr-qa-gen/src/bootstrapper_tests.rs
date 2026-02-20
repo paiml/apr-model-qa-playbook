@@ -3,6 +3,7 @@ use super::*;
 use super::*;
 use crate::kernel_profile::ArchConstraints;
 
+/// Build a Qwen2 1.5B bootstrap config for testing
 fn qwen_config() -> BootstrapConfig {
     BootstrapConfig {
         family: "qwen2".to_string(),
@@ -13,6 +14,7 @@ fn qwen_config() -> BootstrapConfig {
     }
 }
 
+/// Build Qwen2 architecture constraints for testing
 fn qwen_constraints() -> ArchConstraints {
     ArchConstraints {
         attention_type: Some("gqa".to_string()),
@@ -25,6 +27,7 @@ fn qwen_constraints() -> ArchConstraints {
     }
 }
 
+/// Build Qwen2 1.5B size variant for testing
 fn qwen_size_variant() -> ArchSizeVariant {
     ArchSizeVariant {
         parameters: "1.5B".to_string(),
@@ -38,6 +41,7 @@ fn qwen_size_variant() -> ArchSizeVariant {
     }
 }
 
+/// Verify bootstrapped playbook name follows family-size-tier pattern
 #[test]
 fn test_bootstrap_playbook_name() {
     let playbook = bootstrap_playbook(
@@ -49,6 +53,7 @@ fn test_bootstrap_playbook_name() {
     assert_eq!(playbook.name, "qwen2-1.5b-mvp");
 }
 
+/// Verify bootstrapped playbook populates model config from size variant
 #[test]
 fn test_bootstrap_playbook_model_config() {
     let playbook = bootstrap_playbook(
@@ -65,6 +70,7 @@ fn test_bootstrap_playbook_model_config() {
     assert_eq!(playbook.model.size_category, "small");
 }
 
+/// Verify bootstrapped playbook includes architecture-specific prompts
 #[test]
 fn test_bootstrap_playbook_has_prompts() {
     let playbook = bootstrap_playbook(
@@ -78,6 +84,7 @@ fn test_bootstrap_playbook_has_prompts() {
     assert!(playbook.test_matrix.prompts.len() >= 10);
 }
 
+/// Verify bootstrapped playbook derives kernel profile from constraints
 #[test]
 fn test_bootstrap_playbook_kernel_profile() {
     let playbook = bootstrap_playbook(
@@ -91,6 +98,7 @@ fn test_bootstrap_playbook_kernel_profile() {
     assert!(playbook.kernel_profile.long_context);
 }
 
+/// Verify smoke tier produces minimal config with 1 scenario and no differential tests
 #[test]
 fn test_bootstrap_smoke_tier() {
     let mut config = qwen_config();
@@ -103,6 +111,7 @@ fn test_bootstrap_smoke_tier() {
     assert!(playbook.profile_ci.is_none());
 }
 
+/// Verify mvp tier includes differential tests and profile CI
 #[test]
 fn test_bootstrap_mvp_tier() {
     let playbook = bootstrap_playbook(
@@ -123,6 +132,7 @@ fn test_bootstrap_mvp_tier() {
     assert!(playbook.profile_ci.is_some());
 }
 
+/// Verify deep tier produces 50 scenarios
 #[test]
 fn test_bootstrap_deep_tier() {
     let mut config = qwen_config();
@@ -131,6 +141,7 @@ fn test_bootstrap_deep_tier() {
     assert_eq!(playbook.test_matrix.scenario_count, 50);
 }
 
+/// Verify bootstrapped playbook includes G1 through G4 falsification gates
 #[test]
 fn test_bootstrap_gates() {
     let playbook = bootstrap_playbook(
@@ -151,6 +162,7 @@ fn test_bootstrap_gates() {
     assert!(gate_ids.contains(&"G4"));
 }
 
+/// Verify tiny size category sets high throughput and low latency thresholds
 #[test]
 fn test_bootstrap_size_aware_thresholds_tiny() {
     let mut config = qwen_config();
@@ -161,6 +173,7 @@ fn test_bootstrap_size_aware_thresholds_tiny() {
     assert!((ci.max_p99_ms - 200.0).abs() < f64::EPSILON);
 }
 
+/// Verify large size category sets low throughput and high latency thresholds
 #[test]
 fn test_bootstrap_size_aware_thresholds_large() {
     let mut config = qwen_config();
@@ -171,6 +184,7 @@ fn test_bootstrap_size_aware_thresholds_large() {
     assert!((ci.max_p99_ms - 3000.0).abs() < f64::EPSILON);
 }
 
+/// Verify to_yaml produces valid YAML with auto-generated header comment
 #[test]
 fn test_to_yaml() {
     let playbook = bootstrap_playbook(
@@ -186,6 +200,7 @@ fn test_to_yaml() {
     assert!(yaml.contains("prompts"));
 }
 
+/// Verify to_yaml output includes the HuggingFace repo identifier
 #[test]
 fn test_to_yaml_contains_hf_repo() {
     let playbook = bootstrap_playbook(
@@ -198,6 +213,7 @@ fn test_to_yaml_contains_hf_repo() {
     assert!(yaml.contains("Qwen/Qwen2.5-Coder-1.5B-Instruct"));
 }
 
+/// Verify bootstrap accepts a custom kernel profile override
 #[test]
 fn test_bootstrap_with_custom_profile() {
     let profile = profile_from_constraints("custom", &ArchConstraints::default(), None);
@@ -223,6 +239,7 @@ fn test_bootstrap_with_custom_profile() {
     assert_eq!(playbook.kernel_profile.family, "custom");
 }
 
+/// Verify bootstrapped playbook version is always "1.0.0"
 #[test]
 fn test_bootstrap_version() {
     let playbook = bootstrap_playbook(
@@ -234,6 +251,7 @@ fn test_bootstrap_version() {
     assert_eq!(playbook.version, "1.0.0");
 }
 
+/// Verify bootstrapped playbook includes gguf, safetensors, and apr formats
 #[test]
 fn test_bootstrap_formats() {
     let playbook = bootstrap_playbook(
@@ -248,6 +266,7 @@ fn test_bootstrap_formats() {
     assert!(playbook.model.formats.contains(&"apr".to_string()));
 }
 
+/// Verify bootstrapped playbook enables format validation with dtype_mapping check
 #[test]
 fn test_bootstrap_differential_checks() {
     let playbook = bootstrap_playbook(
@@ -265,6 +284,7 @@ fn test_bootstrap_differential_checks() {
     );
 }
 
+/// Verify quick tier produces 5 scenarios
 #[test]
 fn test_bootstrap_quick_tier() {
     let mut config = qwen_config();
@@ -273,6 +293,7 @@ fn test_bootstrap_quick_tier() {
     assert_eq!(playbook.test_matrix.scenario_count, 5);
 }
 
+/// Verify standard tier produces 10 scenarios
 #[test]
 fn test_bootstrap_standard_tier() {
     let mut config = qwen_config();
@@ -281,6 +302,7 @@ fn test_bootstrap_standard_tier() {
     assert_eq!(playbook.test_matrix.scenario_count, 10);
 }
 
+/// Verify unknown tier falls back to mvp-level defaults
 #[test]
 fn test_bootstrap_unknown_tier_defaults() {
     let mut config = qwen_config();
@@ -290,6 +312,7 @@ fn test_bootstrap_unknown_tier_defaults() {
     assert_eq!(playbook.test_matrix.scenario_count, 3);
 }
 
+/// Verify bootstrapped playbook serializes to non-empty YAML body
 #[test]
 fn test_bootstrap_playbook_serialize_roundtrip() {
     let playbook = bootstrap_playbook(
@@ -310,6 +333,7 @@ fn test_bootstrap_playbook_serialize_roundtrip() {
     assert!(!body.is_empty());
 }
 
+/// Verify dim-smoke tier produces safetensors-only with kernel proof reference
 #[test]
 fn test_bootstrap_dim_smoke_tier() {
     let mut config = qwen_config();
@@ -332,6 +356,7 @@ fn test_bootstrap_dim_smoke_tier() {
     assert!(proof_ref.contains("Qwen"));
 }
 
+/// Verify dim-smoke tier appends dim-smoke suffix to playbook name
 #[test]
 fn test_bootstrap_dim_smoke_name() {
     let mut config = qwen_config();
@@ -340,6 +365,7 @@ fn test_bootstrap_dim_smoke_name() {
     assert_eq!(playbook.name, "qwen2-1.5b-dim-smoke");
 }
 
+/// Verify non-dim-smoke tiers do not set kernel_proof_ref
 #[test]
 fn test_bootstrap_non_dim_smoke_no_kernel_proof_ref() {
     let playbook = bootstrap_playbook(

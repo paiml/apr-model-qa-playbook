@@ -1,3 +1,4 @@
+/// Validate MQS score-to-grade mapping matches the grading contract
 #[test]
 fn test_falsify_oracle_002_grade_contract() {
     use crate::certification_data::CertificationRow;
@@ -33,6 +34,7 @@ fn test_falsify_oracle_002_grade_contract() {
 //
 // Falsification hypothesis: "Serialized JSON lacks required oracle fields"
 // Oracle requires: $schema, model.hf_repo, mqs.score, mqs.grade, gates
+/// Verify serialized evidence JSON contains all required oracle fields
 #[test]
 fn test_falsify_oracle_003_schema_compliance() {
     let export = EvidenceExport::builder()
@@ -67,6 +69,7 @@ fn test_falsify_oracle_003_schema_compliance() {
 //
 // Falsification hypothesis: "Field names differ between CSV and JSON"
 // Oracle must be able to map between CSV columns and JSON fields.
+/// Verify CertificationRow and EvidenceExport field names align correctly
 #[test]
 fn test_falsify_oracle_004_field_mapping() {
     use crate::certification_data::CertificationRow;
@@ -127,6 +130,7 @@ fn test_falsify_oracle_004_field_mapping() {
 //
 // Falsification hypothesis: "Same input produces different exports"
 // If two exports from identical MqsScore differ (except timestamp), broken.
+/// Verify identical MqsScore inputs produce identical exports (except timestamp)
 #[test]
 fn test_falsify_oracle_005_reproducibility() {
     use crate::mqs::{CategoryScores, GatewayResult as MqsGateway, MqsScore};

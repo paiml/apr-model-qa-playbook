@@ -1,5 +1,6 @@
 use super::*;
 
+/// Create a test QA scenario with default values for unit tests
 fn make_test_scenario() -> apr_qa_gen::QaScenario {
     apr_qa_gen::QaScenario::new(
         apr_qa_gen::ModelId::new("test", "model"),
@@ -11,10 +12,12 @@ fn make_test_scenario() -> apr_qa_gen::QaScenario {
     )
 }
 
+/// Create a corroborated evidence instance for testing
 fn make_corroborated_evidence() -> Evidence {
     Evidence::corroborated("F-TEST-001", make_test_scenario(), "output", 100)
 }
 
+/// Create a falsified evidence instance for testing failure paths
 fn make_falsified_evidence() -> Evidence {
     Evidence::falsified("F-TEST-002", make_test_scenario(), "failed", "error", 200)
 }

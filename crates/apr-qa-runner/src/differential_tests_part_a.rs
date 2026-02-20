@@ -1,3 +1,4 @@
+/// Verify DiffConfig default values
 #[test]
 fn test_diff_config_default() {
     let config = DiffConfig::default();
@@ -6,6 +7,7 @@ fn test_diff_config_default() {
     assert!((config.tolerance - 1e-5).abs() < 1e-10);
 }
 
+/// Verify TensorMismatchType gate_id mapping
 #[test]
 fn test_tensor_mismatch_type_gate_id() {
     assert_eq!(
@@ -19,6 +21,7 @@ fn test_tensor_mismatch_type_gate_id() {
     assert_eq!(TensorMismatchType::Missing.gate_id(), "F-ROSETTA-DIFF-002");
 }
 
+/// Verify TensorDiffResult reports passed for zero mismatches
 #[test]
 fn test_tensor_diff_result_passed() {
     let result = TensorDiffResult {
@@ -31,6 +34,7 @@ fn test_tensor_diff_result_passed() {
     assert!(result.passed);
 }
 
+/// Verify TensorDiffResult reports failed with transposed tensors
 #[test]
 fn test_tensor_diff_result_failed() {
     let result = TensorDiffResult {
@@ -49,6 +53,7 @@ fn test_tensor_diff_result_failed() {
     assert_eq!(result.transposed_tensors, 2);
 }
 
+/// Verify InferenceComparisonResult reports passed for matching tokens
 #[test]
 fn test_inference_comparison_passed() {
     let result = InferenceComparisonResult {
@@ -62,6 +67,7 @@ fn test_inference_comparison_passed() {
     assert_eq!(result.matching_tokens, result.total_tokens);
 }
 
+/// Verify CiProfileResult with passing assertions
 #[test]
 fn test_ci_profile_assertions() {
     let result = CiProfileResult {
@@ -92,6 +98,7 @@ fn test_ci_profile_assertions() {
     assert!(result.assertions.iter().all(|a| a.passed));
 }
 
+/// Verify DiffBenchmarkResult with no regression
 #[test]
 fn test_diff_benchmark_no_regression() {
     let result = DiffBenchmarkResult {
@@ -116,6 +123,7 @@ fn test_diff_benchmark_no_regression() {
     assert!(!result.regression_detected);
 }
 
+/// Verify DiffBenchmarkResult detects regression above threshold
 #[test]
 fn test_diff_benchmark_with_regression() {
     let result = DiffBenchmarkResult {
@@ -140,6 +148,7 @@ fn test_diff_benchmark_with_regression() {
     assert!(result.regression_detected);
 }
 
+/// Verify DifferentialExecutor preserves config
 #[test]
 fn test_differential_executor_new() {
     let config = DiffConfig::default();
@@ -147,6 +156,7 @@ fn test_differential_executor_new() {
     assert_eq!(executor.config.apr_binary, "apr");
 }
 
+/// Verify DiffConfig accepts filter option
 #[test]
 fn test_diff_config_with_filter() {
     let config = DiffConfig {
@@ -156,6 +166,7 @@ fn test_diff_config_with_filter() {
     assert_eq!(config.filter.as_deref(), Some("token_embd"));
 }
 
+/// Verify DiffConfig accepts custom binary path
 #[test]
 fn test_diff_config_custom_binary() {
     let config = DiffConfig {
@@ -165,6 +176,7 @@ fn test_diff_config_custom_binary() {
     assert_eq!(config.apr_binary, "/custom/path/apr");
 }
 
+/// Verify DiffConfig accepts custom tolerance
 #[test]
 fn test_diff_config_custom_tolerance() {
     let config = DiffConfig {
@@ -174,6 +186,7 @@ fn test_diff_config_custom_tolerance() {
     assert!((config.tolerance - 1e-10).abs() < 1e-15);
 }
 
+/// Verify DiffConfig mismatches_only can be disabled
 #[test]
 fn test_diff_config_mismatches_only_false() {
     let config = DiffConfig {
@@ -183,6 +196,7 @@ fn test_diff_config_mismatches_only_false() {
     assert!(!config.mismatches_only);
 }
 
+/// Verify TensorMismatch clone preserves all fields
 #[test]
 fn test_tensor_mismatch_clone() {
     let mismatch = TensorMismatch {
@@ -197,6 +211,7 @@ fn test_tensor_mismatch_clone() {
     assert_eq!(cloned.shape_b, vec![200, 100]);
 }
 
+/// Verify TensorMismatch debug output contains type name
 #[test]
 fn test_tensor_mismatch_debug() {
     let mismatch = TensorMismatch {
@@ -210,18 +225,21 @@ fn test_tensor_mismatch_debug() {
     assert!(debug_str.contains("test"));
 }
 
+/// Verify Missing mismatch type maps to correct gate ID
 #[test]
 fn test_tensor_mismatch_type_missing() {
     let mismatch_type = TensorMismatchType::Missing;
     assert_eq!(mismatch_type.gate_id(), "F-ROSETTA-DIFF-002");
 }
 
+/// Verify TensorMismatchType debug formatting
 #[test]
 fn test_tensor_mismatch_type_debug() {
     let debug_str = format!("{:?}", TensorMismatchType::Transposed);
     assert!(debug_str.contains("Transposed"));
 }
 
+/// Verify TensorMismatchType equality comparison
 #[test]
 fn test_tensor_mismatch_type_eq() {
     assert_eq!(
@@ -231,6 +249,7 @@ fn test_tensor_mismatch_type_eq() {
     assert_ne!(TensorMismatchType::Transposed, TensorMismatchType::Missing);
 }
 
+/// Verify TensorMismatchType implements Copy
 #[test]
 fn test_tensor_mismatch_type_copy() {
     let t = TensorMismatchType::ShapeMismatch;
@@ -238,6 +257,7 @@ fn test_tensor_mismatch_type_copy() {
     assert_eq!(copied, TensorMismatchType::ShapeMismatch);
 }
 
+/// Verify TensorDiffResult clone preserves counts
 #[test]
 fn test_tensor_diff_result_clone() {
     let result = TensorDiffResult {
@@ -252,6 +272,7 @@ fn test_tensor_diff_result_clone() {
     assert_eq!(cloned.mismatched_tensors, 2);
 }
 
+/// Verify TensorDiffResult debug formatting
 #[test]
 fn test_tensor_diff_result_debug() {
     let result = TensorDiffResult {
@@ -265,6 +286,7 @@ fn test_tensor_diff_result_debug() {
     assert!(debug_str.contains("TensorDiffResult"));
 }
 
+/// Verify InferenceComparisonResult clone preserves token count
 #[test]
 fn test_inference_comparison_result_clone() {
     let result = InferenceComparisonResult {
@@ -278,6 +300,7 @@ fn test_inference_comparison_result_clone() {
     assert_eq!(cloned.total_tokens, 10);
 }
 
+/// Verify InferenceComparisonResult debug formatting
 #[test]
 fn test_inference_comparison_result_debug() {
     let result = InferenceComparisonResult {
@@ -291,6 +314,7 @@ fn test_inference_comparison_result_debug() {
     assert!(debug_str.contains("InferenceComparisonResult"));
 }
 
+/// Verify TokenComparison clone preserves all fields
 #[test]
 fn test_token_comparison_clone() {
     let tc = TokenComparison {
@@ -305,6 +329,7 @@ fn test_token_comparison_clone() {
     assert!(cloned.matches);
 }
 
+/// Verify TokenComparison debug formatting
 #[test]
 fn test_token_comparison_debug() {
     let tc = TokenComparison {
@@ -318,6 +343,7 @@ fn test_token_comparison_debug() {
     assert!(debug_str.contains("TokenComparison"));
 }
 
+/// Verify DiffBenchmarkResult clone preserves model paths
 #[test]
 fn test_diff_benchmark_result_clone() {
     let result = DiffBenchmarkResult {
@@ -343,6 +369,7 @@ fn test_diff_benchmark_result_clone() {
     assert_eq!(cloned.model_a.path, "a.gguf");
 }
 
+/// Verify DiffBenchmarkResult debug formatting
 #[test]
 fn test_diff_benchmark_result_debug() {
     let result = DiffBenchmarkResult {
@@ -368,6 +395,7 @@ fn test_diff_benchmark_result_debug() {
     assert!(debug_str.contains("DiffBenchmarkResult"));
 }
 
+/// Verify BenchmarkMetrics clone preserves throughput
 #[test]
 fn test_benchmark_metrics_clone() {
     let metrics = BenchmarkMetrics {
@@ -381,6 +409,7 @@ fn test_benchmark_metrics_clone() {
     assert!((cloned.throughput_tps - 15.5).abs() < f64::EPSILON);
 }
 
+/// Verify BenchmarkMetrics debug formatting
 #[test]
 fn test_benchmark_metrics_debug() {
     let metrics = BenchmarkMetrics {
@@ -393,6 +422,7 @@ fn test_benchmark_metrics_debug() {
     assert!(debug_str.contains("BenchmarkMetrics"));
 }
 
+/// Verify CiProfileResult clone preserves passed flag
 #[test]
 fn test_ci_profile_result_clone() {
     let result = CiProfileResult {
@@ -408,6 +438,7 @@ fn test_ci_profile_result_clone() {
     assert!(cloned.passed);
 }
 
+/// Verify CiProfileResult debug formatting
 #[test]
 fn test_ci_profile_result_debug() {
     let result = CiProfileResult {
@@ -423,6 +454,7 @@ fn test_ci_profile_result_debug() {
     assert!(debug_str.contains("CiProfileResult"));
 }
 
+/// Verify CiAssertion clone preserves name and passed flag
 #[test]
 fn test_ci_assertion_clone() {
     let assertion = CiAssertion {
@@ -437,6 +469,7 @@ fn test_ci_assertion_clone() {
     assert!(cloned.passed);
 }
 
+/// Verify CiAssertion debug formatting
 #[test]
 fn test_ci_assertion_debug() {
     let assertion = CiAssertion {

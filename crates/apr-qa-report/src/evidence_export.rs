@@ -116,6 +116,7 @@ pub struct EvidenceExport {
 }
 
 impl Default for EvidenceExport {
+    /// Create a default evidence export with empty fields and "F" grade
     fn default() -> Self {
         Self {
             schema: "https://paiml.com/schemas/apr-qa-evidence.schema.json".to_string(),
@@ -152,6 +153,7 @@ impl Default for EvidenceExport {
     }
 }
 
+/// Core operations for evidence export creation, serialization, and analysis
 impl EvidenceExport {
     /// Create a new evidence export builder.
     #[must_use]
@@ -310,9 +312,11 @@ impl EvidenceExport {
 /// Builder for `EvidenceExport`.
 #[derive(Debug, Clone, Default)]
 pub struct EvidenceExportBuilder {
+    /// The evidence export being constructed
     export: EvidenceExport,
 }
 
+/// Builder methods for constructing evidence exports step by step
 impl EvidenceExportBuilder {
     /// Set model metadata.
     #[must_use]

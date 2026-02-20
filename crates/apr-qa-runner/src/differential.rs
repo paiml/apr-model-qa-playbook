@@ -247,6 +247,7 @@ pub struct DiffConfig {
 }
 
 impl Default for DiffConfig {
+    /// Create a default configuration with apr binary, no filter, and 1e-5 tolerance
     fn default() -> Self {
         Self {
             apr_binary: "apr".to_string(),

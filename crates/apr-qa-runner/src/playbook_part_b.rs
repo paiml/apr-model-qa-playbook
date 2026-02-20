@@ -16,10 +16,12 @@ pub struct FingerprintConfig {
     pub gates: Vec<String>,
 }
 
+/// Return the default fingerprint tensor selection ("all")
 fn default_fingerprint_tensors() -> String {
     "all".to_string()
 }
 
+/// Return the default fingerprint statistics to compute
 fn default_fingerprint_stats() -> Vec<String> {
     vec![
         "mean".to_string(),
@@ -61,14 +63,17 @@ pub struct StatsToleranceConfig {
     pub attention: f64,
 }
 
+/// Return the default LayerNorm tolerance (0.001)
 fn default_layernorm_tolerance() -> f64 {
     0.001
 }
 
+/// Return the default embedding tolerance (0.1)
 fn default_embedding_tolerance() -> f64 {
     0.1
 }
 
+/// Return the default attention tolerance (0.01)
 fn default_attention_tolerance() -> f64 {
     0.01
 }
@@ -99,6 +104,7 @@ pub struct ProfileCiConfig {
     pub gates: Vec<String>,
 }
 
+/// Return the default profile formats (gguf, apr, safetensors)
 fn default_profile_formats() -> Vec<String> {
     vec![
         "gguf".to_string(),
@@ -107,14 +113,17 @@ fn default_profile_formats() -> Vec<String> {
     ]
 }
 
+/// Return the default profile backends (cpu, gpu)
 fn default_profile_backends() -> Vec<String> {
     vec!["cpu".to_string(), "gpu".to_string()]
 }
 
+/// Return the default warmup iteration count (3)
 fn default_warmup() -> usize {
     3
 }
 
+/// Return the default measurement iteration count (10)
 fn default_measure() -> usize {
     10
 }
@@ -194,14 +203,17 @@ pub struct OllamaParityConfig {
     pub gates: Vec<String>,
 }
 
+/// Return the default ollama quantization list (q4_k_m)
 fn default_ollama_quantizations() -> Vec<String> {
     vec!["q4_k_m".to_string()]
 }
 
+/// Return the default ollama parity test prompts
 fn default_ollama_prompts() -> Vec<String> {
     vec!["What is 2+2?".to_string()]
 }
 
+/// Return the default minimum performance ratio (0.8)
 fn default_min_perf_ratio() -> f64 {
     0.8
 }

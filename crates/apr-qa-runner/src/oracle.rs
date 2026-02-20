@@ -25,6 +25,7 @@ pub enum Confidence {
     Low,
 }
 
+/// Display confidence level as uppercase string
 impl std::fmt::Display for Confidence {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -47,6 +48,7 @@ pub enum CheckStatus {
     Corroborated,
 }
 
+/// Display check status with optional reason for falsification
 impl std::fmt::Display for CheckStatus {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -142,6 +144,7 @@ pub struct OracleEnhancer {
     min_relevance: f32,
 }
 
+/// Default OracleEnhancer reads timeout and min_relevance from environment
 impl Default for OracleEnhancer {
     fn default() -> Self {
         Self {
@@ -159,6 +162,7 @@ impl Default for OracleEnhancer {
     }
 }
 
+/// Oracle enhancer implementation for failure analysis and checklist generation
 impl OracleEnhancer {
     /// Create a new oracle enhancer with default settings
     #[must_use]

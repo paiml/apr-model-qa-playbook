@@ -1,4 +1,5 @@
 
+/// Core implementation of the HuggingFace parity oracle for tensor comparison
 impl HfParityOracle {
     /// Create a new HF Parity Oracle.
     ///
@@ -67,11 +68,7 @@ impl HfParityOracle {
         Self::load_golden_from_path(&path, prompt, &input_hash)
     }
 
-    /// Load golden output from a specific file path.
-    ///
-    /// Note: SafeTensors metadata is not directly accessible via the Rust API,
-    /// so we only extract tensor data. Metadata should be stored in a companion
-    /// JSON file if needed.
+    /// Load golden output from a specific SafeTensors file path
     fn load_golden_from_path(
         path: &Path,
         prompt: &str,
@@ -300,7 +297,9 @@ impl HfParityOracle {
     }
 }
 
+/// Implement the Oracle trait to evaluate model outputs against HF golden references
 impl Oracle for HfParityOracle {
+    /// Evaluate model output by comparing text or tensor data against golden reference
     fn evaluate(&self, prompt: &str, output: &str) -> OracleResult {
         // Try to load golden output for this prompt
         let golden = match self.load_golden(prompt) {
@@ -376,6 +375,7 @@ impl Oracle for HfParityOracle {
         }
     }
 
+    /// Return the oracle identifier string
     fn name(&self) -> &'static str {
         "hf_parity"
     }

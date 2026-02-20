@@ -1,3 +1,4 @@
+/// Verify ExecutionResult stores all playbook execution fields
 #[test]
 fn test_execution_result_fields() {
     let result = ExecutionResult {
@@ -18,6 +19,7 @@ fn test_execution_result_fields() {
     assert_eq!(result.duration_ms, 5000);
 }
 
+/// Verify FailurePolicy implements Copy
 #[test]
 fn test_failure_policy_copy() {
     let policy = FailurePolicy::CollectAll;
@@ -25,6 +27,7 @@ fn test_failure_policy_copy() {
     assert_eq!(copied, FailurePolicy::CollectAll);
 }
 
+/// Verify extract_output_text handles trailing content after Output: marker
 #[test]
 fn test_extract_output_text_with_trailing_content() {
     let output = "Prefix\nOutput:\nAnswer is 4\nMore answer text\nCompleted in 2.5s\nExtra stuff";
@@ -32,6 +35,7 @@ fn test_extract_output_text_with_trailing_content() {
     assert_eq!(result, "Answer is 4 More answer text");
 }
 
+/// Verify extract_generated_text filters separators and tok/s lines
 #[test]
 fn test_extract_generated_text_mixed_content() {
     let output = "Line 1\n=== SEPARATOR ===\nLine 2\ntok/s: 50.0\nLine 3";
@@ -43,6 +47,7 @@ fn test_extract_generated_text_mixed_content() {
     assert!(!result.contains("tok/s"));
 }
 
+/// Verify parse_tps_from_output extracts tok/s value at end of line
 #[test]
 fn test_parse_tps_from_output_at_end() {
     let output = "All output finished tok/s: 99.9";
@@ -51,6 +56,7 @@ fn test_parse_tps_from_output_at_end() {
     assert!((tps.unwrap() - 99.9).abs() < 0.01);
 }
 
+/// Verify parse_tps_from_output finds tok/s in multiline output
 #[test]
 fn test_parse_tps_from_output_multiline() {
     let output = "Line 1\nLine 2\ntok/s: 25.5\nLine 4";
@@ -59,6 +65,7 @@ fn test_parse_tps_from_output_multiline() {
     assert!((tps.unwrap() - 25.5).abs() < f64::EPSILON);
 }
 
+/// Verify extract_output_text captures final answer at end of output
 #[test]
 fn test_extract_output_text_output_at_end() {
     let output = "Header info\nOutput:\nFinal answer here";
@@ -66,6 +73,7 @@ fn test_extract_output_text_output_at_end() {
     assert_eq!(result, "Final answer here");
 }
 
+/// Verify ExecutionResult with gateway failure reports not success
 #[test]
 fn test_execution_result_with_gateway_failure() {
     let result = ExecutionResult {
@@ -83,6 +91,7 @@ fn test_execution_result_with_gateway_failure() {
     assert!(result.gateway_failed.as_ref().unwrap().contains("G1"));
 }
 
+/// Verify ExecutionConfig accepts all configuration fields
 #[test]
 fn test_execution_config_all_fields() {
     let config = ExecutionConfig {
@@ -118,6 +127,7 @@ fn test_execution_config_all_fields() {
     assert!(!config.run_contract_tests);
 }
 
+/// Verify ToolTestResult stores all tool execution fields
 #[test]
 fn test_tool_test_result_fields_comprehensive() {
     let result = ToolTestResult {
@@ -136,6 +146,7 @@ fn test_tool_test_result_fields_comprehensive() {
     assert!(!result.stderr.is_empty());
 }
 
+/// Verify golden_scenario prompt contains expected keywords
 #[test]
 fn test_golden_scenario_prompt_content() {
     let model_id = ModelId::new("org", "name");
@@ -145,6 +156,7 @@ fn test_golden_scenario_prompt_content() {
     assert!(scenario.prompt.contains("inference"));
 }
 
+/// Verify Executor accepts custom timeout and workers config
 #[test]
 fn test_executor_with_custom_timeout_and_workers() {
     let config = ExecutionConfig {
@@ -157,6 +169,7 @@ fn test_executor_with_custom_timeout_and_workers() {
     assert_eq!(executor.config().max_workers, 16);
 }
 
+/// Verify pass_rate calculation for partial passes
 #[test]
 fn test_execution_result_pass_rate_partial() {
     let result = ExecutionResult {
@@ -173,6 +186,7 @@ fn test_execution_result_pass_rate_partial() {
     assert!((rate - 100.0 / 3.0).abs() < 0.01);
 }
 
+/// Verify ToolTestResult converts to passing evidence
 #[test]
 fn test_tool_test_result_to_evidence_with_content() {
     let result = ToolTestResult {
@@ -190,6 +204,7 @@ fn test_tool_test_result_to_evidence_with_content() {
     assert!(evidence.output.contains("validated"));
 }
 
+/// Verify ToolTestResult accepts zero duration
 #[test]
 fn test_tool_test_result_with_zero_duration() {
     let result = ToolTestResult {
@@ -204,6 +219,7 @@ fn test_tool_test_result_with_zero_duration() {
     assert_eq!(result.duration_ms, 0);
 }
 
+/// Verify extract_output_text preserves multi-line content
 #[test]
 fn test_extract_output_text_preserves_content() {
     let output = "Info\nOutput:\n  First line\n  Second line  \n  Third line\nCompleted in 1s";
@@ -219,6 +235,7 @@ fn test_extract_output_text_preserves_content() {
 
 use crate::command::MockCommandRunner;
 
+/// Verify subprocess execution with mock runner produces expected output
 #[test]
 fn test_executor_with_mock_runner_subprocess_execution() {
     let (_tmp, model_path) = create_test_model_file(Format::Gguf);
@@ -252,6 +269,7 @@ fn test_executor_with_mock_runner_subprocess_execution() {
     let _ = tps;
 }
 
+/// Verify subprocess execution handles inference failure correctly
 #[test]
 fn test_executor_with_mock_runner_inference_failure() {
     let (_tmp, model_path) = create_test_model_file(Format::Gguf);
@@ -279,6 +297,7 @@ fn test_executor_with_mock_runner_inference_failure() {
     assert!(stderr.is_some());
 }
 
+/// Verify execute_scenario creates non-empty evidence
 #[test]
 fn test_executor_with_mock_runner_execute_scenario() {
     let mock_runner = MockCommandRunner::new()
@@ -308,6 +327,7 @@ fn test_executor_with_mock_runner_execute_scenario() {
     assert!(!evidence.gate_id.is_empty());
 }
 
+/// Verify golden rule test passes with matching mock inference outputs
 #[test]
 fn test_executor_with_mock_runner_golden_rule_test() {
     let mock_runner = MockCommandRunner::new()
@@ -332,6 +352,7 @@ fn test_executor_with_mock_runner_golden_rule_test() {
     assert_eq!(passed + failed, 1);
 }
 
+/// Verify golden rule test fails when conversion fails
 #[test]
 fn test_executor_with_mock_runner_golden_rule_conversion_failure() {
     let mock_runner = MockCommandRunner::new()
@@ -357,6 +378,7 @@ fn test_executor_with_mock_runner_golden_rule_conversion_failure() {
     assert!(!executor.collector.all().is_empty());
 }
 
+/// Verify golden rule test fails when inference fails
 #[test]
 fn test_executor_with_mock_runner_golden_rule_inference_failure() {
     let mock_runner = MockCommandRunner::new().with_inference_failure();
@@ -377,6 +399,7 @@ fn test_executor_with_mock_runner_golden_rule_inference_failure() {
     assert_eq!(failed, 1);
 }
 
+/// Verify ToolExecutor inspect with mock runner returns GGUF info
 #[test]
 fn test_tool_executor_with_mock_runner_inspect() {
     let mock_runner = MockCommandRunner::new();
@@ -394,6 +417,7 @@ fn test_tool_executor_with_mock_runner_inspect() {
     assert!(result.stdout.contains("GGUF"));
 }
 
+/// Verify ToolExecutor validate with mock runner passes
 #[test]
 fn test_tool_executor_with_mock_runner_validate() {
     let mock_runner = MockCommandRunner::new();

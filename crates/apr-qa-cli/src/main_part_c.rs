@@ -1,4 +1,5 @@
 
+/// Generate GitHub tickets from evidence, in draft or create mode
 fn generate_tickets(
     evidence_path: &PathBuf,
     repo: &str,
@@ -178,6 +179,7 @@ fn read_golden_prompt(path: &std::path::Path) -> Option<(String, String)> {
     Some((hash, prompt))
 }
 
+/// Truncate a string to max_len characters, appending "..." if truncated
 fn truncate_str(s: &str, max_len: usize) -> String {
     if s.len() > max_len {
         format!("{}...", &s[..max_len])
@@ -333,6 +335,7 @@ fn load_logits_from_file(logits_path: &std::path::Path) -> Vec<f32> {
         .collect()
 }
 
+/// Execute APR tool coverage tests and save results as JSON
 fn run_tool_tests(
     model_path: &std::path::Path,
     no_gpu: bool,

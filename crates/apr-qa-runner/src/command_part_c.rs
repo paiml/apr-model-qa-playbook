@@ -1,5 +1,6 @@
-
+/// Mock implementation of CommandRunner for testing without real model binaries
 impl CommandRunner for MockCommandRunner {
+    /// Simulate model inference with configurable success/failure and responses
     fn run_inference(
         &self,
         _model_path: &Path,
@@ -56,6 +57,7 @@ impl CommandRunner for MockCommandRunner {
         }
     }
 
+    /// Simulate model format conversion
     fn convert_model(&self, _source: &Path, _target: &Path) -> CommandOutput {
         if self.convert_success {
             CommandOutput::success("Conversion successful")
@@ -64,6 +66,7 @@ impl CommandRunner for MockCommandRunner {
         }
     }
 
+    /// Simulate model inspection returning format and tensor info
     fn inspect_model(&self, _model_path: &Path) -> CommandOutput {
         if self.inspect_success {
             CommandOutput::success(r#"{"format":"GGUF","tensors":100,"parameters":"1.5B"}"#)
@@ -72,6 +75,7 @@ impl CommandRunner for MockCommandRunner {
         }
     }
 
+    /// Simulate basic model validation
     fn validate_model(&self, _model_path: &Path) -> CommandOutput {
         if self.validate_success {
             CommandOutput::success("Model validation passed")
@@ -80,6 +84,7 @@ impl CommandRunner for MockCommandRunner {
         }
     }
 
+    /// Simulate strict model validation with detailed tensor checks
     fn validate_model_strict(&self, _model_path: &Path) -> CommandOutput {
         if self.validate_strict_success {
             CommandOutput::success(r#"{"valid":true,"tensors_checked":100,"issues":[]}"#)
@@ -92,6 +97,7 @@ impl CommandRunner for MockCommandRunner {
         }
     }
 
+    /// Simulate model benchmarking returning throughput and latency metrics
     fn bench_model(&self, _model_path: &Path) -> CommandOutput {
         if self.bench_success {
             let output = format!(
@@ -104,6 +110,7 @@ impl CommandRunner for MockCommandRunner {
         }
     }
 
+    /// Simulate model safety check
     fn check_model(&self, _model_path: &Path) -> CommandOutput {
         if self.check_success {
             CommandOutput::success("All checks passed")
@@ -112,6 +119,7 @@ impl CommandRunner for MockCommandRunner {
         }
     }
 
+    /// Simulate model profiling with warmup and measurement phases
     fn profile_model(&self, _model_path: &Path, _warmup: u32, _measure: u32) -> CommandOutput {
         if self.profile_success {
             let output = format!(
@@ -124,6 +132,7 @@ impl CommandRunner for MockCommandRunner {
         }
     }
 
+    /// Simulate CI profile with threshold assertions
     fn profile_ci(
         &self,
         _model_path: &Path,
@@ -156,6 +165,7 @@ impl CommandRunner for MockCommandRunner {
         }
     }
 
+    /// Simulate tensor diff comparison between two models
     fn diff_tensors(&self, _model_a: &Path, _model_b: &Path, json: bool) -> CommandOutput {
         if !self.diff_tensors_success {
             return CommandOutput::failure(1, "Diff tensors failed: incompatible models");
@@ -169,6 +179,7 @@ impl CommandRunner for MockCommandRunner {
         }
     }
 
+    /// Simulate token-level inference comparison between two models
     fn compare_inference(
         &self,
         _model_a: &Path,
@@ -186,6 +197,7 @@ impl CommandRunner for MockCommandRunner {
         }
     }
 
+    /// Simulate flamegraph profiling
     fn profile_with_flamegraph(
         &self,
         _model_path: &Path,
@@ -199,6 +211,7 @@ impl CommandRunner for MockCommandRunner {
         }
     }
 
+    /// Simulate focused profiling on a specific component
     fn profile_with_focus(&self, _model_path: &Path, _focus: &str, _no_gpu: bool) -> CommandOutput {
         if self.profile_focus_success {
             let output = format!(
@@ -211,6 +224,7 @@ impl CommandRunner for MockCommandRunner {
         }
     }
 
+    /// Simulate model fingerprinting with tensor statistics
     fn fingerprint_model(&self, _model_path: &Path, json: bool) -> CommandOutput {
         if self.fingerprint_success {
             if json {
@@ -225,6 +239,7 @@ impl CommandRunner for MockCommandRunner {
         }
     }
 
+    /// Simulate statistical validation between two fingerprints
     fn validate_stats(&self, _fp_a: &Path, _fp_b: &Path) -> CommandOutput {
         if self.validate_stats_success {
             CommandOutput::success(
@@ -235,6 +250,7 @@ impl CommandRunner for MockCommandRunner {
         }
     }
 
+    /// Simulate pulling a model from HuggingFace registry
     fn pull_model(&self, _hf_repo: &str) -> CommandOutput {
         if self.pull_success {
             CommandOutput::success(format!("Path: {}", self.pull_model_path))
@@ -243,6 +259,7 @@ impl CommandRunner for MockCommandRunner {
         }
     }
 
+    /// Simulate JSON-formatted model inspection with tensor names
     fn inspect_model_json(&self, _model_path: &Path) -> CommandOutput {
         if self.inspect_json_success {
             let tensor_names_json: String = self
@@ -261,6 +278,7 @@ impl CommandRunner for MockCommandRunner {
         }
     }
 
+    /// Simulate Ollama inference with a model tag
     fn run_ollama_inference(
         &self,
         _model_tag: &str,
@@ -277,6 +295,7 @@ impl CommandRunner for MockCommandRunner {
         }
     }
 
+    /// Simulate pulling an Ollama model from registry
     fn pull_ollama_model(&self, _model_tag: &str) -> CommandOutput {
         if self.ollama_pull_success {
             CommandOutput::success("pulling manifest... done")
@@ -285,6 +304,7 @@ impl CommandRunner for MockCommandRunner {
         }
     }
 
+    /// Simulate creating a custom Ollama model from a modelfile
     fn create_ollama_model(&self, _model_tag: &str, _modelfile_path: &Path) -> CommandOutput {
         if self.ollama_create_success {
             CommandOutput::success("creating model... done")
@@ -293,6 +313,7 @@ impl CommandRunner for MockCommandRunner {
         }
     }
 
+    /// Simulate starting a model serving endpoint
     fn serve_model(&self, _model_path: &Path, _port: u16) -> CommandOutput {
         if self.serve_success {
             CommandOutput::success(r#"{"status":"listening","port":8080}"#)
@@ -301,6 +322,7 @@ impl CommandRunner for MockCommandRunner {
         }
     }
 
+    /// Simulate an HTTP GET request
     fn http_get(&self, _url: &str) -> CommandOutput {
         if self.http_get_success {
             CommandOutput::success(&self.http_get_response)
@@ -309,6 +331,7 @@ impl CommandRunner for MockCommandRunner {
         }
     }
 
+    /// Simulate memory profiling returning RSS and cache metrics
     fn profile_memory(&self, _model_path: &Path) -> CommandOutput {
         if self.profile_memory_success {
             CommandOutput::success(r#"{"peak_rss_mb":1024,"model_size_mb":512,"kv_cache_mb":256}"#)
@@ -317,6 +340,7 @@ impl CommandRunner for MockCommandRunner {
         }
     }
 
+    /// Simulate chat-mode inference with a model
     fn run_chat(
         &self,
         _model_path: &Path,
@@ -341,6 +365,7 @@ impl CommandRunner for MockCommandRunner {
         CommandOutput::success(stdout)
     }
 
+    /// Simulate an HTTP POST request with a body
     fn http_post(&self, _url: &str, _body: &str) -> CommandOutput {
         if self.http_post_success {
             CommandOutput::success(&self.http_post_response)
@@ -349,6 +374,7 @@ impl CommandRunner for MockCommandRunner {
         }
     }
 
+    /// Simulate spawning a background model server returning a mock PID
     fn spawn_serve(&self, _model_path: &Path, _port: u16, _no_gpu: bool) -> CommandOutput {
         if self.spawn_serve_success {
             CommandOutput::success("12345") // Mock PID

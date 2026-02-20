@@ -184,6 +184,7 @@ pub fn level_to_bonus(level: &str) -> u32 {
 mod tests {
     use super::*;
 
+    /// Build a sample proof status report for test assertions
     fn sample_report() -> ExternalProofStatus {
         ExternalProofStatus {
             schema_version: "1.0.0".to_string(),

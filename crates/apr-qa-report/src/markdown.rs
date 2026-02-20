@@ -49,6 +49,7 @@ pub fn generate_rag_markdown(
     md
 }
 
+/// Write the summary section with MQS score and key metrics
 fn write_summary_section(md: &mut String, mqs: &MqsScore, popperian: &PopperianScore) {
     md.push_str("## Summary\n\n");
     md.push_str(&format!(
@@ -70,6 +71,7 @@ fn write_summary_section(md: &mut String, mqs: &MqsScore, popperian: &PopperianS
     ));
 }
 
+/// Write the gateway checks table section
 fn write_gateway_section(md: &mut String, mqs: &MqsScore) {
     md.push_str("## Gateway Checks\n\n");
     md.push_str("| Gateway | Status | Description |\n");
@@ -86,6 +88,7 @@ fn write_gateway_section(md: &mut String, mqs: &MqsScore) {
     md.push('\n');
 }
 
+/// Write the category scores table section
 fn write_category_section(md: &mut String, mqs: &MqsScore) {
     md.push_str("## Category Scores\n\n");
     md.push_str("| Category | Score | Max | Percentage |\n");
@@ -104,6 +107,7 @@ fn write_category_section(md: &mut String, mqs: &MqsScore) {
     md.push('\n');
 }
 
+/// Write the falsifications section with gate IDs and evidence
 fn write_falsifications_section(md: &mut String, popperian: &PopperianScore) {
     if popperian.falsifications.is_empty() {
         return;
@@ -124,6 +128,7 @@ fn write_falsifications_section(md: &mut String, popperian: &PopperianScore) {
     }
 }
 
+/// Write the test results section grouped by category
 fn write_test_results_section(md: &mut String, collector: &EvidenceCollector) {
     md.push_str("## Test Results by Category\n\n");
     for category in &["QUAL", "PERF", "STAB", "COMP", "EDGE", "REGR"] {
@@ -155,6 +160,7 @@ fn write_test_results_section(md: &mut String, collector: &EvidenceCollector) {
     }
 }
 
+/// Write failure details for a single category, capped at 10 entries
 fn write_category_failures(md: &mut String, evidence: &[&Evidence]) {
     let failures: Vec<_> = evidence.iter().filter(|e| e.outcome.is_fail()).collect();
 
@@ -178,6 +184,7 @@ fn write_category_failures(md: &mut String, evidence: &[&Evidence]) {
     md.push('\n');
 }
 
+/// Write the penalties table section
 fn write_penalties_section(md: &mut String, mqs: &MqsScore) {
     if mqs.penalties.is_empty() {
         return;
@@ -197,6 +204,7 @@ fn write_penalties_section(md: &mut String, mqs: &MqsScore) {
     ));
 }
 
+/// Write the Popperian analysis section with statistical metrics
 fn write_popperian_section(md: &mut String, popperian: &PopperianScore) {
     md.push_str("## Popperian Analysis\n\n");
     md.push_str(&format!(
@@ -219,6 +227,7 @@ fn write_popperian_section(md: &mut String, popperian: &PopperianScore) {
     ));
 }
 
+/// Write the metadata section with model ID and qualification status
 fn write_metadata_section(md: &mut String, mqs: &MqsScore) {
     md.push_str("## Metadata\n\n");
     md.push_str(&format!("- **Model ID**: {}\n", mqs.model_id));
@@ -266,6 +275,7 @@ const QUALIFICATION_TIERS: &[(f64, &str)] = &[
     (50.0, "NEEDS IMPROVEMENT"),
 ];
 
+/// Determine qualification status string from MQS score tiers
 fn qualification_status(mqs: &MqsScore) -> &'static str {
     if !mqs.gateways_passed { return "REJECTED (Gateway Failure)"; }
     QUALIFICATION_TIERS.iter()

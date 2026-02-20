@@ -17,6 +17,7 @@ pub struct SemanticConversionTest {
     binary: String,
 }
 
+/// Construction, execution, and bug classification for semantic conversion tests
 impl SemanticConversionTest {
     /// Create a new semantic conversion test
     #[must_use]
@@ -169,8 +170,11 @@ impl SemanticConversionTest {
 /// Output from inference command
 #[derive(Debug, Clone)]
 struct InferenceOutput {
+    /// Standard output from the inference process
     stdout: String,
+    /// Standard error from the inference process
     stderr: String,
+    /// Process exit code
     #[allow(dead_code)]
     exit_code: i32,
 }
@@ -198,6 +202,7 @@ pub enum SemanticTestResult {
     },
 }
 
+/// Query methods for semantic test outcomes
 impl SemanticTestResult {
     /// Check if test passed
     #[must_use]
@@ -267,6 +272,7 @@ pub struct RoundTripTest {
     binary: String,
 }
 
+/// Construction and execution for round-trip conversion tests
 impl RoundTripTest {
     /// Create a new round-trip test
     #[must_use]

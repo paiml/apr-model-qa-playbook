@@ -1,3 +1,4 @@
+/// Verify AprTool::command returns correct string for each variant
 #[test]
 fn test_apr_tool_command() {
     assert_eq!(AprTool::Run.command(), "run");
@@ -12,6 +13,7 @@ fn test_apr_tool_command() {
     assert_eq!(AprTool::Canary.command(), "canary");
 }
 
+/// Verify AprTool::requires_prompt returns true only for Run and Chat
 #[test]
 fn test_apr_tool_requires_prompt() {
     assert!(AprTool::Run.requires_prompt());
@@ -22,6 +24,7 @@ fn test_apr_tool_requires_prompt() {
     assert!(!AprTool::Bench.requires_prompt());
 }
 
+/// Verify AprTool::supports_trace returns true only for Run and Trace
 #[test]
 fn test_apr_tool_supports_trace() {
     assert!(AprTool::Run.supports_trace());
@@ -30,6 +33,7 @@ fn test_apr_tool_supports_trace() {
     assert!(!AprTool::Serve.supports_trace());
 }
 
+/// Verify AprTool Display trait formats as lowercase command string
 #[test]
 fn test_apr_tool_display() {
     assert_eq!(format!("{}", AprTool::Run), "run");
@@ -37,6 +41,7 @@ fn test_apr_tool_display() {
     assert_eq!(format!("{}", AprTool::Canary), "canary");
 }
 
+/// Verify Format::extension returns correct file extension for each variant
 #[test]
 fn test_format_extension() {
     assert_eq!(Format::Gguf.extension(), ".gguf");
@@ -44,6 +49,7 @@ fn test_format_extension() {
     assert_eq!(Format::Apr.extension(), ".apr");
 }
 
+/// Verify TraceLevel::all returns all four trace level variants
 #[test]
 fn test_trace_level_all() {
     let all = TraceLevel::all();
@@ -54,6 +60,7 @@ fn test_trace_level_all() {
     assert!(all.contains(&TraceLevel::Payload));
 }
 
+/// Verify Modality::command returns correct string for each variant
 #[test]
 fn test_modality_command() {
     assert_eq!(Modality::Run.command(), "run");
@@ -61,6 +68,7 @@ fn test_modality_command() {
     assert_eq!(Modality::Serve.command(), "serve");
 }
 
+/// Verify QaScenario Debug format contains struct name
 #[test]
 fn test_scenario_debug() {
     let model = ModelId::new("test", "model");
@@ -76,6 +84,7 @@ fn test_scenario_debug() {
     assert!(debug_str.contains("QaScenario"));
 }
 
+/// Verify ScenarioGenerator Debug format contains struct name
 #[test]
 fn test_scenario_generator_debug() {
     let model = ModelId::new("test", "model");
@@ -84,6 +93,7 @@ fn test_scenario_generator_debug() {
     assert!(debug_str.contains("ScenarioGenerator"));
 }
 
+/// Verify escape_json preserves tab characters
 #[test]
 fn test_escape_json_tab() {
     // Verify tabs don't cause issues
@@ -91,12 +101,14 @@ fn test_escape_json_tab() {
     assert!(result.contains('\t'));
 }
 
+/// Verify escape_prompt returns input unchanged when no quotes present
 #[test]
 fn test_escape_prompt_no_quotes() {
     let result = escape_prompt("hello world");
     assert_eq!(result, "hello world");
 }
 
+/// Verify to_command includes trace flags when basic trace level is set
 #[test]
 fn test_scenario_to_command_with_basic_trace() {
     let model = ModelId::new("test", "model");
@@ -115,6 +127,7 @@ fn test_scenario_to_command_with_basic_trace() {
     assert!(cmd.contains("--trace-level basic"));
 }
 
+/// Verify to_command includes layer-level trace flag
 #[test]
 fn test_scenario_to_command_with_layer_trace() {
     let model = ModelId::new("test", "model");
@@ -132,6 +145,7 @@ fn test_scenario_to_command_with_layer_trace() {
     assert!(cmd.contains("--trace-level layer"));
 }
 
+/// Verify with_kernel_profile appends profile prompts to generator
 #[test]
 fn test_with_kernel_profile() {
     let model = ModelId::new("test", "model");
@@ -151,6 +165,7 @@ fn test_with_kernel_profile() {
 }
 
 // --- Mutation-killing tests for mqs_category return values ---
+/// Verify Run+Cpu scenario maps to MQS category A1
 #[test]
 fn test_mqs_category_run_cpu_is_a1() {
     let model = ModelId::new("t", "m");
@@ -167,6 +182,7 @@ fn test_mqs_category_run_cpu_is_a1() {
     assert_ne!(s.mqs_category(), "A3");
 }
 
+/// Verify Run+Gpu scenario maps to MQS category A2
 #[test]
 fn test_mqs_category_run_gpu_is_a2() {
     let model = ModelId::new("t", "m");
@@ -182,6 +198,7 @@ fn test_mqs_category_run_gpu_is_a2() {
     assert_ne!(s.mqs_category(), "A1");
 }
 
+/// Verify Chat+Cpu scenario maps to MQS category A3
 #[test]
 fn test_mqs_category_chat_cpu_is_a3() {
     let model = ModelId::new("t", "m");
@@ -197,6 +214,7 @@ fn test_mqs_category_chat_cpu_is_a3() {
     assert_ne!(s.mqs_category(), "A4");
 }
 
+/// Verify Chat+Gpu scenario maps to MQS category A4
 #[test]
 fn test_mqs_category_chat_gpu_is_a4() {
     let model = ModelId::new("t", "m");
@@ -212,6 +230,7 @@ fn test_mqs_category_chat_gpu_is_a4() {
     assert_ne!(s.mqs_category(), "A3");
 }
 
+/// Verify Serve+Cpu scenario maps to MQS category A5
 #[test]
 fn test_mqs_category_serve_cpu_is_a5() {
     let model = ModelId::new("t", "m");
@@ -227,6 +246,7 @@ fn test_mqs_category_serve_cpu_is_a5() {
     assert_ne!(s.mqs_category(), "A6");
 }
 
+/// Verify Serve+Gpu scenario maps to MQS category A6
 #[test]
 fn test_mqs_category_serve_gpu_is_a6() {
     let model = ModelId::new("t", "m");
@@ -243,6 +263,7 @@ fn test_mqs_category_serve_gpu_is_a6() {
 }
 
 // --- Mutation-killing tests for Format::class return values ---
+/// Verify Format::Gguf class returns 'A'
 #[test]
 fn test_format_class_gguf_is_char_a() {
     let class = Format::Gguf.class();
@@ -251,6 +272,7 @@ fn test_format_class_gguf_is_char_a() {
     assert_ne!(class, 'X');
 }
 
+/// Verify Format::Apr class returns 'A'
 #[test]
 fn test_format_class_apr_is_char_a() {
     let class = Format::Apr.class();
@@ -258,6 +280,7 @@ fn test_format_class_apr_is_char_a() {
     assert_ne!(class, 'B');
 }
 
+/// Verify Format::SafeTensors class returns 'B'
 #[test]
 fn test_format_class_safetensors_is_char_b() {
     let class = Format::SafeTensors.class();
@@ -266,6 +289,7 @@ fn test_format_class_safetensors_is_char_b() {
 }
 
 // --- Mutation-killing tests for escape_json ---
+/// Verify escape_json doubles backslashes
 #[test]
 fn test_escape_json_backslash_not_empty() {
     let result = escape_json("a\\b");
@@ -274,6 +298,7 @@ fn test_escape_json_backslash_not_empty() {
     assert!(result.len() > "a\\b".len());
 }
 
+/// Verify escape_json escapes double quotes
 #[test]
 fn test_escape_json_quote_not_empty() {
     let result = escape_json("say \"hi\"");
@@ -281,6 +306,7 @@ fn test_escape_json_quote_not_empty() {
     assert_eq!(result, "say \\\"hi\\\"");
 }
 
+/// Verify escape_json replaces newlines with literal \n
 #[test]
 fn test_escape_json_newline_not_empty() {
     let result = escape_json("line1\nline2");
@@ -289,6 +315,7 @@ fn test_escape_json_newline_not_empty() {
     assert!(!result.contains('\n'));
 }
 
+/// Verify escape_json handles combined backslash, quote, and newline escapes
 #[test]
 fn test_escape_json_all_escapes_combined() {
     let result = escape_json("a\\b\"c\nd");
@@ -296,6 +323,7 @@ fn test_escape_json_all_escapes_combined() {
 }
 
 // --- Mutation-killing tests for escape_prompt ---
+/// Verify escape_prompt escapes single quotes for shell safety
 #[test]
 fn test_escape_prompt_single_quote() {
     let result = escape_prompt("it's");
@@ -305,6 +333,7 @@ fn test_escape_prompt_single_quote() {
 }
 
 // --- Test that Backend::flag returns correct strings ---
+/// Verify Backend::Cpu flag returns empty string
 #[test]
 fn test_backend_cpu_flag_is_empty() {
     let flag = Backend::Cpu.flag();
@@ -312,6 +341,7 @@ fn test_backend_cpu_flag_is_empty() {
     assert_eq!(flag, "");
 }
 
+/// Verify Backend::Gpu flag returns "--gpu"
 #[test]
 fn test_backend_gpu_flag_is_gpu_option() {
     let flag = Backend::Gpu.flag();
@@ -321,24 +351,28 @@ fn test_backend_gpu_flag_is_gpu_option() {
 }
 
 // --- Test TraceLevel::value returns correct strings ---
+/// Verify TraceLevel::None value returns "none"
 #[test]
 fn test_trace_level_none_value() {
     assert_eq!(TraceLevel::None.value(), "none");
     assert_ne!(TraceLevel::None.value(), "basic");
 }
 
+/// Verify TraceLevel::Basic value returns "basic"
 #[test]
 fn test_trace_level_basic_value() {
     assert_eq!(TraceLevel::Basic.value(), "basic");
     assert_ne!(TraceLevel::Basic.value(), "none");
 }
 
+/// Verify TraceLevel::Layer value returns "layer"
 #[test]
 fn test_trace_level_layer_value() {
     assert_eq!(TraceLevel::Layer.value(), "layer");
     assert_ne!(TraceLevel::Layer.value(), "payload");
 }
 
+/// Verify TraceLevel::Payload value returns "payload"
 #[test]
 fn test_trace_level_payload_value() {
     assert_eq!(TraceLevel::Payload.value(), "payload");

@@ -1,3 +1,4 @@
+/// Verify integrity check passes when all config values match tensor dimensions
 #[test]
 fn test_integrity_check_all_match() {
     let dir = TempDir::new().expect("create temp dir");
@@ -17,6 +18,7 @@ fn test_integrity_check_all_match() {
     assert!(result.errors.is_empty());
 }
 
+/// Verify integrity check fails when config layer count differs from tensors
 #[test]
 fn test_integrity_check_layer_mismatch() {
     let dir = TempDir::new().expect("create temp dir");
@@ -35,6 +37,7 @@ fn test_integrity_check_layer_mismatch() {
     );
 }
 
+/// Verify integrity check fails when config hidden_size differs from tensors
 #[test]
 fn test_integrity_check_hidden_size_mismatch() {
     let dir = TempDir::new().expect("create temp dir");
@@ -53,6 +56,7 @@ fn test_integrity_check_hidden_size_mismatch() {
     );
 }
 
+/// Verify integrity check fails when config vocab_size differs from tensors
 #[test]
 fn test_integrity_check_vocab_size_mismatch() {
     let dir = TempDir::new().expect("create temp dir");
@@ -71,6 +75,7 @@ fn test_integrity_check_vocab_size_mismatch() {
     );
 }
 
+/// Verify integrity check fails when config.json is missing
 #[test]
 fn test_integrity_check_missing_config() {
     let dir = TempDir::new().expect("create temp dir");
@@ -88,6 +93,7 @@ fn test_integrity_check_missing_config() {
     );
 }
 
+/// Verify integrity check fails when no .safetensors files are present
 #[test]
 fn test_integrity_check_no_safetensors() {
     let dir = TempDir::new().expect("create temp dir");
@@ -104,6 +110,7 @@ fn test_integrity_check_no_safetensors() {
     );
 }
 
+/// Verify integrity check reports all three errors when layers, hidden, and vocab mismatch
 #[test]
 fn test_integrity_check_multiple_mismatches() {
     let dir = TempDir::new().expect("create temp dir");
@@ -119,6 +126,7 @@ fn test_integrity_check_multiple_mismatches() {
     assert_eq!(result.errors.len(), 3, "Should have 3 error messages");
 }
 
+/// Verify extract_layer_number parses layer indices from various tensor name patterns
 #[test]
 fn test_extract_layer_number() {
     assert_eq!(
@@ -135,6 +143,7 @@ fn test_extract_layer_number() {
     assert_eq!(extract_layer_number("lm_head.weight"), None);
 }
 
+/// Verify ConfigValues serializes to JSON correctly
 #[test]
 fn test_config_values_serialization() {
     let values = ConfigValues {
@@ -148,6 +157,7 @@ fn test_config_values_serialization() {
     assert!(json.contains("896"));
 }
 
+/// Verify TensorDerivedValues serializes to JSON correctly
 #[test]
 fn test_tensor_derived_values_serialization() {
     let values = TensorDerivedValues {
@@ -160,6 +170,7 @@ fn test_tensor_derived_values_serialization() {
     assert!(json.contains("151936"));
 }
 
+/// Verify IntegrityResult serializes to JSON with error messages
 #[test]
 fn test_integrity_result_serialization() {
     let result = IntegrityResult {
@@ -176,6 +187,7 @@ fn test_integrity_result_serialization() {
     assert!(json.contains("G0-INTEGRITY-LAYERS"));
 }
 
+/// Verify gate_ids module exposes correct constant strings for each gate
 #[test]
 fn test_gate_ids() {
     assert_eq!(gate_ids::CONFIG, "G0-INTEGRITY-CONFIG");
@@ -184,6 +196,7 @@ fn test_gate_ids() {
     assert_eq!(gate_ids::VOCAB, "G0-INTEGRITY-VOCAB");
 }
 
+/// Verify IntegrityResult Debug implementation
 #[test]
 fn test_integrity_result_debug() {
     let result = IntegrityResult {
@@ -200,6 +213,7 @@ fn test_integrity_result_debug() {
     assert!(debug_str.contains("IntegrityResult"));
 }
 
+/// Verify ConfigValues Debug implementation
 #[test]
 fn test_config_values_debug() {
     let values = ConfigValues {
@@ -212,6 +226,7 @@ fn test_config_values_debug() {
     assert!(debug_str.contains("ConfigValues"));
 }
 
+/// Verify TensorDerivedValues Debug implementation
 #[test]
 fn test_tensor_derived_values_debug() {
     let values = TensorDerivedValues {
@@ -223,6 +238,7 @@ fn test_tensor_derived_values_debug() {
     assert!(debug_str.contains("TensorDerivedValues"));
 }
 
+/// Verify IntegrityResult clone preserves all fields including nested values
 #[test]
 fn test_integrity_result_clone() {
     let result = IntegrityResult {
@@ -253,6 +269,7 @@ fn test_integrity_result_clone() {
 // Additional coverage tests for uncovered paths
 // =========================================================================
 
+/// Verify read_safetensors_metadata returns error for a corrupted file
 #[test]
 fn test_read_safetensors_corrupted_file() {
     let dir = TempDir::new().expect("create temp dir");
@@ -263,6 +280,7 @@ fn test_read_safetensors_corrupted_file() {
     assert!(result.is_err());
 }
 
+/// Verify read_safetensors_metadata rejects headers exceeding MAX_HEADER_SIZE
 #[test]
 fn test_read_safetensors_oversized_header() {
     let dir = TempDir::new().expect("create temp dir");
@@ -277,6 +295,7 @@ fn test_read_safetensors_oversized_header() {
     assert!(result.unwrap_err().contains("exceeds maximum"));
 }
 
+/// Verify read_safetensors_metadata skips __metadata__ key and returns real tensors
 #[test]
 fn test_read_safetensors_with_metadata_key() {
     let dir = TempDir::new().expect("create temp dir");
@@ -322,6 +341,7 @@ fn test_read_safetensors_with_metadata_key() {
     assert_eq!(tensors["model.weight"], vec![100, 50]);
 }
 
+/// Verify derive_values_from_tensors falls back to lm_head.weight for vocab/hidden
 #[test]
 fn test_derive_values_from_lm_head_fallback() {
     // No embed_tokens, only lm_head.weight — exercises the fallback path
@@ -342,6 +362,7 @@ fn test_derive_values_from_lm_head_fallback() {
     assert_eq!(values.layer_count, Some(2));
 }
 
+/// Verify derive_values_from_tensors uses model.lm_head.weight as secondary fallback
 #[test]
 fn test_derive_values_model_lm_head_fallback() {
     // No embed_tokens, uses model.lm_head.weight
@@ -353,6 +374,7 @@ fn test_derive_values_model_lm_head_fallback() {
     assert_eq!(values.hidden_size, Some(768));
 }
 
+/// Verify check_safetensors_integrity handles corrupt safetensors file gracefully
 #[test]
 fn test_check_safetensors_integrity_read_error() {
     let dir = TempDir::new().expect("create temp dir");
@@ -372,6 +394,7 @@ fn test_check_safetensors_integrity_read_error() {
     );
 }
 
+/// Verify check_safetensors_integrity detects hidden_size mismatch
 #[test]
 fn test_check_safetensors_integrity_hidden_size_mismatch() {
     let dir = TempDir::new().expect("create temp dir");
@@ -384,6 +407,7 @@ fn test_check_safetensors_integrity_hidden_size_mismatch() {
     assert!(result.errors.iter().any(|e| e.contains("HIDDEN")));
 }
 
+/// Verify check_safetensors_integrity detects vocab_size mismatch
 #[test]
 fn test_check_safetensors_integrity_vocab_size_mismatch() {
     let dir = TempDir::new().expect("create temp dir");
@@ -400,7 +424,7 @@ fn test_check_safetensors_integrity_vocab_size_mismatch() {
 // File-mode integrity tests (pacha cache with hash-prefixed files)
 // =========================================================================
 
-/// Create a named config in the given directory (for hash-prefix testing)
+/// Create a named config JSON file in the given directory for hash-prefix testing
 fn create_named_config(dir: &Path, name: &str, layers: usize, hidden: usize, vocab: usize) {
     let config = format!(
         r#"{{
@@ -413,7 +437,7 @@ fn create_named_config(dir: &Path, name: &str, layers: usize, hidden: usize, voc
     std::fs::write(dir.join(name), config).expect("write config");
 }
 
-/// Create a named safetensors file (for hash-prefix testing)
+/// Create a named safetensors file with given dimensions for hash-prefix testing
 fn create_named_safetensors(
     dir: &Path,
     name: &str,

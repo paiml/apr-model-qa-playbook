@@ -4,6 +4,7 @@ use super::*;
 use crate::mqs::{CategoryScores, GatewayResult};
 use crate::popperian::FalsificationDetail;
 
+/// Create a default MQS score for HTML report test helpers
 fn test_mqs() -> MqsScore {
     MqsScore {
         model_id: "test/model".to_string(),
@@ -34,6 +35,7 @@ fn test_mqs() -> MqsScore {
     }
 }
 
+/// Create a default Popperian score for HTML report test helpers
 fn test_popperian() -> PopperianScore {
     PopperianScore {
         model_id: "test/model".to_string(),
@@ -57,6 +59,7 @@ fn test_popperian() -> PopperianScore {
     }
 }
 
+/// Verify HTML generation includes doctype, title, model ID, and score
 #[test]
 fn test_html_generation() {
     let dashboard = HtmlDashboard::new("Test Dashboard");
@@ -73,6 +76,7 @@ fn test_html_generation() {
     assert!(html.contains("92.5"));
 }
 
+/// Verify grade_color maps A+, B, C, F to correct hex colors
 #[test]
 fn test_grade_colors() {
     assert_eq!(HtmlDashboard::grade_color("A+"), "#00d26a");
@@ -81,6 +85,7 @@ fn test_grade_colors() {
     assert_eq!(HtmlDashboard::grade_color("F"), "#ff4757");
 }
 
+/// Verify gateway rendering includes gateway ID and pass class
 #[test]
 fn test_gateway_rendering() {
     let dashboard = HtmlDashboard::new("Test");
@@ -93,6 +98,7 @@ fn test_gateway_rendering() {
     assert!(html.contains("Model loads"));
 }
 
+/// Verify category rendering includes category names and score fractions
 #[test]
 fn test_category_rendering() {
     let dashboard = HtmlDashboard::new("Test");
@@ -105,6 +111,7 @@ fn test_category_rendering() {
     assert!(html.contains("180/200"));
 }
 
+/// Verify falsification rendering includes gate ID and description
 #[test]
 fn test_falsification_rendering() {
     let dashboard = HtmlDashboard::new("Test");
@@ -116,16 +123,19 @@ fn test_falsification_rendering() {
     assert!(html.contains("empty input"));
 }
 
+/// Verify HTML escaping converts angle brackets to entities
 #[test]
 fn test_html_escaping() {
     assert_eq!(HtmlDashboard::escape_html("<script>"), "&lt;script&gt;");
 }
 
+/// Verify HTML escaping converts ampersand to entity
 #[test]
 fn test_html_escaping_ampersand() {
     assert_eq!(HtmlDashboard::escape_html("a & b"), "a &amp; b");
 }
 
+/// Verify HTML escaping converts double quotes to entities
 #[test]
 fn test_html_escaping_quotes() {
     assert_eq!(
@@ -134,24 +144,28 @@ fn test_html_escaping_quotes() {
     );
 }
 
+/// Verify D and D+ grade colors map to orange
 #[test]
 fn test_grade_color_d() {
     assert_eq!(HtmlDashboard::grade_color("D"), "#ff9f43");
     assert_eq!(HtmlDashboard::grade_color("D+"), "#ff9f43");
 }
 
+/// Verify B+ and B- grade colors map to green
 #[test]
 fn test_grade_color_b_variants() {
     assert_eq!(HtmlDashboard::grade_color("B+"), "#7bed9f");
     assert_eq!(HtmlDashboard::grade_color("B-"), "#7bed9f");
 }
 
+/// Verify C+ and C- grade colors map to yellow
 #[test]
 fn test_grade_color_c_variants() {
     assert_eq!(HtmlDashboard::grade_color("C+"), "#ffc107");
     assert_eq!(HtmlDashboard::grade_color("C-"), "#ffc107");
 }
 
+/// Verify failed gateway renders with gateway-fail CSS class
 #[test]
 fn test_gateway_failed_rendering() {
     let dashboard = HtmlDashboard::new("Test");
@@ -163,6 +177,7 @@ fn test_gateway_failed_rendering() {
     assert!(html.contains("gateway-fail"));
 }
 
+/// Verify HTML dashboard includes custom title in output
 #[test]
 fn test_html_dashboard_default_title() {
     let dashboard = HtmlDashboard::new("MQS Report");
@@ -175,6 +190,7 @@ fn test_html_dashboard_default_title() {
     assert!(html.contains("MQS Report"));
 }
 
+/// Verify black swan falsification renders gate ID in HTML
 #[test]
 fn test_popperian_with_black_swan_rendering() {
     let dashboard = HtmlDashboard::new("Test");
@@ -203,18 +219,21 @@ fn test_popperian_with_black_swan_rendering() {
     assert!(html.contains("G1-CRASH"));
 }
 
+/// Verify without_charts disables chart rendering
 #[test]
 fn test_html_dashboard_without_charts() {
     let dashboard = HtmlDashboard::new("Test").without_charts();
     assert!(!dashboard.include_charts);
 }
 
+/// Verify default HtmlDashboard has empty title
 #[test]
 fn test_html_dashboard_default() {
     let dashboard = HtmlDashboard::default();
     assert!(dashboard.title.is_empty());
 }
 
+/// Verify HtmlDashboard Debug format contains struct name
 #[test]
 fn test_html_dashboard_debug() {
     let dashboard = HtmlDashboard::new("Test");
@@ -222,6 +241,7 @@ fn test_html_dashboard_debug() {
     assert!(debug_str.contains("HtmlDashboard"));
 }
 
+/// Verify HTML generation handles zero tests gracefully
 #[test]
 fn test_html_zero_tests() {
     let mut mqs = test_mqs();
@@ -240,6 +260,7 @@ fn test_html_zero_tests() {
     assert!(html.contains("<!DOCTYPE html>"));
 }
 
+/// Verify unknown grade falls through to F color
 #[test]
 fn test_grade_color_unknown() {
     // Test fallback for unknown grade
@@ -247,11 +268,13 @@ fn test_grade_color_unknown() {
     assert_eq!(color, "#ff4757"); // Falls through to F case
 }
 
+/// Verify HTML escaping handles adjacent angle brackets
 #[test]
 fn test_html_escaping_special_chars() {
     assert_eq!(HtmlDashboard::escape_html("test<>test"), "test&lt;&gt;test");
 }
 
+/// Verify 80% pass rate renders with warning CSS class
 #[test]
 fn test_pass_rate_warning_class() {
     // Test pass rate between 70 and 90 for "warning" class
@@ -271,6 +294,7 @@ fn test_pass_rate_warning_class() {
     assert!(html.contains("warning"));
 }
 
+/// Verify empty gateways list renders appropriate message
 #[test]
 fn test_empty_gateways() {
     let dashboard = HtmlDashboard::new("Test");
@@ -281,6 +305,7 @@ fn test_empty_gateways() {
     assert!(html.contains("No gateway checks recorded"));
 }
 
+/// Verify more than 10 falsifications shows overflow count
 #[test]
 fn test_more_than_ten_falsifications() {
     let dashboard = HtmlDashboard::new("Test");

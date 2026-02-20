@@ -1,3 +1,4 @@
+/// Verify parse_csv extracts model data including status, gates, and scores
 #[test]
 fn test_parse_csv_valid() {
     let models = parse_csv(SAMPLE_CSV).expect("should parse");
@@ -18,12 +19,14 @@ fn test_parse_csv_valid() {
     assert!(!models[2].g2);
 }
 
+/// Verify parse_csv returns empty vec for empty input
 #[test]
 fn test_parse_csv_empty() {
     let models = parse_csv("").expect("should parse empty");
     assert!(models.is_empty());
 }
 
+/// Verify parse_csv returns empty vec for header-only input
 #[test]
 fn test_parse_csv_header_only() {
     let csv = "model_id,family,parameters,size_category,status,mqs_score,grade,certified_tier,last_certified,g1,g2,g3,g4";
@@ -31,6 +34,7 @@ fn test_parse_csv_header_only() {
     assert!(models.is_empty());
 }
 
+/// Verify parse_csv returns error for CSV with wrong column count
 #[test]
 fn test_parse_csv_invalid_fields() {
     let csv = "a,b,c\n1,2,3";
@@ -38,6 +42,7 @@ fn test_parse_csv_invalid_fields() {
     assert!(result.is_err());
 }
 
+/// Verify CertificationStatus::parse handles all variants case-insensitively
 #[test]
 fn test_certification_status_parse() {
     assert!(matches!(
@@ -66,6 +71,7 @@ fn test_certification_status_parse() {
     ));
 }
 
+/// Verify badge() returns correct color for each certification status
 #[test]
 fn test_certification_status_badge() {
     assert!(
@@ -78,6 +84,7 @@ fn test_certification_status_badge() {
     assert!(CertificationStatus::Pending.badge().contains("lightgray"));
 }
 
+/// Verify short_name extracts model name after the org slash
 #[test]
 fn test_model_short_name() {
     let model = ModelCertification {
@@ -106,6 +113,7 @@ fn test_model_short_name() {
     assert_eq!(model.short_name(), "Qwen2.5-Coder-1.5B-Instruct");
 }
 
+/// Verify hf_url constructs correct HuggingFace URL from model_id
 #[test]
 fn test_model_hf_url() {
     let model = ModelCertification {
@@ -137,6 +145,7 @@ fn test_model_hf_url() {
     );
 }
 
+/// Verify param_count parses numeric values from parameter strings like "1.5B"
 #[test]
 fn test_model_param_count() {
     let mut model = ModelCertification {
@@ -171,6 +180,7 @@ fn test_model_param_count() {
     assert!((model.param_count() - 0.0).abs() < f64::EPSILON);
 }
 
+/// Verify gateway_symbol returns check/cross marks for certified and dash for pending
 #[test]
 fn test_gateway_symbol() {
     assert_eq!(
@@ -191,6 +201,7 @@ fn test_gateway_symbol() {
     );
 }
 
+/// Verify generate_summary includes status counts and timestamp
 #[test]
 fn test_generate_summary() {
     let models = parse_csv(SAMPLE_CSV).expect("should parse");
@@ -202,6 +213,7 @@ fn test_generate_summary() {
     assert!(summary.contains("2026-01-31 12:00 UTC"));
 }
 
+/// Verify generate_table produces markdown with model names and status badges
 #[test]
 fn test_generate_table() {
     let models = parse_csv(SAMPLE_CSV).expect("should parse");
@@ -214,6 +226,7 @@ fn test_generate_table() {
     assert!(table.contains("BLOCKED-red"));
 }
 
+/// Verify generate_table sorts models by family then by parameter count
 #[test]
 fn test_generate_table_sorting() {
     let models = parse_csv(SAMPLE_CSV).expect("should parse");
@@ -237,6 +250,7 @@ fn test_generate_table_sorting() {
     );
 }
 
+/// Verify update_readme replaces content between certification markers
 #[test]
 fn test_update_readme_success() {
     let readme = r"# Title
@@ -258,6 +272,7 @@ More content";
     assert!(result.contains("More content"));
 }
 
+/// Verify update_readme returns MarkerNotFound when start marker is absent
 #[test]
 fn test_update_readme_missing_start_marker() {
     let readme = "no markers here <!-- CERTIFICATION_TABLE_END -->";
@@ -265,6 +280,7 @@ fn test_update_readme_missing_start_marker() {
     assert!(matches!(result, Err(CertifyError::MarkerNotFound(_))));
 }
 
+/// Verify update_readme returns MarkerNotFound when end marker is absent
 #[test]
 fn test_update_readme_missing_end_marker() {
     let readme = "<!-- CERTIFICATION_TABLE_START --> no end marker";
@@ -272,6 +288,7 @@ fn test_update_readme_missing_end_marker() {
     assert!(matches!(result, Err(CertifyError::MarkerNotFound(_))));
 }
 
+/// Verify SizeCategory::parse handles all variants and defaults unknown to Small
 #[test]
 fn test_size_category_parse() {
     assert!(matches!(SizeCategory::parse("tiny"), SizeCategory::Tiny));
@@ -291,6 +308,7 @@ fn test_size_category_parse() {
     ));
 }
 
+/// Verify CertificationStatus Display outputs uppercase label
 #[test]
 fn test_certification_status_display() {
     assert_eq!(format!("{}", CertificationStatus::Certified), "CERTIFIED");
@@ -302,6 +320,7 @@ fn test_certification_status_display() {
     assert_eq!(format!("{}", CertificationStatus::Pending), "PENDING");
 }
 
+/// Verify short_name returns full model_id when there is no org slash
 #[test]
 fn test_short_name_no_slash() {
     let model = ModelCertification {

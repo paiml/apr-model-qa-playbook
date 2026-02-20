@@ -350,7 +350,6 @@ fn read_config(path: &Path) -> Result<HfConfig, String> {
     serde_json::from_reader(reader).map_err(|e| format!("config.json parse error: {e}"))
 }
 
-/// Find all .safetensors files in a directory
 /// Find a `*.config.json` file in a directory (pacha cache naming convention)
 ///
 /// Pacha cache uses `<hash>.config.json` instead of plain `config.json`.
@@ -367,6 +366,7 @@ fn find_config_json(dir: &Path) -> Option<std::path::PathBuf> {
     None
 }
 
+/// Find all .safetensors files in a directory, sorted for consistent ordering
 fn find_safetensors_files(dir: &Path) -> Vec<std::path::PathBuf> {
     let mut files = Vec::new();
     if let Ok(entries) = std::fs::read_dir(dir) {

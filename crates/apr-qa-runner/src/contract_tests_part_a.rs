@@ -1,3 +1,4 @@
+/// Verify format contract loads with non-empty invariants, dtype bytes, and tolerances
 #[test]
 fn test_load_format_contract() {
     let contract = load_format_contract().expect("Failed to load contract");
@@ -6,12 +7,14 @@ fn test_load_format_contract() {
     assert!(!contract.tolerances.is_empty());
 }
 
+/// Verify format contract version is "1.0"
 #[test]
 fn test_contract_version() {
     let contract = load_format_contract().expect("Failed to load contract");
     assert_eq!(contract.version, "1.0");
 }
 
+/// Verify dtype byte mappings include all expected dtypes
 #[test]
 fn test_dtype_byte_mappings_complete() {
     let contract = load_format_contract().expect("Failed to load contract");
@@ -34,12 +37,14 @@ fn test_dtype_byte_mappings_complete() {
     assert!(dtypes.contains(&"Q5_0"));
 }
 
+/// Verify dtype byte mappings have no duplicate entries
 #[test]
 fn test_dtype_byte_no_duplicates() {
     let contract = load_format_contract().expect("Failed to load contract");
     validate_dtype_bytes(&contract).expect("No duplicates expected");
 }
 
+/// Verify GGML dtype byte values match specification
 #[test]
 fn test_dtype_byte_ggml_values() {
     let contract = load_format_contract().expect("Failed to load contract");
@@ -59,6 +64,7 @@ fn test_dtype_byte_ggml_values() {
     assert_eq!(find_byte("BF16"), 30);
 }
 
+/// Verify tensor naming pattern validation for canonical and forbidden names
 #[test]
 fn test_tensor_naming_pattern() {
     let contract = load_format_contract().expect("Failed to load contract");
@@ -82,6 +88,7 @@ fn test_tensor_naming_pattern() {
     assert!(!validate_tensor_name("", &contract));
 }
 
+/// Verify all five invariant definitions exist in contract
 #[test]
 fn test_invariant_definitions_complete() {
     let contract = load_format_contract().expect("Failed to load contract");
@@ -94,6 +101,7 @@ fn test_invariant_definitions_complete() {
     assert!(ids.contains(&"I-5"));
 }
 
+/// Verify tolerance lookup returns correct atol/rtol for known dtypes
 #[test]
 fn test_tolerance_lookup() {
     let contract = load_format_contract().expect("Failed to load contract");
@@ -113,6 +121,7 @@ fn test_tolerance_lookup() {
     assert!(lookup_tolerance("UNKNOWN", &contract).is_none());
 }
 
+/// Verify canonical tensor name examples pass validation
 #[test]
 fn test_validate_tensor_name_valid() {
     let contract = load_format_contract().expect("Failed to load contract");
@@ -125,6 +134,7 @@ fn test_validate_tensor_name_valid() {
     }
 }
 
+/// Verify forbidden tensor name examples fail validation
 #[test]
 fn test_validate_tensor_name_invalid() {
     let contract = load_format_contract().expect("Failed to load contract");
@@ -137,6 +147,7 @@ fn test_validate_tensor_name_invalid() {
     }
 }
 
+/// Verify ContractTestConfig default includes I-2 through I-5
 #[test]
 fn test_contract_test_config_default() {
     let config = ContractTestConfig::default();
@@ -147,6 +158,7 @@ fn test_contract_test_config_default() {
     assert!(config.invariants.contains(&"I-5".to_string()));
 }
 
+/// Verify InvariantId::from_label parses all known labels
 #[test]
 fn test_invariant_id_from_label() {
     assert_eq!(InvariantId::from_label("I-1"), Some(InvariantId::I1));
@@ -157,6 +169,7 @@ fn test_invariant_id_from_label() {
     assert_eq!(InvariantId::from_label("I-99"), None);
 }
 
+/// Verify InvariantId gate_id formatting
 #[test]
 fn test_invariant_id_gate_id() {
     assert_eq!(InvariantId::I1.gate_id(), "F-CONTRACT-I1-001");
@@ -166,6 +179,7 @@ fn test_invariant_id_gate_id() {
     assert_eq!(InvariantId::I5.gate_id(), "F-CONTRACT-I5-001");
 }
 
+/// Verify contains_f32_fallback detects positive fallback patterns
 #[test]
 fn test_contains_f32_fallback_positive() {
     assert!(contains_f32_fallback(
@@ -175,6 +189,7 @@ fn test_contains_f32_fallback_positive() {
     assert!(contains_f32_fallback("unknown dtype detected"));
 }
 
+/// Verify contains_f32_fallback rejects normal output
 #[test]
 fn test_contains_f32_fallback_negative() {
     assert!(!contains_f32_fallback("All checks passed"));
@@ -182,50 +197,38 @@ fn test_contains_f32_fallback_negative() {
     assert!(!contains_f32_fallback("F32 tensors loaded normally"));
 }
 
+/// Verify I-2 tensor name bijection test passes with mock runner
 #[test]
 fn test_contract_i2_tensor_name_bijection_pass() {
     use crate::command::MockCommandRunner;
-
     let runner: Arc<dyn CommandRunner> = Arc::new(MockCommandRunner::new());
     let model_id = ModelId::new("test", "model");
-    let config = ContractTestConfig::default();
-
     let evidence = run_contract_tests(
-        &runner,
-        Path::new("/test/workspace/org/model"),
-        &model_id,
-        &config,
+        &runner, Path::new("/test/workspace/org/model"), &model_id,
+        &ContractTestConfig::default(),
     );
-
-    // I-2 should pass (mock inspect returns same tensor names for both)
     let i2 = evidence.iter().find(|e| e.gate_id == "F-CONTRACT-I2-001");
     assert!(i2.is_some(), "I-2 evidence should exist");
     assert_eq!(i2.unwrap().outcome, Outcome::Corroborated);
 }
 
+/// Verify I-2 tensor name bijection test fails with inspect failure mock
 #[test]
 fn test_contract_i2_tensor_name_bijection_fail() {
     use crate::command::MockCommandRunner;
-
     let runner: Arc<dyn CommandRunner> =
         Arc::new(MockCommandRunner::new().with_inspect_json_failure());
     let model_id = ModelId::new("test", "model");
-    let config = ContractTestConfig {
-        invariants: vec!["I-2".to_string()],
-    };
-
+    let config = ContractTestConfig { invariants: vec!["I-2".to_string()] };
     let evidence = run_contract_tests(
-        &runner,
-        Path::new("/test/workspace/org/model"),
-        &model_id,
-        &config,
+        &runner, Path::new("/test/workspace/org/model"), &model_id, &config,
     );
-
     let i2 = evidence.iter().find(|e| e.gate_id == "F-CONTRACT-I2-001");
     assert!(i2.is_some());
     assert_eq!(i2.unwrap().outcome, Outcome::Falsified);
 }
 
+/// Verify parse_tensor_names extracts names from valid JSON
 #[test]
 fn test_parse_tensor_names_valid() {
     let json = r#"{"format":"SafeTensors","tensor_count":3,"tensor_names":["embed.weight","lm_head.weight","0.q_proj.weight"],"parameters":"1.5B"}"#;
@@ -236,6 +239,7 @@ fn test_parse_tensor_names_valid() {
     assert!(names.contains("0.q_proj.weight"));
 }
 
+/// Verify parse_tensor_names returns empty set for empty array
 #[test]
 fn test_parse_tensor_names_empty() {
     let json = r#"{"tensor_names":[]}"#;
@@ -243,6 +247,7 @@ fn test_parse_tensor_names_empty() {
     assert!(names.is_empty());
 }
 
+/// Verify parse_tensor_names returns empty set when field is missing
 #[test]
 fn test_parse_tensor_names_missing_field() {
     let json = r#"{"format":"SafeTensors","tensor_count":3}"#;
@@ -250,12 +255,14 @@ fn test_parse_tensor_names_missing_field() {
     assert!(names.is_empty());
 }
 
+/// Verify parse_tensor_names returns empty set for malformed input
 #[test]
 fn test_parse_tensor_names_malformed() {
     let names = parse_tensor_names("not json at all");
     assert!(names.is_empty());
 }
 
+/// Verify tied embedding allowed extras include lm_head tensors
 #[test]
 fn test_i2_tied_embedding_allowed_extras() {
     // Verify that lm_head.weight and lm_head.bias are in the allowed extras set
@@ -265,210 +272,145 @@ fn test_i2_tied_embedding_allowed_extras() {
     assert!(!allowed.contains("unexpected_tensor.weight"));
 }
 
+/// Verify I-3 no silent fallbacks test passes with mock runner
 #[test]
 fn test_contract_i3_no_silent_fallbacks_pass() {
     use crate::command::MockCommandRunner;
-
     let runner: Arc<dyn CommandRunner> = Arc::new(MockCommandRunner::new());
     let model_id = ModelId::new("test", "model");
-    let config = ContractTestConfig {
-        invariants: vec!["I-3".to_string()],
-    };
-
+    let config = ContractTestConfig { invariants: vec!["I-3".to_string()] };
     let evidence = run_contract_tests(
-        &runner,
-        Path::new("/test/workspace/org/model"),
-        &model_id,
-        &config,
+        &runner, Path::new("/test/workspace/org/model"), &model_id, &config,
     );
-
     let i3 = evidence.iter().find(|e| e.gate_id == "F-CONTRACT-I3-001");
     assert!(i3.is_some());
     assert_eq!(i3.unwrap().outcome, Outcome::Corroborated);
 }
 
+/// Verify I-3 no silent fallbacks test fails with check failure mock
 #[test]
 fn test_contract_i3_no_silent_fallbacks_fail() {
     use crate::command::MockCommandRunner;
-
     let runner: Arc<dyn CommandRunner> =
         Arc::new(MockCommandRunner::new().with_check_failure());
     let model_id = ModelId::new("test", "model");
-    let config = ContractTestConfig {
-        invariants: vec!["I-3".to_string()],
-    };
-
+    let config = ContractTestConfig { invariants: vec!["I-3".to_string()] };
     let evidence = run_contract_tests(
-        &runner,
-        Path::new("/test/workspace/org/model"),
-        &model_id,
-        &config,
+        &runner, Path::new("/test/workspace/org/model"), &model_id, &config,
     );
-
     let i3 = evidence.iter().find(|e| e.gate_id == "F-CONTRACT-I3-001");
     assert!(i3.is_some());
     assert_eq!(i3.unwrap().outcome, Outcome::Falsified);
 }
 
+/// Verify I-4 statistical preservation test passes with mock runner
 #[test]
 fn test_contract_i4_statistical_preservation_pass() {
     use crate::command::MockCommandRunner;
-
     let runner: Arc<dyn CommandRunner> = Arc::new(MockCommandRunner::new());
     let model_id = ModelId::new("test", "model");
-    let config = ContractTestConfig {
-        invariants: vec!["I-4".to_string()],
-    };
-
+    let config = ContractTestConfig { invariants: vec!["I-4".to_string()] };
     let evidence = run_contract_tests(
-        &runner,
-        Path::new("/test/workspace/org/model"),
-        &model_id,
-        &config,
+        &runner, Path::new("/test/workspace/org/model"), &model_id, &config,
     );
-
     let i4 = evidence.iter().find(|e| e.gate_id == "F-CONTRACT-I4-001");
     assert!(i4.is_some());
     assert_eq!(i4.unwrap().outcome, Outcome::Corroborated);
 }
 
+/// Verify I-4 statistical preservation test fails with stats failure mock
 #[test]
 fn test_contract_i4_statistical_preservation_fail() {
     use crate::command::MockCommandRunner;
-
     let runner: Arc<dyn CommandRunner> =
         Arc::new(MockCommandRunner::new().with_validate_stats_failure());
     let model_id = ModelId::new("test", "model");
-    let config = ContractTestConfig {
-        invariants: vec!["I-4".to_string()],
-    };
-
+    let config = ContractTestConfig { invariants: vec!["I-4".to_string()] };
     let evidence = run_contract_tests(
-        &runner,
-        Path::new("/test/workspace/org/model"),
-        &model_id,
-        &config,
+        &runner, Path::new("/test/workspace/org/model"), &model_id, &config,
     );
-
     let i4 = evidence.iter().find(|e| e.gate_id == "F-CONTRACT-I4-001");
     assert!(i4.is_some());
     assert_eq!(i4.unwrap().outcome, Outcome::Falsified);
 }
 
+/// Verify I-5 tokenizer roundtrip test passes with mock runner
 #[test]
 fn test_contract_i5_tokenizer_roundtrip_pass() {
     use crate::command::MockCommandRunner;
-
     let runner: Arc<dyn CommandRunner> = Arc::new(MockCommandRunner::new());
     let model_id = ModelId::new("test", "model");
-    let config = ContractTestConfig {
-        invariants: vec!["I-5".to_string()],
-    };
-
+    let config = ContractTestConfig { invariants: vec!["I-5".to_string()] };
     let evidence = run_contract_tests(
-        &runner,
-        Path::new("/test/workspace/org/model"),
-        &model_id,
-        &config,
+        &runner, Path::new("/test/workspace/org/model"), &model_id, &config,
     );
-
     let i5 = evidence.iter().find(|e| e.gate_id == "F-CONTRACT-I5-001");
     assert!(i5.is_some());
     assert_eq!(i5.unwrap().outcome, Outcome::Corroborated);
 }
 
+/// Verify I-5 tokenizer roundtrip test fails with inference failure mock
 #[test]
 fn test_contract_i5_tokenizer_roundtrip_fail() {
     use crate::command::MockCommandRunner;
-
     let runner: Arc<dyn CommandRunner> =
         Arc::new(MockCommandRunner::new().with_compare_inference_failure());
     let model_id = ModelId::new("test", "model");
-    let config = ContractTestConfig {
-        invariants: vec!["I-5".to_string()],
-    };
-
+    let config = ContractTestConfig { invariants: vec!["I-5".to_string()] };
     let evidence = run_contract_tests(
-        &runner,
-        Path::new("/test/workspace/org/model"),
-        &model_id,
-        &config,
+        &runner, Path::new("/test/workspace/org/model"), &model_id, &config,
     );
-
     let i5 = evidence.iter().find(|e| e.gate_id == "F-CONTRACT-I5-001");
     assert!(i5.is_some());
     assert_eq!(i5.unwrap().outcome, Outcome::Falsified);
 }
 
+/// Verify all default invariants (I-2 through I-5) pass with mock runner
 #[test]
 fn test_contract_all_invariants_pass() {
     use crate::command::MockCommandRunner;
-
     let runner: Arc<dyn CommandRunner> = Arc::new(MockCommandRunner::new());
     let model_id = ModelId::new("test", "model");
-    let config = ContractTestConfig::default();
-
     let evidence = run_contract_tests(
-        &runner,
-        Path::new("/test/workspace/org/model"),
-        &model_id,
-        &config,
+        &runner, Path::new("/test/workspace/org/model"), &model_id,
+        &ContractTestConfig::default(),
     );
-
-    // Should have 4 results (I-2 through I-5)
     assert_eq!(evidence.len(), 4);
     for ev in &evidence {
-        assert_eq!(
-            ev.outcome,
-            Outcome::Corroborated,
-            "Gate {} should pass",
-            ev.gate_id
-        );
+        assert_eq!(ev.outcome, Outcome::Corroborated, "Gate {} should pass", ev.gate_id);
     }
 }
 
+/// Verify I-1 is skipped when included in config (handled by golden rule)
 #[test]
 fn test_contract_skips_i1() {
     use crate::command::MockCommandRunner;
-
     let runner: Arc<dyn CommandRunner> = Arc::new(MockCommandRunner::new());
     let model_id = ModelId::new("test", "model");
     let config = ContractTestConfig {
         invariants: vec!["I-1".to_string(), "I-2".to_string()],
     };
-
     let evidence = run_contract_tests(
-        &runner,
-        Path::new("/test/workspace/org/model"),
-        &model_id,
-        &config,
+        &runner, Path::new("/test/workspace/org/model"), &model_id, &config,
     );
-
-    // I-1 should be skipped (handled by golden rule test)
     assert_eq!(evidence.len(), 1);
     assert_eq!(evidence[0].gate_id, "F-CONTRACT-I2-001");
 }
 
+/// Verify unknown invariant labels are silently skipped
 #[test]
 fn test_contract_unknown_invariant_skipped() {
     use crate::command::MockCommandRunner;
-
     let runner: Arc<dyn CommandRunner> = Arc::new(MockCommandRunner::new());
     let model_id = ModelId::new("test", "model");
-    let config = ContractTestConfig {
-        invariants: vec!["I-99".to_string()],
-    };
-
+    let config = ContractTestConfig { invariants: vec!["I-99".to_string()] };
     let evidence = run_contract_tests(
-        &runner,
-        Path::new("/test/workspace/org/model"),
-        &model_id,
-        &config,
+        &runner, Path::new("/test/workspace/org/model"), &model_id, &config,
     );
-
     assert!(evidence.is_empty());
 }
 
+/// Verify path resolution avoids dot-in-name regression for model directories
 #[test]
 fn test_resolve_paths_with_dots_in_name() {
     // Regression: Qwen2.5-Coder-0.5B-Instruct contains dots which caused
@@ -495,4 +437,3 @@ fn test_resolve_paths_with_dots_in_name() {
         PathBuf::from("/output/workspace/Qwen/Qwen2.5-Coder-0.apr")
     );
 }
-

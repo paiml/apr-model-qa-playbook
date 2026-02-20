@@ -123,7 +123,9 @@ pub enum ProvenanceError {
     },
 }
 
+/// Display provenance errors with their error code prefix
 impl std::fmt::Display for ProvenanceError {
+    /// Format the error with its PROV-NNN code and descriptive message
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::SourceMismatch {
@@ -191,6 +193,7 @@ impl std::fmt::Display for ProvenanceError {
     }
 }
 
+/// Enable ProvenanceError to be used as a standard error type
 impl std::error::Error for ProvenanceError {}
 
 /// Load provenance from a model directory

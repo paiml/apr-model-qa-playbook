@@ -15,6 +15,7 @@ use apr_qa_report::popperian::PopperianCalculator;
 use apr_qa_report::{CertificateGenerator, MqsCalculator};
 use apr_qa_runner::{Evidence, EvidenceCollector};
 
+/// Generate a sample model certification certificate and print it
 fn main() {
     let model_id = "Qwen/Qwen2.5-Coder-0.5B-Instruct";
     let version = "1.0.0";
@@ -77,6 +78,7 @@ fn main() {
     }
 }
 
+/// Add gateway evidence (G1-G4) to the evidence collector
 fn add_gateway_evidence(collector: &mut EvidenceCollector, model: &ModelId) {
     // G1: Model loads
     collector.add(Evidence::corroborated(
@@ -111,6 +113,7 @@ fn add_gateway_evidence(collector: &mut EvidenceCollector, model: &ModelId) {
     ));
 }
 
+/// Add verification matrix evidence (F-INT, F-API, F-NUM, F-SEC, F-PAR, F-PERF)
 fn add_verification_evidence(collector: &mut EvidenceCollector, model: &ModelId) {
     // F-INT-001..005: Fundamental Integrity
     for i in 1..=5 {
@@ -173,6 +176,7 @@ fn add_verification_evidence(collector: &mut EvidenceCollector, model: &ModelId)
     }
 }
 
+/// Create a QA scenario with default CPU/GGUF/Run settings
 fn create_scenario(model: &ModelId, prompt: &str) -> QaScenario {
     QaScenario::new(
         model.clone(),

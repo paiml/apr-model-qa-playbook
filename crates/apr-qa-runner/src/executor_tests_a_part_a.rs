@@ -1,3 +1,4 @@
+/// Verify executor dry run skips scenarios and passes G0-PULL
 #[test]
 fn test_executor_dry_run() {
     let mock_runner = MockCommandRunner::new();
@@ -15,6 +16,7 @@ fn test_executor_dry_run() {
     assert!(result.passed >= 1);
 }
 
+/// Verify pass_rate computes correct percentage from passed and total
 #[test]
 fn test_execution_result_pass_rate() {
     let result = ExecutionResult {
@@ -31,6 +33,7 @@ fn test_execution_result_pass_rate() {
     assert!((result.pass_rate() - 95.0).abs() < f64::EPSILON);
 }
 
+/// Verify StopOnFirst failure policy is correctly stored in config
 #[test]
 fn test_failure_policy_stop_on_first() {
     let config = ExecutionConfig {
@@ -41,6 +44,7 @@ fn test_failure_policy_stop_on_first() {
     assert_eq!(executor.config.failure_policy, FailurePolicy::StopOnFirst);
 }
 
+/// Verify ExecutionConfig defaults to StopOnP0 policy and 60s timeout
 #[test]
 fn test_execution_config_default() {
     let config = ExecutionConfig::default();
@@ -50,12 +54,14 @@ fn test_execution_config_default() {
     assert!(!config.dry_run);
 }
 
+/// Verify Executor::default uses StopOnP0 policy
 #[test]
 fn test_executor_default() {
     let executor = Executor::default();
     assert_eq!(executor.config.failure_policy, FailurePolicy::StopOnP0);
 }
 
+/// Verify new executor starts with empty evidence
 #[test]
 fn test_executor_evidence() {
     let executor = Executor::new();
@@ -63,6 +69,7 @@ fn test_executor_evidence() {
     assert_eq!(evidence.all().len(), 0);
 }
 
+/// Verify is_success returns true only when failed is 0 and no gateway failure
 #[test]
 fn test_execution_result_is_success() {
     let success = ExecutionResult {
@@ -102,6 +109,7 @@ fn test_execution_result_is_success() {
     assert!(!with_gateway_failure.is_success());
 }
 
+/// Verify pass_rate returns 0.0 when total_scenarios is zero
 #[test]
 fn test_execution_result_pass_rate_zero() {
     let result = ExecutionResult {
@@ -117,12 +125,14 @@ fn test_execution_result_pass_rate_zero() {
     assert!((result.pass_rate() - 0.0).abs() < f64::EPSILON);
 }
 
+/// Verify FailurePolicy default is StopOnP0
 #[test]
 fn test_failure_policy_default() {
     let policy = FailurePolicy::default();
     assert_eq!(policy, FailurePolicy::StopOnP0);
 }
 
+/// Verify FailurePolicy Debug implementation
 #[test]
 fn test_failure_policy_debug() {
     let policy = FailurePolicy::CollectAll;
@@ -130,6 +140,7 @@ fn test_failure_policy_debug() {
     assert!(debug_str.contains("CollectAll"));
 }
 
+/// Verify executor accepts CollectAll policy
 #[test]
 fn test_executor_with_collect_all_policy() {
     let config = ExecutionConfig {
@@ -140,6 +151,7 @@ fn test_executor_with_collect_all_policy() {
     assert_eq!(executor.config.failure_policy, FailurePolicy::CollectAll);
 }
 
+/// Verify executor accepts StopOnP0 policy
 #[test]
 fn test_executor_with_stop_on_p0_policy() {
     let config = ExecutionConfig {
@@ -150,6 +162,7 @@ fn test_executor_with_stop_on_p0_policy() {
     assert_eq!(executor.config.failure_policy, FailurePolicy::StopOnP0);
 }
 
+/// Verify ExecutionConfig clone preserves all fields
 #[test]
 fn test_executor_config_clone() {
     let config = ExecutionConfig::default();
@@ -158,6 +171,7 @@ fn test_executor_config_clone() {
     assert_eq!(cloned.max_workers, config.max_workers);
 }
 
+/// Verify ExecutionResult clone preserves all fields
 #[test]
 fn test_execution_result_clone() {
     let result = ExecutionResult {
@@ -175,6 +189,7 @@ fn test_execution_result_clone() {
     assert_eq!(cloned.total_scenarios, result.total_scenarios);
 }
 
+/// Verify check_gateways passes for a valid playbook
 #[test]
 fn test_check_gateways() {
     let executor = Executor::new();
@@ -184,6 +199,7 @@ fn test_check_gateways() {
     assert!(result.is_ok());
 }
 
+/// Verify Executor Debug implementation
 #[test]
 fn test_executor_debug() {
     let executor = Executor::new();
@@ -191,6 +207,7 @@ fn test_executor_debug() {
     assert!(debug_str.contains("Executor"));
 }
 
+/// Verify ExecutionConfig Debug implementation
 #[test]
 fn test_execution_config_debug() {
     let config = ExecutionConfig::default();
@@ -198,6 +215,7 @@ fn test_execution_config_debug() {
     assert!(debug_str.contains("ExecutionConfig"));
 }
 
+/// Verify ExecutionResult Debug implementation
 #[test]
 fn test_execution_result_debug() {
     let result = ExecutionResult {
@@ -214,12 +232,14 @@ fn test_execution_result_debug() {
     assert!(debug_str.contains("ExecutionResult"));
 }
 
+/// Verify FailurePolicy equality comparisons
 #[test]
 fn test_failure_policy_eq() {
     assert_eq!(FailurePolicy::StopOnFirst, FailurePolicy::StopOnFirst);
     assert_ne!(FailurePolicy::StopOnFirst, FailurePolicy::CollectAll);
 }
 
+/// Verify FailurePolicy Copy semantics
 #[test]
 fn test_failure_policy_clone() {
     let policy = FailurePolicy::StopOnP0;
@@ -227,6 +247,7 @@ fn test_failure_policy_clone() {
     assert_eq!(policy, cloned);
 }
 
+/// Verify FailFast emits diagnostic and stops on any failure
 #[test]
 fn test_failure_policy_fail_fast() {
     let policy = FailurePolicy::FailFast;
@@ -234,6 +255,7 @@ fn test_failure_policy_fail_fast() {
     assert!(policy.stops_on_any_failure());
 }
 
+/// Verify emit_diagnostic returns true only for FailFast
 #[test]
 fn test_failure_policy_emit_diagnostic() {
     assert!(FailurePolicy::FailFast.emit_diagnostic());
@@ -242,6 +264,7 @@ fn test_failure_policy_emit_diagnostic() {
     assert!(!FailurePolicy::CollectAll.emit_diagnostic());
 }
 
+/// Verify stops_on_any_failure returns true for FailFast and StopOnFirst
 #[test]
 fn test_failure_policy_stops_on_any_failure() {
     assert!(FailurePolicy::FailFast.stops_on_any_failure());
@@ -250,6 +273,7 @@ fn test_failure_policy_stops_on_any_failure() {
     assert!(!FailurePolicy::CollectAll.stops_on_any_failure());
 }
 
+/// Verify custom timeout is stored in config
 #[test]
 fn test_executor_custom_timeout() {
     let config = ExecutionConfig {
@@ -260,6 +284,7 @@ fn test_executor_custom_timeout() {
     assert_eq!(executor.config.default_timeout_ms, 30_000);
 }
 
+/// Verify custom worker count is stored in config
 #[test]
 fn test_executor_custom_workers() {
     let config = ExecutionConfig {
@@ -270,6 +295,7 @@ fn test_executor_custom_workers() {
     assert_eq!(executor.config.max_workers, 8);
 }
 
+/// Verify passed ToolTestResult converts to corroborated evidence
 #[test]
 fn test_tool_test_result_to_evidence_passed() {
     let result = ToolTestResult {
@@ -289,6 +315,7 @@ fn test_tool_test_result_to_evidence_passed() {
     assert_eq!(evidence.gate_id, "F-INSPECT-001");
 }
 
+/// Verify failed ToolTestResult converts to falsified evidence with reason
 #[test]
 fn test_tool_test_result_to_evidence_failed() {
     let result = ToolTestResult {
@@ -308,6 +335,7 @@ fn test_tool_test_result_to_evidence_failed() {
     assert!(!evidence.reason.is_empty());
 }
 
+/// Verify ToolTestResult clone preserves all fields
 #[test]
 fn test_tool_test_result_clone() {
     let result = ToolTestResult {
@@ -326,6 +354,7 @@ fn test_tool_test_result_clone() {
     assert_eq!(cloned.exit_code, result.exit_code);
 }
 
+/// Verify ToolTestResult Debug implementation
 #[test]
 fn test_tool_test_result_debug() {
     let result = ToolTestResult {
@@ -343,12 +372,14 @@ fn test_tool_test_result_debug() {
     assert!(debug_str.contains("profile"));
 }
 
+/// Verify ToolExecutor::new stores model path and no_gpu flag
 #[test]
 fn test_tool_executor_new() {
     let executor = ToolExecutor::new("/path/to/model.gguf".to_string(), true, 60_000);
     assert!(executor.no_gpu);
 }
 
+/// Verify no_gpu flag is stored in ExecutionConfig
 #[test]
 fn test_execution_config_no_gpu() {
     let config = ExecutionConfig {
@@ -358,6 +389,7 @@ fn test_execution_config_no_gpu() {
     assert!(config.no_gpu);
 }
 
+/// Verify conversion tests default to enabled and can be disabled
 #[test]
 fn test_execution_config_conversion_tests() {
     // Default should have conversion tests enabled
@@ -372,6 +404,7 @@ fn test_execution_config_conversion_tests() {
     assert!(!config_disabled.run_conversion_tests);
 }
 
+/// Verify skipped scenarios are tracked separately from passed and failed
 #[test]
 fn test_execution_result_with_skipped() {
     let result = ExecutionResult {
@@ -390,6 +423,7 @@ fn test_execution_result_with_skipped() {
     assert_eq!(executed, 7);
 }
 
+/// Verify executor config method returns reference to stored config
 #[test]
 fn test_executor_config_method() {
     let executor = Executor::new();
@@ -397,6 +431,7 @@ fn test_executor_config_method() {
     assert_eq!(config.failure_policy, FailurePolicy::StopOnP0);
 }
 
+/// Verify differential testing defaults are enabled except profile_ci
 #[test]
 fn test_execution_config_differential_defaults() {
     let config = ExecutionConfig::default();

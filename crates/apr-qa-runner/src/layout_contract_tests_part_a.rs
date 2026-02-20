@@ -1,3 +1,4 @@
+/// Verify is_2d_shape accepts two-element shapes and rejects others
 #[test]
 fn test_is_2d_shape() {
     assert!(is_2d_shape("[vocab, hidden]"));
@@ -6,6 +7,7 @@ fn test_is_2d_shape() {
     assert!(!is_2d_shape("[a, b, c]"));
 }
 
+/// Verify parse_shape_dims extracts dimension names from bracket notation
 #[test]
 fn test_parse_shape_dims() {
     let dims = parse_shape_dims("[vocab, hidden]");
@@ -15,12 +17,14 @@ fn test_parse_shape_dims() {
     assert_eq!(dims, vec!["hidden"]);
 }
 
+/// Verify load_contract_from returns error for nonexistent path
 #[test]
 fn test_load_contract_missing_file() {
     let result = load_contract_from("/nonexistent/path.yaml");
     assert!(result.is_err());
 }
 
+/// Verify validate_model reports critical failure for nonexistent model path
 #[test]
 fn test_validate_model_missing_file() {
     // Create a minimal contract for testing
@@ -53,6 +57,7 @@ fn test_validate_model_missing_file() {
     assert!(!result.critical_failures.is_empty());
 }
 
+/// Verify get_critical_tensors filters to only tensors marked as critical
 #[test]
 fn test_get_critical_tensors() {
     let mut tensors = HashMap::new();
@@ -120,6 +125,7 @@ fn test_get_critical_tensors() {
 // Helper: create a minimal TensorLayoutContract for testing
 // ========================================================================
 
+/// Create a minimal TensorLayoutContract for testing
 fn make_contract() -> TensorLayoutContract {
     TensorLayoutContract {
         metadata: ContractMetadata {
@@ -144,6 +150,7 @@ fn make_contract() -> TensorLayoutContract {
     }
 }
 
+/// Create a test TensorSpec with given name, shape, and transpose flag
 fn make_spec(apr_name: &str, apr_shape: &str, transpose: bool) -> TensorSpec {
     TensorSpec {
         gguf_name: "test".to_string(),
@@ -160,6 +167,7 @@ fn make_spec(apr_name: &str, apr_shape: &str, transpose: bool) -> TensorSpec {
     }
 }
 
+/// Create a fully-populated LayoutModelConfig for testing dimension resolution
 fn make_config_full() -> LayoutModelConfig {
     LayoutModelConfig {
         vocab_size: Some(32000),
@@ -206,18 +214,21 @@ fn create_test_safetensors(path: &Path, tensors: &[(&str, &[usize])]) {
 // 1. get_usize
 // ========================================================================
 
+/// Verify get_usize extracts a valid usize from JSON
 #[test]
 fn test_get_usize_valid() {
     let json = serde_json::json!({"vocab_size": 32000});
     assert_eq!(get_usize(&json, "vocab_size"), Some(32000));
 }
 
+/// Verify get_usize returns None for a missing JSON key
 #[test]
 fn test_get_usize_missing() {
     let json = serde_json::json!({"vocab_size": 32000});
     assert_eq!(get_usize(&json, "hidden_size"), None);
 }
 
+/// Verify get_usize returns None when the JSON value is a string, not a number
 #[test]
 fn test_get_usize_not_number() {
     let json = serde_json::json!({"vocab_size": "not_a_number"});
@@ -228,6 +239,7 @@ fn test_get_usize_not_number() {
 // 2. resolve_dimension
 // ========================================================================
 
+/// Verify resolve_dimension resolves vocab and vocab_size aliases
 #[test]
 fn test_resolve_dimension_vocab() {
     let config = make_config_full();
@@ -235,6 +247,7 @@ fn test_resolve_dimension_vocab() {
     assert_eq!(resolve_dimension("vocab_size", &config), Some(32000));
 }
 
+/// Verify resolve_dimension resolves hidden, hidden_dim, and hidden_size aliases
 #[test]
 fn test_resolve_dimension_hidden() {
     let config = make_config_full();
@@ -243,6 +256,7 @@ fn test_resolve_dimension_hidden() {
     assert_eq!(resolve_dimension("hidden_size", &config), Some(4096));
 }
 
+/// Verify resolve_dimension resolves intermediate size aliases
 #[test]
 fn test_resolve_dimension_intermediate() {
     let config = make_config_full();
@@ -251,6 +265,7 @@ fn test_resolve_dimension_intermediate() {
     assert_eq!(resolve_dimension("intermediate_size", &config), Some(11008));
 }
 
+/// Verify resolve_dimension resolves attention head count aliases
 #[test]
 fn test_resolve_dimension_heads() {
     let config = make_config_full();
@@ -259,6 +274,7 @@ fn test_resolve_dimension_heads() {
     assert_eq!(resolve_dimension("num_attention_heads", &config), Some(32));
 }
 
+/// Verify resolve_dimension resolves key-value head count aliases
 #[test]
 fn test_resolve_dimension_kv_heads() {
     let config = make_config_full();
@@ -267,6 +283,7 @@ fn test_resolve_dimension_kv_heads() {
     assert_eq!(resolve_dimension("num_key_value_heads", &config), Some(8));
 }
 
+/// Verify resolve_dimension computes head_dim as hidden_size / num_attention_heads
 #[test]
 fn test_resolve_dimension_head_dim() {
     let config = make_config_full();
@@ -274,6 +291,7 @@ fn test_resolve_dimension_head_dim() {
     assert_eq!(resolve_dimension("head_dim", &config), Some(128));
 }
 
+/// Verify resolve_dimension returns None for head_dim when num_heads is zero
 #[test]
 fn test_resolve_dimension_head_dim_zero_heads() {
     let config = LayoutModelConfig {
@@ -285,6 +303,7 @@ fn test_resolve_dimension_head_dim_zero_heads() {
     assert_eq!(resolve_dimension("head_dim", &config), None);
 }
 
+/// Verify resolve_dimension returns None for head_dim when required fields are missing
 #[test]
 fn test_resolve_dimension_head_dim_missing_fields() {
     // Missing hidden_size
@@ -302,6 +321,7 @@ fn test_resolve_dimension_head_dim_missing_fields() {
     assert_eq!(resolve_dimension("head_dim", &config2), None);
 }
 
+/// Verify resolve_dimension parses numeric string literals directly
 #[test]
 fn test_resolve_dimension_numeric() {
     let config = LayoutModelConfig::default();
@@ -309,6 +329,7 @@ fn test_resolve_dimension_numeric() {
     assert_eq!(resolve_dimension("0", &config), Some(0));
 }
 
+/// Verify resolve_dimension evaluates heads*head_dim multiplication expression
 #[test]
 fn test_resolve_dimension_expression_heads_times_head_dim() {
     let config = make_config_full();
@@ -316,6 +337,7 @@ fn test_resolve_dimension_expression_heads_times_head_dim() {
     assert_eq!(resolve_dimension("heads*head_dim", &config), Some(32 * 128));
 }
 
+/// Verify resolve_dimension evaluates kv_heads*head_dim multiplication expression
 #[test]
 fn test_resolve_dimension_expression_kv_heads_times_head_dim() {
     let config = make_config_full();
@@ -326,6 +348,7 @@ fn test_resolve_dimension_expression_kv_heads_times_head_dim() {
     );
 }
 
+/// Verify resolve_dimension returns None for expressions with missing operands
 #[test]
 fn test_resolve_dimension_expression_with_missing() {
     let config = LayoutModelConfig::default();
@@ -333,12 +356,14 @@ fn test_resolve_dimension_expression_with_missing() {
     assert_eq!(resolve_dimension("heads*head_dim", &config), None);
 }
 
+/// Verify resolve_dimension returns None for unrecognized dimension names
 #[test]
 fn test_resolve_dimension_unknown() {
     let config = LayoutModelConfig::default();
     assert_eq!(resolve_dimension("foobar", &config), None);
 }
 
+/// Verify resolve_dimension returns None for unsupported triple-part expressions
 #[test]
 fn test_resolve_dimension_expression_triple_star() {
     // "a*b*c" => 3 parts, not 2, so None
@@ -350,6 +375,7 @@ fn test_resolve_dimension_expression_triple_star() {
 // 3. parse_expected_shape
 // ========================================================================
 
+/// Verify parse_expected_shape resolves a valid 2D shape to concrete dimensions
 #[test]
 fn test_parse_expected_shape_valid() {
     let config = make_config_full();
@@ -357,6 +383,7 @@ fn test_parse_expected_shape_valid() {
     assert_eq!(result, Some((32000, 4096)));
 }
 
+/// Verify parse_expected_shape returns None when one dimension is unresolvable
 #[test]
 fn test_parse_expected_shape_incomplete() {
     // vocab resolves, but "unknown_dim" does not => None
@@ -365,6 +392,7 @@ fn test_parse_expected_shape_incomplete() {
     assert_eq!(result, None);
 }
 
+/// Verify parse_expected_shape returns None for non-2D shapes
 #[test]
 fn test_parse_expected_shape_non_2d() {
     let config = make_config_full();
@@ -376,6 +404,7 @@ fn test_parse_expected_shape_non_2d() {
     assert_eq!(result, None);
 }
 
+/// Verify parse_expected_shape evaluates multiplication expressions in shapes
 #[test]
 fn test_parse_expected_shape_with_expression() {
     let config = make_config_full();
@@ -388,6 +417,7 @@ fn test_parse_expected_shape_with_expression() {
 // 4. validate_lm_head_shape
 // ========================================================================
 
+/// Verify validate_lm_head_shape rejects non-2D tensors
 #[test]
 fn test_validate_lm_head_shape_not_2d() {
     let config = make_config_full();
@@ -398,6 +428,7 @@ fn test_validate_lm_head_shape_not_2d() {
     assert!(result.details.contains("must be 2D"));
 }
 
+/// Verify validate_lm_head_shape passes for correct [vocab, hidden] shape
 #[test]
 fn test_validate_lm_head_shape_valid() {
     let config = make_config_full();
@@ -407,6 +438,7 @@ fn test_validate_lm_head_shape_valid() {
     assert!(result.details.contains("shape correct"));
 }
 
+/// Verify validate_lm_head_shape detects transposed [hidden, vocab] shape
 #[test]
 fn test_validate_lm_head_shape_invalid() {
     let config = make_config_full();
@@ -417,6 +449,7 @@ fn test_validate_lm_head_shape_invalid() {
     assert!(result.details.contains("MISMATCH"));
 }
 
+/// Verify validate_lm_head_shape validates partial config with only vocab_size known
 #[test]
 fn test_validate_lm_head_shape_partial_vocab_only() {
     let config = LayoutModelConfig {
@@ -432,6 +465,7 @@ fn test_validate_lm_head_shape_partial_vocab_only() {
     assert!(!result.passed);
 }
 
+/// Verify validate_lm_head_shape validates partial config with only hidden_size known
 #[test]
 fn test_validate_lm_head_shape_partial_hidden_only() {
     let config = LayoutModelConfig {

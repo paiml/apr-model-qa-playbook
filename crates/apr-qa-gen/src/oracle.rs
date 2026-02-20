@@ -86,6 +86,7 @@ impl ArithmeticOracle {
 }
 
 impl Oracle for ArithmeticOracle {
+    /// Evaluate arithmetic correctness by checking if output contains expected value
     fn evaluate(&self, prompt: &str, output: &str) -> OracleResult {
         // Try to extract arithmetic expression from prompt
         let Some(expected) = Self::eval_arithmetic(prompt) else {
@@ -108,6 +109,7 @@ impl Oracle for ArithmeticOracle {
         }
     }
 
+    /// Return the oracle identifier
     fn name(&self) -> &'static str {
         "arithmetic"
     }
@@ -126,6 +128,7 @@ impl GarbageOracle {
 }
 
 impl Oracle for GarbageOracle {
+    /// Check output for garbage patterns including empty, control chars, NaN, and repetition
     fn evaluate(&self, _prompt: &str, output: &str) -> OracleResult {
         // Check for empty output
         if output.trim().is_empty() {
@@ -176,6 +179,7 @@ impl Oracle for GarbageOracle {
         }
     }
 
+    /// Return the oracle identifier
     fn name(&self) -> &'static str {
         "garbage"
     }
@@ -194,6 +198,7 @@ impl CodeSyntaxOracle {
 }
 
 impl Oracle for CodeSyntaxOracle {
+    /// Verify output contains code-like patterns after garbage check
     #[allow(clippy::used_underscore_binding)]
     fn evaluate(&self, _prompt: &str, output: &str) -> OracleResult {
         // First check for garbage
@@ -247,6 +252,7 @@ impl Oracle for CodeSyntaxOracle {
         }
     }
 
+    /// Return the oracle identifier
     fn name(&self) -> &'static str {
         "code_syntax"
     }
@@ -254,11 +260,14 @@ impl Oracle for CodeSyntaxOracle {
 
 /// Combined oracle that runs multiple oracles
 pub struct CompositeOracle {
+    /// Oracle display name
     name: &'static str,
+    /// Child oracles evaluated in order
     oracles: Vec<Box<dyn Oracle + Send + Sync>>,
 }
 
 impl std::fmt::Debug for CompositeOracle {
+    /// Format the composite oracle showing name and child count
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("CompositeOracle")
             .field("name", &self.name)
@@ -285,20 +294,24 @@ impl CompositeOracle {
 }
 
 // We need a wrapper to make the oracles cloneable
+/// Wrapper to enable cloning of boxed oracle trait objects
 #[allow(dead_code)]
 struct OracleWrapper<O: Oracle + Clone>(O);
 
 impl<O: Oracle + Clone> Oracle for OracleWrapper<O> {
+    /// Delegate evaluation to the wrapped oracle
     fn evaluate(&self, prompt: &str, output: &str) -> OracleResult {
         self.0.evaluate(prompt, output)
     }
 
+    /// Return the wrapped oracle's name
     fn name(&self) -> &'static str {
         self.0.name()
     }
 }
 
 impl Oracle for CompositeOracle {
+    /// Evaluate all child oracles, returning first falsification or overall corroboration
     fn evaluate(&self, prompt: &str, output: &str) -> OracleResult {
         for oracle in &self.oracles {
             if let result @ OracleResult::Falsified { .. } = oracle.evaluate(prompt, output) {
@@ -310,6 +323,7 @@ impl Oracle for CompositeOracle {
         }
     }
 
+    /// Return the composite oracle's name
     fn name(&self) -> &'static str {
         self.name
     }

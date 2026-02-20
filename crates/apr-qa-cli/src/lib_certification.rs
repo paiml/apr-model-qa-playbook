@@ -195,6 +195,7 @@ pub fn generate_lock_file(dir: &Path, output: &Path) -> Result<usize, String> {
     use std::collections::HashMap;
 
     // Walk directory for .playbook.yaml files
+    /// Recursively walk a directory collecting playbook lock entries
     fn walk_dir(dir: &Path, entries: &mut HashMap<String, apr_qa_runner::PlaybookLockEntry>) {
         let Ok(read_dir) = std::fs::read_dir(dir) else {
             return;

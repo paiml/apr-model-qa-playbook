@@ -53,6 +53,7 @@ pub fn render_ticket_template<S: ::std::hash::BuildHasher>(
 mod tests {
     use super::*;
 
+    /// Verify the embedded defect fixture map loads with all expected keys
     #[test]
     fn test_load_defect_fixture_map() {
         let map = load_defect_fixture_map().expect("should load embedded map");
@@ -64,6 +65,7 @@ mod tests {
         assert_eq!(map.len(), 5);
     }
 
+    /// Verify tensor_name_mismatch entry has correct fixture and builder
     #[test]
     fn test_entry_fields_populated() {
         let map = load_defect_fixture_map().expect("load map");
@@ -73,6 +75,7 @@ mod tests {
         assert!(entry.ticket_template.contains("Tensor Name Mismatch"));
     }
 
+    /// Verify dequantization_failure entry has correct fixture path
     #[test]
     fn test_dequantization_entry() {
         let map = load_defect_fixture_map().expect("load map");
@@ -85,6 +88,7 @@ mod tests {
         assert!(entry.ticket_template.contains("Dequantization Failure"));
     }
 
+    /// Verify all ConversionFailureType variants map to correct keys
     #[test]
     fn test_failure_type_to_key_mapping() {
         assert_eq!(
@@ -113,6 +117,7 @@ mod tests {
         );
     }
 
+    /// Verify basic template rendering substitutes all placeholders
     #[test]
     fn test_render_ticket_template_basic() {
         let template = "Model: {model_id}, Error: {error}";
@@ -124,6 +129,7 @@ mod tests {
         assert_eq!(rendered, "Model: test/model, Error: tensor mismatch");
     }
 
+    /// Verify unknown placeholders are preserved in rendered output
     #[test]
     fn test_render_ticket_template_missing_field() {
         let template = "Model: {model_id}, Missing: {unknown}";
@@ -135,6 +141,7 @@ mod tests {
         assert_eq!(rendered, "Model: test/model, Missing: {unknown}");
     }
 
+    /// Verify full template rendering with real defect fixture map entry
     #[test]
     fn test_render_ticket_template_full() {
         let map = load_defect_fixture_map().expect("load map");
@@ -154,6 +161,7 @@ mod tests {
         assert!(rendered.contains("test/model"));
     }
 
+    /// Verify DefectFixtureEntry survives JSON serialization roundtrip
     #[test]
     fn test_defect_fixture_entry_serde_roundtrip() {
         let entry = DefectFixtureEntry {

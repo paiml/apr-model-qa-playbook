@@ -33,6 +33,7 @@ fn auto_populate_model_cache(model_id: &str, model_dir: &std::path::Path, apr_bi
     link_safetensors_from_hf(model_id, home, &st_dir);
 }
 
+/// Execute `apr pull` to download the model into the local cache
 fn run_apr_pull(apr_binary: &str, model_id: &str) {
     println!("  Running: {apr_binary} pull {model_id}");
     let pull_status = std::process::Command::new(apr_binary)
@@ -48,6 +49,7 @@ fn run_apr_pull(apr_binary: &str, model_id: &str) {
     }
 }
 
+/// Create a symlink to the GGUF file from the pacha cache into the model cache
 fn link_gguf_from_pacha(model_id: &str, home: &std::path::Path, gguf_dir: &std::path::Path) {
     let manifest_path = home.join(".cache/pacha/models/manifest.json");
     let Some(gguf_path) = find_gguf_in_pacha(&manifest_path, model_id) else {
@@ -64,6 +66,7 @@ fn link_gguf_from_pacha(model_id: &str, home: &std::path::Path, gguf_dir: &std::
     }
 }
 
+/// Create symlinks to SafeTensors files and config.json from the HuggingFace cache
 fn link_safetensors_from_hf(model_id: &str, home: &std::path::Path, st_dir: &std::path::Path) {
     let (org, repo) = split_model_id(model_id);
     let hf_model_dir = home
@@ -191,6 +194,7 @@ fn export_csv(evidence_dir: &Path, output: &Path, append: bool) {
     println!("  New: {}", processed - updated);
 }
 
+/// Load existing CSV rows when appending, or return an empty vec
 fn load_existing_csv_rows(output: &Path, append: bool) -> Vec<apr_qa_report::CertificationRow> {
     use apr_qa_report::read_models_csv;
 
@@ -209,6 +213,7 @@ fn load_existing_csv_rows(output: &Path, append: bool) -> Vec<apr_qa_report::Cer
     }
 }
 
+/// Scan the evidence directory and upsert rows from each JSON evidence file
 fn process_evidence_files(
     evidence_dir: &Path,
     rows: &mut Vec<apr_qa_report::CertificationRow>,
@@ -248,6 +253,7 @@ fn process_evidence_files(
     (processed, updated)
 }
 
+/// Update or insert a certification row from an evidence export record
 #[allow(clippy::option_if_let_else, clippy::single_match_else)]
 fn update_row_from_export(
     rows: &mut Vec<apr_qa_report::CertificationRow>,
@@ -282,6 +288,7 @@ fn update_row_from_export(
     was_updated
 }
 
+/// Derive the model certification status from MQS score and gateway results
 #[allow(clippy::missing_const_for_fn)] // Can't be const due to internal use statement
 fn derive_status_from_mqs(mqs: &apr_qa_report::MqsExport) -> apr_qa_report::ModelStatus {
     use apr_qa_report::ModelStatus;
@@ -295,6 +302,7 @@ fn derive_status_from_mqs(mqs: &apr_qa_report::MqsExport) -> apr_qa_report::Mode
     }
 }
 
+/// Set per-gateway pass/fail flags (G1-G4) on the certification row
 fn update_gateway_flags(
     row: &mut apr_qa_report::CertificationRow,
     gates: &std::collections::HashMap<String, apr_qa_report::GateResult>,
@@ -313,6 +321,7 @@ fn update_gateway_flags(
     }
 }
 
+/// Create the parent directory for the given path if it does not exist
 fn ensure_parent_dir(path: &Path) {
     if let Some(parent) = path.parent() {
         if let Err(e) = std::fs::create_dir_all(parent) {

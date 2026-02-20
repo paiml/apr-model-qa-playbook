@@ -1,3 +1,4 @@
+/// Create a default test scenario for MQS test helpers
 fn test_scenario() -> QaScenario {
     QaScenario::new(
         ModelId::new("test", "model"),
@@ -9,14 +10,17 @@ fn test_scenario() -> QaScenario {
     )
 }
 
+/// Create a corroborated evidence entry for the given gate ID
 fn test_evidence_passed(gate_id: &str) -> Evidence {
     Evidence::corroborated(gate_id, test_scenario(), "4", 100)
 }
 
+/// Create a falsified evidence entry for the given gate ID
 fn test_evidence_failed(gate_id: &str) -> Evidence {
     Evidence::falsified(gate_id, test_scenario(), "Wrong answer", "5", 100)
 }
 
+/// Verify GatewayResult::passed creates a passing result with no failure reason
 #[test]
 fn test_gateway_result_passed() {
     let result = GatewayResult::passed("G1", "Model loads");
@@ -24,6 +28,7 @@ fn test_gateway_result_passed() {
     assert!(result.failure_reason.is_none());
 }
 
+/// Verify GatewayResult::failed creates a failing result with reason
 #[test]
 fn test_gateway_result_failed() {
     let result = GatewayResult::failed("G1", "Model loads", "OOM");
@@ -31,6 +36,7 @@ fn test_gateway_result_failed() {
     assert_eq!(result.failure_reason, Some("OOM".to_string()));
 }
 
+/// Verify CategoryScores::total sums all six category scores
 #[test]
 fn test_category_scores_total() {
     let scores = CategoryScores {
@@ -44,11 +50,13 @@ fn test_category_scores_total() {
     assert_eq!(scores.total(), 700);
 }
 
+/// Verify CategoryScores::MAX_TOTAL equals 1000
 #[test]
 fn test_category_scores_max() {
     assert_eq!(CategoryScores::MAX_TOTAL, 1000);
 }
 
+/// Verify all-passing evidence yields grade A+ with score 1000
 #[test]
 fn test_mqs_calculator_all_pass() {
     let calculator = MqsCalculator::new();
@@ -74,6 +82,7 @@ fn test_mqs_calculator_all_pass() {
     assert_eq!(score.grade, "A+");
 }
 
+/// Verify crash evidence triggers gateway failure with grade F
 #[test]
 fn test_mqs_calculator_gateway_failure() {
     let calculator = MqsCalculator::new();
@@ -98,6 +107,7 @@ fn test_mqs_calculator_gateway_failure() {
     assert_eq!(score.grade, "F");
 }
 
+/// Verify timeout evidence applies TIMEOUT penalty to score
 #[test]
 fn test_mqs_calculator_with_penalties() {
     let calculator = MqsCalculator::new();
@@ -126,6 +136,7 @@ fn test_mqs_calculator_with_penalties() {
     assert!(score.penalties.iter().any(|p| p.code == "TIMEOUT"));
 }
 
+/// Verify extract_category parses category from gate ID format
 #[test]
 fn test_extract_category() {
     assert_eq!(MqsCalculator::extract_category("F-QUAL-001"), "QUAL");
@@ -133,6 +144,7 @@ fn test_extract_category() {
     assert_eq!(MqsCalculator::extract_category("UNKNOWN"), "QUAL");
 }
 
+/// Verify proportional_score_or_full computes correct ratios
 #[test]
 fn test_proportional_score() {
     assert_eq!(MqsCalculator::proportional_score_or_full(10, 10, 200), 200);
@@ -141,6 +153,7 @@ fn test_proportional_score() {
     assert_eq!(MqsCalculator::proportional_score_or_full(0, 0, 200), 200);
 }
 
+/// Verify calculate_grade maps scores to correct letter grades
 #[test]
 fn test_grade_calculation() {
     assert_eq!(MqsCalculator::calculate_grade(100.0), "A+");
@@ -152,6 +165,7 @@ fn test_grade_calculation() {
     assert_eq!(MqsCalculator::calculate_grade(50.0), "F");
 }
 
+/// Verify qualifies returns true for passing gateways with C grade
 #[test]
 fn test_mqs_score_qualifies() {
     let score = MqsScore {
@@ -174,6 +188,7 @@ fn test_mqs_score_qualifies() {
     assert!(!score.is_production_ready());
 }
 
+/// Verify normalization provides diminishing returns with perfect at 100
 #[test]
 fn test_normalize_score_scaling() {
     let calc = MqsCalculator::new();
@@ -193,6 +208,7 @@ fn test_normalize_score_scaling() {
     assert!((perfect - 100.0).abs() < 0.01);
 }
 
+/// Verify calculate_grade covers all twelve grade levels from A+ to F
 #[test]
 fn test_grade_all_levels() {
     assert_eq!(MqsCalculator::calculate_grade(98.0), "A+");
@@ -210,6 +226,7 @@ fn test_grade_all_levels() {
     assert_eq!(MqsCalculator::calculate_grade(55.0), "F");
 }
 
+/// Verify is_production_ready returns true for A grade with passing gateways
 #[test]
 fn test_mqs_score_is_production_ready() {
     let score = MqsScore {
@@ -230,6 +247,7 @@ fn test_mqs_score_is_production_ready() {
     assert!(score.is_production_ready());
 }
 
+/// Verify qualifies returns false for low-scoring model
 #[test]
 fn test_mqs_score_not_qualifies() {
     let score = MqsScore {
@@ -250,6 +268,7 @@ fn test_mqs_score_not_qualifies() {
     assert!(!score.qualifies());
 }
 
+/// Verify qualifies returns false when gateways are not passed
 #[test]
 fn test_mqs_score_gateway_failed_not_qualifies() {
     let score = MqsScore {
@@ -270,12 +289,14 @@ fn test_mqs_score_gateway_failed_not_qualifies() {
     assert!(!score.qualifies());
 }
 
+/// Verify default CategoryScores total is zero
 #[test]
 fn test_category_scores_default() {
     let scores = CategoryScores::default();
     assert_eq!(scores.total(), 0);
 }
 
+/// Verify breakdown returns correct (score, max) pairs per category
 #[test]
 fn test_category_scores_breakdown() {
     let scores = CategoryScores {
@@ -295,6 +316,7 @@ fn test_category_scores_breakdown() {
     assert_eq!(breakdown.get("REGR"), Some(&(120, 150)));
 }
 
+/// Verify Penalty clone preserves all fields
 #[test]
 fn test_penalty_clone() {
     let penalty = Penalty {
@@ -307,6 +329,7 @@ fn test_penalty_clone() {
     assert_eq!(cloned.points, penalty.points);
 }
 
+/// Verify GatewayResult clone preserves id and passed fields
 #[test]
 fn test_gateway_result_clone() {
     let result = GatewayResult::passed("G1", "Test");
@@ -315,6 +338,7 @@ fn test_gateway_result_clone() {
     assert_eq!(cloned.passed, result.passed);
 }
 
+/// Verify MqsScore serializes to JSON with expected fields
 #[test]
 fn test_mqs_score_serialize() {
     let score = MqsScore {
@@ -337,26 +361,31 @@ fn test_mqs_score_serialize() {
     assert!(json.contains("800"));
 }
 
+/// Verify extract_category returns STAB for stability gate IDs
 #[test]
 fn test_extract_category_stab() {
     assert_eq!(MqsCalculator::extract_category("F-STAB-001"), "STAB");
 }
 
+/// Verify extract_category returns COMP for compliance gate IDs
 #[test]
 fn test_extract_category_comp() {
     assert_eq!(MqsCalculator::extract_category("F-COMP-001"), "COMP");
 }
 
+/// Verify extract_category returns EDGE for edge-case gate IDs
 #[test]
 fn test_extract_category_edge() {
     assert_eq!(MqsCalculator::extract_category("F-EDGE-001"), "EDGE");
 }
 
+/// Verify extract_category returns REGR for regression gate IDs
 #[test]
 fn test_extract_category_regr() {
     assert_eq!(MqsCalculator::extract_category("F-REGR-001"), "REGR");
 }
 
+/// Verify normalize_score returns 0.0 for zero raw score
 #[test]
 fn test_normalize_score_zero() {
     let calc = MqsCalculator::new();
@@ -364,6 +393,7 @@ fn test_normalize_score_zero() {
     assert_eq!(score, 0.0);
 }
 
+/// Verify check_gateways returns all five gateway results (G0-G4)
 #[test]
 fn test_mqs_calculator_check_gateways() {
     let calc = MqsCalculator::new();
@@ -374,18 +404,21 @@ fn test_mqs_calculator_check_gateways() {
     assert_eq!(gateways.len(), 5);
 }
 
+/// Verify with_failure_multiplier sets the failure penalty multiplier
 #[test]
 fn test_mqs_calculator_with_failure_multiplier() {
     let calc = MqsCalculator::new().with_failure_multiplier(2.0);
     assert_eq!(calc.failure_multiplier, 2.0);
 }
 
+/// Verify default MqsCalculator uses 1.5 failure multiplier
 #[test]
 fn test_mqs_calculator_default() {
     let calc = MqsCalculator::default();
     assert_eq!(calc.failure_multiplier, 1.5);
 }
 
+/// Verify MqsCalculator Debug format contains struct name
 #[test]
 fn test_mqs_calculator_debug() {
     let calc = MqsCalculator::new();
