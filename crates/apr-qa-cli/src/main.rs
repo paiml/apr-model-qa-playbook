@@ -426,6 +426,6 @@ enum Commands {
     },
 }
 
-include!("main_part_a.rs");
+include!("configuration.rs");
 include!("main_part_b.rs");
 include!("main_part_c.rs");

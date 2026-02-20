@@ -34,5 +34,5 @@ fn sample_provenance() -> Provenance {
 
 // PMAT-PROV-001: Reject certification with mismatched sources
 
-include!("provenance_tests_part_a.rs");
-include!("provenance_tests_part_b.rs");
+include!("f_prov_1.rs");
+include!("f_prov_2.rs");

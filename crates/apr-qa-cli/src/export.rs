@@ -331,4 +331,4 @@ fn ensure_parent_dir(path: &Path) {
     }
 }
 
-include!("export_part_a.rs");
+include!("contract.rs");
