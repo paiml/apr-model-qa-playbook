@@ -104,13 +104,18 @@ fn is_missing_artifact(s: &str) -> bool {
         || (s.contains("tokenizer") && !s.contains("mismatch"))
 }
 
+/// Config metadata keywords that indicate a metadata mismatch failure.
+const CONFIG_METADATA_KEYWORDS: &[&str] = &[
+    "hidden_size",
+    "num_layers",
+    "num_hidden_layers",
+    "vocab_size",
+    "metadata mismatch",
+    "config mismatch",
+];
+
 fn is_config_metadata_failure(s: &str) -> bool {
-    s.contains("hidden_size")
-        || s.contains("num_layers")
-        || s.contains("num_hidden_layers")
-        || s.contains("vocab_size")
-        || s.contains("metadata mismatch")
-        || s.contains("config mismatch")
+    CONFIG_METADATA_KEYWORDS.iter().any(|kw| s.contains(kw))
 }
 
 fn is_inference_failure(s: &str, exit_code: i32) -> bool {

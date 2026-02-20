@@ -247,17 +247,30 @@ pub fn generate_index_entry(mqs: &MqsScore) -> String {
     )
 }
 
-/// Get qualification status string
+/// Get qualification status string.
+///
+/// Six tiers:
+/// - Gateway failure  -> REJECTED (Gateway Failure)
+/// - Score >= 90      -> CERTIFIED
+/// - Score >= 80      -> CERTIFIED (Conditional)
+/// - Score >= 70      -> PROVISIONAL
+/// - Score >= 60      -> UNDER REVIEW
+/// - Score < 60       -> REJECTED
+/// Score-based qualification tiers (gateways must pass). Checked in order; first match wins.
+const QUALIFICATION_TIERS: &[(f64, &str)] = &[
+    (90.0, "CERTIFIED"),
+    (85.0, "CERTIFIED (Conditional)"),
+    (80.0, "QUALIFIED (Conditional)"),
+    (70.0, "PROVISIONAL"),
+    (60.0, "UNDER REVIEW"),
+    (50.0, "NEEDS IMPROVEMENT"),
+];
+
 fn qualification_status(mqs: &MqsScore) -> &'static str {
-    if !mqs.gateways_passed {
-        "REJECTED (Gateway Failure)"
-    } else if mqs.is_production_ready() {
-        "CERTIFIED"
-    } else if mqs.qualifies() {
-        "PROVISIONAL"
-    } else {
-        "REJECTED"
-    }
+    if !mqs.gateways_passed { return "REJECTED (Gateway Failure)"; }
+    QUALIFICATION_TIERS.iter()
+        .find(|&&(min_score, _)| mqs.normalized_score >= min_score)
+        .map_or("REJECTED", |&(_, label)| label)
 }
 
 /// Extract category from gate ID

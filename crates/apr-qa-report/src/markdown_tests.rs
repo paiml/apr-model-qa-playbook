@@ -203,7 +203,7 @@ fn test_generate_index_entry() {
     assert!(entry.contains("qwen2.5-coder-7b"));
     assert!(entry.contains("847/1000"));
     assert!(entry.contains("B+"));
-    assert!(entry.contains("PROVISIONAL"));
+    assert!(entry.contains("QUALIFIED (Conditional)"));
 }
 
 #[test]
@@ -216,25 +216,24 @@ fn test_qualification_status_certified() {
 }
 
 #[test]
-fn test_qualification_status_provisional() {
-    let mqs = test_mqs_score();
-    assert_eq!(qualification_status(&mqs), "PROVISIONAL");
-}
-
-#[test]
-fn test_qualification_status_rejected_gateway() {
-    let mut mqs = test_mqs_score();
-    mqs.gateways_passed = false;
-
-    assert_eq!(qualification_status(&mqs), "REJECTED (Gateway Failure)");
-}
-
-#[test]
-fn test_qualification_status_rejected_score() {
-    let mut mqs = test_mqs_score();
-    mqs.normalized_score = 50.0;
-
-    assert_eq!(qualification_status(&mqs), "REJECTED");
+fn test_qualification_status_tiers() {
+    // Each (score, gateways_passed, expected_status)
+    let cases: &[(f64, bool, &str)] = &[
+        (95.0, true, "CERTIFIED"),
+        (87.0, true, "CERTIFIED (Conditional)"),
+        (84.7, true, "QUALIFIED (Conditional)"),
+        (75.0, true, "PROVISIONAL"),
+        (65.0, true, "UNDER REVIEW"),
+        (50.0, true, "NEEDS IMPROVEMENT"),
+        (40.0, true, "REJECTED"),
+        (95.0, false, "REJECTED (Gateway Failure)"),
+    ];
+    for &(score, gw, expected) in cases {
+        let mut mqs = test_mqs_score();
+        mqs.normalized_score = score;
+        mqs.gateways_passed = gw;
+        assert_eq!(qualification_status(&mqs), expected, "score={score}, gw={gw}");
+    }
 }
 
 #[test]

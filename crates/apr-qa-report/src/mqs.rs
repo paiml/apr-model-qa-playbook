@@ -164,6 +164,31 @@ impl MqsScore {
     pub fn is_production_ready(&self) -> bool {
         self.gateways_passed && self.normalized_score >= 90.0
     }
+
+    /// Classify model into a deployment risk tier.
+    ///
+    /// Risk tiers consider gateway status, score, crash count, and penalty
+    /// severity to produce a single risk classification for deployment decisions.
+    ///
+    /// Returns one of: "MINIMAL", "LOW", "MODERATE", "ELEVATED", "HIGH",
+    /// "VERY HIGH", "CRITICAL", or "BLOCKED".
+    /// Risk tier thresholds: (min_score, max_penalty, label).
+    const RISK_TIERS: &[(f64, u32, &'static str)] = &[
+        (95.0, 0,   "MINIMAL"),
+        (90.0, 20,  "LOW"),
+        (80.0, 50,  "MODERATE"),
+        (70.0, 100, "ELEVATED"),
+        (60.0, u32::MAX, "HIGH"),
+        (40.0, u32::MAX, "VERY HIGH"),
+    ];
+
+    #[must_use]
+    pub fn risk_tier(&self) -> &'static str {
+        if !self.gateways_passed { return "BLOCKED"; }
+        Self::RISK_TIERS.iter()
+            .find(|&&(score, penalty, _)| self.normalized_score >= score && self.total_penalty <= penalty)
+            .map_or("CRITICAL", |&(_, _, label)| label)
+    }
 }
 
 /// Penalty applied to score

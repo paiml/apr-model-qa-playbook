@@ -82,6 +82,7 @@ fn print_certification_scores(
     status: apr_qa_certify::CertificationStatus,
 ) {
     println!("  {} {tier_str}", "Tier:".dimmed());
+
     let score_str = format!("{raw_score}/1000");
     let colored_score = if raw_score >= 700 {
         score_str.bold().green()
