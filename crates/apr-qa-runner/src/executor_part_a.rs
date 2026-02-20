@@ -442,5 +442,5 @@ impl Executor {
     }
 }
 
-include!("executor_part_a2.rs");
-include!("executor_part_a3.rs");
+include!("golden.rs");
+include!("gates.rs");

@@ -430,7 +430,7 @@ pub struct ScenarioGenerator {
     pub prompts: Vec<String>,
 }
 
-include!("scenario_part_a.rs");
+include!("scenarios.rs");
 
 #[cfg(test)]
 #[allow(clippy::expect_used, clippy::redundant_closure_for_method_calls)]

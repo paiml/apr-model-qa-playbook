@@ -431,4 +431,4 @@ fn validate_lm_head(
     }
 }
 
-include!("layout_contract_part_a.rs");
+include!("layout_model_config.rs");

@@ -178,4 +178,4 @@ impl std::fmt::Debug for Executor {
 }
 
 include!("executor_part_a.rs");
-include!("executor_part_b.rs");
+include!("scenario.rs");

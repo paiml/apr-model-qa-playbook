@@ -236,5 +236,5 @@ impl RealCommandRunner {
 }
 
 include!("command_part_a.rs");
-include!("command_part_b.rs");
+include!("mock_command_runner.rs");
 include!("command_part_c.rs");
