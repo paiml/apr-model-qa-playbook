@@ -105,6 +105,23 @@ impl UpstreamTicket {
     }
 }
 
+/// Gate ID patterns → priority mapping. First match wins.
+/// The P0 entry handles the "-P0-" substring; the "G" prefix is checked separately.
+const PRIORITY_RULES: &[(&str, TicketPriority)] = &[
+    ("-P0-", TicketPriority::P0),
+    ("-P1-", TicketPriority::P1),
+    ("-P2-", TicketPriority::P2),
+];
+
+/// Gate ID substring → ticket category mapping. First match wins.
+const CATEGORY_RULES: &[(&[&str], TicketCategory)] = &[
+    (&["PERF"], TicketCategory::Performance),
+    (&["STAB", "CRASH"], TicketCategory::Crash),
+    (&["COMP"], TicketCategory::Compatibility),
+    (&["EDGE"], TicketCategory::EdgeCase),
+    (&["REGR"], TicketCategory::Regression),
+];
+
 /// Ticket generator
 #[derive(Debug, Default)]
 pub struct TicketGenerator {
@@ -403,33 +420,23 @@ Max Tokens: {}
     /// Determine priority from evidence
     fn determine_priority(&self, evidence: &Evidence, is_black_swan: bool) -> TicketPriority {
         if is_black_swan || evidence.outcome == Outcome::Crashed {
-            TicketPriority::P0
-        } else if evidence.gate_id.contains("-P0-") || evidence.gate_id.starts_with('G') {
-            TicketPriority::P0
-        } else if evidence.gate_id.contains("-P1-") {
-            TicketPriority::P1
-        } else if evidence.gate_id.contains("-P2-") {
-            TicketPriority::P2
-        } else {
-            TicketPriority::P3
+            return TicketPriority::P0;
         }
+        if evidence.gate_id.starts_with('G') {
+            return TicketPriority::P0;
+        }
+        PRIORITY_RULES
+            .iter()
+            .find(|&&(pattern, _)| evidence.gate_id.contains(pattern))
+            .map_or(TicketPriority::P3, |&(_, priority)| priority)
     }
 
     /// Determine category from gate ID
     fn determine_category(&self, gate_id: &str) -> TicketCategory {
-        if gate_id.contains("PERF") {
-            TicketCategory::Performance
-        } else if gate_id.contains("STAB") || gate_id.contains("CRASH") {
-            TicketCategory::Crash
-        } else if gate_id.contains("COMP") {
-            TicketCategory::Compatibility
-        } else if gate_id.contains("EDGE") {
-            TicketCategory::EdgeCase
-        } else if gate_id.contains("REGR") {
-            TicketCategory::Regression
-        } else {
-            TicketCategory::Bug
-        }
+        CATEGORY_RULES
+            .iter()
+            .find(|&&(keywords, _)| keywords.iter().any(|kw| gate_id.contains(kw)))
+            .map_or(TicketCategory::Bug, |&(_, cat)| cat)
     }
 
     /// Get repository name

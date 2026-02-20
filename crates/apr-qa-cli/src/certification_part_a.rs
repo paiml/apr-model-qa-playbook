@@ -75,6 +75,20 @@ fn process_certification_result(
     }
 }
 
+/// Threshold-based RAG (Red/Amber/Green) tier classification.
+/// Returns 0 for green (>= high), 1 for yellow (>= low), 2 for red (below low).
+fn rag_tier(value: f64, high: f64, low: f64) -> usize {
+    if value >= high { 0 } else if value >= low { 1 } else { 2 }
+}
+
+/// Score thresholds: green >= 700, yellow >= 400.
+const SCORE_HIGH: f64 = 700.0;
+const SCORE_LOW: f64 = 400.0;
+
+/// Pass rate thresholds: green >= 90%, yellow >= 70%.
+const RATE_HIGH: f64 = 90.0;
+const RATE_LOW: f64 = 70.0;
+
 fn print_certification_scores(
     tier_str: &str,
     raw_score: u32,
@@ -84,12 +98,10 @@ fn print_certification_scores(
     println!("  {} {tier_str}", "Tier:".dimmed());
 
     let score_str = format!("{raw_score}/1000");
-    let colored_score = if raw_score >= 700 {
-        score_str.bold().green()
-    } else if raw_score >= 400 {
-        score_str.bold().yellow()
-    } else {
-        score_str.bold().red()
+    let colored_score = match rag_tier(f64::from(raw_score), SCORE_HIGH, SCORE_LOW) {
+        0 => score_str.bold().green(),
+        1 => score_str.bold().yellow(),
+        _ => score_str.bold().red(),
     };
     println!("  {} {colored_score}", "MQS Score:".dimmed());
     let colored_grade = match grade {
@@ -125,12 +137,10 @@ fn print_execution_summary(result: &apr_qa_runner::ExecutionResult) {
     );
     let pass_rate = result.pass_rate();
     let rate_str = format!("{pass_rate:.1}%");
-    let colored_rate = if pass_rate >= 90.0 {
-        rate_str.green()
-    } else if pass_rate >= 70.0 {
-        rate_str.yellow()
-    } else {
-        rate_str.red()
+    let colored_rate = match rag_tier(pass_rate, RATE_HIGH, RATE_LOW) {
+        0 => rate_str.green(),
+        1 => rate_str.yellow(),
+        _ => rate_str.red(),
     };
     println!("  {} {colored_rate}", "Pass rate:".dimmed());
 }
@@ -370,15 +380,12 @@ fn run_oracle_enhancement(
     };
     #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
     let mqs = pass_rate as u32;
-    let grade = if mqs >= 800 {
-        "A"
-    } else if mqs >= 600 {
-        "B"
-    } else if mqs >= 400 {
-        "C"
-    } else {
-        "F"
-    };
+    /// MQS score → letter grade thresholds (descending). First match wins.
+    const GRADE_THRESHOLDS: &[(u32, &str)] = &[(800, "A"), (600, "B"), (400, "C")];
+    let grade = GRADE_THRESHOLDS
+        .iter()
+        .find(|&&(min, _)| mqs >= min)
+        .map_or("F", |&(_, g)| g);
 
     let checklist_md =
         generate_checklist_markdown(model_id, mqs, grade, total, result.failed, &context);

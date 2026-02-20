@@ -115,16 +115,34 @@ fn try_extract_tensor_name(line: &str) -> Option<String> {
     }
 }
 
-/// Parse architecture metadata fields from a single line
+/// Architecture metadata field prefixes.
+/// Parsed from `apr rosetta inspect` output lines.
+const ARCH_FIELD_PREFIXES: &[&str] = &[
+    "num_attention_heads:",
+    "num_key_value_heads:",
+    "hidden_size:",
+    "architecture:",
+];
+
+/// Parse architecture metadata fields from a single line.
+///
+/// Uses prefix matching against `ARCH_FIELD_PREFIXES`, then dispatches
+/// to the appropriate field setter based on which prefix matched.
 fn parse_architecture_line(line: &str, result: &mut InspectResult) {
-    if let Some(val) = line.strip_prefix("num_attention_heads:") {
-        result.num_attention_heads = val.trim().parse().ok();
-    } else if let Some(val) = line.strip_prefix("num_key_value_heads:") {
-        result.num_key_value_heads = val.trim().parse().ok();
-    } else if let Some(val) = line.strip_prefix("hidden_size:") {
-        result.hidden_size = val.trim().parse().ok();
-    } else if let Some(val) = line.strip_prefix("architecture:") {
-        result.architecture = Some(val.trim().to_string());
+    let (idx, val) = match ARCH_FIELD_PREFIXES
+        .iter()
+        .enumerate()
+        .find_map(|(i, prefix)| line.strip_prefix(prefix).map(|v| (i, v.trim())))
+    {
+        Some(pair) => pair,
+        None => return,
+    };
+    match idx {
+        0 => result.num_attention_heads = val.parse().ok(),
+        1 => result.num_key_value_heads = val.parse().ok(),
+        2 => result.hidden_size = val.parse().ok(),
+        3 => result.architecture = Some(val.to_string()),
+        _ => {}
     }
 }
 

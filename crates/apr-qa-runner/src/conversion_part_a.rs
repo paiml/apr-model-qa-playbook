@@ -60,49 +60,19 @@ pub fn tolerance_for(qt: QuantType) -> &'static ConversionTolerance {
         .unwrap_or(&DEFAULT_TOLERANCES[0]) // F32 fallback
 }
 
-/// Classify a conversion failure from stderr output and exit code
-#[must_use]
-pub fn classify_failure(stderr: &str, exit_code: i32) -> ConversionFailureType {
-    let lower = stderr.to_lowercase();
-
-    if is_tensor_name_failure(&lower) {
-        ConversionFailureType::TensorNameMismatch
-    } else if is_dequantization_failure(&lower) {
-        ConversionFailureType::DequantizationFailure
-    } else if is_missing_artifact(&lower) {
-        ConversionFailureType::MissingArtifact
-    } else if is_config_metadata_failure(&lower) {
-        ConversionFailureType::ConfigMetadataMismatch
-    } else if is_inference_failure(&lower, exit_code) {
-        ConversionFailureType::InferenceFailure
-    } else {
-        ConversionFailureType::Unknown
-    }
-}
-
-fn is_tensor_name_failure(s: &str) -> bool {
-    s.contains("tensor name")
-        || s.contains("name mismatch")
-        || s.contains("missing tensor")
-        || s.contains("unexpected tensor")
-}
-
-fn is_dequantization_failure(s: &str) -> bool {
-    s.contains("dequantiz")
-        || s.contains("quantiz")
-        || s.contains("nan")
-        || s.contains("infinity")
-        || s.contains("overflow")
-}
-
-/// Check before config metadata — "config.json" is an artifact
-fn is_missing_artifact(s: &str) -> bool {
-    s.contains("not found")
-        || s.contains("no such file")
-        || s.contains("config.json")
-        || (s.contains("missing") && !s.contains("mismatch"))
-        || (s.contains("tokenizer") && !s.contains("mismatch"))
-}
+/// Simple keyword-based failure classification rules.
+/// Checked in priority order; first match wins.
+/// Complex rules (missing_artifact, inference) are checked separately.
+const KEYWORD_FAILURE_RULES: &[(&[&str], ConversionFailureType)] = &[
+    (
+        &["tensor name", "name mismatch", "missing tensor", "unexpected tensor"],
+        ConversionFailureType::TensorNameMismatch,
+    ),
+    (
+        &["dequantiz", "quantiz", "nan", "infinity", "overflow"],
+        ConversionFailureType::DequantizationFailure,
+    ),
+];
 
 /// Config metadata keywords that indicate a metadata mismatch failure.
 const CONFIG_METADATA_KEYWORDS: &[&str] = &[
@@ -114,8 +84,41 @@ const CONFIG_METADATA_KEYWORDS: &[&str] = &[
     "config mismatch",
 ];
 
-fn is_config_metadata_failure(s: &str) -> bool {
-    CONFIG_METADATA_KEYWORDS.iter().any(|kw| s.contains(kw))
+/// Classify a conversion failure from stderr output and exit code.
+///
+/// Priority order: keyword rules -> missing artifact -> config metadata -> inference -> unknown.
+#[must_use]
+pub fn classify_failure(stderr: &str, exit_code: i32) -> ConversionFailureType {
+    let lower = stderr.to_lowercase();
+
+    // 1. Simple keyword-based rules (table-driven)
+    for &(keywords, failure_type) in KEYWORD_FAILURE_RULES {
+        if keywords.iter().any(|kw| lower.contains(kw)) {
+            return failure_type;
+        }
+    }
+
+    // 2. Complex rules with negation/multi-condition logic
+    if is_missing_artifact(&lower) {
+        ConversionFailureType::MissingArtifact
+    } else if CONFIG_METADATA_KEYWORDS.iter().any(|kw| lower.contains(kw)) {
+        ConversionFailureType::ConfigMetadataMismatch
+    } else if is_inference_failure(&lower, exit_code) {
+        ConversionFailureType::InferenceFailure
+    } else {
+        ConversionFailureType::Unknown
+    }
+}
+
+/// Check for missing artifact failures.
+/// Uses negation logic (`missing` without `mismatch`) that cannot be
+/// expressed as a simple keyword list.
+fn is_missing_artifact(s: &str) -> bool {
+    s.contains("not found")
+        || s.contains("no such file")
+        || s.contains("config.json")
+        || (s.contains("missing") && !s.contains("mismatch"))
+        || (s.contains("tokenizer") && !s.contains("mismatch"))
 }
 
 fn is_inference_failure(s: &str, exit_code: i32) -> bool {
