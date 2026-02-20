@@ -163,16 +163,16 @@ conversion, catching subtle numerical drift that inference comparison might miss
 
 | Gate ID | Relation | Description |
 |---------|----------|-------------|
-| F-CONV-CARD-001 | MR-CARD | `tensor_count(out) >= tensor_count(in)` — catches silent tensor fusion (e.g., QKV fusion 338→227) |
-| F-CONV-NAME-001 | T-QKV-02 | Tensor name-set preservation — detects unexpected renames (q\_proj+k\_proj+v\_proj → qkv\_proj) |
-| F-CONV-IDEM-001 | MR-IDEM | Idempotency — converting A→B twice from same source must produce identical output |
-| F-CONV-COM-001 | MR-COM | Commutativity — GGUF→APR must match GGUF→ST→APR (path independence) |
+| F-CONV-CARD-001 | MR-CARD | `tensor_count(out) >= tensor_count(in)` — catches silent fusion |
+| F-CONV-NAME-001 | T-QKV-02 | Tensor name-set preservation — detects unexpected renames |
+| F-CONV-IDEM-001 | MR-IDEM | Idempotency — converting A→B twice must produce identical output |
+| F-CONV-COM-001 | MR-COM | Commutativity — GGUF→APR must match GGUF→ST→APR |
 
 ### Inspect Gate
 
 | Gate ID | Spec | Description |
 |---------|------|-------------|
-| F-INSPECT-META-001 | T-GH192-01 | Model metadata (num\_heads, hidden\_size, etc.) must be present and non-zero |
+| F-INSPECT-META-001 | T-GH192-01 | Model metadata must be present and non-zero |
 
 ### Contract Invariant Gates (GH-190/191)
 
@@ -185,7 +185,7 @@ prescribed by the GH-190 and GH-191 Five-Whys analyses.
 | F-CONTRACT-I1-001 | I-1 Round-trip Identity | `inference(convert(model)) == inference(model)` |
 | F-CONTRACT-I2-001 | I-2 Tensor Name Bijection | Writer tensor names must exactly match reader tensor names |
 | F-CONTRACT-I3-001 | I-3 No Silent Fallbacks | Unknown dtype/tensor must error, never silently default to F32 |
-| F-CONTRACT-I4-001 | I-4 Statistical Preservation | Tensor stats (mean, std, min, max) preserved within dtype tolerance |
+| F-CONTRACT-I4-001 | I-4 Statistical Preservation | Tensor stats preserved within dtype tolerance |
 | F-CONTRACT-I5-001 | I-5 Tokenizer Roundtrip | `encode(decode(tokens)) == tokens` for the embedded tokenizer |
 
 I-1 runs as the Golden Rule Test (F-GOLDEN-RULE-001). I-2 through I-5

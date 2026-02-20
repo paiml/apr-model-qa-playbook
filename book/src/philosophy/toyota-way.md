@@ -52,4 +52,5 @@ If something needs fixing, it gets fixed now.
 
 ## Reference
 
-Liker, J. K. (2004). *The Toyota Way: 14 Management Principles from the World's Greatest Manufacturer*. McGraw-Hill. ISBN 978-0071392310.
+Liker, J. K. (2004). *The Toyota Way: 14 Management Principles from
+the World's Greatest Manufacturer*. McGraw-Hill. ISBN 978-0071392310.

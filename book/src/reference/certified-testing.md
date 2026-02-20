@@ -361,6 +361,11 @@ measuring the accuracy of trueno's quantization kernels:
 
 ## References
 
-- [Popper, K. R. (1959). *The Logic of Scientific Discovery*](https://en.wikipedia.org/wiki/The_Logic_of_Scientific_Discovery)
-- [Taleb, N. N. (2007). *The Black Swan*](https://en.wikipedia.org/wiki/The_Black_Swan:_The_Impact_of_the_Highly_Improbable)
+- Popper, K. R. (1959). *The Logic of Scientific Discovery*.
+  [Wikipedia][popper-wiki]
+- Taleb, N. N. (2007). *The Black Swan*.
+  [Wikipedia][taleb-wiki]
+
+[popper-wiki]: https://en.wikipedia.org/wiki/The_Logic_of_Scientific_Discovery
+[taleb-wiki]: https://en.wikipedia.org/wiki/The_Black_Swan:_The_Impact_of_the_Highly_Improbable
 - [Ohno, T. (1988). *Toyota Production System*](https://en.wikipedia.org/wiki/Toyota_Production_System)

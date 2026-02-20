@@ -74,7 +74,9 @@ gates:
   g4_output_quality: true
 ```
 
-> **Ground Truth**: SafeTensors is the ground truth format. It is the native HuggingFace format and source of truth for model weights. APR and GGUF formats are derived from SafeTensors.
+> **Ground Truth**: SafeTensors is the ground truth format. It is the
+> native HuggingFace format and source of truth for model weights.
+> APR and GGUF formats are derived from SafeTensors.
 
 ## Running a Playbook
 
@@ -86,13 +88,18 @@ cargo run --bin apr-qa -- run playbooks/models/my-model.playbook.yaml
 cargo run --bin apr-qa -- run playbooks/models/my-model.playbook.yaml --model-path /path/to/model
 ```
 
-The runner automatically resolves `model.hf_repo` from the playbook to your local HuggingFace cache (`~/.cache/huggingface/hub/`). If the model isn't cached, download it first:
+The runner automatically resolves `model.hf_repo` from the playbook to
+your local HuggingFace cache (`~/.cache/huggingface/hub/`). If the
+model isn't cached, download it first:
 
 ```bash
 huggingface-cli download Qwen/Qwen2.5-Coder-0.5B-Instruct
 ```
 
-> **WARNING**: Never bypass the playbook infrastructure by running manual `apr` commands (`apr qa`, `apr run`, `apr pull`) for qualification. Always use `apr-qa certify` or `apr-qa run` with a playbook.
+> **WARNING**: Never bypass the playbook infrastructure by running
+> manual `apr` commands (`apr qa`, `apr run`, `apr pull`) for
+> qualification. Always use `apr-qa certify` or `apr-qa run` with a
+> playbook.
 
 ## Model Certification (Recommended)
 

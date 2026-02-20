@@ -59,7 +59,10 @@ let scenarios = generator.generate(100);    // count
 
 ## Kernel Profile-Driven Generation
 
-The `kernel_profile` module maps architecture constraints from family contracts to kernel operations and targeted prompts. Instead of generic prompts for all models, this produces architecture-specific prompts that stress-test the exact kernels each model uses.
+The `kernel_profile` module maps architecture constraints from family
+contracts to kernel operations and targeted prompts. Instead of generic
+prompts for all models, this produces architecture-specific prompts
+that stress-test the exact kernels each model uses.
 
 ### Kernel Operations
 

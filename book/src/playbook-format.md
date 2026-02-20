@@ -1,6 +1,7 @@
 # Playbook Format
 
-Playbooks are YAML files that define model qualification tests. They follow the schema in `playbooks/playbook.schema.yaml`.
+Playbooks are YAML files that define model qualification tests. They
+follow the schema in `playbooks/playbook.schema.yaml`.
 
 ## Required Fields
 
@@ -36,7 +37,9 @@ model:
   size_category: small  # tiny, small, medium, large, xlarge, huge
 ```
 
-> **Ground Truth**: SafeTensors is always listed first because it is the source of truth for model weights. APR and GGUF formats are derived from SafeTensors and tested for parity.
+> **Ground Truth**: SafeTensors is always listed first because it is
+> the source of truth for model weights. APR and GGUF formats are
+> derived from SafeTensors and tested for parity.
 
 ## Test Matrix
 

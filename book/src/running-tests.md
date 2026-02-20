@@ -1,6 +1,7 @@
 # Running Tests
 
-> **CRITICAL**: Always use `apr-qa` commands for model qualification. Never bypass the playbook infrastructure with manual `apr` commands.
+> **CRITICAL**: Always use `apr-qa` commands for model qualification.
+> Never bypass the playbook infrastructure with manual `apr` commands.
 
 ## CLI Usage
 
@@ -20,7 +21,9 @@ cargo run --bin apr-qa -- validate <playbook.yaml>
 
 ## Execution
 
-The playbook runner internally invokes the `apr` binary for inference. This is managed by the playbook infrastructure—do not call `apr` directly:
+The playbook runner internally invokes the `apr` binary for inference.
+This is managed by the playbook infrastructure—do not call `apr`
+directly:
 
 ```bash
 # Zero-setup: model auto-resolved from HuggingFace cache (HF-CACHE-001)
@@ -106,7 +109,9 @@ mode = "rayon"
 
 ### Fail-Fast Mode (§12.5.3, FF-REPORT-001)
 
-The `--fail-fast` flag is designed for debugging and GitHub ticket creation. It stops on the first failure and generates a comprehensive diagnostic report using apr's rich tooling.
+The `--fail-fast` flag is designed for debugging and GitHub ticket
+creation. It stops on the first failure and generates a comprehensive
+diagnostic report using apr's rich tooling.
 
 ```bash
 # Basic fail-fast
@@ -151,7 +156,9 @@ output/fail-fast-report/
 
 ## Playbook Integrity Lock (§3.1)
 
-The playbook lock system prevents accidental or malicious modification of test specifications. When enabled (default), the runner verifies that playbook files haven't been modified since they were last locked.
+The playbook lock system prevents accidental or malicious modification
+of test specifications. When enabled (default), the runner verifies
+that playbook files haven't been modified since they were last locked.
 
 ### Generating the Lock File
 
@@ -204,7 +211,10 @@ git add playbooks/models/*.yaml playbooks/playbook.lock.yaml
 git commit -m "feat(playbook): update test matrix"
 ```
 
-**Why this matters:** The integrity lock implements Poka-Yoke (mistake-proofing) from the Toyota Production System. It prevents operators from silently weakening test specifications to make failures "go away."
+**Why this matters:** The integrity lock implements Poka-Yoke
+(mistake-proofing) from the Toyota Production System. It prevents
+operators from silently weakening test specifications to make failures
+"go away."
 
 ## Evidence Collection
 

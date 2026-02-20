@@ -6,9 +6,14 @@ A **property-based model qualification testing framework** for HuggingFace model
 
 This framework embodies two complementary quality philosophies:
 
-1. **Toyota Production System (TPS):** Zero-defect manufacturing through Jidoka (autonomation), Poka-Yoke (error-proofing), and Genchi Genbutsu (go and see).
+1. **Toyota Production System (TPS):** Zero-defect manufacturing
+   through Jidoka (autonomation), Poka-Yoke (error-proofing), and
+   Genchi Genbutsu (go and see).
 
-2. **Popperian Falsificationism:** Solving the *demarcation problem* of model quality by defining "correctness" not as the accumulation of passing tests, but as the survival of rigorous attempts at refutation.
+2. **Popperian Falsificationism:** Solving the *demarcation problem*
+   of model quality by defining "correctness" not as the accumulation
+   of passing tests, but as the survival of rigorous attempts at
+   refutation.
 
 > "The criterion of the scientific status of a theory is its falsifiability, or refutability, or testability."
 > — Karl Popper, *Conjectures and Refutations* (1963)
@@ -21,7 +26,9 @@ This framework embodies two complementary quality philosophies:
 - **Model Qualification Score (MQS)** 0-1000 with grade mapping
 - **JUnit XML and HTML reports** for CI/CD integration
 - **Playbook YAML format** with JSON Schema validation
-- **End-to-end kernel correctness oracle** for trueno SIMD/CUDA kernels via G4 garbage detection, contract invariants (I-1 through I-5), and metamorphic relation testing
+- **End-to-end kernel correctness oracle** for trueno SIMD/CUDA kernels
+  via G4 garbage detection, contract invariants (I-1 through I-5), and
+  metamorphic relation testing
 
 ## Test Matrix
 

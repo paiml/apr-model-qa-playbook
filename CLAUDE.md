@@ -4,13 +4,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-APR Model QA Playbook is a property-based model qualification testing framework for HuggingFace models. It implements **Toyota Production System** principles (Jidoka, Poka-Yoke) combined with **Popperian Falsification** methodology—tests are designed to fail, not to pass.
+APR Model QA Playbook is a property-based model qualification testing
+framework for HuggingFace models. It implements **Toyota Production System**
+principles (Jidoka, Poka-Yoke) combined with **Popperian Falsification**
+methodology—tests are designed to fail, not to pass.
 
 ## CRITICAL: Ground Truth and Workflow
 
 ### Ground Truth Format: SafeTensors
 
-**SafeTensors is the ground truth format.** It is the native HuggingFace format and the source of truth for model weights. All other formats (GGUF, APR) are derived from SafeTensors.
+**SafeTensors is the ground truth format.** It is the native HuggingFace
+format and the source of truth for model weights. All other formats
+(GGUF, APR) are derived from SafeTensors.
 
 Format hierarchy:
 1. **SafeTensors** - Ground truth (HuggingFace source)
@@ -71,15 +76,29 @@ crates/
 
 ### Core Data Flow
 
-1. **apr-qa-gen**: Generates `QaScenario` instances via proptest. Each scenario is a falsifiable hypothesis with prompt, modality (run/chat/serve), backend (cpu/gpu), and format (gguf/safetensors/apr). Also provides kernel profile mapping (architecture constraints → kernel ops → targeted prompts) and playbook bootstrapping.
+1. **apr-qa-gen**: Generates `QaScenario` instances via proptest. Each
+   scenario is a falsifiable hypothesis with prompt, modality
+   (run/chat/serve), backend (cpu/gpu), and format
+   (gguf/safetensors/apr). Also provides kernel profile mapping
+   (architecture constraints → kernel ops → targeted prompts) and
+   playbook bootstrapping.
 
-2. **apr-qa-runner**: Executes scenarios via `ParallelExecutor` using Rayon. Collects `Evidence` with outcomes: `Corroborated`, `Falsified`, `Timeout`, `Crashed`.
+2. **apr-qa-runner**: Executes scenarios via `ParallelExecutor` using
+   Rayon. Collects `Evidence` with outcomes: `Corroborated`,
+   `Falsified`, `Timeout`, `Crashed`.
 
-3. **apr-qa-report**: Calculates MQS (Model Qualification Score) 0-1000 with gateway checks G0-G4. Generates JUnit XML, HTML, and Markdown reports.
+3. **apr-qa-report**: Calculates MQS (Model Qualification Score) 0-1000
+   with gateway checks G0-G4. Generates JUnit XML, HTML, and Markdown
+   reports.
 
-4. **apr-qa-certify**: Tier-aware scoring (Smoke/MVP/Quick/Standard/Deep), certification status computation, README table sync from models.csv. Binary: `apr-qa-readme-sync`.
+4. **apr-qa-certify**: Tier-aware scoring
+   (Smoke/MVP/Quick/Standard/Deep), certification status computation,
+   README table sync from models.csv. Binary: `apr-qa-readme-sync`.
 
-5. **apr-qa-cli**: Orchestrates the full pipeline with 14 subcommands: certify, run, tools, generate, score, report, list, lock-playbooks, tickets, parity, export-csv, export-evidence, bootstrap, validate-contract.
+5. **apr-qa-cli**: Orchestrates the full pipeline with 14 subcommands:
+   certify, run, tools, generate, score, report, list, lock-playbooks,
+   tickets, parity, export-csv, export-evidence, bootstrap,
+   validate-contract.
 
 ### Key Types
 
@@ -114,7 +133,9 @@ playbooks/
 
 ## Documentation Maintenance (Mandatory)
 
-Documentation drifts at interface boundaries. When changing any of the following, you MUST update the corresponding docs. Run `make docs-check` to verify.
+Documentation drifts at interface boundaries. When changing any of the
+following, you MUST update the corresponding docs. Run `make docs-check`
+to verify.
 
 ### When adding a workspace crate:
 - [ ] `CLAUDE.md` → Crate Structure tree
@@ -205,7 +226,9 @@ fused_q6k_parallel_matvec_into(...)
 
 **All GGUF models must be converted to APR format before qualification testing.**
 
-GGUF uses column-major layout (GGML convention). Aprender's converter transposes data during import. Testing GGUF directly with realizar will produce garbage output.
+GGUF uses column-major layout (GGML convention). Aprender's converter
+transposes data during import. Testing GGUF directly with realizar will
+produce garbage output.
 
 **Correct Workflow:**
 ```bash
@@ -222,7 +245,9 @@ cargo run --bin apr-qa -- certify --model model.apr
 - This indicates a layout bug, not a model quality issue
 
 **Cross-References:**
-- **THE SOURCE OF TRUTH:** `aprender/docs/specifications/qwen2.5-coder-showcase-demo.md` → Section E.8 "Tensor Layout Contract"
+- **THE SOURCE OF TRUTH:**
+  `aprender/docs/specifications/qwen2.5-coder-showcase-demo.md` →
+  Section E.8 "Tensor Layout Contract"
 - `docs/specifications/apr-playbook-spec.md` → Section 4.1.1
 - `docs/tickets/GH-190-GGUF-APR-CONVERSION-GARBAGE-OUTPUT.md`
 - `aprender/CLAUDE.md` → LAYOUT-002 section
@@ -240,7 +265,9 @@ Quick reference (authoritative source is E.8):
 | `q_proj.weight` | `[heads*head_dim, hidden]` | Kernel: `matmul(W, x, heads*head_dim, hidden)` |
 | `embed_tokens.weight` | `[vocab, hidden]` | Lookup table, row = token embedding |
 
-**Key Insight:** The KERNEL defines shape, not comments. When `matmul_q6k_rowmajor(W, x, out_dim, in_dim)` is called with `out_dim=vocab`, W must have `vocab` rows.
+**Key Insight:** The KERNEL defines shape, not comments. When
+`matmul_q6k_rowmajor(W, x, out_dim, in_dim)` is called with
+`out_dim=vocab`, W must have `vocab` rows.
 
 ## Testing Philosophy
 
@@ -359,7 +386,8 @@ cargo run --bin apr-qa -- run playbooks/models/my-model-mvp.playbook.yaml \
 
 **NEVER use grep/glob for code search. ALWAYS prefer `pmat query`.**
 
-`pmat query` returns quality-annotated, semantically ranked results with TDG grades, complexity, fault patterns, and call graphs.
+`pmat query` returns quality-annotated, semantically ranked results with
+TDG grades, complexity, fault patterns, and call graphs.
 
 ```bash
 # Find functions by intent

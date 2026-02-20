@@ -1,6 +1,10 @@
 # CLI Reference
 
-> **CRITICAL**: Always use `apr-qa` commands (this project's CLI) for model qualification. Never use manual `apr` commands (`apr qa`, `apr run`, `apr pull`) to bypass the playbook infrastructure. The playbook system ensures consistent testing, proper evidence collection, and SafeTensors ground truth validation.
+> **CRITICAL**: Always use `apr-qa` commands (this project's CLI) for
+> model qualification. Never use manual `apr` commands (`apr qa`,
+> `apr run`, `apr pull`) to bypass the playbook infrastructure. The
+> playbook system ensures consistent testing, proper evidence
+> collection, and SafeTensors ground truth validation.
 
 ## apr-qa
 
@@ -117,7 +121,12 @@ apr-qa run playbook.yaml --profile-ci --run-tool-tests
 apr-qa run playbook.yaml --no-integrity-check
 ```
 
-**Model Auto-Resolution (HF-CACHE-001):** When `--model-path` is omitted, the runner automatically resolves `playbook.model.hf_repo` from your local cache. It searches HuggingFace cache first (`~/.cache/huggingface/hub/`), then APR cache (`~/.cache/apr-models/`). Environment variables `HUGGINGFACE_HUB_CACHE` and `HF_HOME` are respected per HuggingFace convention.
+**Model Auto-Resolution (HF-CACHE-001):** When `--model-path` is
+omitted, the runner automatically resolves `playbook.model.hf_repo`
+from your local cache. It searches HuggingFace cache first
+(`~/.cache/huggingface/hub/`), then APR cache (`~/.cache/apr-models/`).
+Environment variables `HUGGINGFACE_HUB_CACHE` and `HF_HOME` are
+respected per HuggingFace convention.
 
 #### report
 
@@ -326,7 +335,8 @@ apr-qa validate-contract <MODEL> [OPTIONS]
 ```
 
 Options:
-- `--contract-path <PATH>` - Path to tensor layout contract YAML (default: `../aprender/contracts/tensor-layout-v1.yaml`)
+- `--contract-path <PATH>` - Path to tensor layout contract YAML
+  (default: `../aprender/contracts/tensor-layout-v1.yaml`)
 - `--format <FORMAT>` - Output format: `text`, `json` (default: `text`)
 - `--critical-only` - Only check critical tensors (lm_head, etc.)
 
@@ -349,7 +359,10 @@ apr-qa validate-contract model.apr --critical-only --format json
 
 ## APR CLI Commands (Upstream)
 
-> **WARNING**: The commands below are upstream `apr` CLI commands that this QA framework **tests**. Do NOT use these commands directly for model qualification. Always use `apr-qa certify` or `apr-qa run` with a playbook instead.
+> **WARNING**: The commands below are upstream `apr` CLI commands that
+> this QA framework **tests**. Do NOT use these commands directly for
+> model qualification. Always use `apr-qa certify` or `apr-qa run`
+> with a playbook instead.
 
 The following apr commands are tested by this QA framework:
 

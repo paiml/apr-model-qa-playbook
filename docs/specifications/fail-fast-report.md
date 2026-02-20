@@ -89,7 +89,7 @@ apr explain {error_code}
 ```
 ````
 
-### FF-REPORT-004: Diagnostic Stages
+## FF-REPORT-004: Diagnostic Stages
 
 #### Stage 1: apr check (Pipeline Integrity)
 

@@ -2,7 +2,9 @@
 
 The complete specification is available at:
 
-[docs/specifications/apr-playbook-spec.md](https://github.com/paiml/apr-model-qa-playbook/blob/main/docs/specifications/apr-playbook-spec.md)
+[docs/specifications/apr-playbook-spec.md][spec-link]
+
+[spec-link]: https://github.com/paiml/apr-model-qa-playbook/blob/main/docs/specifications/apr-playbook-spec.md
 
 ## Specification Sections
 

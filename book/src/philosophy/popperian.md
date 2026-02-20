@@ -5,7 +5,8 @@
 
 ## The Problem of Induction
 
-No amount of passing tests can prove a model is correct. A million successful inferences don't guarantee the next one will work.
+No amount of passing tests can prove a model is correct. A million
+successful inferences don't guarantee the next one will work.
 
 But a single failing test can prove incorrectness.
 

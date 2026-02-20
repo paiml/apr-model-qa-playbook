@@ -1,10 +1,13 @@
 # Oracle Integration
 
-This chapter describes how the APR QA framework integrates with aprender's Oracle system for certification tracking and model lookup.
+This chapter describes how the APR QA framework integrates with
+aprender's Oracle system for certification tracking and model lookup.
 
 ## Overview
 
-The Oracle system provides a unified interface for querying model certification status. The QA framework produces evidence and certification data that the Oracle consumes.
+The Oracle system provides a unified interface for querying model
+certification status. The QA framework produces evidence and
+certification data that the Oracle consumes.
 
 ```
 ┌─────────────────────┐
@@ -54,7 +57,8 @@ The gateway system implements Toyota-style quality gates that must all pass for 
 | G3 | Stability | No crashes or panics | Score zeroed |
 | G4 | Quality | Output is not garbage | Score zeroed |
 
-**Any gateway failure zeros the MQS score.** This is the Jidoka principle: stop the line immediately when a defect is detected.
+**Any gateway failure zeros the MQS score.** This is the Jidoka
+principle: stop the line immediately when a defect is detected.
 
 ## Evidence Format
 
@@ -94,7 +98,9 @@ Evidence files are JSON arrays containing test results:
 The certification lookup table uses this schema:
 
 ```csv
-model_id,family,parameters,size_category,status,mqs_score,grade,certified_tier,last_certified,g1,g2,g3,g4,tps_gguf_cpu,tps_gguf_gpu,tps_apr_cpu,tps_apr_gpu,tps_st_cpu,tps_st_gpu,provenance_verified
+model_id,family,parameters,size_category,status,mqs_score,grade,
+certified_tier,last_certified,g1,g2,g3,g4,tps_gguf_cpu,tps_gguf_gpu,
+tps_apr_cpu,tps_apr_gpu,tps_st_cpu,tps_st_gpu,provenance_verified
 ```
 
 | Column | Type | Description |
