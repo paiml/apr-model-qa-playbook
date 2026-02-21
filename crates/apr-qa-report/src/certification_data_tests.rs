@@ -15,3 +15,4 @@ meta-llama/Llama-3.2-1B-Instruct,llama,1B,small,PENDING,0,-,none,2026-01-31T00:0
 
 include!("certification_data_tests_part_a.rs");
 include!("certification_data_tests_part_b.rs");
+include!("certification_data_tests_part_c.rs");
