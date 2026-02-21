@@ -496,3 +496,165 @@ fn test_structured_tickets_labels() {
     );
     assert!(tickets[0].labels.contains(&"qa-automated".to_string()));
 }
+
+/// Verify generate_from_popperian assigns P1 for severity 4
+#[test]
+fn test_popperian_severity_4_p1() {
+    let generator = TicketGenerator::new("test");
+    let popperian = PopperianScore {
+        model_id: "test/model".to_string(),
+        hypotheses_tested: 10,
+        corroborated: 9,
+        falsified: 1,
+        inconclusive: 0,
+        corroboration_ratio: 0.9,
+        severity_weighted_score: 0.9,
+        confidence_level: 0.9,
+        reproducibility_index: 0.8,
+        black_swan_count: 0,
+        falsifications: vec![FalsificationDetail {
+            gate_id: "F-QUAL-001".to_string(),
+            hypothesis: "Quality holds".to_string(),
+            evidence: "Failure".to_string(),
+            severity: 4,
+            is_black_swan: false,
+            occurrence_count: 1,
+        }],
+    };
+
+    let tickets = generator.generate_from_popperian(&popperian);
+    assert_eq!(tickets.len(), 1);
+    assert_eq!(tickets[0].priority, TicketPriority::P1);
+    assert!(!tickets[0].is_black_swan);
+}
+
+/// Verify generate_from_popperian assigns P2 for severity 3
+#[test]
+fn test_popperian_severity_3_p2() {
+    let generator = TicketGenerator::new("test");
+    let popperian = PopperianScore {
+        model_id: "test/model".to_string(),
+        hypotheses_tested: 10,
+        corroborated: 9,
+        falsified: 1,
+        inconclusive: 0,
+        corroboration_ratio: 0.9,
+        severity_weighted_score: 0.9,
+        confidence_level: 0.9,
+        reproducibility_index: 0.8,
+        black_swan_count: 0,
+        falsifications: vec![FalsificationDetail {
+            gate_id: "F-EDGE-001".to_string(),
+            hypothesis: "Edge case holds".to_string(),
+            evidence: "Minor failure".to_string(),
+            severity: 3,
+            is_black_swan: false,
+            occurrence_count: 1,
+        }],
+    };
+
+    let tickets = generator.generate_from_popperian(&popperian);
+    assert_eq!(tickets.len(), 1);
+    assert_eq!(tickets[0].priority, TicketPriority::P2);
+}
+
+/// Verify generate_from_popperian assigns P3 for severity < 3
+#[test]
+fn test_popperian_severity_low_p3() {
+    let generator = TicketGenerator::new("test");
+    let popperian = PopperianScore {
+        model_id: "test/model".to_string(),
+        hypotheses_tested: 10,
+        corroborated: 9,
+        falsified: 1,
+        inconclusive: 0,
+        corroboration_ratio: 0.9,
+        severity_weighted_score: 0.9,
+        confidence_level: 0.9,
+        reproducibility_index: 0.8,
+        black_swan_count: 0,
+        falsifications: vec![FalsificationDetail {
+            gate_id: "F-QUAL-001".to_string(),
+            hypothesis: "Quality holds".to_string(),
+            evidence: "Minor issue".to_string(),
+            severity: 2,
+            is_black_swan: false,
+            occurrence_count: 1,
+        }],
+    };
+
+    let tickets = generator.generate_from_popperian(&popperian);
+    assert_eq!(tickets.len(), 1);
+    assert_eq!(tickets[0].priority, TicketPriority::P3);
+}
+
+/// Verify generate_from_popperian respects black_swans_only filter
+#[test]
+fn test_popperian_black_swans_only_filter() {
+    let generator = TicketGenerator::new("test").black_swans_only();
+    let popperian = PopperianScore {
+        model_id: "test/model".to_string(),
+        hypotheses_tested: 10,
+        corroborated: 8,
+        falsified: 2,
+        inconclusive: 0,
+        corroboration_ratio: 0.8,
+        severity_weighted_score: 0.8,
+        confidence_level: 0.8,
+        reproducibility_index: 0.8,
+        black_swan_count: 0,
+        falsifications: vec![FalsificationDetail {
+            gate_id: "F-QUAL-001".to_string(),
+            hypothesis: "Quality holds".to_string(),
+            evidence: "Failure".to_string(),
+            severity: 4,
+            is_black_swan: false,
+            occurrence_count: 1,
+        }],
+    };
+
+    let tickets = generator.generate_from_popperian(&popperian);
+    assert!(tickets.is_empty(), "Non-black-swan should be filtered");
+}
+
+/// Verify generate_from_popperian respects min_occurrences filter
+#[test]
+fn test_popperian_min_occurrences_filter() {
+    let generator = TicketGenerator::new("test").with_min_occurrences(5);
+    let popperian = PopperianScore {
+        model_id: "test/model".to_string(),
+        hypotheses_tested: 10,
+        corroborated: 8,
+        falsified: 2,
+        inconclusive: 0,
+        corroboration_ratio: 0.8,
+        severity_weighted_score: 0.8,
+        confidence_level: 0.8,
+        reproducibility_index: 0.8,
+        black_swan_count: 0,
+        falsifications: vec![FalsificationDetail {
+            gate_id: "F-QUAL-001".to_string(),
+            hypothesis: "Quality holds".to_string(),
+            evidence: "Failure".to_string(),
+            severity: 4,
+            is_black_swan: false,
+            occurrence_count: 2, // Below min_occurrences of 5
+        }],
+    };
+
+    let tickets = generator.generate_from_popperian(&popperian);
+    assert!(tickets.is_empty(), "Below min_occurrences should be filtered");
+}
+
+/// Verify generate_from_evidence produces empty result for all-pass evidence
+#[test]
+fn test_generate_from_evidence_all_pass() {
+    let generator = TicketGenerator::new("test");
+    let evidence = vec![
+        Evidence::corroborated("F-001", test_scenario(), "ok", 100),
+        Evidence::corroborated("F-002", test_scenario(), "ok", 100),
+    ];
+
+    let tickets = generator.generate_from_evidence(&evidence);
+    assert!(tickets.is_empty(), "All-pass evidence should produce no tickets");
+}
