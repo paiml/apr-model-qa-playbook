@@ -265,6 +265,7 @@ pub fn generate_index_entry(mqs: &MqsScore) -> String {
 /// - Score >= 70      -> PROVISIONAL
 /// - Score >= 60      -> UNDER REVIEW
 /// - Score < 60       -> REJECTED
+///
 /// Score-based qualification tiers (gateways must pass). Checked in order; first match wins.
 const QUALIFICATION_TIERS: &[(f64, &str)] = &[
     (90.0, "CERTIFIED"),

@@ -216,16 +216,28 @@ fn test_kernel_op_display() {
 #[test]
 fn test_kernel_op_description_all_variants() {
     let variants = [
-        (KernelOp::FusedQ4kMatvec, "Fused Q4K quantized matrix-vector multiply"),
-        (KernelOp::FusedQ5kMatvec, "Fused Q5K quantized matrix-vector multiply"),
-        (KernelOp::FusedQ6kMatvec, "Fused Q6K quantized matrix-vector multiply"),
+        (
+            KernelOp::FusedQ4kMatvec,
+            "Fused Q4K quantized matrix-vector multiply",
+        ),
+        (
+            KernelOp::FusedQ5kMatvec,
+            "Fused Q5K quantized matrix-vector multiply",
+        ),
+        (
+            KernelOp::FusedQ6kMatvec,
+            "Fused Q6K quantized matrix-vector multiply",
+        ),
         (KernelOp::RmsNorm, "RMS normalization"),
         (KernelOp::LayerNorm, "Layer normalization"),
         (KernelOp::Silu, "SiLU activation function"),
         (KernelOp::Gelu, "GELU activation function"),
         (KernelOp::SwiGlu, "SwiGLU gated MLP"),
         (KernelOp::Rope, "Rotary positional encoding"),
-        (KernelOp::GroupedQueryAttention, "Grouped-query attention (GQA)"),
+        (
+            KernelOp::GroupedQueryAttention,
+            "Grouped-query attention (GQA)",
+        ),
         (KernelOp::MultiHeadAttention, "Multi-head attention (MHA)"),
         (KernelOp::MultiQueryAttention, "Multi-query attention (MQA)"),
         (KernelOp::BiasAdd, "Bias addition in linear layers"),

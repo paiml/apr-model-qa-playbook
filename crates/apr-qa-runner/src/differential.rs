@@ -129,13 +129,12 @@ const ARCH_FIELD_PREFIXES: &[&str] = &[
 /// Uses prefix matching against `ARCH_FIELD_PREFIXES`, then dispatches
 /// to the appropriate field setter based on which prefix matched.
 fn parse_architecture_line(line: &str, result: &mut InspectResult) {
-    let (idx, val) = match ARCH_FIELD_PREFIXES
+    let Some((idx, val)) = ARCH_FIELD_PREFIXES
         .iter()
         .enumerate()
         .find_map(|(i, prefix)| line.strip_prefix(prefix).map(|v| (i, v.trim())))
-    {
-        Some(pair) => pair,
-        None => return,
+    else {
+        return;
     };
     match idx {
         0 => result.num_attention_heads = val.parse().ok(),

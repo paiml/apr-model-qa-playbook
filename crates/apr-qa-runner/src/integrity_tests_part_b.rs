@@ -121,3 +121,71 @@ fn test_find_config_for_model_file_no_match() {
     let result = find_config_for_model_file(&dir.path().join("noconf.safetensors"));
     assert!(result.is_none());
 }
+
+/// Verify file integrity fails with invalid JSON config (parse error path)
+#[test]
+fn test_file_integrity_corrupt_config() {
+    let dir = TempDir::new().expect("create temp dir");
+    // Write corrupt config.json
+    std::fs::write(dir.path().join("bad.config.json"), "not json at all").expect("write");
+    create_named_safetensors(dir.path(), "bad.safetensors", 4, 128, 32000);
+
+    let model_file = dir.path().join("bad.safetensors");
+    let result = check_safetensors_file_integrity(&model_file);
+    assert!(!result.passed);
+    assert!(!result.config_found);
+    assert!(
+        result.errors.iter().any(|e| e.contains("G0-INTEGRITY-CONFIG")),
+        "Should report config parse error: {:?}",
+        result.errors
+    );
+}
+
+/// Verify file integrity fails when safetensors file is corrupt (tensor read error)
+#[test]
+fn test_file_integrity_corrupt_safetensors() {
+    let dir = TempDir::new().expect("create temp dir");
+    // Create valid config
+    create_named_config(dir.path(), "bad2.config.json", 4, 128, 32000);
+    // Write corrupt safetensors file (too short)
+    std::fs::write(dir.path().join("bad2.safetensors"), b"tiny").expect("write");
+
+    let model_file = dir.path().join("bad2.safetensors");
+    let result = check_safetensors_file_integrity(&model_file);
+    assert!(!result.passed);
+    assert!(
+        result.errors.iter().any(|e| e.contains("G0-INTEGRITY-CONFIG")),
+        "Should report tensor read error: {:?}",
+        result.errors
+    );
+}
+
+/// Verify file integrity detects hidden_size mismatch (file-mode path)
+#[test]
+fn test_file_integrity_hidden_size_mismatch() {
+    let dir = TempDir::new().expect("create temp dir");
+    // Config says hidden=4096, but tensors have 896
+    create_named_config(dir.path(), "h.config.json", 4, 4096, 32000);
+    create_named_safetensors(dir.path(), "h.safetensors", 4, 896, 32000);
+
+    let model_file = dir.path().join("h.safetensors");
+    let result = check_safetensors_file_integrity(&model_file);
+    assert!(!result.passed);
+    assert!(!result.hidden_size_match);
+    assert!(result.errors.iter().any(|e| e.contains("HIDDEN")));
+}
+
+/// Verify file integrity detects vocab_size mismatch (file-mode path)
+#[test]
+fn test_file_integrity_vocab_size_mismatch() {
+    let dir = TempDir::new().expect("create temp dir");
+    // Config says vocab=50000, but tensors have 32000
+    create_named_config(dir.path(), "v.config.json", 4, 896, 50000);
+    create_named_safetensors(dir.path(), "v.safetensors", 4, 896, 32000);
+
+    let model_file = dir.path().join("v.safetensors");
+    let result = check_safetensors_file_integrity(&model_file);
+    assert!(!result.passed);
+    assert!(!result.vocab_size_match);
+    assert!(result.errors.iter().any(|e| e.contains("VOCAB")));
+}

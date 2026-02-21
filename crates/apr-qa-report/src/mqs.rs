@@ -183,6 +183,7 @@ impl MqsScore {
     ];
 
     #[must_use]
+    /// Returns the risk tier label based on score and penalty thresholds.
     pub fn risk_tier(&self) -> &'static str {
         if !self.gateways_passed {
             return "BLOCKED";

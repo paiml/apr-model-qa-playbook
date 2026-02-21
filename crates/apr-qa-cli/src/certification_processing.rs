@@ -371,6 +371,9 @@ fn run_oracle_enhancement(
 ) {
     use apr_qa_runner::{OracleEnhancer, generate_checklist_markdown};
 
+    /// MQS score → letter grade thresholds (descending). First match wins.
+    const GRADE_THRESHOLDS: &[(u32, &str)] = &[(800, "A"), (600, "B"), (400, "C")];
+
     let enhancer = OracleEnhancer::new();
     let failed_evidence = result.evidence.failures();
 
@@ -389,8 +392,6 @@ fn run_oracle_enhancement(
     };
     #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
     let mqs = pass_rate as u32;
-    /// MQS score → letter grade thresholds (descending). First match wins.
-    const GRADE_THRESHOLDS: &[(u32, &str)] = &[(800, "A"), (600, "B"), (400, "C")];
     let grade = GRADE_THRESHOLDS
         .iter()
         .find(|&&(min, _)| mqs >= min)

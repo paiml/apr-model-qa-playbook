@@ -406,10 +406,7 @@ fn test_check_vocab_dim0_mismatch() {
     });
     write_config_json(dir.path(), &config);
     // Wrong dim0 (vocab_size 32000 instead of 151936) but correct dim1
-    write_minimal_safetensors(
-        dir.path(),
-        &[("model.embed_tokens.weight", &[32000, 896])],
-    );
+    write_minimal_safetensors(dir.path(), &[("model.embed_tokens.weight", &[32000, 896])]);
 
     let playbook = make_minimal_playbook("Qwen/Qwen2.5-Coder-0.5B-Instruct");
     let result = run_dimensional_check(dir.path(), &playbook);
@@ -452,6 +449,68 @@ fn test_check_corrupted_safetensors_header() {
         .unwrap();
     assert!(!header_check.passed);
     assert_eq!(header_check.actual, "parse error");
+}
+
+/// Verify dim1 (hidden_size) mismatch is caught even when vocab_size matches
+#[test]
+fn test_check_hidden_dim1_mismatch() {
+    let dir = TempDir::new().unwrap();
+    let config = serde_json::json!({
+        "hidden_size": 896,
+        "num_hidden_layers": 24,
+        "vocab_size": 151_936
+    });
+    write_config_json(dir.path(), &config);
+    // Correct dim0 (vocab_size) but wrong dim1 (hidden_size 512 instead of 896)
+    write_minimal_safetensors(
+        dir.path(),
+        &[("model.embed_tokens.weight", &[151_936, 512])],
+    );
+
+    let playbook = make_minimal_playbook("Qwen/Qwen2.5-Coder-0.5B-Instruct");
+    let result = run_dimensional_check(dir.path(), &playbook);
+
+    assert!(!result.passed);
+    let tensor_check = result
+        .checks
+        .iter()
+        .find(|c| c.name == "tensor_embed_tokens")
+        .unwrap();
+    assert!(!tensor_check.passed);
+}
+
+/// Verify tensor check passes when no vocab/hidden expectations are set
+#[test]
+fn test_check_tensor_no_expected_dims() {
+    let dir = TempDir::new().unwrap();
+    let config = serde_json::json!({
+        "num_hidden_layers": 24
+    });
+    write_config_json(dir.path(), &config);
+    write_minimal_safetensors(dir.path(), &[("model.embed_tokens.weight", &[1000, 500])]);
+
+    // Use a playbook with NO expected dim/vocab/heads
+    let yaml = r#"
+name: test-playbook
+version: "1.0"
+model:
+  hf_repo: "test/model"
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  formats: [safetensors]
+  prompts:
+    - "hello"
+"#;
+    let playbook = Playbook::from_yaml(yaml).expect("valid test playbook");
+    let result = run_dimensional_check(dir.path(), &playbook);
+
+    // Should pass — tensor is 2D, and no specific dims are expected
+    assert!(
+        result.passed,
+        "should pass with no expected dims: {:#?}",
+        result.checks
+    );
 }
 
 /// GH-270: RWKV7 has explicit null num_heads — dim-smoke should skip head checks
