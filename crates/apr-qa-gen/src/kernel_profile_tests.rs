@@ -212,17 +212,30 @@ fn test_kernel_op_display() {
     assert_eq!(format!("{}", KernelOp::RmsNorm), "RMS normalization");
 }
 
-/// Verify KernelOp description returns detailed kernel descriptions
+/// Verify every KernelOp variant has a non-empty description
 #[test]
-fn test_kernel_op_description() {
-    assert_eq!(
-        KernelOp::FusedQ4kMatvec.description(),
-        "Fused Q4K quantized matrix-vector multiply"
-    );
-    assert_eq!(
-        KernelOp::TiedEmbeddings.description(),
-        "Tied input/output embeddings"
-    );
+fn test_kernel_op_description_all_variants() {
+    let variants = [
+        (KernelOp::FusedQ4kMatvec, "Fused Q4K quantized matrix-vector multiply"),
+        (KernelOp::FusedQ5kMatvec, "Fused Q5K quantized matrix-vector multiply"),
+        (KernelOp::FusedQ6kMatvec, "Fused Q6K quantized matrix-vector multiply"),
+        (KernelOp::RmsNorm, "RMS normalization"),
+        (KernelOp::LayerNorm, "Layer normalization"),
+        (KernelOp::Silu, "SiLU activation function"),
+        (KernelOp::Gelu, "GELU activation function"),
+        (KernelOp::SwiGlu, "SwiGLU gated MLP"),
+        (KernelOp::Rope, "Rotary positional encoding"),
+        (KernelOp::GroupedQueryAttention, "Grouped-query attention (GQA)"),
+        (KernelOp::MultiHeadAttention, "Multi-head attention (MHA)"),
+        (KernelOp::MultiQueryAttention, "Multi-query attention (MQA)"),
+        (KernelOp::BiasAdd, "Bias addition in linear layers"),
+        (KernelOp::TiedEmbeddings, "Tied input/output embeddings"),
+        (KernelOp::Alibi, "ALiBi positional encoding"),
+        (KernelOp::AbsolutePosition, "Absolute positional encoding"),
+    ];
+    for (op, expected) in variants {
+        assert_eq!(op.description(), expected, "Mismatch for {op:?}");
+    }
 }
 
 /// Verify profile stores the model family name from constraints

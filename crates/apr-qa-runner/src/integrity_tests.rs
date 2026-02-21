@@ -65,5 +65,78 @@ fn create_mock_safetensors(dir: &Path, layers: usize, hidden: usize, vocab: usiz
 }
 
 
+/// Verify find_config_for_model_file returns hash-prefixed config when available
+#[test]
+fn test_find_config_hash_prefix() {
+    let dir = TempDir::new().expect("tempdir");
+    let model_path = dir.path().join("abc123.safetensors");
+    std::fs::write(&model_path, b"fake").expect("write model");
+    let config_path = dir.path().join("abc123.config.json");
+    std::fs::write(&config_path, r#"{"num_hidden_layers": 4}"#).expect("write config");
+
+    let found = find_config_for_model_file(&model_path);
+    assert_eq!(found, Some(config_path));
+}
+
+/// Verify find_config_for_model_file falls back to config.json in same directory
+#[test]
+fn test_find_config_fallback_config_json() {
+    let dir = TempDir::new().expect("tempdir");
+    let model_path = dir.path().join("abc123.safetensors");
+    std::fs::write(&model_path, b"fake").expect("write model");
+    let config_path = dir.path().join("config.json");
+    std::fs::write(&config_path, r#"{"num_hidden_layers": 4}"#).expect("write config");
+
+    let found = find_config_for_model_file(&model_path);
+    assert_eq!(found, Some(config_path));
+}
+
+/// Verify find_config_for_model_file returns None when no config exists
+#[test]
+fn test_find_config_no_config_returns_none() {
+    let dir = TempDir::new().expect("tempdir");
+    let model_path = dir.path().join("abc123.safetensors");
+    std::fs::write(&model_path, b"fake").expect("write model");
+
+    let found = find_config_for_model_file(&model_path);
+    assert!(found.is_none());
+}
+
+/// Verify find_config_for_model_file prefers hash-prefixed over generic config.json
+#[test]
+fn test_find_config_prefers_hash_prefix() {
+    let dir = TempDir::new().expect("tempdir");
+    let model_path = dir.path().join("abc123.safetensors");
+    std::fs::write(&model_path, b"fake").expect("write model");
+    let hash_config = dir.path().join("abc123.config.json");
+    std::fs::write(&hash_config, r#"{"num_hidden_layers": 4}"#).expect("write hash config");
+    let generic_config = dir.path().join("config.json");
+    std::fs::write(&generic_config, r#"{"num_hidden_layers": 8}"#).expect("write generic config");
+
+    let found = find_config_for_model_file(&model_path);
+    assert_eq!(found, Some(hash_config));
+}
+
+/// Verify check_safetensors_file_integrity works end-to-end with hash-prefixed config
+#[test]
+fn test_check_safetensors_file_integrity_hash_config() {
+    let dir = TempDir::new().expect("tempdir");
+    let model_path = dir.path().join("abc123.safetensors");
+
+    // Create minimal safetensors with matching config
+    create_mock_safetensors(dir.path(), 4, 128, 32000);
+    std::fs::rename(dir.path().join("model.safetensors"), &model_path).expect("rename");
+    let config_path = dir.path().join("abc123.config.json");
+    std::fs::write(
+        &config_path,
+        r#"{"num_hidden_layers": 4, "hidden_size": 128, "vocab_size": 32000, "num_attention_heads": 8}"#,
+    )
+    .expect("write config");
+
+    let result = check_safetensors_file_integrity(&model_path);
+    assert!(result.passed);
+    assert!(result.config_found);
+}
+
 include!("integrity_tests_config_mismatch.rs");
 include!("integrity_tests_part_b.rs");
