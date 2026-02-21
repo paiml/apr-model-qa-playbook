@@ -324,3 +324,223 @@ fn test_run_inference_simple_cpu_flag() {
     );
     assert!(result.is_err());
 }
+
+// ── classify_failure coverage ─────────────────────────────────────
+
+/// Verify classify_failure detects tensor name mismatch keywords
+#[test]
+fn test_classify_failure_tensor_name_mismatch() {
+    assert_eq!(
+        classify_failure("error: tensor name mismatch at layer 3", 1),
+        ConversionFailureType::TensorNameMismatch
+    );
+    assert_eq!(
+        classify_failure("missing tensor: model.layers.5.weight", 1),
+        ConversionFailureType::TensorNameMismatch
+    );
+}
+
+/// Verify classify_failure detects dequantization failures
+#[test]
+fn test_classify_failure_dequantization() {
+    assert_eq!(
+        classify_failure("dequantization error: NaN in output", 1),
+        ConversionFailureType::DequantizationFailure
+    );
+    assert_eq!(
+        classify_failure("overflow detected during quantization", 1),
+        ConversionFailureType::DequantizationFailure
+    );
+}
+
+/// Verify classify_failure detects missing artifact
+#[test]
+fn test_classify_failure_missing_artifact() {
+    assert_eq!(
+        classify_failure("error: not found: model.safetensors", 1),
+        ConversionFailureType::MissingArtifact
+    );
+    assert_eq!(
+        classify_failure("no such file or directory", 1),
+        ConversionFailureType::MissingArtifact
+    );
+    // "missing" without "mismatch" → MissingArtifact
+    assert_eq!(
+        classify_failure("missing file: tokenizer.json", 1),
+        ConversionFailureType::MissingArtifact
+    );
+    // "tokenizer" without "mismatch" → MissingArtifact
+    assert_eq!(
+        classify_failure("tokenizer not loaded", 1),
+        ConversionFailureType::MissingArtifact
+    );
+}
+
+/// Verify classify_failure detects config metadata mismatch
+#[test]
+fn test_classify_failure_config_metadata() {
+    assert_eq!(
+        classify_failure("hidden_size differs: expected 4096 got 2048", 1),
+        ConversionFailureType::ConfigMetadataMismatch
+    );
+    assert_eq!(
+        classify_failure("config mismatch: vocab_size", 1),
+        ConversionFailureType::ConfigMetadataMismatch
+    );
+}
+
+/// Verify classify_failure detects inference failures
+#[test]
+fn test_classify_failure_inference() {
+    assert_eq!(
+        classify_failure("inference failed at layer 2", 1),
+        ConversionFailureType::InferenceFailure
+    );
+    assert_eq!(
+        classify_failure("segfault during forward pass", 1),
+        ConversionFailureType::InferenceFailure
+    );
+    // SIGSEGV exit code
+    assert_eq!(
+        classify_failure("unknown error", -11),
+        ConversionFailureType::InferenceFailure
+    );
+}
+
+/// Verify classify_failure returns Unknown for unrecognized errors
+#[test]
+fn test_classify_failure_unknown() {
+    assert_eq!(
+        classify_failure("something completely unrelated happened", 42),
+        ConversionFailureType::Unknown
+    );
+}
+
+// ── is_garbage_output coverage ────────────────────────────────────
+
+/// Verify is_garbage_output detects empty/short output
+#[test]
+fn test_conversion_is_garbage_output_too_short() {
+    assert!(ConversionTest::is_garbage_output(""));
+    assert!(ConversionTest::is_garbage_output("ab"));
+    assert!(ConversionTest::is_garbage_output("  "));
+}
+
+/// Verify is_garbage_output detects low unique char count
+#[test]
+fn test_is_garbage_output_repeated_chars() {
+    assert!(ConversionTest::is_garbage_output("aaaaaaaaaa"));
+    assert!(ConversionTest::is_garbage_output("ababababab"));
+}
+
+/// Verify is_garbage_output detects trigram repetition
+#[test]
+fn test_is_garbage_output_trigram_repetition() {
+    // Highly repetitive trigrams (same pattern repeated)
+    assert!(ConversionTest::is_garbage_output("abcabcabcabcabcabc"));
+}
+
+/// Verify is_garbage_output passes normal text
+#[test]
+fn test_is_garbage_output_normal_text() {
+    assert!(!ConversionTest::is_garbage_output(
+        "The answer to 2+2 is 4. This is correct."
+    ));
+    assert!(!ConversionTest::is_garbage_output(
+        "Hello world, this is a normal response with variety."
+    ));
+}
+
+// ── HF cache resolution coverage ─────────────────────────────────
+
+/// Verify split_hf_repo handles model-only repos (no slash)
+#[test]
+fn test_split_hf_repo_no_slash() {
+    let (org, repo) = split_hf_repo("model-only");
+    assert_eq!(org, "unknown");
+    assert_eq!(repo, "model-only");
+}
+
+/// Verify split_hf_repo handles standard org/model format
+#[test]
+fn test_split_hf_repo_standard() {
+    let (org, repo) = split_hf_repo("Qwen/Qwen2.5-Coder-0.5B");
+    assert_eq!(org, "Qwen");
+    assert_eq!(repo, "Qwen2.5-Coder-0.5B");
+}
+
+/// Verify resolve_hf_repo_with_dirs returns error when both caches miss
+#[test]
+fn test_resolve_hf_repo_with_dirs_both_miss() {
+    let tmp = tempfile::TempDir::new().unwrap();
+    let hf_cache = tmp.path().join("hf_cache");
+    let home = tmp.path().join("home");
+    std::fs::create_dir_all(&hf_cache).unwrap();
+    std::fs::create_dir_all(&home).unwrap();
+
+    let result = resolve_hf_repo_with_dirs("test/model", &hf_cache, &home);
+    assert!(result.is_err());
+    let err = result.unwrap_err().to_string();
+    assert!(err.contains("Model not found in cache"));
+}
+
+/// Verify find_hf_snapshot returns None for non-existent directory
+#[test]
+fn test_find_hf_snapshot_nonexistent() {
+    let tmp = tempfile::TempDir::new().unwrap();
+    let result = find_hf_snapshot(tmp.path(), "nonexistent", "model");
+    assert!(result.is_none());
+}
+
+/// Verify find_hf_snapshot returns None when snapshots exist but lack model file
+#[test]
+fn test_find_hf_snapshot_no_model_file() {
+    let tmp = tempfile::TempDir::new().unwrap();
+    let snapshot_dir = tmp
+        .path()
+        .join("models--org--model")
+        .join("snapshots")
+        .join("abc123");
+    std::fs::create_dir_all(&snapshot_dir).unwrap();
+    // Snapshot exists but has no model.safetensors
+    std::fs::write(snapshot_dir.join("config.json"), "{}").unwrap();
+
+    let result = find_hf_snapshot(tmp.path(), "org", "model");
+    assert!(result.is_none());
+}
+
+/// Verify find_hf_snapshot finds snapshot with model.safetensors
+#[test]
+fn test_find_hf_snapshot_with_model_file() {
+    let tmp = tempfile::TempDir::new().unwrap();
+    let snapshot_dir = tmp
+        .path()
+        .join("models--org--model")
+        .join("snapshots")
+        .join("abc123");
+    std::fs::create_dir_all(&snapshot_dir).unwrap();
+    std::fs::write(snapshot_dir.join("model.safetensors"), "fake").unwrap();
+
+    let result = find_hf_snapshot(tmp.path(), "org", "model");
+    assert!(result.is_some());
+    assert!(result.unwrap().ends_with("abc123"));
+}
+
+/// Verify find_apr_cache returns None for non-existent path
+#[test]
+fn test_find_apr_cache_nonexistent() {
+    let tmp = tempfile::TempDir::new().unwrap();
+    let result = find_apr_cache(tmp.path(), "org", "model");
+    assert!(result.is_none());
+}
+
+/// Verify find_apr_cache finds existing cache directory
+#[test]
+fn test_find_apr_cache_existing_dir() {
+    let tmp = tempfile::TempDir::new().unwrap();
+    let cache_dir = tmp.path().join(".cache/apr-models/org/model");
+    std::fs::create_dir_all(&cache_dir).unwrap();
+
+    let result = find_apr_cache(tmp.path(), "org", "model");
+    assert!(result.is_some());
+}
