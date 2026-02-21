@@ -428,4 +428,4 @@ enum Commands {
 
 include!("configuration.rs");
 include!("main_part_b.rs");
-include!("main_part_c.rs");
+include!("main_tickets_and_parity.rs");

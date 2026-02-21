@@ -400,5 +400,5 @@ pub struct ModelConfig {
     pub size_variant: Option<String>,
 }
 
-include!("playbook_part_a.rs");
+include!("playbook_config_types.rs");
 include!("playbook_part_b.rs");

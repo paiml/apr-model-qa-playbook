@@ -310,6 +310,6 @@ impl Default for PatternDetector {
     }
 }
 
-include!("patterns_part_a.rs");
+include!("patterns_detectors.rs");
 include!("patterns_part_b.rs");
 include!("patterns_part_c.rs");

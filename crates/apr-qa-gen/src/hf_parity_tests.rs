@@ -8,7 +8,7 @@ use super::*;
 
 include!("hf_parity_tests_part_a.rs");
 
-include!("hf_parity_tests_part_b.rs");
+include!("hf_parity_tests_oracle.rs");
 
 include!("hf_parity_tests_part_c.rs");
 
