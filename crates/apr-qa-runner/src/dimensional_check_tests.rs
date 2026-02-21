@@ -366,6 +366,94 @@ test_matrix:
     );
 }
 
+/// Verify non-2D tensor is flagged as failure
+#[test]
+fn test_check_non_2d_tensor() {
+    let dir = TempDir::new().unwrap();
+    let config = serde_json::json!({
+        "hidden_size": 896,
+        "num_hidden_layers": 24,
+        "vocab_size": 151_936
+    });
+    write_config_json(dir.path(), &config);
+    // Write a 3D embed_tokens tensor — should fail check
+    write_minimal_safetensors(
+        dir.path(),
+        &[("model.embed_tokens.weight", &[2, 151_936, 896])],
+    );
+
+    let playbook = make_minimal_playbook("Qwen/Qwen2.5-Coder-0.5B-Instruct");
+    let result = run_dimensional_check(dir.path(), &playbook);
+
+    assert!(!result.passed);
+    let tensor_check = result
+        .checks
+        .iter()
+        .find(|c| c.name == "tensor_embed_tokens")
+        .unwrap();
+    assert!(!tensor_check.passed);
+    assert!(tensor_check.actual.contains("3D"));
+}
+
+/// Verify vocab_size (dim0) mismatch is caught
+#[test]
+fn test_check_vocab_dim0_mismatch() {
+    let dir = TempDir::new().unwrap();
+    let config = serde_json::json!({
+        "hidden_size": 896,
+        "num_hidden_layers": 24,
+        "vocab_size": 151_936
+    });
+    write_config_json(dir.path(), &config);
+    // Wrong dim0 (vocab_size 32000 instead of 151936) but correct dim1
+    write_minimal_safetensors(
+        dir.path(),
+        &[("model.embed_tokens.weight", &[32000, 896])],
+    );
+
+    let playbook = make_minimal_playbook("Qwen/Qwen2.5-Coder-0.5B-Instruct");
+    let result = run_dimensional_check(dir.path(), &playbook);
+
+    assert!(!result.passed);
+    let tensor_check = result
+        .checks
+        .iter()
+        .find(|c| c.name == "tensor_embed_tokens")
+        .unwrap();
+    assert!(!tensor_check.passed);
+}
+
+/// Verify corrupted safetensors header results in parse error check
+#[test]
+fn test_check_corrupted_safetensors_header() {
+    let dir = TempDir::new().unwrap();
+    let config = serde_json::json!({
+        "hidden_size": 896,
+        "num_hidden_layers": 24,
+        "vocab_size": 151_936
+    });
+    write_config_json(dir.path(), &config);
+
+    // Write a corrupt safetensors file (invalid header)
+    let path = dir.path().join("model.safetensors");
+    let mut f = std::fs::File::create(path).unwrap();
+    // Write invalid header length pointing to garbage
+    f.write_all(&999_999_u64.to_le_bytes()).unwrap();
+    f.write_all(b"not valid json").unwrap();
+
+    let playbook = make_minimal_playbook("Qwen/Qwen2.5-Coder-0.5B-Instruct");
+    let result = run_dimensional_check(dir.path(), &playbook);
+
+    assert!(!result.passed);
+    let header_check = result
+        .checks
+        .iter()
+        .find(|c| c.name == "safetensors_header")
+        .unwrap();
+    assert!(!header_check.passed);
+    assert_eq!(header_check.actual, "parse error");
+}
+
 /// GH-270: RWKV7 has explicit null num_heads — dim-smoke should skip head checks
 #[test]
 fn test_rwkv7_null_num_heads() {
