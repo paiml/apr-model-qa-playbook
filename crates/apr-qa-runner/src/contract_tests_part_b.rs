@@ -213,6 +213,169 @@ fn test_i2_empty_tensor_names_corroborated() {
     );
 }
 
+/// I-3 check failure → falsified evidence
+#[test]
+fn test_i3_check_failure_produces_falsified() {
+    use crate::command::MockCommandRunner;
+    let runner: Arc<dyn CommandRunner> =
+        Arc::new(MockCommandRunner::new().with_check_failure());
+    let model_id = ModelId::new("test", "model");
+    let config = ContractTestConfig {
+        invariants: vec!["I-3".to_string()],
+    };
+    let evidence = run_contract_tests(
+        &runner,
+        Path::new("/test/workspace/org/model"),
+        &model_id,
+        &config,
+    );
+    assert_eq!(evidence.len(), 1);
+    assert!(
+        evidence[0].outcome.is_fail(),
+        "Check failure should produce falsified evidence"
+    );
+    assert!(
+        evidence[0].reason.contains("I-3 No Silent Fallbacks: check failed"),
+        "Reason should mention check failure: {}",
+        evidence[0].reason
+    );
+}
+
+/// I-3 F32 fallback detected in check stdout → falsified
+#[test]
+fn test_i3_f32_fallback_detected_falsified() {
+    use crate::command::MockCommandRunner;
+    let runner: Arc<dyn CommandRunner> = Arc::new(
+        MockCommandRunner::new()
+            .with_check_response("Warning: fallback to F32 for unknown dtype Q3_XS"),
+    );
+    let model_id = ModelId::new("test", "model");
+    let config = ContractTestConfig {
+        invariants: vec!["I-3".to_string()],
+    };
+    let evidence = run_contract_tests(
+        &runner,
+        Path::new("/test/workspace/org/model"),
+        &model_id,
+        &config,
+    );
+    assert_eq!(evidence.len(), 1);
+    assert!(
+        evidence[0].outcome.is_fail(),
+        "F32 fallback should produce falsified: {}",
+        evidence[0].reason
+    );
+    assert!(
+        evidence[0]
+            .reason
+            .contains("I-3 No Silent Fallbacks: detected F32 fallback"),
+        "Reason should mention F32 fallback: {}",
+        evidence[0].reason
+    );
+}
+
+/// I-3 with "defaulting to f32" pattern → falsified
+#[test]
+fn test_i3_defaulting_to_f32_detected() {
+    use crate::command::MockCommandRunner;
+    let runner: Arc<dyn CommandRunner> = Arc::new(
+        MockCommandRunner::new().with_check_response("Defaulting to F32 for layer 5"),
+    );
+    let model_id = ModelId::new("test", "model");
+    let config = ContractTestConfig {
+        invariants: vec!["I-3".to_string()],
+    };
+    let evidence = run_contract_tests(
+        &runner,
+        Path::new("/test/workspace/org/model"),
+        &model_id,
+        &config,
+    );
+    assert_eq!(evidence.len(), 1);
+    assert!(evidence[0].outcome.is_fail());
+}
+
+/// I-3 with "unknown dtype" pattern → falsified
+#[test]
+fn test_i3_unknown_dtype_detected() {
+    use crate::command::MockCommandRunner;
+    let runner: Arc<dyn CommandRunner> = Arc::new(
+        MockCommandRunner::new().with_check_response("Error: unknown dtype at tensor 3"),
+    );
+    let model_id = ModelId::new("test", "model");
+    let config = ContractTestConfig {
+        invariants: vec!["I-3".to_string()],
+    };
+    let evidence = run_contract_tests(
+        &runner,
+        Path::new("/test/workspace/org/model"),
+        &model_id,
+        &config,
+    );
+    assert_eq!(evidence.len(), 1);
+    assert!(evidence[0].outcome.is_fail());
+}
+
+/// I-4 validate_stats failure → falsified evidence
+#[test]
+fn test_i4_validate_stats_failure_produces_falsified() {
+    use crate::command::MockCommandRunner;
+    let runner: Arc<dyn CommandRunner> =
+        Arc::new(MockCommandRunner::new().with_validate_stats_failure());
+    let model_id = ModelId::new("test", "model");
+    let config = ContractTestConfig {
+        invariants: vec!["I-4".to_string()],
+    };
+    let evidence = run_contract_tests(
+        &runner,
+        Path::new("/test/workspace/org/model"),
+        &model_id,
+        &config,
+    );
+    assert_eq!(evidence.len(), 1);
+    assert!(
+        evidence[0].outcome.is_fail(),
+        "Validate-stats failure should produce falsified: {}",
+        evidence[0].reason
+    );
+    assert!(
+        evidence[0]
+            .reason
+            .contains("I-4 Statistical Preservation"),
+        "Reason should mention I-4: {}",
+        evidence[0].reason
+    );
+}
+
+/// I-5 compare_inference failure → falsified evidence
+#[test]
+fn test_i5_compare_inference_failure_produces_falsified() {
+    use crate::command::MockCommandRunner;
+    let runner: Arc<dyn CommandRunner> =
+        Arc::new(MockCommandRunner::new().with_compare_inference_failure());
+    let model_id = ModelId::new("test", "model");
+    let config = ContractTestConfig {
+        invariants: vec!["I-5".to_string()],
+    };
+    let evidence = run_contract_tests(
+        &runner,
+        Path::new("/test/workspace/org/model"),
+        &model_id,
+        &config,
+    );
+    assert_eq!(evidence.len(), 1);
+    assert!(
+        evidence[0].outcome.is_fail(),
+        "Compare-inference failure should produce falsified: {}",
+        evidence[0].reason
+    );
+    assert!(
+        evidence[0].reason.contains("I-5 Tokenizer Roundtrip"),
+        "Reason should mention I-5: {}",
+        evidence[0].reason
+    );
+}
+
 /// Verify I-1 label is silently skipped (handled elsewhere)
 #[test]
 fn test_contract_i1_skipped() {

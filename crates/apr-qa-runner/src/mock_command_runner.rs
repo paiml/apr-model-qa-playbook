@@ -82,6 +82,8 @@ pub struct MockCommandRunner {
     pub http_post_response: String,
     /// Whether spawn_serve should succeed
     pub spawn_serve_success: bool,
+    /// Custom stdout for check_model (when check_success is true)
+    pub check_response: String,
 }
 
 impl Default for MockCommandRunner {
@@ -136,6 +138,7 @@ impl Default for MockCommandRunner {
             http_post_success: true,
             http_post_response: r#"{"choices":[{"text":"The answer is 4."}]}"#.to_string(),
             spawn_serve_success: true,
+            check_response: "All checks passed".to_string(),
         }
     }
 }
@@ -415,6 +418,13 @@ impl MockCommandRunner {
     #[must_use]
     pub fn with_spawn_serve_failure(mut self) -> Self {
         self.spawn_serve_success = false;
+        self
+    }
+
+    /// Set custom stdout for check_model
+    #[must_use]
+    pub fn with_check_response(mut self, response: impl Into<String>) -> Self {
+        self.check_response = response.into();
         self
     }
 }

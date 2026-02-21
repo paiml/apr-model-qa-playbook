@@ -113,7 +113,7 @@ impl CommandRunner for MockCommandRunner {
     /// Simulate model safety check
     fn check_model(&self, _model_path: &Path) -> CommandOutput {
         if self.check_success {
-            CommandOutput::success("All checks passed")
+            CommandOutput::success(&self.check_response)
         } else {
             CommandOutput::failure(1, "Check failed: safety issues detected")
         }
