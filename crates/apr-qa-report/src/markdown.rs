@@ -277,8 +277,11 @@ const QUALIFICATION_TIERS: &[(f64, &str)] = &[
 
 /// Determine qualification status string from MQS score tiers
 fn qualification_status(mqs: &MqsScore) -> &'static str {
-    if !mqs.gateways_passed { return "REJECTED (Gateway Failure)"; }
-    QUALIFICATION_TIERS.iter()
+    if !mqs.gateways_passed {
+        return "REJECTED (Gateway Failure)";
+    }
+    QUALIFICATION_TIERS
+        .iter()
         .find(|&&(min_score, _)| mqs.normalized_score >= min_score)
         .map_or("REJECTED", |&(_, label)| label)
 }

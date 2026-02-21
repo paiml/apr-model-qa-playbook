@@ -44,23 +44,62 @@ fn classify_gate<T: Clone>(gate_id: &str, rules: &[GateRule<T>], default: T) -> 
 
 /// Severity classification rules (checked in priority order).
 const SEVERITY_RULES: &[GateRule<u8>] = &[
-    GateRule { matcher: GateMatcher::Contains("-P0-"), value: 5 },
-    GateRule { matcher: GateMatcher::StartsWith("G"), value: 5 },
-    GateRule { matcher: GateMatcher::Contains("-P1-"), value: 4 },
-    GateRule { matcher: GateMatcher::Contains("-P2-"), value: 3 },
-    GateRule { matcher: GateMatcher::Contains("EDGE"), value: 3 },
-    GateRule { matcher: GateMatcher::Contains("STAB"), value: 3 },
-    GateRule { matcher: GateMatcher::Contains("PERF"), value: 2 },
+    GateRule {
+        matcher: GateMatcher::Contains("-P0-"),
+        value: 5,
+    },
+    GateRule {
+        matcher: GateMatcher::StartsWith("G"),
+        value: 5,
+    },
+    GateRule {
+        matcher: GateMatcher::Contains("-P1-"),
+        value: 4,
+    },
+    GateRule {
+        matcher: GateMatcher::Contains("-P2-"),
+        value: 3,
+    },
+    GateRule {
+        matcher: GateMatcher::Contains("EDGE"),
+        value: 3,
+    },
+    GateRule {
+        matcher: GateMatcher::Contains("STAB"),
+        value: 3,
+    },
+    GateRule {
+        matcher: GateMatcher::Contains("PERF"),
+        value: 2,
+    },
 ];
 
 /// Hypothesis classification rules (checked in priority order).
 const HYPOTHESIS_RULES: &[GateRule<&str>] = &[
-    GateRule { matcher: GateMatcher::Contains("QUAL"), value: "Model produces valid output" },
-    GateRule { matcher: GateMatcher::Contains("PERF"), value: "Model meets performance requirements" },
-    GateRule { matcher: GateMatcher::Contains("STAB"), value: "Model is stable under stress" },
-    GateRule { matcher: GateMatcher::Contains("COMP"), value: "Model is compatible with configuration" },
-    GateRule { matcher: GateMatcher::Contains("EDGE"), value: "Model handles edge cases correctly" },
-    GateRule { matcher: GateMatcher::Contains("REGR"), value: "Model behavior is consistent" },
+    GateRule {
+        matcher: GateMatcher::Contains("QUAL"),
+        value: "Model produces valid output",
+    },
+    GateRule {
+        matcher: GateMatcher::Contains("PERF"),
+        value: "Model meets performance requirements",
+    },
+    GateRule {
+        matcher: GateMatcher::Contains("STAB"),
+        value: "Model is stable under stress",
+    },
+    GateRule {
+        matcher: GateMatcher::Contains("COMP"),
+        value: "Model is compatible with configuration",
+    },
+    GateRule {
+        matcher: GateMatcher::Contains("EDGE"),
+        value: "Model handles edge cases correctly",
+    },
+    GateRule {
+        matcher: GateMatcher::Contains("REGR"),
+        value: "Model behavior is consistent",
+    },
 ];
 
 /// Popperian score with falsification details

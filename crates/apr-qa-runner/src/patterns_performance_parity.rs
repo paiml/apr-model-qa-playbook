@@ -31,7 +31,7 @@ fn perf_threshold_check(
 ) -> PerformanceCheckResult {
     let passed = if higher_is_better { value >= threshold } else { value <= threshold };
     let cmp = ["<", ">=", ">", "<="];
-    let idx = (higher_is_better as usize) + ((!passed as usize) * 2);
+    let idx = usize::from(higher_is_better) + (usize::from(!passed) * 2);
     let suffix = if passed { "" } else { " (threshold exceeded)" };
     PerformanceCheckResult::new(
         gate, passed, value, threshold,
@@ -115,7 +115,7 @@ impl ParityChecker {
             .map(|(a, b)| f64::from((a - b).abs()))
             .fold(0.0f64, f64::max);
         let passed = max_diff <= epsilon;
-        let status = ["MISMATCH", "OK"][passed as usize];
+        let status = ["MISMATCH", "OK"][usize::from(passed)];
         ParityCheckResult::new(
             SpecGate::ParCpuGpuEquivalence, passed, max_diff, epsilon,
             format!("CPU/GPU {status}: diff {max_diff:.2e} vs eps {epsilon:.2e}"),
@@ -156,7 +156,7 @@ impl ParityChecker {
             0.0
         };
         let passed = degradation <= max_degradation_percent;
-        let verdict = ["EXCEEDED", "within bounds"][passed as usize];
+        let verdict = ["EXCEEDED", "within bounds"][usize::from(passed)];
         ParityCheckResult::new(
             SpecGate::ParQuantizationImpact, passed, degradation, max_degradation_percent,
             format!("Perplexity degradation {degradation:.1}% {verdict} (max {max_degradation_percent}%)"),
@@ -266,7 +266,7 @@ impl IntegrityChecker {
             &original_hash[..8.min(original_hash.len())],
             &roundtrip_hash[..8.min(roundtrip_hash.len())]
         ));
-        IntegrityCheckResult::new(SpecGate::IntFormatFidelity, passed, msgs[passed as usize].to_string(), evidence)
+        IntegrityCheckResult::new(SpecGate::IntFormatFidelity, passed, msgs[usize::from(passed)].to_string(), evidence)
     }
 
     /// F-INT-005: Check determinism (same seed = same output)
@@ -282,7 +282,7 @@ impl IntegrityChecker {
         });
         IntegrityCheckResult::new(
             SpecGate::IntDeterminism, passed,
-            format!("{} output with seed {seed}", labels[passed as usize]),
+            format!("{} output with seed {seed}", labels[usize::from(passed)]),
             evidence,
         )
     }

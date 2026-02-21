@@ -244,7 +244,11 @@ fn test_qualification_status_tiers() {
         let mut mqs = test_mqs_score();
         mqs.normalized_score = score;
         mqs.gateways_passed = gw;
-        assert_eq!(qualification_status(&mqs), expected, "score={score}, gw={gw}");
+        assert_eq!(
+            qualification_status(&mqs),
+            expected,
+            "score={score}, gw={gw}"
+        );
     }
 }
 
@@ -370,12 +374,43 @@ fn test_generate_rag_markdown_multiple_categories() {
     let popperian = test_popperian_score();
     let mut collector = EvidenceCollector::new();
 
-    collector.add(Evidence::corroborated("F-QUAL-001", test_scenario(), "ok", 100));
-    collector.add(Evidence::corroborated("F-PERF-001", test_scenario(), "ok", 100));
-    collector.add(Evidence::falsified("F-STAB-001", test_scenario(), "fail", "", 100));
-    collector.add(Evidence::corroborated("F-COMP-001", test_scenario(), "ok", 100));
-    collector.add(Evidence::corroborated("F-EDGE-001", test_scenario(), "ok", 100));
-    collector.add(Evidence::corroborated("F-REGR-001", test_scenario(), "ok", 100));
+    collector.add(Evidence::corroborated(
+        "F-QUAL-001",
+        test_scenario(),
+        "ok",
+        100,
+    ));
+    collector.add(Evidence::corroborated(
+        "F-PERF-001",
+        test_scenario(),
+        "ok",
+        100,
+    ));
+    collector.add(Evidence::falsified(
+        "F-STAB-001",
+        test_scenario(),
+        "fail",
+        "",
+        100,
+    ));
+    collector.add(Evidence::corroborated(
+        "F-COMP-001",
+        test_scenario(),
+        "ok",
+        100,
+    ));
+    collector.add(Evidence::corroborated(
+        "F-EDGE-001",
+        test_scenario(),
+        "ok",
+        100,
+    ));
+    collector.add(Evidence::corroborated(
+        "F-REGR-001",
+        test_scenario(),
+        "ok",
+        100,
+    ));
 
     let md = generate_rag_markdown(&mqs, &popperian, &collector);
 

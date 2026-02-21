@@ -120,18 +120,9 @@ fn test_severity_determination() {
 /// Verify gate_to_hypothesis produces meaningful descriptions
 #[test]
 fn test_gate_to_hypothesis() {
-    assert!(
-        PopperianCalculator::gate_to_hypothesis("F-QUAL-001")
-            .contains("valid output")
-    );
-    assert!(
-        PopperianCalculator::gate_to_hypothesis("F-PERF-001")
-            .contains("performance")
-    );
-    assert!(
-        PopperianCalculator::gate_to_hypothesis("F-STAB-001")
-            .contains("stable")
-    );
+    assert!(PopperianCalculator::gate_to_hypothesis("F-QUAL-001").contains("valid output"));
+    assert!(PopperianCalculator::gate_to_hypothesis("F-PERF-001").contains("performance"));
+    assert!(PopperianCalculator::gate_to_hypothesis("F-STAB-001").contains("stable"));
 }
 
 /// Verify falsification_summary text for different result states
@@ -240,28 +231,19 @@ fn test_confidence_zero_samples() {
 /// Verify COMP gate maps to compatible hypothesis
 #[test]
 fn test_gate_to_hypothesis_comp() {
-    assert!(
-        PopperianCalculator::gate_to_hypothesis("F-COMP-001")
-            .contains("compatible")
-    );
+    assert!(PopperianCalculator::gate_to_hypothesis("F-COMP-001").contains("compatible"));
 }
 
 /// Verify EDGE gate maps to edge cases hypothesis
 #[test]
 fn test_gate_to_hypothesis_edge() {
-    assert!(
-        PopperianCalculator::gate_to_hypothesis("F-EDGE-001")
-            .contains("edge cases")
-    );
+    assert!(PopperianCalculator::gate_to_hypothesis("F-EDGE-001").contains("edge cases"));
 }
 
 /// Verify REGR gate maps to consistent hypothesis
 #[test]
 fn test_gate_to_hypothesis_regr() {
-    assert!(
-        PopperianCalculator::gate_to_hypothesis("F-REGR-001")
-            .contains("consistent")
-    );
+    assert!(PopperianCalculator::gate_to_hypothesis("F-REGR-001").contains("consistent"));
 }
 
 /// Verify unknown gate includes gate ID in hypothesis text
