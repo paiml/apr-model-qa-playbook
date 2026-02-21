@@ -163,7 +163,20 @@ pub fn check_safetensors_integrity(model_dir: &Path) -> IntegrityResult {
     let tensor_values = derive_values_from_tensors(&all_tensors);
     result.tensor_values = Some(tensor_values.clone());
 
-    // Step 5: Validate layer count
+    // Step 5: Validate config vs tensor values
+    validate_config_vs_tensors(&config, &tensor_values, &mut result);
+
+    result
+}
+
+/// Validate config.json values against tensor-derived values
+///
+/// Checks layer count, hidden_size, and vocab_size, recording mismatches in the result.
+fn validate_config_vs_tensors(
+    config: &HfConfig,
+    tensor_values: &TensorDerivedValues,
+    result: &mut IntegrityResult,
+) {
     if let (Some(config_layers), Some(tensor_layers)) =
         (config.num_hidden_layers, tensor_values.layer_count)
     {
@@ -176,7 +189,6 @@ pub fn check_safetensors_integrity(model_dir: &Path) -> IntegrityResult {
         }
     }
 
-    // Step 6: Validate hidden_size
     if let (Some(config_hidden), Some(tensor_hidden)) =
         (config.hidden_size, tensor_values.hidden_size)
     {
@@ -189,7 +201,6 @@ pub fn check_safetensors_integrity(model_dir: &Path) -> IntegrityResult {
         }
     }
 
-    // Step 7: Validate vocab_size
     if let (Some(config_vocab), Some(tensor_vocab)) = (config.vocab_size, tensor_values.vocab_size)
     {
         if config_vocab != tensor_vocab {
@@ -200,8 +211,6 @@ pub fn check_safetensors_integrity(model_dir: &Path) -> IntegrityResult {
             ));
         }
     }
-
-    result
 }
 
 /// Check integrity of a single SafeTensors model file
@@ -279,40 +288,7 @@ pub fn check_safetensors_file_integrity(model_file: &Path) -> IntegrityResult {
     let tensor_values = derive_values_from_tensors(&all_tensors);
     result.tensor_values = Some(tensor_values.clone());
 
-    if let (Some(config_layers), Some(tensor_layers)) =
-        (config.num_hidden_layers, tensor_values.layer_count)
-    {
-        if config_layers != tensor_layers {
-            result.layer_count_match = false;
-            result.passed = false;
-            result.errors.push(format!(
-                "G0-INTEGRITY-LAYERS: config says {config_layers} layers but tensors have {tensor_layers}"
-            ));
-        }
-    }
-
-    if let (Some(config_hidden), Some(tensor_hidden)) =
-        (config.hidden_size, tensor_values.hidden_size)
-    {
-        if config_hidden != tensor_hidden {
-            result.hidden_size_match = false;
-            result.passed = false;
-            result.errors.push(format!(
-                "G0-INTEGRITY-HIDDEN: config says hidden_size={config_hidden} but embedding has {tensor_hidden}"
-            ));
-        }
-    }
-
-    if let (Some(config_vocab), Some(tensor_vocab)) = (config.vocab_size, tensor_values.vocab_size)
-    {
-        if config_vocab != tensor_vocab {
-            result.vocab_size_match = false;
-            result.passed = false;
-            result.errors.push(format!(
-                "G0-INTEGRITY-VOCAB: config says vocab_size={config_vocab} but embedding has {tensor_vocab}"
-            ));
-        }
-    }
+    validate_config_vs_tensors(&config, &tensor_values, &mut result);
 
     result
 }
@@ -474,4 +450,4 @@ fn find_embedding_shape(tensors: &HashMap<String, Vec<usize>>) -> (Option<usize>
     (None, None)
 }
 
-include!("integrity_part_a.rs");
+include!("integrity_helpers.rs");
