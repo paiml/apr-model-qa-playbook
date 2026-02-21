@@ -470,6 +470,140 @@ fn test_companion_files_found() {
     assert!(result.found.contains(&"tokenizer.json".to_string()));
 }
 
+// ========================================================================
+// ATTENTION ENTROPY EDGE CASES (F-NUM-001)
+// ========================================================================
+
+/// Verify empty attention weights returns invalid
+#[test]
+fn test_attention_entropy_empty_weights_invalid() {
+    let detector = PatternDetector::new();
+    let result = detector.check_attention_entropy(&[]);
+    assert!(!result.is_valid);
+    assert!(result.description.contains("Empty"));
+}
+
+/// Verify negative sum attention weights returns invalid
+#[test]
+fn test_attention_entropy_negative_sum() {
+    let detector = PatternDetector::new();
+    let result = detector.check_attention_entropy(&[-1.0, -2.0, -3.0]);
+    assert!(!result.is_valid);
+    assert!(result.description.contains("Invalid"));
+}
+
+/// Verify NaN sum attention weights returns invalid
+#[test]
+fn test_attention_entropy_nan_sum() {
+    let detector = PatternDetector::new();
+    let result = detector.check_attention_entropy(&[f32::NAN, 0.5]);
+    assert!(!result.is_valid);
+}
+
+/// Verify collapsed attention (single dominant weight) is detected
+#[test]
+fn test_attention_entropy_extreme_collapse() {
+    let detector = PatternDetector::new();
+    // One weight dominates → low entropy → collapsed
+    let mut weights = vec![0.0001_f32; 100];
+    weights[0] = 100.0;
+    let result = detector.check_attention_entropy(&weights);
+    assert!(!result.is_valid);
+    assert!(result.description.contains("collapsed"));
+}
+
+/// Verify single-element attention returns not valid (zero max_entropy)
+#[test]
+fn test_attention_entropy_single_element() {
+    let detector = PatternDetector::new();
+    let result = detector.check_attention_entropy(&[1.0]);
+    // ln(1) = 0 → max_entropy = 0 → normalized_entropy = 0
+    assert!(!result.is_valid);
+}
+
+// ========================================================================
+// LAYERNORM EDGE CASES (F-NUM-002)
+// ========================================================================
+
+/// Verify empty LayerNorm output returns invalid
+#[test]
+fn test_layernorm_empty() {
+    let detector = PatternDetector::new();
+    let result = detector.check_layernorm_output(&[]);
+    assert!(!result.is_valid);
+    assert!(result.description.contains("Empty"));
+}
+
+// ========================================================================
+// DOS PROTECTION EDGE CASES (F-SEC-003)
+// ========================================================================
+
+/// Verify input length violation is detected
+#[test]
+fn test_dos_input_length_violation() {
+    let detector = PatternDetector::new();
+    let config = DosProtectionConfig {
+        max_input_bytes: 10,
+        ..Default::default()
+    };
+    let result = detector.check_dos_protection("this exceeds ten bytes easily", &config);
+    assert!(!result.is_safe);
+    assert!(result.violations.iter().any(|v| v.check == "input_length"));
+}
+
+/// Verify token count violation is detected
+#[test]
+fn test_dos_token_count_violation() {
+    let detector = PatternDetector::new();
+    let config = DosProtectionConfig {
+        max_tokens: 2,
+        ..Default::default()
+    };
+    // 40 chars ÷ 4 = 10 estimated tokens > 2
+    let result = detector.check_dos_protection("a]bc defg hijk lmno pqrs tuvw xyz! 1234", &config);
+    assert!(!result.is_safe);
+    assert!(result.violations.iter().any(|v| v.check == "token_count"));
+}
+
+/// Verify repetition violation is detected
+#[test]
+fn test_dos_repetition_violation() {
+    let detector = PatternDetector::new();
+    let config = DosProtectionConfig {
+        max_repetition_ratio: 0.1,
+        ..Default::default()
+    };
+    // Highly repetitive input
+    let result = detector.check_dos_protection("abcdabcdabcdabcdabcdabcd", &config);
+    assert!(!result.is_safe);
+    assert!(result.violations.iter().any(|v| v.check == "repetition"));
+}
+
+// ========================================================================
+// REPETITION RATIO EDGE CASES
+// ========================================================================
+
+/// Verify short input returns 0.0 repetition ratio
+#[test]
+fn test_repetition_ratio_short_input() {
+    let detector = PatternDetector::new();
+    // Input < 10 chars → returns 0.0
+    let ratio = detector.calculate_repetition_ratio("short");
+    assert!((ratio - 0.0).abs() < f64::EPSILON);
+}
+
+// ========================================================================
+// JACCARD SIMILARITY EDGE CASES
+// ========================================================================
+
+/// Verify empty strings have perfect similarity
+#[test]
+fn test_jaccard_similarity_empty_strings_perfect() {
+    let detector = PatternDetector::new();
+    let result = detector.jaccard_similarity("", "");
+    assert!((result - 1.0).abs() < f64::EPSILON);
+}
+
 /// Verify companion file checker reports missing files correctly
 #[test]
 fn test_companion_files_mixed() {
