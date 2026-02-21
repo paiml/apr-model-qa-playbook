@@ -356,4 +356,15 @@ mod tests {
         let parsed: ProofBonus = serde_json::from_str(&json).unwrap();
         assert_eq!(parsed.bonus_points, 25);
     }
+
+    #[test]
+    fn test_read_proof_status_invalid_json() {
+        let temp = tempfile::NamedTempFile::new().unwrap();
+        std::fs::write(temp.path(), "not valid json {{").unwrap();
+
+        let result = read_proof_status(Some(temp.path()));
+        assert!(result.is_err());
+        let err = result.unwrap_err().to_string();
+        assert!(err.contains("parse"));
+    }
 }
