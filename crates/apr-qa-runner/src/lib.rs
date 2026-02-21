@@ -16,7 +16,15 @@
 #![allow(clippy::needless_borrows_for_generic_args)]
 #![allow(clippy::single_char_pattern)]
 // Allow common patterns in test code
-#![cfg_attr(test, allow(clippy::expect_used, clippy::unwrap_used))]
+#![cfg_attr(
+    test,
+    allow(
+        clippy::expect_used,
+        clippy::unwrap_used,
+        clippy::panic,
+        clippy::assertions_on_constants
+    )
+)]
 #![cfg_attr(test, allow(clippy::redundant_closure_for_method_calls))]
 #![cfg_attr(test, allow(clippy::redundant_clone))]
 #![cfg_attr(test, allow(clippy::uninlined_format_args))]

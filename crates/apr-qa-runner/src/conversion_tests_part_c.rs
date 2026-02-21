@@ -116,7 +116,7 @@ fn test_conversion_result_corroborated_max_diff() {
         ConversionResult::Corroborated { max_diff, .. } => {
             assert!(max_diff < EPSILON);
         }
-        _ => panic!("Expected Corroborated"),
+        ConversionResult::Falsified { .. } => panic!("Expected Corroborated"),
     }
 }
 
@@ -141,7 +141,7 @@ fn test_conversion_result_falsified_gate_id() {
         ConversionResult::Falsified { gate_id, .. } => {
             assert_eq!(gate_id, "F-CONV-G-A");
         }
-        _ => panic!("Expected Falsified"),
+        ConversionResult::Corroborated { .. } => panic!("Expected Falsified"),
     }
 }
 
@@ -158,7 +158,7 @@ fn test_semantic_test_result_corroborated_outputs() {
         } => {
             assert_eq!(source_output, target_output);
         }
-        _ => panic!("Expected Corroborated"),
+        SemanticTestResult::Falsified { .. } => panic!("Expected Corroborated"),
     }
 }
 
@@ -174,7 +174,7 @@ fn test_semantic_test_result_falsified_stderr() {
         SemanticTestResult::Falsified { stderr, .. } => {
             assert!(stderr.contains("PMAT-172"));
         }
-        _ => panic!("Expected Falsified"),
+        SemanticTestResult::Corroborated { .. } => panic!("Expected Falsified"),
     }
 }
 

@@ -231,7 +231,7 @@ fn test_conversion_evidence_clone() {
     };
     let cloned = evidence.clone();
     assert_eq!(evidence.source_hash, cloned.source_hash);
-    assert_eq!(evidence.max_diff, cloned.max_diff);
+    assert!((evidence.max_diff - cloned.max_diff).abs() < f64::EPSILON);
 }
 
 #[test]
@@ -247,7 +247,7 @@ fn test_conversion_result_clone() {
         ConversionResult::Corroborated { max_diff, .. } => {
             assert!((max_diff - 0.0).abs() < f64::EPSILON);
         }
-        _ => panic!("Expected Corroborated"),
+        ConversionResult::Falsified { .. } => panic!("Expected Corroborated"),
     }
 }
 

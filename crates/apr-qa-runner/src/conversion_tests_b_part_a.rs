@@ -60,7 +60,7 @@ fn test_conversion_result_serialization_corroborated() {
         ConversionResult::Corroborated { max_diff, .. } => {
             assert!(max_diff < EPSILON);
         }
-        _ => panic!("Expected Corroborated"),
+        ConversionResult::Falsified { .. } => panic!("Expected Corroborated"),
     }
 }
 
@@ -88,7 +88,7 @@ fn test_conversion_result_serialization_falsified() {
         ConversionResult::Falsified { gate_id, .. } => {
             assert_eq!(gate_id, "F-CONV-G-A");
         }
-        _ => panic!("Expected Falsified"),
+        ConversionResult::Corroborated { .. } => panic!("Expected Falsified"),
     }
 }
 
@@ -129,7 +129,7 @@ fn test_semantic_test_result_clone() {
             assert_eq!(bug_type, ConversionBugType::TokenizerMissing);
             assert_eq!(stderr, "error");
         }
-        _ => panic!("Expected Falsified"),
+        SemanticTestResult::Corroborated { .. } => panic!("Expected Falsified"),
     }
 }
 

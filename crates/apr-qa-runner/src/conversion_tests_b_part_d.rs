@@ -44,7 +44,7 @@ fn test_idempotency_falsified_result_structure() {
             assert_eq!(gate_id, "F-CONV-IDEM-001");
             assert!(reason.contains("Idempotency"));
         }
-        _ => panic!("Expected Falsified"),
+        ConversionResult::Corroborated { .. } => panic!("Expected Falsified"),
     }
 }
 
@@ -73,7 +73,7 @@ fn test_commutativity_falsified_result_structure() {
             assert_eq!(gate_id, "F-CONV-COM-001");
             assert!(reason.contains("Commutativity"));
         }
-        _ => panic!("Expected Falsified"),
+        ConversionResult::Corroborated { .. } => panic!("Expected Falsified"),
     }
 }
 
