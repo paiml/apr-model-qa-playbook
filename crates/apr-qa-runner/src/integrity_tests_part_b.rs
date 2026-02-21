@@ -189,3 +189,51 @@ fn test_file_integrity_vocab_size_mismatch() {
     assert!(!result.vocab_size_match);
     assert!(result.errors.iter().any(|e| e.contains("VOCAB")));
 }
+
+/// Verify find_config_for_model_file skips hash-prefix when file is not .safetensors
+#[test]
+fn test_find_config_non_safetensors_extension() {
+    let dir = TempDir::new().expect("create temp dir");
+    // Create a .gguf file and a plain config.json
+    std::fs::write(dir.path().join("model.gguf"), "fake gguf").expect("write");
+    create_test_config(dir.path(), 4, 128, 32000);
+
+    // .gguf doesn't match .safetensors suffix → skips hash-prefix, falls back to config.json
+    let result = find_config_for_model_file(&dir.path().join("model.gguf"));
+    assert!(result.is_some(), "Should fall back to config.json for non-.safetensors");
+    assert!(
+        result
+            .unwrap()
+            .file_name()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            == "config.json"
+    );
+}
+
+/// Verify find_config_for_model_file returns None for non-safetensors without config.json
+#[test]
+fn test_find_config_non_safetensors_no_fallback() {
+    let dir = TempDir::new().expect("create temp dir");
+    std::fs::write(dir.path().join("model.gguf"), "fake gguf").expect("write");
+
+    // No config.json either → returns None
+    let result = find_config_for_model_file(&dir.path().join("model.gguf"));
+    assert!(result.is_none(), "Should return None without any config");
+}
+
+/// Verify find_config_for_model_file prefers hash-prefix over plain config.json
+#[test]
+fn test_find_config_prefers_hash_prefix_over_plain() {
+    let dir = TempDir::new().expect("create temp dir");
+    // Both hash-prefixed and plain config exist
+    create_named_config(dir.path(), "xyz.config.json", 24, 896, 151_936);
+    create_test_config(dir.path(), 12, 768, 30_000);
+    create_named_safetensors(dir.path(), "xyz.safetensors", 24, 896, 151_936);
+
+    let result = find_config_for_model_file(&dir.path().join("xyz.safetensors"));
+    assert!(result.is_some());
+    let name = result.unwrap().file_name().unwrap().to_str().unwrap().to_string();
+    assert_eq!(name, "xyz.config.json", "Should prefer hash-prefix over plain config.json");
+}

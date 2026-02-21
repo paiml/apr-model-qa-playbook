@@ -257,6 +257,19 @@ mod falsification_b {
         assert!(msg.contains("None"));
     }
 
+    /// Verify DuplicateDerived error Display with Some quantization
+    #[test]
+    fn test_duplicate_derived_display_with_quant() {
+        let err = ProvenanceError::DuplicateDerived {
+            format: "gguf".to_string(),
+            quantization: Some("q4_k_m".to_string()),
+        };
+        let msg = err.to_string();
+        assert!(msg.contains("PROV-008"));
+        assert!(msg.contains("gguf"));
+        assert!(msg.contains("q4_k_m"));
+    }
+
     /// F-PROV-CODE-005: Null bytes in strings
     #[test]
     fn f_prov_code_005_null_bytes() {

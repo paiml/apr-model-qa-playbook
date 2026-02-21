@@ -557,3 +557,90 @@ test_matrix:
         result.checks
     );
 }
+
+/// Verify lm_head.weight check triggers when present but with wrong dimensions
+#[test]
+fn test_check_lm_head_dim_mismatch() {
+    let dir = TempDir::new().unwrap();
+    let config = serde_json::json!({
+        "hidden_size": 896,
+        "num_hidden_layers": 24,
+        "vocab_size": 151_936
+    });
+    write_config_json(dir.path(), &config);
+    // embed_tokens matches, but lm_head has wrong dim0 (vocab_size)
+    write_minimal_safetensors(
+        dir.path(),
+        &[
+            ("model.embed_tokens.weight", &[151_936, 896]),
+            ("lm_head.weight", &[50_000, 896]),
+        ],
+    );
+
+    let playbook = make_minimal_playbook("Qwen/Qwen2.5-Coder-0.5B-Instruct");
+    let result = run_dimensional_check(dir.path(), &playbook);
+    assert!(!result.passed);
+    let lm_check = result
+        .checks
+        .iter()
+        .find(|c| c.name == "tensor_lm_head")
+        .unwrap();
+    assert!(!lm_check.passed);
+}
+
+/// Verify check_safetensors reports when no safetensors files exist
+#[test]
+fn test_check_safetensors_zero_files() {
+    let dir = TempDir::new().unwrap();
+    let config = serde_json::json!({
+        "hidden_size": 896,
+        "num_hidden_layers": 24,
+        "vocab_size": 151_936
+    });
+    write_config_json(dir.path(), &config);
+    // No .safetensors files at all
+
+    let playbook = make_minimal_playbook("Qwen/Qwen2.5-Coder-0.5B-Instruct");
+    let result = run_dimensional_check(dir.path(), &playbook);
+    assert!(!result.passed);
+    let st_found = result
+        .checks
+        .iter()
+        .find(|c| c.name == "safetensors_found")
+        .unwrap();
+    assert!(!st_found.passed);
+    assert!(st_found.actual.contains("0 file"));
+}
+
+/// Verify only vocab_size mismatch on dim0 when hidden_size is None
+#[test]
+fn test_check_tensor_only_vocab_expected() {
+    let dir = TempDir::new().unwrap();
+    let config = serde_json::json!({
+        "num_hidden_layers": 24,
+        "vocab_size": 151_936
+    });
+    write_config_json(dir.path(), &config);
+    // dim0 doesn't match vocab_size, but no hidden_size to check
+    write_minimal_safetensors(
+        dir.path(),
+        &[("model.embed_tokens.weight", &[50_000, 512])],
+    );
+
+    let yaml = r#"
+name: test-playbook
+version: "1.0"
+model:
+  hf_repo: "test/model"
+  expected_vocab_size: 151936
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  formats: [safetensors]
+  prompts:
+    - "hello"
+"#;
+    let playbook = Playbook::from_yaml(yaml).expect("valid playbook");
+    let result = run_dimensional_check(dir.path(), &playbook);
+    assert!(!result.passed, "dim0 mismatch should fail: {:#?}", result.checks);
+}
