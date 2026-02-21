@@ -18,4 +18,4 @@ impl std::fmt::Debug for ToolExecutor {
 }
 
 include!("execute.rs");
-include!("executor_tools_part_b.rs");
+include!("executor_tools_result_types.rs");

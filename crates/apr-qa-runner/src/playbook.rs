@@ -401,4 +401,4 @@ pub struct ModelConfig {
 }
 
 include!("playbook_config_types.rs");
-include!("playbook_part_b.rs");
+include!("playbook_fingerprint_config.rs");

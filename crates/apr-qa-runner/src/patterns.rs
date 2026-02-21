@@ -311,5 +311,5 @@ impl Default for PatternDetector {
 }
 
 include!("patterns_detectors.rs");
-include!("patterns_part_b.rs");
-include!("patterns_part_c.rs");
+include!("patterns_spec_gates.rs");
+include!("patterns_performance_parity.rs");

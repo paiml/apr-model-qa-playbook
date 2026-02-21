@@ -8,6 +8,6 @@ include!("executor_tests_d_part_a.rs");
 
 include!("executor_jidoka_tests.rs");
 
-include!("executor_tests_d_part_c.rs");
+include!("executor_tests_d_g0_integrity.rs");
 
 include!("executor_tests_d_part_d.rs");

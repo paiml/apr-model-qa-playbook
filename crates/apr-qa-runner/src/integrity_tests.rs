@@ -65,5 +65,5 @@ fn create_mock_safetensors(dir: &Path, layers: usize, hidden: usize, vocab: usiz
 }
 
 
-include!("integrity_tests_part_a.rs");
+include!("integrity_tests_config_mismatch.rs");
 include!("integrity_tests_part_b.rs");
