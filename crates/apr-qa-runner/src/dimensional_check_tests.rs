@@ -622,10 +622,7 @@ fn test_check_tensor_only_vocab_expected() {
     });
     write_config_json(dir.path(), &config);
     // dim0 doesn't match vocab_size, but no hidden_size to check
-    write_minimal_safetensors(
-        dir.path(),
-        &[("model.embed_tokens.weight", &[50_000, 512])],
-    );
+    write_minimal_safetensors(dir.path(), &[("model.embed_tokens.weight", &[50_000, 512])]);
 
     let yaml = r#"
 name: test-playbook
@@ -642,5 +639,9 @@ test_matrix:
 "#;
     let playbook = Playbook::from_yaml(yaml).expect("valid playbook");
     let result = run_dimensional_check(dir.path(), &playbook);
-    assert!(!result.passed, "dim0 mismatch should fail: {:#?}", result.checks);
+    assert!(
+        !result.passed,
+        "dim0 mismatch should fail: {:#?}",
+        result.checks
+    );
 }
