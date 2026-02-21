@@ -1,6 +1,5 @@
 use super::*;
 
-use super::*;
 use apr_qa_gen::{Backend, Format, Modality, ModelId, QaScenario};
 
 fn make_test_scenario() -> QaScenario {

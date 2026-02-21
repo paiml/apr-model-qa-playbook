@@ -1,6 +1,5 @@
 use super::*;
 
-use super::*;
 use crate::mqs::{CategoryScores, GatewayResult};
 use apr_qa_gen::{Backend, Format, Modality, ModelId, QaScenario};
 

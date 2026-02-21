@@ -1,6 +1,5 @@
 use super::*;
 
-use super::*;
 use tempfile::NamedTempFile;
 
 const TEST_CSV: &str = r#"model_id,family,parameters,size_category,status,mqs_score,grade,certified_tier,last_certified,g1,g2,g3,g4,tps_gguf_cpu,tps_gguf_gpu,tps_apr_cpu,tps_apr_gpu,tps_st_cpu,tps_st_gpu,provenance_verified

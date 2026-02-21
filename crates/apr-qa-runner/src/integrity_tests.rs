@@ -1,6 +1,5 @@
 use super::*;
 
-use super::*;
 use std::io::Write;
 use tempfile::TempDir;
 

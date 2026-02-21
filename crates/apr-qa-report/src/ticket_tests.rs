@@ -1,6 +1,5 @@
 use super::*;
 
-use super::*;
 use crate::popperian::FalsificationDetail;
 use apr_qa_gen::{Backend, Format, Modality, ModelId, QaScenario};
 

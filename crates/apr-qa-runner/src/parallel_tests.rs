@@ -1,6 +1,5 @@
 use super::*;
 
-use super::*;
 use apr_qa_gen::{Backend, Format, Modality, ModelId};
 
 /// Create a default test scenario for parallel execution tests

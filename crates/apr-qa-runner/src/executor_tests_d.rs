@@ -1,7 +1,7 @@
 
 use super::*;
 use crate::command::MockCommandRunner;
-use apr_qa_gen::{Backend, Format, Modality, ModelId, QaScenario};
+use apr_qa_gen::{Backend, Format, Modality, ModelId};
 
 
 include!("executor_tests_d_part_a.rs");

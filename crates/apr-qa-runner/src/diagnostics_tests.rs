@@ -1,6 +1,5 @@
 use super::*;
 
-use super::*;
 use crate::evidence::{HostInfo, Outcome, PerformanceMetrics};
 use apr_qa_gen::{Backend, Format, Modality, ModelId, QaScenario};
 use chrono::Utc;

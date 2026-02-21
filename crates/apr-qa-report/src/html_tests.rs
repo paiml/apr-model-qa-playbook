@@ -1,6 +1,5 @@
 use super::*;
 
-use super::*;
 use crate::mqs::{CategoryScores, GatewayResult};
 use crate::popperian::FalsificationDetail;
 

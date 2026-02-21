@@ -1,7 +1,5 @@
 use super::*;
 
-use super::*;
-
 // FALSIFY-EVIDENCE-001: Round-trip integrity
 //
 // Falsification hypothesis: "JSON round-trip corrupts evidence data"

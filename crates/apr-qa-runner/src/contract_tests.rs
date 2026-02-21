@@ -1,6 +1,5 @@
 use super::*;
 
-use super::*;
 use crate::evidence::Outcome;
 
 

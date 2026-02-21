@@ -1,7 +1,5 @@
 use super::*;
 
-use super::*;
-
 /// Create Qwen2-style architecture constraints with GQA and SwiGLU
 fn qwen_constraints() -> ArchConstraints {
     ArchConstraints {

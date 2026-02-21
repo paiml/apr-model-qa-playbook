@@ -1,6 +1,5 @@
 use super::*;
 
-use super::*;
 use crate::kernel_profile::ArchConstraints;
 
 /// Build a Qwen2 1.5B bootstrap config for testing
