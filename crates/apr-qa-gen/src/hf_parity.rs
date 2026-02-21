@@ -218,4 +218,4 @@ pub struct HfParityOracle {
     golden_cache: HashMap<String, GoldenOutput>,
 }
 
-include!("hf_parity_part_a.rs");
+include!("hf_parity_oracle_impl.rs");

@@ -405,6 +405,6 @@ pub struct ConversionTolerance {
     pub expected_pygmy_fixture: String,
 }
 
-include!("conversion_part_a.rs");
-include!("conversion_part_b.rs");
+include!("conversion_tolerances.rs");
+include!("semantic_conversion_test.rs");
 include!("conversion_part_c.rs");

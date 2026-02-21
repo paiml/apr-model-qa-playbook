@@ -2,7 +2,7 @@
 use super::*;
 
 
-include!("layout_contract_tests_part_a.rs");
+include!("layout_contract_unit_tests.rs");
 
 include!("layout_contract_tests_part_b.rs");
 

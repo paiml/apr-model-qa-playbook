@@ -403,4 +403,4 @@ impl FailFastReporter {
     }
 }
 
-include!("diagnostics_part_a.rs");
+include!("diagnostics_markdown_gen.rs");
