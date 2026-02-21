@@ -469,4 +469,4 @@ fn run_i2_tensor_bijection(
     ev
 }
 
-include!("contract_part_a.rs");
+include!("contract_invariant_checks.rs");

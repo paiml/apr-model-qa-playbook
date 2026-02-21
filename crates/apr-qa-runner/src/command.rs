@@ -235,6 +235,6 @@ impl RealCommandRunner {
     }
 }
 
-include!("command_part_a.rs");
+include!("command_runner_impl.rs");
 include!("mock_command_runner.rs");
 include!("simulate.rs");
