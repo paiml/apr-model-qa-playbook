@@ -203,6 +203,60 @@ mod falsification_b {
         // Note: No hash format validation exists
     }
 
+    /// Verify QuantizationMismatch error Display includes both format-quant pairs
+    #[test]
+    fn test_quantization_mismatch_display() {
+        let err = ProvenanceError::QuantizationMismatch {
+            format_a: "gguf".to_string(),
+            quant_a: Some("q4_k_m".to_string()),
+            format_b: "apr".to_string(),
+            quant_b: None,
+        };
+        let msg = err.to_string();
+        assert!(msg.contains("PROV-005"));
+        assert!(msg.contains("gguf"));
+        assert!(msg.contains("apr"));
+        assert!(msg.contains("q4_k_m"));
+    }
+
+    /// Verify InvalidConverter error Display includes format and converter name
+    #[test]
+    fn test_invalid_converter_display() {
+        let err = ProvenanceError::InvalidConverter {
+            format: "gguf".to_string(),
+            converter: "bartowski".to_string(),
+        };
+        let msg = err.to_string();
+        assert!(msg.contains("PROV-002"));
+        assert!(msg.contains("gguf"));
+        assert!(msg.contains("bartowski"));
+        assert!(msg.contains("apr-cli"));
+    }
+
+    /// Verify MissingProvenance error Display includes the path
+    #[test]
+    fn test_missing_provenance_display() {
+        let err = ProvenanceError::MissingProvenance {
+            path: "/model/dir".to_string(),
+        };
+        let msg = err.to_string();
+        assert!(msg.contains("PROV-004"));
+        assert!(msg.contains("/model/dir"));
+    }
+
+    /// Verify DuplicateDerived error Display with None quantization
+    #[test]
+    fn test_duplicate_derived_display_no_quant() {
+        let err = ProvenanceError::DuplicateDerived {
+            format: "gguf".to_string(),
+            quantization: None,
+        };
+        let msg = err.to_string();
+        assert!(msg.contains("PROV-008"));
+        assert!(msg.contains("gguf"));
+        assert!(msg.contains("None"));
+    }
+
     /// F-PROV-CODE-005: Null bytes in strings
     #[test]
     fn f_prov_code_005_null_bytes() {

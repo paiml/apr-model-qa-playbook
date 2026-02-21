@@ -80,3 +80,53 @@ fn test_is_word() {
     assert!(!is_word("has.dot"));
     assert!(!is_word("has space"));
 }
+
+/// Verify validate_dtype_bytes detects duplicate byte values
+#[test]
+fn test_validate_dtype_bytes_rejects_duplicates() {
+    let mut contract = load_format_contract().expect("Failed to load contract");
+    // Inject a duplicate byte value
+    let existing_byte = contract.dtype_bytes.mappings[0].byte;
+    contract.dtype_bytes.mappings.push(DtypeByteEntry {
+        dtype: "FAKE_DUP".to_string(),
+        byte: existing_byte,
+    });
+    let result = validate_dtype_bytes(&contract);
+    assert!(result.is_err());
+    let err = result.unwrap_err();
+    assert!(err.to_string().contains("Duplicate GGML byte value"));
+}
+
+/// Verify validate_dtype_bytes succeeds on the real contract (no duplicates)
+#[test]
+fn test_validate_dtype_bytes_passes_real_contract() {
+    let contract = load_format_contract().expect("Failed to load contract");
+    assert!(validate_dtype_bytes(&contract).is_ok());
+}
+
+/// Verify InvariantDef default implemented field is false
+#[test]
+fn test_invariant_def_default_implemented() {
+    let yaml = r#"
+        id: "I-99"
+        name: "Test"
+        description: "Test invariant"
+        catches: []
+        gate_id: "F-TEST-001"
+    "#;
+    let inv: InvariantDef = serde_yaml::from_str(yaml).expect("should parse");
+    assert!(!inv.implemented, "Default implemented should be false");
+}
+
+/// Verify run_contract_tests with empty invariants list returns empty evidence
+#[test]
+fn test_contract_empty_invariants_config() {
+    use crate::command::MockCommandRunner;
+    let runner: Arc<dyn CommandRunner> = Arc::new(MockCommandRunner::new());
+    let model_id = ModelId::new("test", "model");
+    let config = ContractTestConfig { invariants: vec![] };
+    let evidence = run_contract_tests(
+        &runner, Path::new("/test/workspace/org/model"), &model_id, &config,
+    );
+    assert!(evidence.is_empty());
+}

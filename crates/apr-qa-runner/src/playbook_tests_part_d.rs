@@ -168,6 +168,95 @@ size_variants:
     assert_eq!(config.size_category, SizeCategory::Tiny);
 }
 
+// ── Playbook deserialize_bool_or_string coverage ──────────────────────
+
+/// Verify FormatValidationConfig deserializes `enabled: "true"` string as true
+#[test]
+fn test_format_validation_config_string_true() {
+    let yaml = r#"
+name: test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+differential_tests:
+  format_validation:
+    enabled: "true"
+    checks: ["dtype_mapping"]
+"#;
+    let playbook = Playbook::from_yaml(yaml).expect("parse");
+    let diff = playbook.differential_tests.expect("should have differential_tests");
+    let fv = diff.format_validation.expect("should have format_validation");
+    assert!(fv.enabled);
+}
+
+/// Verify FormatValidationConfig deserializes `enabled: "yes"` string as true
+#[test]
+fn test_format_validation_config_string_yes() {
+    let yaml = r#"
+name: test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+differential_tests:
+  format_validation:
+    enabled: "yes"
+"#;
+    let playbook = Playbook::from_yaml(yaml).expect("parse");
+    let diff = playbook.differential_tests.expect("should have differential_tests");
+    let fv = diff.format_validation.expect("should have format_validation");
+    assert!(fv.enabled);
+}
+
+/// Verify FormatValidationConfig deserializes `enabled: "false"` string as false
+#[test]
+fn test_format_validation_config_string_false() {
+    let yaml = r#"
+name: test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+differential_tests:
+  format_validation:
+    enabled: "false"
+"#;
+    let playbook = Playbook::from_yaml(yaml).expect("parse");
+    let diff = playbook.differential_tests.expect("should have differential_tests");
+    let fv = diff.format_validation.expect("should have format_validation");
+    assert!(!fv.enabled);
+}
+
+/// Verify playbook rejects invalid string for bool fields
+#[test]
+fn test_format_validation_config_string_invalid() {
+    let yaml = r#"
+name: test
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+differential_tests:
+  format_validation:
+    enabled: "maybe"
+"#;
+    let result = Playbook::from_yaml(yaml);
+    assert!(result.is_err());
+}
+
 // ── GH-6/AC-2: Ollama parity config tests ────────────────────────────
 
 #[test]
