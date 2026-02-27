@@ -90,9 +90,8 @@ queue:
 - playbook: qwen3-30b-a3b-mvp
   affinity: any
   ram_gb: 3
-  status: running
-  claimed_by: intel
-  claimed_at: '2026-02-27T23:47:47Z'
+  status: failed
+  failure_reason: 'Evidence saved to: output/evidence.json'
 - playbook: qwen3-coder-30b-a3b-mvp
   affinity: any
   ram_gb: 3
