@@ -95,7 +95,9 @@ queue:
 - playbook: qwen3-coder-30b-a3b-mvp
   affinity: any
   ram_gb: 3
-  status: pending
+  status: running
+  claimed_by: intel
+  claimed_at: '2026-02-27T23:59:46Z'
 - playbook: smollm2-135m-mvp
   affinity: any
   ram_gb: 2
