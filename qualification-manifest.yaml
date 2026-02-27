@@ -39,7 +39,9 @@ queue:
 - playbook: openchat-3.5-mvp
   affinity: intel-only
   ram_gb: 6
-  status: pending
+  status: running
+  claimed_by: intel
+  claimed_at: '2026-02-27T23:20:33Z'
 - playbook: phi-3.5-mini-mvp
   affinity: any
   ram_gb: 2
