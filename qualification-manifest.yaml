@@ -15,9 +15,7 @@ queue:
 - playbook: deepseek-coder-v2-lite-mvp
   affinity: any
   ram_gb: 2
-  status: running
-  claimed_by: intel
-  claimed_at: '2026-02-27T22:06:19Z'
+  status: pending
 - playbook: deepseek-r1-distill-qwen-1.5b-mvp
   affinity: any
   ram_gb: 2
@@ -25,7 +23,7 @@ queue:
 - playbook: gemma-3-1b-mvp
   affinity: any
   ram_gb: 2
-  status: pending
+  status: certified
 - playbook: granite-3.1-2b-mvp
   affinity: any
   ram_gb: 3
@@ -33,7 +31,8 @@ queue:
 - playbook: granite-3b-code-mvp
   affinity: any
   ram_gb: 3
-  status: pending
+  status: failed
+  failure_reason: '  Timeout: 300000ms'
 - playbook: openchat-3.5-mvp
   affinity: any
   ram_gb: 2

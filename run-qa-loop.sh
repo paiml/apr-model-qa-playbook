@@ -333,44 +333,87 @@ run_pipeline() {
   log "Tier 3 (mvp): ${BOLD}${model_name}${NC}"
   rm -rf output
 
-  if ! cargo run --release --bin apr-qa -- run "$pb_file" \
+  cargo run --release --bin apr-qa -- run "$pb_file" \
       ${gpu_opt} \
       --failure-policy stop-on-p0 \
       --workers 4 \
-      --timeout 300000 2>&1 | tee "${evidence_dir}/mvp.log"; then
-    fail "mvp FAIL: ${model_name}"
-    return 1
-  fi
+      --timeout 300000 2>&1 | tee "${evidence_dir}/mvp.log" || true
 
   # Copy evidence artifacts
   if [[ -d output ]]; then
     cp -r output/* "$evidence_dir/" 2>/dev/null || true
   fi
 
-  # Also copy into repo certifications/ for git commit
-  local cert_dir="${REPO_DIR}/certifications/${model_name}"
-  mkdir -p "$cert_dir"
+  # ── Verify pass rate from evidence (don't trust exit codes) ────
+  local pass_rate="0"
+  local evidence_file=""
   for f in output/evidence.json "${evidence_dir}/evidence.json"; do
     if [[ -f "$f" ]]; then
-      cp "$f" "$cert_dir/evidence.json"
+      evidence_file="$f"
       break
     fi
   done
 
+  if [[ -n "$evidence_file" ]]; then
+    pass_rate="$(python3 -c "
+import json, sys
+with open('$evidence_file') as f:
+    evidence = json.load(f)
+total = len(evidence)
+if total == 0:
+    print('0')
+    sys.exit()
+passed = sum(1 for e in evidence if e.get('outcome') in ('Corroborated', 'corroborated'))
+print(f'{passed * 100 // total}')
+" 2>/dev/null || echo "0")"
+  fi
+
+  # Also check for gateway failures in log
+  local gateway_failed=false
+  if grep -q 'Gateway FAILED' "${evidence_dir}/mvp.log" 2>/dev/null; then
+    gateway_failed=true
+  fi
+
+  if $gateway_failed || [[ "$pass_rate" -lt 50 ]]; then
+    fail "mvp VERIFY FAIL: ${model_name} (pass_rate=${pass_rate}%, gateway_failed=${gateway_failed})"
+    return 1
+  fi
+
+  # Copy evidence into repo certifications/ for git commit
+  local cert_dir="${REPO_DIR}/certifications/${model_name}"
+  mkdir -p "$cert_dir"
+  if [[ -n "$evidence_file" ]]; then
+    cp "$evidence_file" "$cert_dir/evidence.json"
+  fi
+
   local elapsed=$(( $(date +%s) - start_time ))
   local min=$(( elapsed / 60 ))
   local sec=$(( elapsed % 60 ))
-  ok "Pipeline complete: ${BOLD}${model_name}${NC} (${min}m ${sec}s)"
+  ok "Pipeline VERIFIED: ${BOLD}${model_name}${NC} (pass_rate=${pass_rate}%, ${min}m ${sec}s)"
   return 0
 }
 
 # ── Build step ────────────────────────────────────────────────────
 
 ensure_built() {
+  # Update apr CLI from aprender (latest source)
+  local apr_build="$HOME/src/aprender/build-apr.sh"
+  if [[ -f "$apr_build" ]]; then
+    log "Updating apr CLI from aprender..."
+    bash "$apr_build" 2>&1 | tail -3
+  else
+    # No build script — try cargo install from crates.io
+    log "Checking apr CLI..."
+    command -v apr >/dev/null || {
+      warn "apr not found — install aprender or run build-apr.sh"
+    }
+  fi
+
+  # Build apr-qa (this repo)
   cd "$REPO_DIR"
   log "Building apr-qa..."
   cargo build --release --bin apr-qa 2>&1 | tail -3
-  ok "apr-qa built"
+  ok "apr-qa built (apr $(apr --version 2>/dev/null || echo 'not found'))"
 
   # Regenerate lock file (suppress errors)
   cargo run --release --bin apr-qa -- lock-playbooks 2>/dev/null || true
