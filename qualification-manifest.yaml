@@ -17,9 +17,8 @@ queue:
 - playbook: deepseek-coder-v2-lite-mvp
   affinity: intel-only
   ram_gb: 12
-  status: running
-  claimed_by: intel
-  claimed_at: '2026-02-27T22:26:18Z'
+  status: failed
+  failure_reason: 'Evidence saved to: output/evidence.json'
 - playbook: deepseek-r1-distill-qwen-1.5b-mvp
   affinity: any
   ram_gb: 2
