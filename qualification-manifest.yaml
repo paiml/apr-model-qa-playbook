@@ -48,7 +48,9 @@ queue:
 - playbook: phi-3-medium-4k-mvp
   affinity: intel-only
   ram_gb: 10
-  status: pending
+  status: running
+  claimed_by: intel
+  claimed_at: '2026-02-27T23:30:31Z'
 - playbook: phi-3-small-8k-mvp
   affinity: intel-only
   ram_gb: 6
