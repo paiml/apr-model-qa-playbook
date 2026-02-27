@@ -48,9 +48,8 @@ queue:
 - playbook: phi-3-medium-4k-mvp
   affinity: intel-only
   ram_gb: 10
-  status: running
-  claimed_by: intel
-  claimed_at: '2026-02-27T23:30:31Z'
+  status: failed
+  failure_reason: 'Evidence saved to: output/evidence.json'
 - playbook: phi-3-small-8k-mvp
   affinity: intel-only
   ram_gb: 6
