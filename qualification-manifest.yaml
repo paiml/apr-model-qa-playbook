@@ -39,9 +39,8 @@ queue:
 - playbook: openchat-3.5-mvp
   affinity: intel-only
   ram_gb: 6
-  status: running
-  claimed_by: intel
-  claimed_at: '2026-02-27T23:20:33Z'
+  status: failed
+  failure_reason: 'Evidence saved to: output/evidence.json'
 - playbook: phi-3.5-mini-mvp
   affinity: any
   ram_gb: 2
