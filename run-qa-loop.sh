@@ -396,13 +396,14 @@ print(f'{passed * 100 // total}')
 # ── Build step ────────────────────────────────────────────────────
 
 ensure_built() {
-  # Update apr CLI from aprender (latest source)
+  # Update apr CLI from aprender (latest source, non-fatal)
   local apr_build="$HOME/src/aprender/build-apr.sh"
   if [[ -f "$apr_build" ]]; then
     log "Updating apr CLI from aprender..."
-    bash "$apr_build" 2>&1 | tail -3
+    if ! bash "$apr_build" 2>&1 | tail -3; then
+      warn "apr build failed (non-fatal, using existing: $(apr --version 2>/dev/null || echo 'not found'))"
+    fi
   else
-    # No build script — try cargo install from crates.io
     log "Checking apr CLI..."
     command -v apr >/dev/null || {
       warn "apr not found — install aprender or run build-apr.sh"

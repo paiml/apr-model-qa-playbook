@@ -15,7 +15,9 @@ queue:
 - playbook: deepseek-coder-v2-lite-mvp
   affinity: any
   ram_gb: 2
-  status: pending
+  status: running
+  claimed_by: local
+  claimed_at: '2026-02-27T22:10:20Z'
 - playbook: deepseek-r1-distill-qwen-1.5b-mvp
   affinity: any
   ram_gb: 2
