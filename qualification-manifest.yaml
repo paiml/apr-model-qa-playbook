@@ -1,20 +1,3 @@
-# qualification-manifest.yaml
-#
-# Git-based work queue for continuous model qualification.
-# Both machines read this file, claim work via git commits, and
-# update status on completion.
-#
-# Status values:
-#   pending    — not yet started
-#   running    — claimed by a machine (see claimed_by, claimed_at)
-#   certified  — three-tier pipeline passed
-#   failed     — pipeline failed (see failure_reason)
-#   skipped    — intentionally skipped
-#
-# Affinity values:
-#   any        — either machine can run this
-#   intel-only — requires Intel (283 GB RAM) for large models
-
 machines:
   local:
     max_ram_gb: 125
@@ -24,357 +7,350 @@ machines:
     max_ram_gb: 283
     has_gpu: false
     max_parallel: 4
-
 queue:
-
-  # ── Small models (≤3B) — either machine ──
-  - playbook: deepseek-coder-1.3b-mvp
-    affinity: any
-    ram_gb: 2
-    status: certified
-  - playbook: deepseek-coder-v2-lite-mvp
-    affinity: any
-    ram_gb: 2
-    status: pending
-  - playbook: deepseek-r1-distill-qwen-1.5b-mvp
-    affinity: any
-    ram_gb: 2
-    status: certified
-  - playbook: gemma-3-1b-mvp
-    affinity: any
-    ram_gb: 2
-    status: pending
-  - playbook: granite-3.1-2b-mvp
-    affinity: any
-    ram_gb: 3
-    status: certified
-  - playbook: granite-3b-code-mvp
-    affinity: any
-    ram_gb: 3
-    status: pending
-  - playbook: openchat-3.5-mvp
-    affinity: any
-    ram_gb: 2
-    status: pending
-  - playbook: phi-3.5-mini-mvp
-    affinity: any
-    ram_gb: 2
-    status: certified
-  - playbook: phi-3-medium-4k-mvp
-    affinity: any
-    ram_gb: 2
-    status: pending
-  - playbook: phi-3-small-8k-mvp
-    affinity: any
-    ram_gb: 2
-    status: pending
-  - playbook: phi-4-mini-mvp
-    affinity: any
-    ram_gb: 2
-    status: certified
-  - playbook: qwen2.5-1.5b-mvp
-    affinity: any
-    ram_gb: 2
-    status: certified
-  - playbook: qwen2.5-3b-mvp
-    affinity: any
-    ram_gb: 3
-    status: certified
-  - playbook: qwen2.5-coder-0.5b-mvp
-    affinity: any
-    ram_gb: 2
-    status: certified
-  - playbook: qwen2.5-coder-1.5b-mvp
-    affinity: any
-    ram_gb: 2
-    status: certified
-  - playbook: qwen2.5-coder-3b-mvp
-    affinity: any
-    ram_gb: 3
-    status: certified
-  - playbook: qwen3-0.6b-mvp
-    affinity: any
-    ram_gb: 2
-    status: certified
-  - playbook: qwen3-1.7b-mvp
-    affinity: any
-    ram_gb: 3
-    status: certified
-  - playbook: qwen3-30b-a3b-mvp
-    affinity: any
-    ram_gb: 3
-    status: pending
-  - playbook: qwen3-coder-30b-a3b-mvp
-    affinity: any
-    ram_gb: 3
-    status: pending
-  - playbook: smollm2-135m-mvp
-    affinity: any
-    ram_gb: 2
-    status: certified
-  - playbook: smollm2-1.7b-mvp
-    affinity: any
-    ram_gb: 3
-    status: certified
-  - playbook: smollm2-360m-mvp
-    affinity: any
-    ram_gb: 2
-    status: certified
-  - playbook: stablelm-2-zephyr-1.6b-mvp
-    affinity: any
-    ram_gb: 2
-    status: certified
-  - playbook: stablelm-zephyr-3b-mvp
-    affinity: any
-    ram_gb: 3
-    status: certified
-  - playbook: starcoder2-3b-mvp
-    affinity: any
-    ram_gb: 3
-    status: certified
-  - playbook: tinyllama-1.1b-mvp
-    affinity: any
-    ram_gb: 2
-    status: certified
-
-  # ── Medium models (4B-14B) — either machine ──
-  - playbook: codegemma-7b-mvp
-    affinity: any
-    ram_gb: 6
-    status: pending
-  - playbook: codellama-13b-mvp
-    affinity: any
-    ram_gb: 9
-    status: pending
-  - playbook: codellama-7b-mvp
-    affinity: any
-    ram_gb: 6
-    status: pending
-  - playbook: deepseek-coder-6.7b-mvp
-    affinity: any
-    ram_gb: 6
-    status: pending
-  - playbook: deepseek-coder-7b-mvp
-    affinity: any
-    ram_gb: 6
-    status: pending
-  - playbook: deepseek-r1-distill-llama-8b-mvp
-    affinity: any
-    ram_gb: 6
-    status: pending
-  - playbook: deepseek-r1-distill-qwen-14b-mvp
-    affinity: any
-    ram_gb: 10
-    status: pending
-  - playbook: deepseek-r1-distill-qwen-7b-mvp
-    affinity: any
-    ram_gb: 6
-    status: pending
-  - playbook: dolphin-2.6-mistral-7b-mvp
-    affinity: any
-    ram_gb: 6
-    status: pending
-  - playbook: dolphin3.0-llama3.1-8b-mvp
-    affinity: any
-    ram_gb: 6
-    status: pending
-  - playbook: falcon-7b-mvp
-    affinity: any
-    ram_gb: 6
-    status: pending
-  - playbook: gemma-2-9b-mvp
-    affinity: any
-    ram_gb: 7
-    status: pending
-  - playbook: gemma-3-12b-mvp
-    affinity: any
-    ram_gb: 9
-    status: pending
-  - playbook: gemma-3-4b-mvp
-    affinity: any
-    ram_gb: 4
-    status: pending
-  - playbook: granite-3.1-8b-mvp
-    affinity: any
-    ram_gb: 6
-    status: pending
-  - playbook: hermes-3-llama-3.1-8b-mvp
-    affinity: any
-    ram_gb: 6
-    status: pending
-  - playbook: internlm2.5-7b-mvp
-    affinity: any
-    ram_gb: 6
-    status: pending
-  - playbook: llama-3.1-8b-mvp
-    affinity: any
-    ram_gb: 6
-    status: certified
-  - playbook: mistral-nemo-12b-mvp
-    affinity: any
-    ram_gb: 9
-    status: pending
-  - playbook: nemotron-nano-4b-mvp
-    affinity: any
-    ram_gb: 4
-    status: certified
-  - playbook: olmo-2-13b-mvp
-    affinity: any
-    ram_gb: 9
-    status: pending
-  - playbook: olmo-2-7b-mvp
-    affinity: any
-    ram_gb: 6
-    status: pending
-  - playbook: openhermes-2.5-mistral-7b-mvp
-    affinity: any
-    ram_gb: 6
-    status: pending
-  - playbook: qwen2.5-14b-mvp
-    affinity: any
-    ram_gb: 10
-    status: pending
-  - playbook: qwen2.5-7b-mvp
-    affinity: any
-    ram_gb: 6
-    status: certified
-  - playbook: qwen2.5-coder-14b-mvp
-    affinity: any
-    ram_gb: 10
-    status: certified
-  - playbook: qwen2.5-coder-7b-mvp
-    affinity: any
-    ram_gb: 6
-    status: certified
-  - playbook: qwen3-14b-mvp
-    affinity: any
-    ram_gb: 10
-    status: pending
-  - playbook: qwen3-4b-mvp
-    affinity: any
-    ram_gb: 4
-    status: certified
-  - playbook: qwen3-8b-mvp
-    affinity: any
-    ram_gb: 6
-    status: pending
-  - playbook: starcoder2-7b-mvp
-    affinity: any
-    ram_gb: 6
-    status: pending
-  - playbook: vicuna-13b-mvp
-    affinity: any
-    ram_gb: 9
-    status: pending
-  - playbook: vicuna-7b-mvp
-    affinity: any
-    ram_gb: 6
-    status: pending
-  - playbook: yi-1.5-6b-mvp
-    affinity: any
-    ram_gb: 5
-    status: pending
-  - playbook: yi-1.5-9b-mvp
-    affinity: any
-    ram_gb: 7
-    status: pending
-  - playbook: zephyr-7b-beta-mvp
-    affinity: any
-    ram_gb: 6
-    status: pending
-
-  # ── Large models (15B-34B) — Intel only ──
-  - playbook: codellama-34b-mvp
-    affinity: intel-only
-    ram_gb: 22
-    status: pending
-  - playbook: codestral-22b-mvp
-    affinity: intel-only
-    ram_gb: 15
-    status: pending
-  - playbook: deepseek-coder-33b-mvp
-    affinity: intel-only
-    ram_gb: 21
-    status: pending
-  - playbook: deepseek-r1-distill-qwen-32b-mvp
-    affinity: intel-only
-    ram_gb: 21
-    status: pending
-  - playbook: gemma-2-27b-mvp
-    affinity: intel-only
-    ram_gb: 18
-    status: pending
-  - playbook: gemma-3-27b-mvp
-    affinity: intel-only
-    ram_gb: 18
-    status: pending
-  - playbook: internlm2.5-20b-mvp
-    affinity: intel-only
-    ram_gb: 14
-    status: pending
-  - playbook: mistral-small-24b-mvp
-    affinity: intel-only
-    ram_gb: 16
-    status: pending
-  - playbook: qwen2.5-32b-mvp
-    affinity: intel-only
-    ram_gb: 21
-    status: pending
-  - playbook: qwen2.5-coder-32b-mvp
-    affinity: intel-only
-    ram_gb: 21
-    status: certified
-  - playbook: qwen3-32b-mvp
-    affinity: intel-only
-    ram_gb: 21
-    status: pending
-  - playbook: qwq-32b-mvp
-    affinity: intel-only
-    ram_gb: 21
-    status: pending
-  - playbook: starcoder2-15b-mvp
-    affinity: intel-only
-    ram_gb: 11
-    status: pending
-  - playbook: wizardcoder-15b-mvp
-    affinity: intel-only
-    ram_gb: 11
-    status: pending
-  - playbook: wizardcoder-33b-mvp
-    affinity: intel-only
-    ram_gb: 21
-    status: pending
-  - playbook: yi-1.5-34b-mvp
-    affinity: intel-only
-    ram_gb: 22
-    status: pending
-
-  # ── XLarge models (35B+) — Intel only ──
-  - playbook: codellama-70b-mvp
-    affinity: intel-only
-    ram_gb: 44
-    status: pending
-  - playbook: deepseek-r1-distill-llama-70b-mvp
-    affinity: intel-only
-    ram_gb: 44
-    status: pending
-  - playbook: falcon-40b-mvp
-    affinity: intel-only
-    ram_gb: 26
-    status: pending
-  - playbook: llama-3.1-70b-mvp
-    affinity: intel-only
-    ram_gb: 44
-    status: pending
-  - playbook: llama-3.3-70b-mvp
-    affinity: intel-only
-    ram_gb: 44
-    status: pending
-  - playbook: nemotron-70b-mvp
-    affinity: intel-only
-    ram_gb: 44
-    status: pending
-  - playbook: qwen2.5-72b-mvp
-    affinity: intel-only
-    ram_gb: 45
-    status: pending
+- playbook: deepseek-coder-1.3b-mvp
+  affinity: any
+  ram_gb: 2
+  status: certified
+- playbook: deepseek-coder-v2-lite-mvp
+  affinity: any
+  ram_gb: 2
+  status: running
+  claimed_by: intel
+  claimed_at: '2026-02-27T22:06:19Z'
+- playbook: deepseek-r1-distill-qwen-1.5b-mvp
+  affinity: any
+  ram_gb: 2
+  status: certified
+- playbook: gemma-3-1b-mvp
+  affinity: any
+  ram_gb: 2
+  status: pending
+- playbook: granite-3.1-2b-mvp
+  affinity: any
+  ram_gb: 3
+  status: certified
+- playbook: granite-3b-code-mvp
+  affinity: any
+  ram_gb: 3
+  status: pending
+- playbook: openchat-3.5-mvp
+  affinity: any
+  ram_gb: 2
+  status: pending
+- playbook: phi-3.5-mini-mvp
+  affinity: any
+  ram_gb: 2
+  status: certified
+- playbook: phi-3-medium-4k-mvp
+  affinity: any
+  ram_gb: 2
+  status: pending
+- playbook: phi-3-small-8k-mvp
+  affinity: any
+  ram_gb: 2
+  status: pending
+- playbook: phi-4-mini-mvp
+  affinity: any
+  ram_gb: 2
+  status: certified
+- playbook: qwen2.5-1.5b-mvp
+  affinity: any
+  ram_gb: 2
+  status: certified
+- playbook: qwen2.5-3b-mvp
+  affinity: any
+  ram_gb: 3
+  status: certified
+- playbook: qwen2.5-coder-0.5b-mvp
+  affinity: any
+  ram_gb: 2
+  status: certified
+- playbook: qwen2.5-coder-1.5b-mvp
+  affinity: any
+  ram_gb: 2
+  status: certified
+- playbook: qwen2.5-coder-3b-mvp
+  affinity: any
+  ram_gb: 3
+  status: certified
+- playbook: qwen3-0.6b-mvp
+  affinity: any
+  ram_gb: 2
+  status: certified
+- playbook: qwen3-1.7b-mvp
+  affinity: any
+  ram_gb: 3
+  status: certified
+- playbook: qwen3-30b-a3b-mvp
+  affinity: any
+  ram_gb: 3
+  status: pending
+- playbook: qwen3-coder-30b-a3b-mvp
+  affinity: any
+  ram_gb: 3
+  status: pending
+- playbook: smollm2-135m-mvp
+  affinity: any
+  ram_gb: 2
+  status: certified
+- playbook: smollm2-1.7b-mvp
+  affinity: any
+  ram_gb: 3
+  status: certified
+- playbook: smollm2-360m-mvp
+  affinity: any
+  ram_gb: 2
+  status: certified
+- playbook: stablelm-2-zephyr-1.6b-mvp
+  affinity: any
+  ram_gb: 2
+  status: certified
+- playbook: stablelm-zephyr-3b-mvp
+  affinity: any
+  ram_gb: 3
+  status: certified
+- playbook: starcoder2-3b-mvp
+  affinity: any
+  ram_gb: 3
+  status: certified
+- playbook: tinyllama-1.1b-mvp
+  affinity: any
+  ram_gb: 2
+  status: certified
+- playbook: codegemma-7b-mvp
+  affinity: any
+  ram_gb: 6
+  status: pending
+- playbook: codellama-13b-mvp
+  affinity: any
+  ram_gb: 9
+  status: pending
+- playbook: codellama-7b-mvp
+  affinity: any
+  ram_gb: 6
+  status: pending
+- playbook: deepseek-coder-6.7b-mvp
+  affinity: any
+  ram_gb: 6
+  status: pending
+- playbook: deepseek-coder-7b-mvp
+  affinity: any
+  ram_gb: 6
+  status: pending
+- playbook: deepseek-r1-distill-llama-8b-mvp
+  affinity: any
+  ram_gb: 6
+  status: pending
+- playbook: deepseek-r1-distill-qwen-14b-mvp
+  affinity: any
+  ram_gb: 10
+  status: pending
+- playbook: deepseek-r1-distill-qwen-7b-mvp
+  affinity: any
+  ram_gb: 6
+  status: pending
+- playbook: dolphin-2.6-mistral-7b-mvp
+  affinity: any
+  ram_gb: 6
+  status: pending
+- playbook: dolphin3.0-llama3.1-8b-mvp
+  affinity: any
+  ram_gb: 6
+  status: pending
+- playbook: falcon-7b-mvp
+  affinity: any
+  ram_gb: 6
+  status: pending
+- playbook: gemma-2-9b-mvp
+  affinity: any
+  ram_gb: 7
+  status: pending
+- playbook: gemma-3-12b-mvp
+  affinity: any
+  ram_gb: 9
+  status: pending
+- playbook: gemma-3-4b-mvp
+  affinity: any
+  ram_gb: 4
+  status: pending
+- playbook: granite-3.1-8b-mvp
+  affinity: any
+  ram_gb: 6
+  status: pending
+- playbook: hermes-3-llama-3.1-8b-mvp
+  affinity: any
+  ram_gb: 6
+  status: pending
+- playbook: internlm2.5-7b-mvp
+  affinity: any
+  ram_gb: 6
+  status: pending
+- playbook: llama-3.1-8b-mvp
+  affinity: any
+  ram_gb: 6
+  status: certified
+- playbook: mistral-nemo-12b-mvp
+  affinity: any
+  ram_gb: 9
+  status: pending
+- playbook: nemotron-nano-4b-mvp
+  affinity: any
+  ram_gb: 4
+  status: certified
+- playbook: olmo-2-13b-mvp
+  affinity: any
+  ram_gb: 9
+  status: pending
+- playbook: olmo-2-7b-mvp
+  affinity: any
+  ram_gb: 6
+  status: pending
+- playbook: openhermes-2.5-mistral-7b-mvp
+  affinity: any
+  ram_gb: 6
+  status: pending
+- playbook: qwen2.5-14b-mvp
+  affinity: any
+  ram_gb: 10
+  status: pending
+- playbook: qwen2.5-7b-mvp
+  affinity: any
+  ram_gb: 6
+  status: certified
+- playbook: qwen2.5-coder-14b-mvp
+  affinity: any
+  ram_gb: 10
+  status: certified
+- playbook: qwen2.5-coder-7b-mvp
+  affinity: any
+  ram_gb: 6
+  status: certified
+- playbook: qwen3-14b-mvp
+  affinity: any
+  ram_gb: 10
+  status: pending
+- playbook: qwen3-4b-mvp
+  affinity: any
+  ram_gb: 4
+  status: certified
+- playbook: qwen3-8b-mvp
+  affinity: any
+  ram_gb: 6
+  status: pending
+- playbook: starcoder2-7b-mvp
+  affinity: any
+  ram_gb: 6
+  status: pending
+- playbook: vicuna-13b-mvp
+  affinity: any
+  ram_gb: 9
+  status: pending
+- playbook: vicuna-7b-mvp
+  affinity: any
+  ram_gb: 6
+  status: pending
+- playbook: yi-1.5-6b-mvp
+  affinity: any
+  ram_gb: 5
+  status: pending
+- playbook: yi-1.5-9b-mvp
+  affinity: any
+  ram_gb: 7
+  status: pending
+- playbook: zephyr-7b-beta-mvp
+  affinity: any
+  ram_gb: 6
+  status: pending
+- playbook: codellama-34b-mvp
+  affinity: intel-only
+  ram_gb: 22
+  status: pending
+- playbook: codestral-22b-mvp
+  affinity: intel-only
+  ram_gb: 15
+  status: pending
+- playbook: deepseek-coder-33b-mvp
+  affinity: intel-only
+  ram_gb: 21
+  status: pending
+- playbook: deepseek-r1-distill-qwen-32b-mvp
+  affinity: intel-only
+  ram_gb: 21
+  status: pending
+- playbook: gemma-2-27b-mvp
+  affinity: intel-only
+  ram_gb: 18
+  status: pending
+- playbook: gemma-3-27b-mvp
+  affinity: intel-only
+  ram_gb: 18
+  status: pending
+- playbook: internlm2.5-20b-mvp
+  affinity: intel-only
+  ram_gb: 14
+  status: pending
+- playbook: mistral-small-24b-mvp
+  affinity: intel-only
+  ram_gb: 16
+  status: pending
+- playbook: qwen2.5-32b-mvp
+  affinity: intel-only
+  ram_gb: 21
+  status: pending
+- playbook: qwen2.5-coder-32b-mvp
+  affinity: intel-only
+  ram_gb: 21
+  status: certified
+- playbook: qwen3-32b-mvp
+  affinity: intel-only
+  ram_gb: 21
+  status: pending
+- playbook: qwq-32b-mvp
+  affinity: intel-only
+  ram_gb: 21
+  status: pending
+- playbook: starcoder2-15b-mvp
+  affinity: intel-only
+  ram_gb: 11
+  status: pending
+- playbook: wizardcoder-15b-mvp
+  affinity: intel-only
+  ram_gb: 11
+  status: pending
+- playbook: wizardcoder-33b-mvp
+  affinity: intel-only
+  ram_gb: 21
+  status: pending
+- playbook: yi-1.5-34b-mvp
+  affinity: intel-only
+  ram_gb: 22
+  status: pending
+- playbook: codellama-70b-mvp
+  affinity: intel-only
+  ram_gb: 44
+  status: pending
+- playbook: deepseek-r1-distill-llama-70b-mvp
+  affinity: intel-only
+  ram_gb: 44
+  status: pending
+- playbook: falcon-40b-mvp
+  affinity: intel-only
+  ram_gb: 26
+  status: pending
+- playbook: llama-3.1-70b-mvp
+  affinity: intel-only
+  ram_gb: 44
+  status: pending
+- playbook: llama-3.3-70b-mvp
+  affinity: intel-only
+  ram_gb: 44
+  status: pending
+- playbook: nemotron-70b-mvp
+  affinity: intel-only
+  ram_gb: 44
+  status: pending
+- playbook: qwen2.5-72b-mvp
+  affinity: intel-only
+  ram_gb: 45
+  status: pending
