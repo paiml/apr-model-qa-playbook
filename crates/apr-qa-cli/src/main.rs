@@ -172,6 +172,10 @@ enum Commands {
         /// Disable playbook integrity checks (§3.1)
         #[arg(long)]
         no_integrity_check: bool,
+
+        /// Metadata-only mode (dimensional checks, no inference)
+        #[arg(long)]
+        metadata_only: bool,
     },
 
     /// Run APR tool coverage tests

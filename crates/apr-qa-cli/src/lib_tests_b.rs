@@ -184,6 +184,7 @@ fn test_playbook_run_config_with_all_options() {
         run_hf_parity: false,
         hf_parity_corpus_path: None,
         hf_parity_model_family: None,
+        metadata_only: false,
     };
     assert!(config.dry_run);
     assert_eq!(config.workers, 16);

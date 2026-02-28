@@ -73,6 +73,7 @@ fn main() {
             hf_corpus_path,
             hf_model_family,
             no_integrity_check,
+            metadata_only,
         } => {
             // --fail-fast flag overrides --failure-policy
             let effective_policy = if fail_fast {
@@ -98,6 +99,7 @@ fn main() {
                 &hf_corpus_path,
                 hf_model_family,
                 no_integrity_check,
+                metadata_only,
             );
         }
         Commands::Tools {
@@ -320,6 +322,7 @@ fn run_playbook(
     hf_corpus_path: &str,
     hf_model_family: Option<String>,
     no_integrity_check: bool,
+    metadata_only: bool,
 ) {
     if failure_policy == "fail-fast" {
         log_environment();
@@ -391,6 +394,7 @@ fn run_playbook(
             None
         },
         hf_parity_model_family: hf_model_family,
+        metadata_only,
     };
 
     let config = match build_execution_config(&run_config) {

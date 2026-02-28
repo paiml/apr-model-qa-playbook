@@ -81,6 +81,8 @@ pub struct PlaybookRunConfig {
     pub hf_parity_corpus_path: Option<String>,
     /// HF parity model family (e.g., "qwen2.5-coder-1.5b/v1")
     pub hf_parity_model_family: Option<String>,
+    /// Metadata-only mode (dimensional checks only, no inference)
+    pub metadata_only: bool,
 }
 
 impl Default for PlaybookRunConfig {
@@ -100,6 +102,7 @@ impl Default for PlaybookRunConfig {
             run_hf_parity: false,
             hf_parity_corpus_path: None,
             hf_parity_model_family: None,
+            metadata_only: false,
         }
     }
 }
@@ -294,9 +297,9 @@ pub fn build_execution_config(config: &PlaybookRunConfig) -> Result<ExecutionCon
         hf_parity_corpus_path: config.hf_parity_corpus_path.clone(),
         hf_parity_model_family: config.hf_parity_model_family.clone(),
         output_dir: Some("output".to_string()), // ISO-OUT-001: Isolated output directory
-        run_contract_tests: true,
+        run_contract_tests: !config.metadata_only,
         run_ollama_parity: false,
-        metadata_only: false,
+        metadata_only: config.metadata_only,
     })
 }
 

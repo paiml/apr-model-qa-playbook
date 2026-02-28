@@ -117,7 +117,8 @@ run_dim_smoke() {
       --no-gpu \
       --failure-policy fail-fast \
       --workers 1 \
-      --timeout 30000 2>&1; then
+      --timeout 30000 \
+      --metadata-only 2>&1; then
     ok "dim-smoke PASS: ${model_name}"
     return 0
   else
