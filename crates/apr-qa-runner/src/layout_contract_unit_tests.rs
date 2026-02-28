@@ -176,6 +176,7 @@ fn make_config_full() -> LayoutModelConfig {
         num_attention_heads: Some(32),
         num_key_value_heads: Some(8),
         num_hidden_layers: Some(2),
+        head_dim: None,
     }
 }
 
@@ -319,6 +320,39 @@ fn test_resolve_dimension_head_dim_missing_fields() {
         ..LayoutModelConfig::default()
     };
     assert_eq!(resolve_dimension("head_dim", &config2), None);
+}
+
+/// Verify resolve_dimension uses explicit head_dim from config (GQA models like Qwen3, Nemotron)
+#[test]
+fn test_resolve_dimension_explicit_head_dim() {
+    // Qwen3-0.6B: hidden=1024, heads=16, kv_heads=8, head_dim=128
+    // Without explicit head_dim: 1024/16 = 64 (WRONG for GQA)
+    // With explicit head_dim: 128 (CORRECT)
+    let config = LayoutModelConfig {
+        hidden_size: Some(1024),
+        num_attention_heads: Some(16),
+        num_key_value_heads: Some(8),
+        head_dim: Some(128),
+        ..LayoutModelConfig::default()
+    };
+    assert_eq!(resolve_dimension("head_dim", &config), Some(128));
+    // kv_heads * head_dim = 8 * 128 = 1024
+    assert_eq!(resolve_dimension("kv_heads*head_dim", &config), Some(1024));
+    // heads * head_dim = 16 * 128 = 2048
+    assert_eq!(resolve_dimension("heads*head_dim", &config), Some(2048));
+}
+
+/// Verify resolve_dimension falls back to hidden/heads when no explicit head_dim
+#[test]
+fn test_resolve_dimension_derived_head_dim() {
+    let config = LayoutModelConfig {
+        hidden_size: Some(4096),
+        num_attention_heads: Some(32),
+        head_dim: None,
+        ..LayoutModelConfig::default()
+    };
+    // Falls back to 4096/32 = 128
+    assert_eq!(resolve_dimension("head_dim", &config), Some(128));
 }
 
 /// Verify resolve_dimension parses numeric string literals directly

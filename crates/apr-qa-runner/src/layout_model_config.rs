@@ -54,6 +54,8 @@ pub struct LayoutModelConfig {
     pub num_key_value_heads: Option<usize>,
     /// Number of hidden layers from config.json
     pub num_hidden_layers: Option<usize>,
+    /// Head dimension from config.json (explicit, not derived)
+    pub head_dim: Option<usize>,
 }
 
 /// Find SafeTensors files in a path
@@ -198,6 +200,10 @@ pub fn find_and_load_config(model_path: &Path) -> LayoutModelConfig {
                             "num_layers",
                             "num_transformer_layers",
                         ],
+                    ),
+                    head_dim: get_usize_or(
+                        &json,
+                        &["head_dim", "kv_channels"],
                     ),
                 };
             }
@@ -373,6 +379,14 @@ fn validate_1d_tensor_shape(
     }
 }
 
+/// Derive head_dim from hidden_size / num_attention_heads (fallback for models without explicit head_dim)
+fn derived_head_dim(config: &LayoutModelConfig) -> Option<usize> {
+    match (config.hidden_size, config.num_attention_heads) {
+        (Some(h), Some(n)) if n > 0 => Some(h / n),
+        _ => None,
+    }
+}
+
 /// Parse expected shape from contract string like "[vocab, hidden]"
 fn parse_expected_shape(shape_str: &str, config: &LayoutModelConfig) -> Option<(usize, usize)> {
     let shape_parts = parse_shape_dims(shape_str);
@@ -404,13 +418,7 @@ fn resolve_dimension(dim: &str, config: &LayoutModelConfig) -> Option<usize> {
         }
         "heads" | "num_heads" | "num_attention_heads" => config.num_attention_heads,
         "kv_heads" | "num_kv_heads" | "num_key_value_heads" => config.num_key_value_heads,
-        "head_dim" => {
-            // head_dim = hidden_size / num_attention_heads
-            match (config.hidden_size, config.num_attention_heads) {
-                (Some(h), Some(n)) if n > 0 => Some(h / n),
-                _ => None,
-            }
-        }
+        "head_dim" => config.head_dim.or(derived_head_dim(config)),
         _ => dim.parse().ok(),
     }
 }
