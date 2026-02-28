@@ -1,6 +1,6 @@
 [
   {
-    "id": "000000000000000018985763d9164cc5",
+    "id": "000000000000000018986c479fa26387",
     "gate_id": "G0-DIM-CONFIG_PARSE",
     "scenario": {
       "id": "Phi-3-small-8k-instruct_run_cpu_safetensors_0000000000000000",
@@ -29,9 +29,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 1
     },
-    "timestamp": "2026-02-28T07:08:59.725788595Z",
+    "timestamp": "2026-02-28T13:31:48.246988573Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -42,7 +42,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018985763d91686b1",
+    "id": "000000000000000018986c479fa28149",
     "gate_id": "G0-DIM-HIDDEN_SIZE",
     "scenario": {
       "id": "Phi-3-small-8k-instruct_run_cpu_safetensors_0000000000000000",
@@ -71,9 +71,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 1
     },
-    "timestamp": "2026-02-28T07:08:59.725802425Z",
+    "timestamp": "2026-02-28T13:31:48.246995713Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -84,7 +84,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018985763d916a46c",
+    "id": "000000000000000018986c479fa28d8f",
     "gate_id": "G0-DIM-NUM_LAYERS",
     "scenario": {
       "id": "Phi-3-small-8k-instruct_run_cpu_safetensors_0000000000000000",
@@ -113,9 +113,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 1
     },
-    "timestamp": "2026-02-28T07:08:59.725809619Z",
+    "timestamp": "2026-02-28T13:31:48.246998935Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -126,7 +126,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018985763d916bd40",
+    "id": "000000000000000018986c479fa299a3",
     "gate_id": "G0-DIM-NUM_HEADS",
     "scenario": {
       "id": "Phi-3-small-8k-instruct_run_cpu_safetensors_0000000000000000",
@@ -155,9 +155,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 1
     },
-    "timestamp": "2026-02-28T07:08:59.725816175Z",
+    "timestamp": "2026-02-28T13:31:48.247001954Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -168,7 +168,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018985763d916d66f",
+    "id": "000000000000000018986c479fa2a4a0",
     "gate_id": "G0-DIM-NUM_KV_HEADS",
     "scenario": {
       "id": "Phi-3-small-8k-instruct_run_cpu_safetensors_0000000000000000",
@@ -197,9 +197,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 1
     },
-    "timestamp": "2026-02-28T07:08:59.725822776Z",
+    "timestamp": "2026-02-28T13:31:48.247004746Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -210,7 +210,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018985763d916f6b6",
+    "id": "000000000000000018986c479fa2b25e",
     "gate_id": "G0-DIM-VOCAB_SIZE",
     "scenario": {
       "id": "Phi-3-small-8k-instruct_run_cpu_safetensors_0000000000000000",
@@ -239,9 +239,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 1
     },
-    "timestamp": "2026-02-28T07:08:59.725830799Z",
+    "timestamp": "2026-02-28T13:31:48.247008303Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -252,7 +252,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018985763d9171574",
+    "id": "000000000000000018986c479fa2c07a",
     "gate_id": "G0-DIM-SAFETENSORS_FOUND",
     "scenario": {
       "id": "Phi-3-small-8k-instruct_run_cpu_safetensors_0000000000000000",
@@ -271,19 +271,61 @@
       "trace_level": "none",
       "oracle_type": "garbage"
     },
-    "outcome": "Falsified",
-    "reason": "G0 FAIL: safetensors_found expected=>= 1 file actual=0 file(s)",
-    "output": "expected=>= 1 file actual=0 file(s)",
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: safetensors_found expected=>= 1 file actual=4 file(s)",
     "stderr": null,
-    "exit_code": null,
+    "exit_code": 0,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 1
     },
-    "timestamp": "2026-02-28T07:08:59.725838719Z",
+    "timestamp": "2026-02-28T13:31:48.247012184Z",
+    "host": {
+      "hostname": "mac-server",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "000000000000000018986c479fa2cdef",
+    "gate_id": "G0-DIM-SAFETENSORS_HEADER",
+    "scenario": {
+      "id": "Phi-3-small-8k-instruct_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "microsoft",
+        "name": "Phi-3-small-8k-instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Dimensional check: safetensors_header",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: safetensors_header expected=>= 1 tensor actual=10 tensor(s)",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 1
+    },
+    "timestamp": "2026-02-28T13:31:48.247015376Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
