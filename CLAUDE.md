@@ -9,6 +9,13 @@ framework for HuggingFace models. It implements **Toyota Production System**
 principles (Jidoka, Poka-Yoke) combined with **Popperian Falsification**
 methodology—tests are designed to fail, not to pass.
 
+## CRITICAL: No Workarounds — Fix Root Cause Only
+
+**NEVER implement workarounds, shims, or compatibility hacks.** When a bug
+is found in a dependency (aprender, trueno, realizar), fix it at the source.
+Five-whys to root cause, file a ticket, fix it in the upstream repo. The QA
+framework must not paper over bugs — that violates Jidoka (stop and fix).
+
 ## CRITICAL: Ground Truth and Workflow
 
 ### Ground Truth Format: SafeTensors

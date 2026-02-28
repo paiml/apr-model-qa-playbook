@@ -108,15 +108,15 @@ fn run_certification(
     println!("{} {}", "Total:".dimmed(), models_to_certify.len());
 }
 
-/// Resolve the model cache path, defaulting to ~/.cache/apr-models
-fn resolve_default_model_cache(model_cache: Option<PathBuf>) -> Option<PathBuf> {
-    if model_cache.is_some() {
-        return model_cache;
-    }
-    let home = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
-    let default_cache = PathBuf::from(home).join(".cache/apr-models");
-    println!("Auto-resolving model cache: {}", default_cache.display());
-    Some(default_cache)
+/// Resolve the model cache path.
+///
+/// Returns `None` when no explicit cache is provided, letting the executor
+/// resolve model paths via `resolve_hf_repo_to_cache` and `apr pull`.
+/// The old default `~/.cache/apr-models` was a phantom directory that didn't
+/// match `apr pull`'s actual storage (`~/.apr/cache/hf/`), causing dim-smoke
+/// to fail with "no config.json" for every model.
+const fn resolve_default_model_cache(model_cache: Option<PathBuf>) -> Option<PathBuf> {
+    model_cache
 }
 
 /// Print the certification run header with tier, dry-run, and cache info

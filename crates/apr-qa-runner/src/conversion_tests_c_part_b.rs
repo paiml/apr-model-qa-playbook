@@ -66,7 +66,7 @@ fn test_resolve_hf_repo_to_cache_error_message_format() {
     assert!(err_msg.contains("Org/Repo"));
     assert!(err_msg.contains("Searched:"));
     assert!(err_msg.contains("models--Org--Repo"));
-    assert!(err_msg.contains("apr-models"));
+    assert!(err_msg.contains(".apr/cache/hf"));
 }
 
 // =========================================================================

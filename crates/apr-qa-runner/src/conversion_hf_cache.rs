@@ -60,12 +60,17 @@ fn find_hf_snapshot(
 ///
 /// Internal helper that checks if a model exists in the APR cache.
 fn find_apr_cache(home: &std::path::Path, org: &str, repo: &str) -> Option<std::path::PathBuf> {
-    let apr_cache = home.join(".cache/apr-models").join(org).join(repo);
+    // apr pull stores sharded models at ~/.apr/cache/hf/{org}/{repo}/
+    let apr_cache = home.join(".apr/cache/hf").join(org).join(repo);
     if apr_cache.exists() {
-        Some(apr_cache)
-    } else {
-        None
+        return Some(apr_cache);
     }
+    // Legacy path (deprecated, kept for backwards compat with manually created caches)
+    let legacy_cache = home.join(".cache/apr-models").join(org).join(repo);
+    if legacy_cache.exists() {
+        return Some(legacy_cache);
+    }
+    None
 }
 
 /// Resolve HuggingFace repo to cache with explicit cache directories.
@@ -91,7 +96,7 @@ fn resolve_hf_repo_with_dirs(
     let hf_model_dir = hf_cache
         .join(format!("models--{org}--{repo}"))
         .join("snapshots");
-    let apr_cache = home.join(".cache/apr-models").join(org).join(repo);
+    let apr_cache = home.join(".apr/cache/hf").join(org).join(repo);
 
     Err(Error::Execution(format!(
         "Model not found in cache: {hf_repo}\nSearched:\n  - {}\n  - {}",
