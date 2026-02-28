@@ -153,25 +153,9 @@ run_smoke() {
       return 1
     fi
   else
-    # No smoke playbook — run MVP playbook with smoke-tier settings
-    # (single worker, shorter timeout, fail-fast)
-    local mvp_pb
-    mvp_pb="$(playbook_file "$name")"
-    if [ ! -f "$mvp_pb" ]; then
-      fail "smoke FAIL: no playbook for ${model_name}"
-      return 1
-    fi
-    if cargo run --release --bin apr-qa -- run "$mvp_pb" \
-        --no-gpu \
-        --failure-policy fail-fast \
-        --workers 1 \
-        --timeout 120000 2>&1; then
-      ok "smoke PASS: ${model_name}"
-      return 0
-    else
-      fail "smoke FAIL: ${model_name}"
-      return 1
-    fi
+    # No smoke playbook — skip smoke tier (MVP will run the full matrix)
+    ok "smoke SKIP: no smoke playbook for ${model_name}, deferring to MVP tier"
+    return 0
   fi
 }
 
