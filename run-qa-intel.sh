@@ -201,14 +201,10 @@ run_mvp() {
     fail "mvp FAIL: ${model_name}"
   fi
 
-  # Copy evidence artifacts
+  # Copy evidence artifacts from the MVP run only
   if [ -d output ]; then
     cp -r output/* "$evidence_out/" 2>/dev/null || true
   fi
-  # Copy evidence JSON if present
-  for f in output/evidence.json certifications/*/evidence.json; do
-    [ -f "$f" ] && cp "$f" "$evidence_out/" 2>/dev/null || true
-  done
 
   log "Evidence saved to ${evidence_out}"
 }
