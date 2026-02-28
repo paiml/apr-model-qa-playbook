@@ -106,6 +106,10 @@ fn run_certification(
         }
     );
     println!("{} {}", "Total:".dimmed(), models_to_certify.len());
+
+    if failed_count > 0 && fail_fast {
+        std::process::exit(1);
+    }
 }
 
 /// Resolve the model cache path.
