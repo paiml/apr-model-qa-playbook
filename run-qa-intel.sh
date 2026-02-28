@@ -99,24 +99,25 @@ prepare() {
 
 run_dim_smoke() {
   local name="$1"
-  local pb
-  pb="$(playbook_file "$name")"
   local model_name
   model_name="$(model_short_name "$name")"
+  local dim_smoke_name="${model_name}-dim-smoke"
+  local dim_smoke_pb
+  dim_smoke_pb="$(playbook_file "$dim_smoke_name")"
 
   log "Tier 1 (dim-smoke): ${BOLD}${model_name}${NC}"
 
-  local hf_repo
-  hf_repo="$(hf_repo_from_playbook "$pb")"
-  if [ -z "$hf_repo" ]; then
-    die "Cannot extract hf_repo from $pb"
+  if [ ! -f "$dim_smoke_pb" ]; then
+    fail "dim-smoke SKIP: no playbook for ${model_name} (expected ${dim_smoke_pb})"
+    return 1
   fi
 
   rm -rf output
-  if cargo run --release --bin apr-qa -- certify \
-      --tier dim-smoke \
-      --fail-fast \
-      "$hf_repo" 2>&1; then
+  if cargo run --release --bin apr-qa -- run "$dim_smoke_pb" \
+      --no-gpu \
+      --failure-policy fail-fast \
+      --workers 1 \
+      --timeout 30000 2>&1; then
     ok "dim-smoke PASS: ${model_name}"
     return 0
   else
