@@ -418,7 +418,7 @@ fn resolve_dimension(dim: &str, config: &LayoutModelConfig) -> Option<usize> {
         }
         "heads" | "num_heads" | "num_attention_heads" => config.num_attention_heads,
         "kv_heads" | "num_kv_heads" | "num_key_value_heads" => config.num_key_value_heads,
-        "head_dim" => config.head_dim.or(derived_head_dim(config)),
+        "head_dim" => config.head_dim.or_else(|| derived_head_dim(config)),
         _ => dim.parse().ok(),
     }
 }

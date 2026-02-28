@@ -207,11 +207,14 @@ impl Executor {
         let pid_str = spawn_output.stdout.trim().to_string();
 
         // Wait for server to be ready — poll /health endpoint via GET
-        // 7B models can take 60-90s to load on CPU, so allow up to 120s
+        // Large models (14B+) can take 3-5 min to load on CPU.
+        // Use configured timeout (from playbook), minimum 120s.
+        let serve_timeout_secs = std::cmp::max(self.config.default_timeout_ms / 1000, 120);
+        let poll_iterations = serve_timeout_secs / 2;
         let health_url = format!("http://localhost:{port}/health");
         let mut server_ready = false;
         let server_pid: Option<u32> = pid_str.parse().ok();
-        for _ in 0..60 {
+        for _ in 0..poll_iterations {
             std::thread::sleep(std::time::Duration::from_secs(2));
             // Check if server process is still alive (fail fast if crashed)
             if let Some(pid) = server_pid {
@@ -238,7 +241,9 @@ impl Executor {
             }
             return (
                 String::new(),
-                Some("Server failed to become ready within 120s".to_string()),
+                Some(format!(
+                    "Server failed to become ready within {serve_timeout_secs}s"
+                )),
                 1,
                 None,
                 false,
