@@ -77,14 +77,14 @@ correctness, but a single failure proves a defect.
 ## Model Certifications
 
 <!-- CERTIFICATION_TABLE_START -->
-**Certification Summary** (updated: 2026-02-16 12:25 UTC)
+**Certification Summary** (updated: 2026-03-01 21:54 UTC)
 
 | Status | Count |
 |--------|-------|
-| Certified | 49/114 |
+| Certified | 91/114 |
 | Provisional | 0/114 |
 | Blocked | 2/114 |
-| Pending | 63/114 |
+| Pending | 21/114 |
 
 **Priority Family:** Qwen Coder (see [Certified Testing Spec](docs/specifications/certified-testing.md))
 
@@ -98,20 +98,20 @@ correctness, but a single failure proves a defect.
 | [CodeLlama-34b-Instruct-hf](https://huggingface.co/meta-llama/CodeLlama-34b-Instruct-hf) | codellama | 34B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
 | [CodeLlama-70b-Instruct-hf](https://huggingface.co/meta-llama/CodeLlama-70b-Instruct-hf) | codellama | 70B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
 | [deepseek-coder-1.3b-instruct](https://huggingface.co/deepseek-ai/deepseek-coder-1.3b-instruct) | deepseek-coder | 1.3B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
-| [deepseek-coder-6.7b-instruct](https://huggingface.co/deepseek-ai/deepseek-coder-6.7b-instruct) | deepseek-coder | 6.7B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [deepseek-coder-7b-instruct](https://huggingface.co/deepseek-ai/deepseek-coder-7b-instruct) | deepseek-coder | 7B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [deepseek-coder-33b-instruct](https://huggingface.co/deepseek-ai/deepseek-coder-33b-instruct) | deepseek-coder | 33B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [DeepSeek-Coder-V2-Lite-Instruct](https://huggingface.co/deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct) | deepseek-coder-v2 | 16B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
+| [deepseek-coder-6.7b-instruct](https://huggingface.co/deepseek-ai/deepseek-coder-6.7b-instruct) | deepseek-coder | 6.7B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [deepseek-coder-7b-instruct](https://huggingface.co/deepseek-ai/deepseek-coder-7b-instruct) | deepseek-coder | 7B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [deepseek-coder-33b-instruct](https://huggingface.co/deepseek-ai/deepseek-coder-33b-instruct) | deepseek-coder | 33B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [DeepSeek-Coder-V2-Lite-Instruct](https://huggingface.co/deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct) | deepseek-coder-v2 | 16B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [DeepSeek-R1-Distill-Qwen-1.5B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B) | deepseek-r1 | 1.5B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A | ✗ | ✗ | - | - | - | - | - | - |
-| [DeepSeek-R1-Distill-Qwen-7B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-7B) | deepseek-r1 | 7B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [DeepSeek-R1-Distill-Llama-8B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-8B) | deepseek-r1 | 8B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [DeepSeek-R1-Distill-Qwen-14B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-14B) | deepseek-r1 | 14B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [DeepSeek-R1-Distill-Qwen-32B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B) | deepseek-r1 | 32B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [DeepSeek-R1-Distill-Llama-70B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-70B) | deepseek-r1 | 70B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [dolphin-2.6-mistral-7b](https://huggingface.co/cognitivecomputations/dolphin-2.6-mistral-7b) | dolphin | 7B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [Dolphin3.0-Llama3.1-8B](https://huggingface.co/cognitivecomputations/Dolphin3.0-Llama3.1-8B) | dolphin | 8B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [falcon-7b-instruct](https://huggingface.co/tiiuae/falcon-7b-instruct) | falcon | 7B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [falcon-40b-instruct](https://huggingface.co/tiiuae/falcon-40b-instruct) | falcon | 40B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
+| [DeepSeek-R1-Distill-Qwen-7B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-7B) | deepseek-r1 | 7B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [DeepSeek-R1-Distill-Llama-8B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-8B) | deepseek-r1 | 8B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [DeepSeek-R1-Distill-Qwen-14B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-14B) | deepseek-r1 | 14B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [DeepSeek-R1-Distill-Qwen-32B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B) | deepseek-r1 | 32B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [DeepSeek-R1-Distill-Llama-70B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-70B) | deepseek-r1 | 70B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [dolphin-2.6-mistral-7b](https://huggingface.co/cognitivecomputations/dolphin-2.6-mistral-7b) | dolphin | 7B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [Dolphin3.0-Llama3.1-8B](https://huggingface.co/cognitivecomputations/Dolphin3.0-Llama3.1-8B) | dolphin | 8B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [falcon-7b-instruct](https://huggingface.co/tiiuae/falcon-7b-instruct) | falcon | 7B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [falcon-40b](https://huggingface.co/tiiuae/falcon-40b) | falcon | 40B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [Falcon-H1-Tiny-90M-Instruct](https://huggingface.co/tiiuae/Falcon-H1-Tiny-90M-Instruct) | falcon-h1 | 90M | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [Falcon-H1-0.5B-Instruct](https://huggingface.co/tiiuae/Falcon-H1-0.5B-Instruct) | falcon-h1 | 0.5B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [gemma-2-2b-it](https://huggingface.co/google/gemma-2-2b-it) | gemma | 2B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
@@ -131,11 +131,11 @@ correctness, but a single failure proves a defect.
 | [gpt2-large](https://huggingface.co/openai-community/gpt2-large) | gpt2 | 774M | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [gpt2-medium](https://huggingface.co/openai-community/gpt2-medium) | gpt2 | 355M | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [granite-3.1-2b-instruct](https://huggingface.co/ibm-granite/granite-3.1-2b-instruct) | granite | 2B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
-| [granite-3.1-8b-instruct](https://huggingface.co/ibm-granite/granite-3.1-8b-instruct) | granite | 8B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
+| [granite-3.1-8b-instruct](https://huggingface.co/ibm-granite/granite-3.1-8b-instruct) | granite | 8B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [granite-3b-code-instruct-128k](https://huggingface.co/ibm-granite/granite-3b-code-instruct-128k) | granite-code | 3B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
-| [Hermes-3-Llama-3.1-8B](https://huggingface.co/NousResearch/Hermes-3-Llama-3.1-8B) | hermes | 8B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [internlm2_5-7b-chat](https://huggingface.co/internlm/internlm2_5-7b-chat) | internlm | 7B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [internlm2_5-20b-chat](https://huggingface.co/internlm/internlm2_5-20b-chat) | internlm | 20B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
+| [Hermes-3-Llama-3.1-8B](https://huggingface.co/NousResearch/Hermes-3-Llama-3.1-8B) | hermes | 8B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [internlm2_5-7b-chat](https://huggingface.co/internlm/internlm2_5-7b-chat) | internlm | 7B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [internlm2_5-20b-chat](https://huggingface.co/internlm/internlm2_5-20b-chat) | internlm | 20B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [Llama-3.2-1B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct) | llama | 1B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
 | [Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) | llama | 3B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
 | [Llama-3.1-8B-Instruct](https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct) | llama | 8B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
@@ -144,30 +144,30 @@ correctness, but a single failure proves a defect.
 | [mamba-130m-hf](https://huggingface.co/state-spaces/mamba-130m-hf) | mamba | 130M | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [mamba2-130m-hf](https://huggingface.co/AntonV/mamba2-130m-hf) | mamba2 | 130M | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [Mistral-7B-Instruct-v0.3](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.3) | mistral | 7B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
-| [Mistral-Nemo-Instruct-2407](https://huggingface.co/mistralai/Mistral-Nemo-Instruct-2407) | mistral | 12B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [Mistral-Small-24B-Instruct-2501](https://huggingface.co/mistralai/Mistral-Small-24B-Instruct-2501) | mistral | 24B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [Codestral-22B-v0.1](https://huggingface.co/mistralai/Codestral-22B-v0.1) | mistral-code | 22B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
+| [Mistral-Nemo-Instruct-2407](https://huggingface.co/mistralai/Mistral-Nemo-Instruct-2407) | mistral | 12B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [Mistral-Small-24B-Instruct-2501](https://huggingface.co/mistralai/Mistral-Small-24B-Instruct-2501) | mistral | 24B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [Codestral-22B-v0.1](https://huggingface.co/mistralai/Codestral-22B-v0.1) | mistral-code | 22B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [Llama-3.1-Nemotron-Nano-4B-v1.1](https://huggingface.co/nvidia/Llama-3.1-Nemotron-Nano-4B-v1.1) | nemotron | 4B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
-| [Llama-3.1-Nemotron-70B-Instruct-HF](https://huggingface.co/nvidia/Llama-3.1-Nemotron-70B-Instruct-HF) | nemotron | 70B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [OLMo-2-1124-7B-Instruct](https://huggingface.co/allenai/OLMo-2-1124-7B-Instruct) | olmo | 7B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [OLMo-2-1124-13B-Instruct](https://huggingface.co/allenai/OLMo-2-1124-13B-Instruct) | olmo | 13B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [openchat-3.5-0106](https://huggingface.co/openchat/openchat-3.5-0106) | openchat | 7B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [OpenHermes-2.5-Mistral-7B](https://huggingface.co/teknium/OpenHermes-2.5-Mistral-7B) | openhermes | 7B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
+| [Llama-3.1-Nemotron-70B-Instruct-HF](https://huggingface.co/nvidia/Llama-3.1-Nemotron-70B-Instruct-HF) | nemotron | 70B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [OLMo-2-1124-7B-Instruct](https://huggingface.co/allenai/OLMo-2-1124-7B-Instruct) | olmo | 7B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [OLMo-2-1124-13B-Instruct](https://huggingface.co/allenai/OLMo-2-1124-13B-Instruct) | olmo | 13B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [openchat-3.5-0106](https://huggingface.co/openchat/openchat-3.5-0106) | openchat | 7B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [OpenHermes-2.5-Mistral-7B](https://huggingface.co/teknium/OpenHermes-2.5-Mistral-7B) | openhermes | 7B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [galactica-125m](https://huggingface.co/facebook/galactica-125m) | opt | 125M | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [phi-1_5](https://huggingface.co/microsoft/phi-1_5) | phi | 1.5B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [Phi-3-mini-4k-instruct](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct) | phi | 3.8B | ![blocked](https://img.shields.io/badge/BLOCKED-red) | 0 | F | ✓ | ✗ | - | - | - | - | - | - |
 | [Phi-3.5-mini-instruct](https://huggingface.co/microsoft/Phi-3.5-mini-instruct) | phi | 3.8B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
-| [Phi-3-small-8k-instruct](https://huggingface.co/microsoft/Phi-3-small-8k-instruct) | phi | 7B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [Phi-3-medium-4k-instruct](https://huggingface.co/microsoft/Phi-3-medium-4k-instruct) | phi | 14B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
+| [Phi-3-small-8k-instruct](https://huggingface.co/microsoft/Phi-3-small-8k-instruct) | phi | 7B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [Phi-3-medium-4k-instruct](https://huggingface.co/microsoft/Phi-3-medium-4k-instruct) | phi | 14B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [Phi-4-mini-instruct](https://huggingface.co/microsoft/Phi-4-mini-instruct) | phi4 | 3.8B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [Qwen2.5-0.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct) | qwen | 0.5B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [Qwen2.5-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct) | qwen | 1.5B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A | ✗ | ✗ | - | - | - | - | - | - |
 | [Qwen2.5-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct) | qwen | 3B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 964 | A | ✗ | ✗ | - | - | - | - | - | - |
 | [Qwen2.5-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct) | qwen | 7B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 900 | B | ✗ | ✗ | - | - | - | - | - | - |
-| [Qwen2.5-14B-Instruct](https://huggingface.co/Qwen/Qwen2.5-14B-Instruct) | qwen | 14B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [Qwen2.5-32B-Instruct](https://huggingface.co/Qwen/Qwen2.5-32B-Instruct) | qwen | 32B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [QwQ-32B](https://huggingface.co/Qwen/QwQ-32B) | qwen | 32B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [Qwen2.5-72B-Instruct](https://huggingface.co/Qwen/Qwen2.5-72B-Instruct) | qwen | 72B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
+| [Qwen2.5-14B-Instruct](https://huggingface.co/Qwen/Qwen2.5-14B-Instruct) | qwen | 14B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [Qwen2.5-32B-Instruct](https://huggingface.co/Qwen/Qwen2.5-32B-Instruct) | qwen | 32B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [QwQ-32B](https://huggingface.co/Qwen/QwQ-32B) | qwen | 32B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [Qwen2.5-72B-Instruct](https://huggingface.co/Qwen/Qwen2.5-72B-Instruct) | qwen | 72B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [Qwen2.5-Coder-0.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-0.5B-Instruct) | qwen-coder | 0.5B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [Qwen2.5-Coder-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct) | qwen-coder | 1.5B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [Qwen2.5-Coder-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-3B-Instruct) | qwen-coder | 3B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
@@ -178,11 +178,11 @@ correctness, but a single failure proves a defect.
 | [Qwen3-0.6B](https://huggingface.co/Qwen/Qwen3-0.6B) | qwen3 | 0.6B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [Qwen3-1.7B](https://huggingface.co/Qwen/Qwen3-1.7B) | qwen3 | 1.7B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 964 | A | ✗ | ✗ | - | - | - | - | - | - |
 | [Qwen3-4B](https://huggingface.co/Qwen/Qwen3-4B) | qwen3 | 4B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
-| [Qwen3-8B](https://huggingface.co/Qwen/Qwen3-8B) | qwen3 | 8B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [Qwen3-14B](https://huggingface.co/Qwen/Qwen3-14B) | qwen3 | 14B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [Qwen3-32B](https://huggingface.co/Qwen/Qwen3-32B) | qwen3 | 32B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [Qwen3-Coder-30B-A3B-Instruct](https://huggingface.co/Qwen/Qwen3-Coder-30B-A3B-Instruct) | qwen3-coder-moe | 30B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [Qwen3-30B-A3B](https://huggingface.co/Qwen/Qwen3-30B-A3B) | qwen3-moe | 30B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
+| [Qwen3-8B](https://huggingface.co/Qwen/Qwen3-8B) | qwen3 | 8B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [Qwen3-14B](https://huggingface.co/Qwen/Qwen3-14B) | qwen3 | 14B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [Qwen3-32B](https://huggingface.co/Qwen/Qwen3-32B) | qwen3 | 32B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [Qwen3-Coder-30B-A3B-Instruct](https://huggingface.co/Qwen/Qwen3-Coder-30B-A3B-Instruct) | qwen3-coder-moe | 30B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [Qwen3-30B-A3B](https://huggingface.co/Qwen/Qwen3-30B-A3B) | qwen3-moe | 30B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [SmolLM2-135M-Instruct](https://huggingface.co/HuggingFaceTB/SmolLM2-135M-Instruct) | smollm | 135M | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 925 | B | ✗ | ✗ | - | - | - | - | - | - |
 | [SmolLM2-360M-Instruct](https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct) | smollm | 360M | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 925 | B | ✗ | ✗ | - | - | - | - | - | - |
 | [SmolLM-135M](https://huggingface.co/HuggingFaceTB/SmolLM-135M) | smollm | 135M | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
@@ -193,17 +193,17 @@ correctness, but a single failure proves a defect.
 | [stablelm-2-zephyr-1_6b](https://huggingface.co/stabilityai/stablelm-2-zephyr-1_6b) | stablelm | 1.6B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [stablelm-zephyr-3b](https://huggingface.co/stabilityai/stablelm-zephyr-3b) | stablelm | 3B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [starcoder2-3b](https://huggingface.co/bigcode/starcoder2-3b) | starcoder2 | 3B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
-| [starcoder2-7b](https://huggingface.co/bigcode/starcoder2-7b) | starcoder2 | 7B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [starcoder2-15b](https://huggingface.co/bigcode/starcoder2-15b) | starcoder2 | 15B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
+| [starcoder2-7b](https://huggingface.co/bigcode/starcoder2-7b) | starcoder2 | 7B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [starcoder2-15b](https://huggingface.co/bigcode/starcoder2-15b) | starcoder2 | 15B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [TinyLlama-1.1B-Chat-v1.0](https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0) | tinyllama | 1.1B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A | ✗ | ✗ | - | - | - | - | - | - |
 | [vicuna-7b-v1.5](https://huggingface.co/lmsys/vicuna-7b-v1.5) | vicuna | 7B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
 | [vicuna-13b-v1.5](https://huggingface.co/lmsys/vicuna-13b-v1.5) | vicuna | 13B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
 | [WizardCoder-15B-V1.0](https://huggingface.co/WizardLMTeam/WizardCoder-15B-V1.0) | wizardcoder | 15B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
 | [WizardCoder-33B-V1.1](https://huggingface.co/WizardLMTeam/WizardCoder-33B-V1.1) | wizardcoder | 33B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [Yi-1.5-6B-Chat](https://huggingface.co/01-ai/Yi-1.5-6B-Chat) | yi | 6B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [Yi-1.5-9B-Chat](https://huggingface.co/01-ai/Yi-1.5-9B-Chat) | yi | 9B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [Yi-1.5-34B-Chat](https://huggingface.co/01-ai/Yi-1.5-34B-Chat) | yi | 34B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [zephyr-7b-beta](https://huggingface.co/HuggingFaceH4/zephyr-7b-beta) | zephyr | 7B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
+| [Yi-1.5-6B-Chat](https://huggingface.co/01-ai/Yi-1.5-6B-Chat) | yi | 6B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [Yi-1.5-9B-Chat](https://huggingface.co/01-ai/Yi-1.5-9B-Chat) | yi | 9B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [Yi-1.5-34B-Chat](https://huggingface.co/01-ai/Yi-1.5-34B-Chat) | yi | 34B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [zephyr-7b-beta](https://huggingface.co/HuggingFaceH4/zephyr-7b-beta) | zephyr | 7B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 <!-- CERTIFICATION_TABLE_END -->
 
 ## Quick Start
