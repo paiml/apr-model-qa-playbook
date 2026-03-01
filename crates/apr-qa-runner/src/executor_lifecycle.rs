@@ -361,7 +361,10 @@ impl Executor {
         )
     }
 
-    /// Execute scenario loop with failure policy handling
+    /// Execute scenario loop with failure policy handling.
+    ///
+    /// Serve scenarios are partitioned out and batched: one server lifecycle
+    /// per `(format, backend)` group, with 8 endpoint checks per lifecycle.
     fn execute_scenarios(
         &mut self,
         scenarios: Vec<QaScenario>,
@@ -371,7 +374,13 @@ impl Executor {
         let mut failed = 0;
         let mut skipped = 0;
 
-        for scenario in scenarios {
+        // Partition serve vs non-serve scenarios
+        let (serve_scenarios, other_scenarios): (Vec<_>, Vec<_>) = scenarios
+            .into_iter()
+            .partition(|s| s.modality == Modality::Serve);
+
+        // Non-serve: execute individually (unchanged)
+        for scenario in other_scenarios {
             if self.config.dry_run {
                 let cmd = scenario.to_command("model.gguf");
                 println!("[DRY RUN] {cmd}");
@@ -380,21 +389,95 @@ impl Executor {
             }
 
             let evidence = self.execute_scenario(&scenario);
-            if evidence.outcome == Outcome::Skipped {
-                skipped += 1;
-                self.collector.add(evidence);
+            let (p, f, s, stop) = self.tally_evidence(evidence, playbook_name);
+            passed += p;
+            failed += f;
+            skipped += s;
+            if stop {
+                return (passed, failed, skipped);
+            }
+        }
+
+        // Serve: group by (format, backend), one server per group
+        let (sp, sf, ss) = self.execute_serve_groups(serve_scenarios, playbook_name);
+        passed += sp;
+        failed += sf;
+        skipped += ss;
+
+        (passed, failed, skipped)
+    }
+
+    /// Tally a single evidence item: update counters, check stop policy.
+    ///
+    /// Returns `(passed, failed, skipped, should_stop)`.
+    fn tally_evidence(
+        &mut self,
+        evidence: Evidence,
+        playbook_name: &str,
+    ) -> (usize, usize, usize, bool) {
+        if evidence.outcome == Outcome::Skipped {
+            self.collector.add(evidence);
+            return (0, 0, 1, false);
+        }
+        if evidence.outcome.is_pass() {
+            self.collector.add(evidence);
+            return (1, 0, 0, false);
+        }
+        let stop = self.should_stop_on_failure(&evidence, playbook_name);
+        self.collector.add(evidence);
+        (0, 1, 0, stop)
+    }
+
+    /// Execute serve scenario groups: one server lifecycle per (format, backend).
+    fn execute_serve_groups(
+        &mut self,
+        serve_scenarios: Vec<QaScenario>,
+        playbook_name: &str,
+    ) -> (usize, usize, usize) {
+        let mut passed = 0;
+        let mut failed = 0;
+        let mut skipped = 0;
+
+        let mut groups: std::collections::HashMap<(Format, Backend), Vec<QaScenario>> =
+            std::collections::HashMap::new();
+        for s in serve_scenarios {
+            groups.entry((s.format, s.backend)).or_default().push(s);
+        }
+
+        for (_key, group) in groups {
+            if self.config.dry_run {
+                for s in &group {
+                    let cmd = s.to_command("model.gguf");
+                    println!("[DRY RUN] {cmd}");
+                    skipped += 1;
+                }
                 continue;
             }
-            if evidence.outcome.is_pass() {
-                passed += 1;
-            } else {
-                failed += 1;
-                if self.should_stop_on_failure(&evidence, playbook_name) {
-                    self.collector.add(evidence);
-                    break;
+
+            let first = &group[0];
+            let Some(model_path) = self.resolve_model_path(first) else {
+                for s in &group {
+                    let gate_id = format!("F-{}-001", s.mqs_category());
+                    skipped += 1;
+                    self.collector.add(Evidence::skipped(
+                        &gate_id,
+                        s.clone(),
+                        format!("Format {:?} not available for model file", s.format),
+                    ));
+                }
+                continue;
+            };
+            let no_gpu = first.backend == Backend::Cpu;
+            let evidence_vec = self.run_serve_battery(&model_path, first, no_gpu);
+            for ev in evidence_vec {
+                let (p, f, s, stop) = self.tally_evidence(ev, playbook_name);
+                passed += p;
+                failed += f;
+                skipped += s;
+                if stop {
+                    return (passed, failed, skipped);
                 }
             }
-            self.collector.add(evidence);
         }
 
         (passed, failed, skipped)

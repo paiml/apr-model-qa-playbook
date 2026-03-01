@@ -2,6 +2,9 @@
 // G0 gateway checks — see executor_gates.rs
 include!("executor_gates.rs");
 
+// Serve battery: spawn once, run 8 endpoint checks, kill once
+include!("executor_serve_battery.rs");
+
 impl Executor {
     /// Execute a single scenario
     fn execute_scenario(&self, scenario: &QaScenario) -> Evidence {
@@ -115,8 +118,16 @@ impl Executor {
                 no_gpu,
                 &["--json"],
             ),
+            // Serve scenarios are handled via battery in execute_scenarios().
+            // If we somehow reach here, treat as unreachable with a graceful fallback.
             Modality::Serve => {
-                return self.run_serve_scenario(&model_path, scenario, no_gpu);
+                return (
+                    String::new(),
+                    Some("Serve scenarios must be executed via serve battery".to_string()),
+                    1,
+                    None,
+                    false,
+                );
             }
         };
 
@@ -139,7 +150,7 @@ impl Executor {
         } else {
             // Trace retry uses the same modality as the original command
             let trace_output = match scenario.modality {
-                Modality::Run => self.command_runner.run_inference(
+                Modality::Run | Modality::Serve => self.command_runner.run_inference(
                     Path::new(&model_path),
                     &scenario.prompt,
                     32,
@@ -152,17 +163,6 @@ impl Executor {
                     no_gpu,
                     &["--trace"],
                 ),
-                Modality::Serve => {
-                    // For serve failures, re-run as `apr run --trace` since
-                    // serve lifecycle is complex and trace needs a single shot
-                    self.command_runner.run_inference(
-                        Path::new(&model_path),
-                        &scenario.prompt,
-                        32,
-                        no_gpu,
-                        &["--trace"],
-                    )
-                }
             };
             let mut full_trace = output.stderr.clone();
             if !trace_output.stderr.is_empty() {
@@ -174,109 +174,6 @@ impl Executor {
                 full_trace.push_str(&trace_output.stdout);
             }
             (Some(full_trace), output.exit_code)
-        };
-
-        (generated_text, final_stderr, final_exit_code, tps, false)
-    }
-
-    /// Execute a serve scenario: spawn server, send request, parse response, kill server.
-    /// Bug 200: Serve modality needs lifecycle management.
-    fn run_serve_scenario(
-        &self,
-        model_path: &str,
-        scenario: &QaScenario,
-        no_gpu: bool,
-    ) -> (String, Option<String>, i32, Option<f64>, bool) {
-        // Use a deterministic port based on scenario to avoid collisions
-        let port = 18_080 + (scenario.seed % 1000) as u16;
-
-        // Spawn server in background
-        let spawn_output = self
-            .command_runner
-            .spawn_serve(Path::new(model_path), port, no_gpu);
-        if !spawn_output.success {
-            return (
-                String::new(),
-                Some(format!("Failed to spawn serve: {}", spawn_output.stderr)),
-                spawn_output.exit_code,
-                None,
-                false,
-            );
-        }
-
-        let pid_str = spawn_output.stdout.trim().to_string();
-
-        // Wait for server to be ready — poll /health endpoint via GET
-        // Large models (14B+) can take 3-5 min to load on CPU.
-        // Use configured timeout (from playbook), minimum 120s.
-        let serve_timeout_secs = std::cmp::max(self.config.default_timeout_ms / 1000, 120);
-        let poll_iterations = serve_timeout_secs / 2;
-        let health_url = format!("http://localhost:{port}/health");
-        let mut server_ready = false;
-        let server_pid: Option<u32> = pid_str.parse().ok();
-        for _ in 0..poll_iterations {
-            std::thread::sleep(std::time::Duration::from_secs(2));
-            // Check if server process is still alive (fail fast if crashed)
-            if let Some(pid) = server_pid {
-                let alive = std::path::Path::new(&format!("/proc/{pid}")).exists();
-                if !alive {
-                    break;
-                }
-            }
-            if let Ok(output) = std::process::Command::new("curl")
-                .args(["-s", "-m", "2", &health_url])
-                .output()
-            {
-                let body = String::from_utf8_lossy(&output.stdout);
-                if output.status.success() && body.contains("healthy") {
-                    server_ready = true;
-                    break;
-                }
-            }
-        }
-        if !server_ready {
-            // Kill server and report failure
-            if pid_str.parse::<u32>().is_ok() {
-                let _ = std::process::Command::new("kill").arg(&pid_str).output();
-            }
-            return (
-                String::new(),
-                Some(format!(
-                    "Server failed to become ready within {serve_timeout_secs}s"
-                )),
-                1,
-                None,
-                false,
-            );
-        }
-
-        // Send completion request to /generate endpoint
-        let body = format!(
-            r#"{{"prompt":"{}","max_tokens":32}}"#,
-            scenario.prompt.replace('"', "\\\""),
-        );
-        let url = format!("http://localhost:{port}/generate");
-        let output = self.command_runner.http_post(&url, &body);
-
-        // Kill the server process
-        if pid_str.parse::<u32>().is_ok() {
-            let _ = std::process::Command::new("kill").arg(&pid_str).output();
-        }
-
-        let tps = Self::parse_tps_from_output(&output.stdout);
-        let generated_text = Self::extract_generated_text(&output.stdout);
-
-        let (final_stderr, final_exit_code) = if output.success {
-            (
-                if output.stderr.is_empty() {
-                    None
-                } else {
-                    Some(output.stderr)
-                },
-                output.exit_code,
-            )
-        } else {
-            (Some(output.stderr), output.exit_code)
         };
 
         (generated_text, final_stderr, final_exit_code, tps, false)
@@ -318,3 +215,7 @@ mod tests_e;
 #[cfg(test)]
 #[path = "executor_tests_f.rs"]
 mod tests_f;
+
+#[cfg(test)]
+#[path = "executor_tests_serve_battery.rs"]
+mod tests_serve_battery;
