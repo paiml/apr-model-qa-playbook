@@ -4,7 +4,7 @@ name: falcon-40b-dim-smoke
 version: 1.0.0
 description: Dimensional smoke check for falcon-40b (metadata-only)
 model:
-  hf_repo: tiiuae/falcon-40b-instruct
+  hf_repo: tiiuae/falcon-40b
   formats:
   - safetensors
   quantizations:

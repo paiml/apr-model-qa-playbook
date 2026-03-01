@@ -5,7 +5,7 @@ version: "1.0.0"
 description: "MVP certification for tiiuae/falcon-40b-instruct"
 
 model:
-  hf_repo: "tiiuae/falcon-40b-instruct"
+  hf_repo: "tiiuae/falcon-40b"
   formats:
     - safetensors  # Ground truth (HuggingFace source)
     - apr          # APR native format
