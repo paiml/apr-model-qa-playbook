@@ -61,21 +61,29 @@ else:
 " "$evidence_file" 2>/dev/null || echo "0"
 }
 
-# ── Clean up heavy artifacts from passed evidence ─────────────────
+# ── Clean up heavy artifacts after EVERY run ─────────────────────
+# CONTRACT: evidence.json + run.log are preserved. Everything else
+# (conversions/, workspace/, *.apr, *.gguf) is deleted.
+# This prevents disk exhaustion — Jidoka: clean as you go.
 cleanup_evidence() {
     playbook="$1"
     model_short=$(echo "$playbook" | sed 's/-mvp$//')
     evidence_dir="$HOME/data/qa-evidence/$model_short"
     [ -d "$evidence_dir" ] || return 0
+    freed=0
     for ts_dir in "$evidence_dir"/*/; do
         [ -d "$ts_dir" ] || continue
         for subdir in "${ts_dir}conversions" "${ts_dir}workspace"; do
             if [ -d "$subdir" ]; then
-                echo "Cleaning $(du -sh "$subdir" 2>/dev/null | cut -f1): $subdir"
+                size=$(du -sm "$subdir" 2>/dev/null | cut -f1 || echo 0)
+                freed=$((freed + size))
                 rm -rf "$subdir"
             fi
         done
     done
+    if [ "$freed" -gt 0 ]; then
+        echo "[cleanup] Freed ${freed}MB from $model_short artifacts"
+    fi
 }
 
 # ── Commit evidence to git (best-effort) ────────────────────────
@@ -144,7 +152,6 @@ while [ "$iteration" -lt 999999 ]; do
             if [ "$pass_rate" -ge 50 ] 2>/dev/null; then
                 $JOBS_CMD complete "$playbook" "$pass_rate" "$duration"
                 echo "[$iteration] Certified: $playbook (${pass_rate}%, ${duration}s)"
-                cleanup_evidence "$playbook"
             else
                 $JOBS_CMD fail "$playbook" "${pass_rate}% pass rate (below 50% threshold)"
                 echo "[$iteration] Failed: $playbook (${pass_rate}% < 50% threshold)"
@@ -164,6 +171,11 @@ while [ "$iteration" -lt 999999 ]; do
         # Still commit any partial evidence
         commit_evidence "$playbook"
     fi
+
+    # AUTO-CLEAN: Always remove heavy artifacts (conversions/, workspace/)
+    # Keeps evidence.json + run.log. Prevents disk exhaustion.
+    cleanup_evidence "$playbook"
+    rm -rf "$QA_REPO/output"
 
     echo "[$iteration] Cooldown ${COOLDOWN}s..."
     sleep "$COOLDOWN"
