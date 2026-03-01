@@ -77,14 +77,14 @@ correctness, but a single failure proves a defect.
 ## Model Certifications
 
 <!-- CERTIFICATION_TABLE_START -->
-**Certification Summary** (updated: 2026-03-01 21:54 UTC)
+**Certification Summary** (updated: 2026-03-01 22:18 UTC)
 
 | Status | Count |
 |--------|-------|
-| Certified | 91/114 |
+| Certified | 92/114 |
 | Provisional | 0/114 |
 | Blocked | 2/114 |
-| Pending | 21/114 |
+| Pending | 20/114 |
 
 **Priority Family:** Qwen Coder (see [Certified Testing Spec](docs/specifications/certified-testing.md))
 
@@ -199,7 +199,7 @@ correctness, but a single failure proves a defect.
 | [vicuna-7b-v1.5](https://huggingface.co/lmsys/vicuna-7b-v1.5) | vicuna | 7B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
 | [vicuna-13b-v1.5](https://huggingface.co/lmsys/vicuna-13b-v1.5) | vicuna | 13B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
 | [WizardCoder-15B-V1.0](https://huggingface.co/WizardLMTeam/WizardCoder-15B-V1.0) | wizardcoder | 15B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
-| [WizardCoder-33B-V1.1](https://huggingface.co/WizardLMTeam/WizardCoder-33B-V1.1) | wizardcoder | 33B | ![pending](https://img.shields.io/badge/PENDING-lightgray) | 0 | - | - | - | - | - | - | - | - | - |
+| [WizardCoder-33B-V1.1](https://huggingface.co/WizardLMTeam/WizardCoder-33B-V1.1) | wizardcoder | 33B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [Yi-1.5-6B-Chat](https://huggingface.co/01-ai/Yi-1.5-6B-Chat) | yi | 6B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [Yi-1.5-9B-Chat](https://huggingface.co/01-ai/Yi-1.5-9B-Chat) | yi | 9B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [Yi-1.5-34B-Chat](https://huggingface.co/01-ai/Yi-1.5-34B-Chat) | yi | 34B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
