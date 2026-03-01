@@ -30,9 +30,10 @@ pub fn split_hf_repo(hf_repo: &str) -> (&str, &str) {
     hf_repo.split_once('/').unwrap_or(("unknown", hf_repo))
 }
 
-/// Find a snapshot containing `model.safetensors` in the HuggingFace cache.
+/// Find a snapshot containing SafeTensors files in the HuggingFace cache.
 ///
-/// Internal helper that searches for model files within a given cache directory.
+/// Detects both monolithic (`model.safetensors`) and sharded
+/// (`model.safetensors.index.json` + `model-NNNNN-of-NNNNN.safetensors`) layouts.
 fn find_hf_snapshot(
     hf_cache: &std::path::Path,
     org: &str,
@@ -49,11 +50,24 @@ fn find_hf_snapshot(
     let entries = std::fs::read_dir(&hf_model_dir).ok()?;
     for entry in entries.flatten() {
         let snapshot = entry.path();
-        if snapshot.is_dir() && snapshot.join("model.safetensors").exists() {
+        if snapshot.is_dir() && snapshot_has_safetensors(&snapshot) {
             return Some(snapshot);
         }
     }
     None
+}
+
+/// Check whether a snapshot directory contains SafeTensors model files.
+///
+/// Returns `true` for monolithic (`model.safetensors`) or sharded
+/// (`model.safetensors.index.json`) layouts.
+fn snapshot_has_safetensors(snapshot: &std::path::Path) -> bool {
+    // Monolithic: single model.safetensors file
+    if snapshot.join("model.safetensors").exists() {
+        return true;
+    }
+    // Sharded: index file indicates sharded layout
+    snapshot.join("model.safetensors.index.json").exists()
 }
 
 /// Find a model in the APR cache directory.

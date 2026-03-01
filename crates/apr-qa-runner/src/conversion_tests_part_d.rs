@@ -68,6 +68,58 @@ fn test_find_hf_snapshot_no_safetensors() {
     assert!(result.is_none());
 }
 
+/// Verify find_hf_snapshot finds sharded models via index file
+#[test]
+fn test_find_hf_snapshot_sharded() {
+    let dir = tempfile::tempdir().unwrap();
+    let snapshot_dir = dir
+        .path()
+        .join("models--microsoft--Phi-3-mini-4k-instruct")
+        .join("snapshots")
+        .join("abc123");
+    std::fs::create_dir_all(&snapshot_dir).unwrap();
+    // Sharded layout: index + shard files, no monolithic model.safetensors
+    std::fs::write(snapshot_dir.join("model.safetensors.index.json"), "{}").unwrap();
+    std::fs::write(
+        snapshot_dir.join("model-00001-of-00002.safetensors"),
+        "shard1",
+    )
+    .unwrap();
+    std::fs::write(
+        snapshot_dir.join("model-00002-of-00002.safetensors"),
+        "shard2",
+    )
+    .unwrap();
+
+    let result = find_hf_snapshot(dir.path(), "microsoft", "Phi-3-mini-4k-instruct");
+    assert!(result.is_some());
+    assert_eq!(result.unwrap(), snapshot_dir);
+}
+
+/// Verify resolve_hf_repo_with_dirs finds sharded HF cache models
+#[test]
+fn test_resolve_with_dirs_sharded_hf_cache() {
+    let hf_cache = tempfile::tempdir().unwrap();
+    let home = tempfile::tempdir().unwrap();
+
+    let snapshot = hf_cache
+        .path()
+        .join("models--microsoft--Phi-3-mini-4k-instruct")
+        .join("snapshots")
+        .join("f39ac1d2");
+    std::fs::create_dir_all(&snapshot).unwrap();
+    std::fs::write(snapshot.join("model.safetensors.index.json"), "{}").unwrap();
+    std::fs::write(snapshot.join("model-00001-of-00002.safetensors"), "s1").unwrap();
+
+    let result = resolve_hf_repo_with_dirs(
+        "microsoft/Phi-3-mini-4k-instruct",
+        hf_cache.path(),
+        home.path(),
+    );
+    assert!(result.is_ok());
+    assert_eq!(result.unwrap(), snapshot);
+}
+
 /// Verify find_apr_cache returns None for nonexistent cache
 #[test]
 fn test_find_apr_cache_not_found() {

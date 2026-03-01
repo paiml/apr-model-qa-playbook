@@ -77,13 +77,13 @@ correctness, but a single failure proves a defect.
 ## Model Certifications
 
 <!-- CERTIFICATION_TABLE_START -->
-**Certification Summary** (updated: 2026-03-01 22:25 UTC)
+**Certification Summary** (updated: 2026-03-01 22:40 UTC)
 
 | Status | Count |
 |--------|-------|
-| Certified | 92/94 |
+| Certified | 94/94 |
 | Provisional | 0/94 |
-| Blocked | 2/94 |
+| Blocked | 0/94 |
 | Pending | 0/94 |
 
 **Priority Family:** Qwen Coder (see [Certified Testing Spec](docs/specifications/certified-testing.md))
@@ -138,7 +138,7 @@ correctness, but a single failure proves a defect.
 | [OpenHermes-2.5-Mistral-7B](https://huggingface.co/teknium/OpenHermes-2.5-Mistral-7B) | openhermes | 7B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [galactica-125m](https://huggingface.co/facebook/galactica-125m) | opt | 125M | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [phi-1_5](https://huggingface.co/microsoft/phi-1_5) | phi | 1.5B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
-| [Phi-3-mini-4k-instruct](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct) | phi | 3.8B | ![blocked](https://img.shields.io/badge/BLOCKED-red) | 0 | F | ✓ | ✗ | - | - | - | - | - | - |
+| [Phi-3-mini-4k-instruct](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct) | phi | 3.8B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [Phi-3.5-mini-instruct](https://huggingface.co/microsoft/Phi-3.5-mini-instruct) | phi | 3.8B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [Phi-3-small-8k-instruct](https://huggingface.co/microsoft/Phi-3-small-8k-instruct) | phi | 7B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [Phi-3-medium-4k-instruct](https://huggingface.co/microsoft/Phi-3-medium-4k-instruct) | phi | 14B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
@@ -156,7 +156,7 @@ correctness, but a single failure proves a defect.
 | [Qwen2.5-Coder-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-3B-Instruct) | qwen-coder | 3B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [Qwen2.5-Coder-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct) | qwen-coder | 7B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [Qwen2.5-Coder-14B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct) | qwen-coder | 14B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
-| [Qwen2.5-Coder-32B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-32B-Instruct) | qwen-coder | 32B | ![blocked](https://img.shields.io/badge/BLOCKED-red) | 0 | F | ✗ | ✗ | - | - | - | - | - | - |
+| [Qwen2.5-Coder-32B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-32B-Instruct) | qwen-coder | 32B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [Qwen2-0.5B-Instruct](https://huggingface.co/Qwen/Qwen2-0.5B-Instruct) | qwen2 | 0.5B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [Qwen3-0.6B](https://huggingface.co/Qwen/Qwen3-0.6B) | qwen3 | 0.6B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [Qwen3-1.7B](https://huggingface.co/Qwen/Qwen3-1.7B) | qwen3 | 1.7B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 964 | A | ✗ | ✗ | - | - | - | - | - | - |
