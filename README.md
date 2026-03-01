@@ -413,7 +413,7 @@ apr-model-qa-playbook/
 ├── book/                  # mdBook documentation
 ├── scripts/               # Validation and golden output generation
 └── docs/
-    ├── certifications/    # models.csv certification database (92 models)
+    ├── certifications/    # models.csv certification database (94 models)
     ├── specifications/    # Full specification (10 docs)
     ├── tickets/           # Ticket analysis (GH-190, GH-191)
     ├── five-whys/         # Root cause analysis
