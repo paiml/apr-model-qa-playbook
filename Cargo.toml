@@ -58,6 +58,9 @@ ctrlc = "3.4"
 # SafeTensors parsing
 safetensors = "0.4"
 
+# LLM assertion types (probar)
+jugar-probar = { path = "../probar/crates/probar", default-features = false, features = ["llm-types"] }
+
 # Workspace crates
 apr-qa-gen = { version = "0.1.0", path = "crates/apr-qa-gen" }
 apr-qa-runner = { version = "0.1.0", path = "crates/apr-qa-runner" }

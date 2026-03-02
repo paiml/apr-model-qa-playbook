@@ -14,11 +14,22 @@ fn serve_scenario() -> QaScenario {
     )
 }
 
-/// Helper: create a mock runner that passes health checks and returns valid responses
+/// OpenAI ChatResponse-compatible JSON that also has `text` for /generate extraction.
+/// This satisfies both `extract_generated_text` and `ChatResponse` deserialization.
+const MOCK_CHAT_RESPONSE: &str = r#"{"id":"test-123","object":"chat.completion","created":0,"model":"test","choices":[{"index":0,"text":"The answer is 4.","message":{"role":"assistant","content":"The answer is 4."},"finish_reason":"stop"}],"usage":{"prompt_tokens":5,"completion_tokens":5,"total_tokens":10}}"#;
+
+/// GET response that satisfies health ("healthy"), /v1/models ("data" array),
+/// and other GET endpoints (non-empty).
+const MOCK_GET_RESPONSE: &str = r#"{"status":"healthy","data":[{"id":"test","object":"model"}]}"#;
+
+/// Helper: create a mock runner that passes health checks and returns valid responses.
+///
+/// Returns OpenAI ChatResponse-compatible JSON for POST and a combined
+/// healthy + models response for GET.
 fn mock_with_healthy_server() -> MockCommandRunner {
     MockCommandRunner::new()
-        .with_http_get_response(r#"{"status":"healthy"}"#)
-        .with_http_post_response(r#"{"choices":[{"text":"The answer is 4."}]}"#)
+        .with_http_get_response(MOCK_GET_RESPONSE)
+        .with_http_post_response(MOCK_CHAT_RESPONSE)
 }
 
 #[test]
@@ -33,11 +44,12 @@ fn test_serve_battery_all_endpoints_pass() {
     let scenario = serve_scenario();
     let results = executor.run_serve_battery("/test/model.gguf", &scenario, true);
 
-    // Should produce 10 evidence items (one per check)
-    assert_eq!(results.len(), 10, "Expected 10 battery checks, got {}", results.len());
+    // Should produce 19 evidence items (one per check)
+    assert_eq!(results.len(), 19, "Expected 19 battery checks, got {}", results.len());
 
-    // Check gate IDs
+    // Check all 19 gate IDs are present
     let gate_ids: Vec<&str> = results.iter().map(|e| e.gate_id.as_str()).collect();
+    // Checks 1-10
     assert!(gate_ids.contains(&"F-A5-001"), "Missing primary generate gate");
     assert!(gate_ids.contains(&"F-A5-COMP-001"), "Missing v1/completions gate");
     assert!(gate_ids.contains(&"F-A5-CHAT-001"), "Missing v1/chat gate");
@@ -48,6 +60,16 @@ fn test_serve_battery_all_endpoints_pass() {
     assert!(gate_ids.contains(&"F-A5-METRICS-001"), "Missing metrics gate");
     assert!(gate_ids.contains(&"F-A5-EOS-001"), "Missing EOS termination gate");
     assert!(gate_ids.contains(&"F-A5-PERF-001"), "Missing perf floor gate");
+    // Checks 11-19
+    assert!(gate_ids.contains(&"F-A5-MODELS-001"), "Missing v1/models gate");
+    assert!(gate_ids.contains(&"F-A5-TMPL-001"), "Missing template leakage gate");
+    assert!(gate_ids.contains(&"F-A5-DETERM-001"), "Missing temp determinism gate");
+    assert!(gate_ids.contains(&"F-A5-MULTI-001"), "Missing multi-turn gate");
+    assert!(gate_ids.contains(&"F-A5-TOK-001"), "Missing tokenize gate");
+    assert!(gate_ids.contains(&"F-A5-CHARS-001"), "Missing special chars gate");
+    assert!(gate_ids.contains(&"F-A5-CSTREAM-001"), "Missing chat streaming gate");
+    assert!(gate_ids.contains(&"F-A5-MAXTOK-001"), "Missing max_tokens gate");
+    assert!(gate_ids.contains(&"F-A5-SCHEMA-001"), "Missing response schema gate");
 
     // Primary check should pass (mock returns valid response)
     assert!(
@@ -439,7 +461,7 @@ fn test_detect_repetition_with_trigrams() {
 }
 
 #[test]
-fn test_serve_battery_10_checks_total() {
+fn test_serve_battery_19_checks_total() {
     let mock_runner = mock_with_healthy_server();
     let config = ExecutionConfig {
         model_path: Some("/test/model.gguf".to_string()),
@@ -450,12 +472,14 @@ fn test_serve_battery_10_checks_total() {
     let scenario = serve_scenario();
     let results = executor.run_serve_battery("/test/model.gguf", &scenario, true);
 
-    assert_eq!(results.len(), 10, "Expected 10 battery checks, got {}", results.len());
+    assert_eq!(results.len(), 19, "Expected 19 battery checks, got {}", results.len());
 
-    // Verify EOS and PERF gate IDs are present
+    // Verify all gate ID categories are present
     let gate_ids: Vec<&str> = results.iter().map(|e| e.gate_id.as_str()).collect();
     assert!(gate_ids.contains(&"F-A5-EOS-001"), "Missing EOS termination gate");
     assert!(gate_ids.contains(&"F-A5-PERF-001"), "Missing perf floor gate");
+    assert!(gate_ids.contains(&"F-A5-SCHEMA-001"), "Missing schema gate");
+    assert!(gate_ids.contains(&"F-A5-DETERM-001"), "Missing determinism gate");
 }
 
 #[test]
@@ -489,7 +513,7 @@ fn test_execute_scenarios_partitions_serve() {
     let scenarios = vec![run_scenario, serve_scenario_1];
     let (passed, failed, _skipped) = executor.execute_scenarios(scenarios, "test");
 
-    // Run scenario: 1 evidence, Serve battery: 10 evidence
+    // Run scenario: 1 evidence, Serve battery: 19 evidence
     // Total passed should be > 1 (at minimum the run + battery checks)
     assert!(
         passed >= 2,
@@ -553,4 +577,291 @@ fn test_serve_battery_perf_floor_just_below() {
     let start = Instant::now();
     let ev = executor.check_serve_perf_floor(Some(0.099), &scenario, &start);
     assert!(ev.outcome.is_fail(), "Just below floor should fail");
+}
+
+// ── Checks 11-19: individual tests ──────────────────────────────
+
+#[test]
+fn test_check_serve_v1_models_pass() {
+    let mock_runner = MockCommandRunner::new()
+        .with_http_get_response(r#"{"data":[{"id":"test-model","object":"model"}]}"#);
+    let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(mock_runner));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_v1_models(8080, &scenario, &start);
+    assert!(ev.outcome.is_pass(), "Valid /v1/models response should pass");
+    assert_eq!(ev.gate_id, "F-A5-MODELS-001");
+}
+
+#[test]
+fn test_check_serve_v1_models_missing_data() {
+    let mock_runner = MockCommandRunner::new()
+        .with_http_get_response(r#"{"models":[]}"#);
+    let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(mock_runner));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_v1_models(8080, &scenario, &start);
+    assert!(ev.outcome.is_fail(), "Missing 'data' array should fail");
+}
+
+#[test]
+fn test_check_serve_v1_models_failure() {
+    let mock_runner = MockCommandRunner::new().with_http_get_failure();
+    let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(mock_runner));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_v1_models(8080, &scenario, &start);
+    assert!(ev.outcome.is_fail());
+    assert!(ev.reason.contains("GET /v1/models failed"));
+}
+
+#[test]
+fn test_check_serve_template_leakage_pass() {
+    // No template markers in output → pass
+    let mock_runner = MockCommandRunner::new()
+        .with_http_post_response(MOCK_CHAT_RESPONSE);
+    let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(mock_runner));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_template_leakage(8080, &scenario, &start);
+    assert!(ev.outcome.is_pass(), "Clean output should pass template check");
+    assert_eq!(ev.gate_id, "F-A5-TMPL-001");
+}
+
+#[test]
+fn test_check_serve_template_leakage_detected() {
+    // Template markers leaked into output
+    let leaked = r#"{"id":"t","object":"chat.completion","created":0,"model":"t","choices":[{"index":0,"message":{"role":"assistant","content":"<|im_start|>assistant Hello"},"finish_reason":"stop"}]}"#;
+    let mock_runner = MockCommandRunner::new()
+        .with_http_post_response(leaked);
+    let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(mock_runner));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_template_leakage(8080, &scenario, &start);
+    assert!(ev.outcome.is_fail(), "Leaked template markers should fail");
+    assert!(ev.reason.contains("Template markers leaked"));
+}
+
+#[test]
+fn test_check_serve_temp_determinism_pass() {
+    // Same response twice → deterministic
+    let mock_runner = MockCommandRunner::new()
+        .with_http_post_response(MOCK_CHAT_RESPONSE);
+    let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(mock_runner));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_temp_determinism(8080, &scenario, &start);
+    assert!(ev.outcome.is_pass(), "Identical responses should be deterministic");
+    assert_eq!(ev.gate_id, "F-A5-DETERM-001");
+}
+
+#[test]
+fn test_check_serve_temp_determinism_request_failure() {
+    let mock_runner = MockCommandRunner::new().with_http_post_failure();
+    let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(mock_runner));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_temp_determinism(8080, &scenario, &start);
+    assert!(ev.outcome.is_fail());
+    assert!(ev.reason.contains("one or both requests failed"));
+}
+
+#[test]
+fn test_check_serve_multi_turn_pass() {
+    // Response contains "blue" → context preserved
+    let response = r#"{"id":"t","object":"chat.completion","created":0,"model":"t","choices":[{"index":0,"message":{"role":"assistant","content":"Your favorite color is blue."},"finish_reason":"stop"}]}"#;
+    let mock_runner = MockCommandRunner::new()
+        .with_http_post_response(response);
+    let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(mock_runner));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_multi_turn(8080, &scenario, &start);
+    assert!(ev.outcome.is_pass(), "Response with 'blue' should pass multi-turn");
+    assert_eq!(ev.gate_id, "F-A5-MULTI-001");
+}
+
+#[test]
+fn test_check_serve_multi_turn_context_lost() {
+    // Response doesn't mention "blue" → context lost
+    let response = r#"{"id":"t","object":"chat.completion","created":0,"model":"t","choices":[{"index":0,"message":{"role":"assistant","content":"I don't know."},"finish_reason":"stop"}]}"#;
+    let mock_runner = MockCommandRunner::new()
+        .with_http_post_response(response);
+    let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(mock_runner));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_multi_turn(8080, &scenario, &start);
+    assert!(ev.outcome.is_fail(), "Missing 'blue' should fail multi-turn");
+    assert!(ev.reason.contains("context lost"));
+}
+
+#[test]
+fn test_check_serve_tokenize_optional() {
+    // /tokenize not available → pass (optional endpoint)
+    let mock_runner = MockCommandRunner::new().with_http_post_failure();
+    let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(mock_runner));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_tokenize(8080, &scenario, &start);
+    assert!(ev.outcome.is_pass(), "Missing /tokenize should pass (optional)");
+    assert_eq!(ev.gate_id, "F-A5-TOK-001");
+}
+
+#[test]
+fn test_check_serve_tokenize_valid() {
+    let mock_runner = MockCommandRunner::new()
+        .with_http_post_response(r#"{"tokens":[1,2,3],"count":3}"#);
+    let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(mock_runner));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_tokenize(8080, &scenario, &start);
+    assert!(ev.outcome.is_pass(), "Valid tokenize response should pass");
+}
+
+#[test]
+fn test_check_serve_tokenize_missing_fields() {
+    let mock_runner = MockCommandRunner::new()
+        .with_http_post_response(r#"{"result":"ok"}"#);
+    let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(mock_runner));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_tokenize(8080, &scenario, &start);
+    assert!(ev.outcome.is_fail(), "Missing tokens/count should fail");
+}
+
+#[test]
+fn test_check_serve_special_chars_pass() {
+    let mock_runner = MockCommandRunner::new()
+        .with_http_post_response(r#"{"choices":[{"text":"ok"}]}"#);
+    let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(mock_runner));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_special_chars(8080, &scenario, &start);
+    assert!(ev.outcome.is_pass(), "Successful response to special chars should pass");
+    assert_eq!(ev.gate_id, "F-A5-CHARS-001");
+}
+
+#[test]
+fn test_check_serve_special_chars_failure() {
+    let mock_runner = MockCommandRunner::new().with_http_post_failure();
+    let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(mock_runner));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_special_chars(8080, &scenario, &start);
+    assert!(ev.outcome.is_fail());
+    assert!(ev.reason.contains("Special char prompt failed"));
+}
+
+#[test]
+fn test_check_serve_chat_streaming_valid() {
+    let sse = "data: {\"choices\":[{\"delta\":{\"content\":\"hi\"}}]}\n\ndata: [DONE]\n";
+    let mock_runner = MockCommandRunner::new()
+        .with_http_post_response(sse);
+    let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(mock_runner));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_chat_streaming(8080, &scenario, &start);
+    assert!(ev.outcome.is_pass(), "Valid chat SSE should pass");
+    assert_eq!(ev.gate_id, "F-A5-CSTREAM-001");
+}
+
+#[test]
+fn test_check_serve_chat_streaming_invalid() {
+    let mock_runner = MockCommandRunner::new()
+        .with_http_post_response(r#"{"not":"sse"}"#);
+    let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(mock_runner));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_chat_streaming(8080, &scenario, &start);
+    assert!(ev.outcome.is_fail(), "Non-SSE response should fail chat streaming");
+}
+
+#[test]
+fn test_check_serve_max_tokens_one_pass() {
+    // Short response (1 word) → pass
+    let mock_runner = MockCommandRunner::new()
+        .with_http_post_response(r#"{"choices":[{"text":"world"}]}"#);
+    let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(mock_runner));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_max_tokens_one(8080, &scenario, &start);
+    assert!(ev.outcome.is_pass(), "1 word for max_tokens=1 should pass");
+    assert_eq!(ev.gate_id, "F-A5-MAXTOK-001");
+}
+
+#[test]
+fn test_check_serve_max_tokens_one_violated() {
+    // Long response → max_tokens not honored
+    let mock_runner = MockCommandRunner::new()
+        .with_http_post_response(r#"{"choices":[{"text":"this is way too many words for one token limit"}]}"#);
+    let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(mock_runner));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_max_tokens_one(8080, &scenario, &start);
+    assert!(ev.outcome.is_fail(), "10 words for max_tokens=1 should fail");
+    assert!(ev.reason.contains("max_tokens=1 violated"));
+}
+
+#[test]
+fn test_check_serve_response_schema_pass() {
+    // Valid OpenAI ChatResponse → pass
+    let mock_runner = MockCommandRunner::new()
+        .with_http_post_response(MOCK_CHAT_RESPONSE);
+    let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(mock_runner));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_response_schema(8080, &scenario, &start);
+    assert!(ev.outcome.is_pass(), "Valid ChatResponse should pass schema check");
+    assert_eq!(ev.gate_id, "F-A5-SCHEMA-001");
+}
+
+#[test]
+fn test_check_serve_response_schema_invalid_json() {
+    let mock_runner = MockCommandRunner::new()
+        .with_http_post_response(r#"not json"#);
+    let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(mock_runner));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_response_schema(8080, &scenario, &start);
+    assert!(ev.outcome.is_fail(), "Invalid JSON should fail schema check");
+    assert!(ev.reason.contains("does not match"));
+}
+
+#[test]
+fn test_check_serve_response_schema_missing_fields() {
+    // Valid JSON but missing required ChatResponse fields
+    let mock_runner = MockCommandRunner::new()
+        .with_http_post_response(r#"{"result":"ok"}"#);
+    let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(mock_runner));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_response_schema(8080, &scenario, &start);
+    assert!(ev.outcome.is_fail(), "Missing fields should fail schema check");
+}
+
+#[test]
+fn test_check_serve_response_schema_empty_choices() {
+    // ChatResponse parses but has no choices → assert_response_valid fails
+    let response = r#"{"id":"t","object":"chat.completion","created":0,"model":"t","choices":[]}"#;
+    let mock_runner = MockCommandRunner::new()
+        .with_http_post_response(response);
+    let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(mock_runner));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_response_schema(8080, &scenario, &start);
+    assert!(ev.outcome.is_fail(), "Empty choices should fail validation");
+    assert!(ev.reason.contains("validation failed"));
+}
+
+#[test]
+fn test_extract_chat_text_probar_format() {
+    // OpenAI ChatResponse format
+    let json = r#"{"id":"t","object":"chat.completion","created":0,"model":"t","choices":[{"index":0,"message":{"role":"assistant","content":"Hello world"},"finish_reason":"stop"}]}"#;
+    assert_eq!(Executor::extract_chat_text(json), "Hello world");
+}
+
+#[test]
+fn test_extract_chat_text_fallback() {
+    // Non-ChatResponse → returns raw
+    let raw = r#"just plain text"#;
+    assert_eq!(Executor::extract_chat_text(raw), "just plain text");
 }
