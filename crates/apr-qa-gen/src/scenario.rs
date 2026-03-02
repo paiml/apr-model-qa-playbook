@@ -6,7 +6,7 @@ use crate::models::ModelId;
 use crate::oracle::{OracleResult, select_oracle};
 use serde::{Deserialize, Serialize};
 
-/// Inference modality
+/// Modality: inference or transformation operation
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Modality {
@@ -16,14 +16,36 @@ pub enum Modality {
     Chat,
     /// HTTP server via `apr serve`
     Serve,
+    /// Model quantization via `apr quantize`
+    Quantize,
+    /// Format import via `apr import`
+    Import,
+    /// Weight pruning via `apr prune`
+    Prune,
+    /// Knowledge distillation via `apr distill`
+    Distill,
 }
 
 /// Core methods for the Modality enum
 impl Modality {
-    /// Get all modalities
+    /// Get all inference modalities (original 3)
     #[must_use]
     pub const fn all() -> [Self; 3] {
         [Self::Run, Self::Chat, Self::Serve]
+    }
+
+    /// Get all modalities including transformations
+    #[must_use]
+    pub const fn all_with_transformations() -> [Self; 7] {
+        [
+            Self::Run,
+            Self::Chat,
+            Self::Serve,
+            Self::Quantize,
+            Self::Import,
+            Self::Prune,
+            Self::Distill,
+        ]
     }
 
     /// Get the apr command for this modality
@@ -33,18 +55,24 @@ impl Modality {
             Self::Run => "run",
             Self::Chat => "chat",
             Self::Serve => "serve",
+            Self::Quantize => "quantize",
+            Self::Import => "import",
+            Self::Prune => "prune",
+            Self::Distill => "distill",
         }
+    }
+
+    /// Whether this modality is a transformation (not inference)
+    #[must_use]
+    pub const fn is_transformation(&self) -> bool {
+        matches!(self, Self::Quantize | Self::Import | Self::Prune | Self::Distill)
     }
 }
 
 /// Display implementation for Modality
 impl std::fmt::Display for Modality {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Run => write!(f, "run"),
-            Self::Chat => write!(f, "chat"),
-            Self::Serve => write!(f, "serve"),
-        }
+        write!(f, "{}", self.command())
     }
 }
 
@@ -376,6 +404,18 @@ kill %1"#,
                     self.temperature
                 )
             }
+            Modality::Quantize => {
+                format!("apr quantize {model_path} --scheme q4_k_m --json")
+            }
+            Modality::Import => {
+                format!("apr import {model_path} --json")
+            }
+            Modality::Prune => {
+                format!("apr prune {model_path} --method magnitude --target-ratio 0.5 --json")
+            }
+            Modality::Distill => {
+                format!("apr distill {model_path} --json")
+            }
         }
     }
 
@@ -402,6 +442,10 @@ kill %1"#,
                 Backend::Cpu => "A5",
                 Backend::Gpu => "A6",
             },
+            Modality::Quantize => "T1",
+            Modality::Import => "T2",
+            Modality::Prune => "T3",
+            Modality::Distill => "T4",
         }
     }
 }

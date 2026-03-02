@@ -1,6 +1,6 @@
 impl Executor {
 
-    /// Run extended tests: conversion, golden rule, contracts, parity, perf, ollama
+    /// Run extended tests: conversion, golden rule, contracts, parity, perf, ollama, transformations
     fn run_extended_tests(&mut self, playbook: &Playbook) -> (usize, usize) {
         let mut total_passed = 0;
         let mut total_failed = 0;
@@ -57,7 +57,95 @@ impl Executor {
             }
         }
 
+        // Transformation tests (opt-in via playbook transformations: block)
+        let (p, f) = self.execute_transformation_tests(playbook);
+        total_passed += p;
+        total_failed += f;
+
         (total_passed, total_failed)
+    }
+
+    /// Tally evidence from a battery run: collect into the evidence store and
+    /// return `(passed, failed)` counts.
+    fn tally_battery(&mut self, evidence_vec: Vec<Evidence>) -> (usize, usize) {
+        let mut passed = 0;
+        let mut failed = 0;
+        for ev in evidence_vec {
+            if ev.outcome.is_pass() {
+                passed += 1;
+            } else {
+                failed += 1;
+            }
+            self.collector.add(ev);
+        }
+        (passed, failed)
+    }
+
+    /// Execute transformation tests from the playbook's `transformations:` block.
+    ///
+    /// Each transformation type (quantize, import, prune, distill) runs its
+    /// dedicated battery of checks if configured. Returns `(passed, failed)`.
+    fn execute_transformation_tests(&mut self, playbook: &Playbook) -> (usize, usize) {
+        let Some(ref config) = playbook.transformations else {
+            return (0, 0);
+        };
+        let Some(ref model_path_str) = self.config.model_path else {
+            return (0, 0);
+        };
+        let model_path = model_path_str.clone();
+        let model_id = playbook.model_id();
+        let mut passed = 0;
+        let mut failed = 0;
+
+        if let Some(ref q) = config.quantize {
+            for scheme in &q.schemes {
+                let scenario = QaScenario::new(
+                    model_id.clone(), Modality::Quantize, Backend::Cpu,
+                    Format::Apr, format!("quantize:{scheme}"), 0,
+                );
+                let ev = self.run_quantize_battery(&model_path, &scenario, scheme);
+                let (p, f) = self.tally_battery(ev);
+                passed += p;
+                failed += f;
+            }
+        }
+
+        if let Some(ref i) = config.import {
+            for source_format in &i.source_formats {
+                let scenario = QaScenario::new(
+                    model_id.clone(), Modality::Import, Backend::Cpu,
+                    Format::Apr, format!("import:{source_format}"), 0,
+                );
+                let ev = self.run_import_battery(&model_path, &scenario, source_format);
+                let (p, f) = self.tally_battery(ev);
+                passed += p;
+                failed += f;
+            }
+        }
+
+        if let Some(ref p_config) = config.prune {
+            let scenario = QaScenario::new(
+                model_id.clone(), Modality::Prune, Backend::Cpu,
+                Format::Apr, format!("prune:{}:{}", p_config.method, p_config.target_ratio), 0,
+            );
+            let ev = self.run_prune_battery(&model_path, &scenario, &p_config.method, p_config.target_ratio);
+            let (p, f) = self.tally_battery(ev);
+            passed += p;
+            failed += f;
+        }
+
+        if let Some(ref d) = config.distill {
+            let scenario = QaScenario::new(
+                model_id, Modality::Distill, Backend::Cpu,
+                Format::Apr, "distill".to_string(), 0,
+            );
+            let ev = self.run_distill_battery(&model_path, &scenario, &d.student_model, &d.data_path);
+            let (p, f) = self.tally_battery(ev);
+            passed += p;
+            failed += f;
+        }
+
+        (passed, failed)
     }
 
     /// Run P0 format conversion tests

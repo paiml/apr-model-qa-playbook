@@ -84,6 +84,14 @@ pub struct MockCommandRunner {
     pub spawn_serve_success: bool,
     /// Custom stdout for check_model (when check_success is true)
     pub check_response: String,
+    /// Whether quantize_model should succeed
+    pub quantize_success: bool,
+    /// Whether import_model should succeed
+    pub import_success: bool,
+    /// Whether prune_model should succeed
+    pub prune_success: bool,
+    /// Whether distill_model should succeed
+    pub distill_success: bool,
 }
 
 impl Default for MockCommandRunner {
@@ -139,6 +147,10 @@ impl Default for MockCommandRunner {
             http_post_response: r#"{"choices":[{"text":"The answer is 4."}]}"#.to_string(),
             spawn_serve_success: true,
             check_response: "All checks passed".to_string(),
+            quantize_success: true,
+            import_success: true,
+            prune_success: true,
+            distill_success: true,
         }
     }
 }
@@ -425,6 +437,34 @@ impl MockCommandRunner {
     #[must_use]
     pub fn with_check_response(mut self, response: impl Into<String>) -> Self {
         self.check_response = response.into();
+        self
+    }
+
+    /// Set whether quantize_model should fail
+    #[must_use]
+    pub fn with_quantize_failure(mut self) -> Self {
+        self.quantize_success = false;
+        self
+    }
+
+    /// Set whether import_model should fail
+    #[must_use]
+    pub fn with_import_failure(mut self) -> Self {
+        self.import_success = false;
+        self
+    }
+
+    /// Set whether prune_model should fail
+    #[must_use]
+    pub fn with_prune_failure(mut self) -> Self {
+        self.prune_success = false;
+        self
+    }
+
+    /// Set whether distill_model should fail
+    #[must_use]
+    pub fn with_distill_failure(mut self) -> Self {
+        self.distill_success = false;
         self
     }
 }

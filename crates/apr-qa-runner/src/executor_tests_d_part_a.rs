@@ -229,6 +229,18 @@ fn test_executor_conversion_infrastructure_failure() {
         fn spawn_serve(&self, _model_path: &Path, _port: u16, _no_gpu: bool) -> CommandOutput {
             CommandOutput::success("12345")
         }
+        fn quantize_model(&self, _model_path: &Path, _output_path: &Path, _scheme: &str) -> CommandOutput {
+            CommandOutput::success("{}")
+        }
+        fn import_model(&self, _source_path: &Path, _output_path: &Path) -> CommandOutput {
+            CommandOutput::success("{}")
+        }
+        fn prune_model(&self, _model_path: &Path, _output_path: &Path, _method: &str, _target_ratio: f64) -> CommandOutput {
+            CommandOutput::success("{}")
+        }
+        fn distill_model(&self, _teacher_path: &Path, _student_path: &Path, _output_path: &Path, _data_path: &str) -> CommandOutput {
+            CommandOutput::success("{}")
+        }
     }
 
     let config = ExecutionConfig {

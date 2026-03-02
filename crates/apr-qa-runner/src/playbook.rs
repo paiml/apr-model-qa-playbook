@@ -251,6 +251,9 @@ pub struct Playbook {
     /// Ollama parity tests (GH-6/AC-2)
     #[serde(default)]
     pub ollama_parity: Option<OllamaParityConfig>,
+    /// Transformation tests (quantize, import, prune, distill)
+    #[serde(default)]
+    pub transformations: Option<TransformationConfig>,
 }
 
 /// Playbook loading, parsing, scenario generation, and resource management
@@ -402,3 +405,4 @@ pub struct ModelConfig {
 
 include!("playbook_config_types.rs");
 include!("playbook_fingerprint_config.rs");
+include!("playbook_transformation_types.rs");

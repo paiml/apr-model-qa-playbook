@@ -408,4 +408,57 @@ impl CommandRunner for RealCommandRunner {
             Err(e) => CommandOutput::failure(-1, format!("Failed to spawn serve: {e}")),
         }
     }
+
+    fn quantize_model(
+        &self,
+        model_path: &Path,
+        output_path: &Path,
+        scheme: &str,
+    ) -> CommandOutput {
+        let model_str = model_path.display().to_string();
+        let output_str = output_path.display().to_string();
+        self.execute(&["quantize", &model_str, "--scheme", scheme, "--json", "-o", &output_str])
+    }
+
+    fn import_model(&self, source_path: &Path, output_path: &Path) -> CommandOutput {
+        let source_str = source_path.display().to_string();
+        let output_str = output_path.display().to_string();
+        self.execute(&["import", &source_str, "--json", "-o", &output_str])
+    }
+
+    fn prune_model(
+        &self,
+        model_path: &Path,
+        output_path: &Path,
+        method: &str,
+        target_ratio: f64,
+    ) -> CommandOutput {
+        let model_str = model_path.display().to_string();
+        let output_str = output_path.display().to_string();
+        let ratio_str = target_ratio.to_string();
+        self.execute(&[
+            "prune", &model_str,
+            "--method", method,
+            "--target-ratio", &ratio_str,
+            "--json", "-o", &output_str,
+        ])
+    }
+
+    fn distill_model(
+        &self,
+        teacher_path: &Path,
+        student_path: &Path,
+        output_path: &Path,
+        data_path: &str,
+    ) -> CommandOutput {
+        let teacher_str = teacher_path.display().to_string();
+        let student_str = student_path.display().to_string();
+        let output_str = output_path.display().to_string();
+        self.execute(&[
+            "distill", &teacher_str,
+            "--student", &student_str,
+            "--data", data_path,
+            "--json", "-o", &output_str,
+        ])
+    }
 }

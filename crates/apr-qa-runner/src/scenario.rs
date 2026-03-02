@@ -5,6 +5,12 @@ include!("executor_gates.rs");
 // Serve battery: spawn once, run 19 endpoint checks, kill once
 include!("executor_serve_battery.rs");
 
+// Transformation batteries: quantize, import, prune, distill
+include!("executor_quantize_battery.rs");
+include!("executor_import_battery.rs");
+include!("executor_prune_battery.rs");
+include!("executor_distill_battery.rs");
+
 impl Executor {
     /// Execute a single scenario
     fn execute_scenario(&self, scenario: &QaScenario) -> Evidence {
@@ -129,6 +135,16 @@ impl Executor {
                     false,
                 );
             }
+            // Transformation scenarios are handled via dedicated batteries.
+            Modality::Quantize | Modality::Import | Modality::Prune | Modality::Distill => {
+                return (
+                    String::new(),
+                    Some("Transformation scenarios must be executed via transformation battery".to_string()),
+                    1,
+                    None,
+                    false,
+                );
+            }
         };
 
         // Try to parse tok/s from JSON output
@@ -150,7 +166,9 @@ impl Executor {
         } else {
             // Trace retry uses the same modality as the original command
             let trace_output = match scenario.modality {
-                Modality::Run | Modality::Serve => self.command_runner.run_inference(
+                Modality::Run | Modality::Serve
+                | Modality::Quantize | Modality::Import
+                | Modality::Prune | Modality::Distill => self.command_runner.run_inference(
                     Path::new(&model_path),
                     &scenario.prompt,
                     32,
@@ -219,3 +237,19 @@ mod tests_f;
 #[cfg(test)]
 #[path = "executor_tests_serve_battery.rs"]
 mod tests_serve_battery;
+
+#[cfg(test)]
+#[path = "executor_tests_quantize_battery.rs"]
+mod tests_quantize_battery;
+
+#[cfg(test)]
+#[path = "executor_tests_import_battery.rs"]
+mod tests_import_battery;
+
+#[cfg(test)]
+#[path = "executor_tests_prune_battery.rs"]
+mod tests_prune_battery;
+
+#[cfg(test)]
+#[path = "executor_tests_distill_battery.rs"]
+mod tests_distill_battery;

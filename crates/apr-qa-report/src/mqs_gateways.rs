@@ -138,6 +138,10 @@ impl MqsCalculator {
             ("F-CONV", "COMP"),
             ("F-CONTRACT", "COMP"),
             ("G0-", "STAB"),
+            ("T1-QUANT", "COMP"),   // Quantize → compatibility
+            ("T2-IMPORT", "COMP"),  // Import → compatibility
+            ("T3-PRUNE", "QUAL"),   // Prune → quality
+            ("T4-DISTILL", "QUAL"), // Distill → quality
         ];
 
         for &(prefix, cat) in PREFIX_MAP {

@@ -382,6 +382,67 @@ impl CommandRunner for MockCommandRunner {
             CommandOutput::failure(1, "Spawn serve failed: port in use")
         }
     }
+
+    /// Simulate model quantization
+    fn quantize_model(
+        &self,
+        _model_path: &Path,
+        _output_path: &Path,
+        scheme: &str,
+    ) -> CommandOutput {
+        if self.quantize_success {
+            CommandOutput::success(format!(
+                r#"{{"status":"success","scheme":"{scheme}","output_size_bytes":524288000,"tensor_count":100,"dtype":"{scheme}"}}"#
+            ))
+        } else {
+            CommandOutput::failure(1, "Quantization failed: unsupported scheme")
+        }
+    }
+
+    /// Simulate model format import
+    fn import_model(&self, _source_path: &Path, _output_path: &Path) -> CommandOutput {
+        if self.import_success {
+            CommandOutput::success(
+                r#"{"status":"success","output_size_bytes":1048576000,"tensor_count":100}"#,
+            )
+        } else {
+            CommandOutput::failure(1, "Import failed: unsupported source format")
+        }
+    }
+
+    /// Simulate model weight pruning
+    fn prune_model(
+        &self,
+        _model_path: &Path,
+        _output_path: &Path,
+        method: &str,
+        target_ratio: f64,
+    ) -> CommandOutput {
+        if self.prune_success {
+            CommandOutput::success(format!(
+                r#"{{"status":"success","method":"{method}","target_ratio":{target_ratio},"actual_sparsity":{target_ratio},"output_size_bytes":524288000,"tensor_count":100}}"#
+            ))
+        } else {
+            CommandOutput::failure(1, "Prune failed: invalid method")
+        }
+    }
+
+    /// Simulate knowledge distillation
+    fn distill_model(
+        &self,
+        _teacher_path: &Path,
+        _student_path: &Path,
+        _output_path: &Path,
+        _data_path: &str,
+    ) -> CommandOutput {
+        if self.distill_success {
+            CommandOutput::success(
+                r#"{"status":"success","initial_loss":2.5,"final_loss":1.2,"output_size_bytes":262144000,"teacher_size_bytes":1048576000}"#,
+            )
+        } else {
+            CommandOutput::failure(1, "Distillation failed: data path not found")
+        }
+    }
 }
 
 #[cfg(test)]

@@ -186,6 +186,35 @@ pub trait CommandRunner: Send + Sync {
     /// Unlike `serve_model` which blocks, this spawns the server process
     /// and returns immediately with the PID in stdout.
     fn spawn_serve(&self, model_path: &Path, port: u16, no_gpu: bool) -> CommandOutput;
+
+    /// Execute `apr quantize --scheme <scheme> --json <model_path> -o <output>`
+    fn quantize_model(
+        &self,
+        model_path: &Path,
+        output_path: &Path,
+        scheme: &str,
+    ) -> CommandOutput;
+
+    /// Execute `apr import --json <source> -o <output>`
+    fn import_model(&self, source_path: &Path, output_path: &Path) -> CommandOutput;
+
+    /// Execute `apr prune --method <method> --target-ratio <ratio> --json <model_path> -o <output>`
+    fn prune_model(
+        &self,
+        model_path: &Path,
+        output_path: &Path,
+        method: &str,
+        target_ratio: f64,
+    ) -> CommandOutput;
+
+    /// Execute `apr distill --student <student> --data <data> --json <teacher_path> -o <output>`
+    fn distill_model(
+        &self,
+        teacher_path: &Path,
+        student_path: &Path,
+        output_path: &Path,
+        data_path: &str,
+    ) -> CommandOutput;
 }
 
 /// Real command runner that executes actual subprocess commands

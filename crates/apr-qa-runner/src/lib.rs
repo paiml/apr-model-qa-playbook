@@ -113,10 +113,11 @@ pub use patterns::{
     PromptPattern, PromptSafetyResult, SpecGate, TensorValidityResult,
 };
 pub use playbook::{
-    DifferentialTestConfig, FingerprintConfig, FormatValidationConfig, InferenceCompareConfig,
-    OllamaParityConfig, Playbook, PlaybookLockEntry, PlaybookLockFile, PlaybookStep,
-    ProfileCiAssertions, ProfileCiConfig, SkipReason, SkipType, StatsToleranceConfig,
-    TensorDiffConfig, TracePayloadConfig, ValidateStatsConfig, compute_playbook_hash,
+    DifferentialTestConfig, DistillConfig, FingerprintConfig, FormatValidationConfig,
+    ImportConfig, InferenceCompareConfig, OllamaParityConfig, Playbook, PlaybookLockEntry,
+    PlaybookLockFile, PlaybookStep, ProfileCiAssertions, ProfileCiConfig, PruneConfig,
+    QuantizeConfig, SkipReason, SkipType, StatsToleranceConfig, TensorDiffConfig,
+    TracePayloadConfig, TransformationConfig, ValidateStatsConfig, compute_playbook_hash,
     detect_implicit_skips, find_skip_files, generate_lock_entry, load_lock_file, save_lock_file,
     verify_playbook_integrity,
 };
