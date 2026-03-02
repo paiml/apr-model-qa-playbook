@@ -33,8 +33,8 @@ fn test_serve_battery_all_endpoints_pass() {
     let scenario = serve_scenario();
     let results = executor.run_serve_battery("/test/model.gguf", &scenario, true);
 
-    // Should produce 8 evidence items (one per check)
-    assert_eq!(results.len(), 8, "Expected 8 battery checks, got {}", results.len());
+    // Should produce 10 evidence items (one per check)
+    assert_eq!(results.len(), 10, "Expected 10 battery checks, got {}", results.len());
 
     // Check gate IDs
     let gate_ids: Vec<&str> = results.iter().map(|e| e.gate_id.as_str()).collect();
@@ -46,6 +46,8 @@ fn test_serve_battery_all_endpoints_pass() {
     assert!(gate_ids.contains(&"F-A5-ERR-001"), "Missing error resilience gate");
     assert!(gate_ids.contains(&"F-A5-INFO-001"), "Missing server info gate");
     assert!(gate_ids.contains(&"F-A5-METRICS-001"), "Missing metrics gate");
+    assert!(gate_ids.contains(&"F-A5-EOS-001"), "Missing EOS termination gate");
+    assert!(gate_ids.contains(&"F-A5-PERF-001"), "Missing perf floor gate");
 
     // Primary check should pass (mock returns valid response)
     assert!(
@@ -373,6 +375,89 @@ fn test_serve_battery_server_not_ready() {
     assert!(results[0].reason.contains("Server failed to become ready"));
 }
 
+// ── EOS termination check tests ─────────────────────────────────
+
+#[test]
+fn test_serve_battery_eos_termination_pass() {
+    // Short output → corroborated (model stopped at EOS)
+    let mock_runner = MockCommandRunner::new()
+        .with_http_post_response(r#"{"choices":[{"text":"That is all."}]}"#);
+    let config = ExecutionConfig::default();
+    let executor = Executor::with_runner(config, Arc::new(mock_runner));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_eos_termination(8080, &scenario, &start);
+    assert!(ev.outcome.is_pass(), "Short output should be corroborated");
+    assert_eq!(ev.gate_id, "F-A5-EOS-001");
+}
+
+#[test]
+fn test_serve_battery_eos_termination_repetition() {
+    // 25+ words with trigram repetition → falsified
+    let repeated = "the end is near ".repeat(10); // 40 words, "the end is" repeats 10x
+    let body = format!(r#"{{"choices":[{{"text":"{repeated}"}}]}}"#);
+    let mock_runner = MockCommandRunner::new()
+        .with_http_post_response(&body);
+    let config = ExecutionConfig::default();
+    let executor = Executor::with_runner(config, Arc::new(mock_runner));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_eos_termination(8080, &scenario, &start);
+    assert!(ev.outcome.is_fail(), "Repetitive long output should be falsified");
+    assert!(ev.reason.contains("EOS failure"));
+}
+
+#[test]
+fn test_serve_battery_eos_termination_long_but_no_repeat() {
+    // Long diverse output → corroborated (no repetition pattern)
+    let words: Vec<String> = (0..120).map(|i| format!("word{i}")).collect();
+    let diverse_text = words.join(" ");
+    let body = format!(r#"{{"choices":[{{"text":"{diverse_text}"}}]}}"#);
+    let mock_runner = MockCommandRunner::new()
+        .with_http_post_response(&body);
+    let config = ExecutionConfig::default();
+    let executor = Executor::with_runner(config, Arc::new(mock_runner));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_eos_termination(8080, &scenario, &start);
+    assert!(ev.outcome.is_pass(), "Long but diverse output should pass");
+}
+
+#[test]
+fn test_detect_repetition_short_text() {
+    // < 20 words → always false
+    assert!(!Executor::detect_repetition("hello world"));
+    assert!(!Executor::detect_repetition("one two three four five"));
+    assert!(!Executor::detect_repetition(""));
+}
+
+#[test]
+fn test_detect_repetition_with_trigrams() {
+    // Repeated trigrams → true
+    let text = "a b c ".repeat(10); // "a b c" repeats 10 times → trigram count > 5
+    assert!(Executor::detect_repetition(&text));
+}
+
+#[test]
+fn test_serve_battery_10_checks_total() {
+    let mock_runner = mock_with_healthy_server();
+    let config = ExecutionConfig {
+        model_path: Some("/test/model.gguf".to_string()),
+        failure_policy: FailurePolicy::CollectAll,
+        ..Default::default()
+    };
+    let executor = Executor::with_runner(config, Arc::new(mock_runner));
+    let scenario = serve_scenario();
+    let results = executor.run_serve_battery("/test/model.gguf", &scenario, true);
+
+    assert_eq!(results.len(), 10, "Expected 10 battery checks, got {}", results.len());
+
+    // Verify EOS and PERF gate IDs are present
+    let gate_ids: Vec<&str> = results.iter().map(|e| e.gate_id.as_str()).collect();
+    assert!(gate_ids.contains(&"F-A5-EOS-001"), "Missing EOS termination gate");
+    assert!(gate_ids.contains(&"F-A5-PERF-001"), "Missing perf floor gate");
+}
+
 #[test]
 fn test_execute_scenarios_partitions_serve() {
     let mock_runner = mock_with_healthy_server()
@@ -404,10 +489,68 @@ fn test_execute_scenarios_partitions_serve() {
     let scenarios = vec![run_scenario, serve_scenario_1];
     let (passed, failed, _skipped) = executor.execute_scenarios(scenarios, "test");
 
-    // Run scenario: 1 evidence, Serve battery: 8 evidence
+    // Run scenario: 1 evidence, Serve battery: 10 evidence
     // Total passed should be > 1 (at minimum the run + battery checks)
     assert!(
         passed >= 2,
         "Should have at least run pass + some battery passes, got passed={passed} failed={failed}"
     );
+}
+
+// ── Perf floor check tests ──────────────────────────────────────
+
+#[test]
+fn test_serve_battery_perf_floor_pass() {
+    // 10.0 tok/s > 0.1 floor → corroborated
+    let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(MockCommandRunner::new()));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_perf_floor(Some(10.0), &scenario, &start);
+    assert!(ev.outcome.is_pass(), "10 tok/s should pass perf floor");
+    assert_eq!(ev.gate_id, "F-A5-PERF-001");
+    assert_eq!(ev.metrics.tokens_per_second, Some(10.0));
+}
+
+#[test]
+fn test_serve_battery_perf_floor_fail() {
+    // 0.05 tok/s < 0.1 floor → falsified
+    let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(MockCommandRunner::new()));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_perf_floor(Some(0.05), &scenario, &start);
+    assert!(ev.outcome.is_fail(), "0.05 tok/s should fail perf floor");
+    assert_eq!(ev.gate_id, "F-A5-PERF-001");
+    assert!(ev.reason.contains("too slow"));
+    assert!(ev.reason.contains("0.05"));
+}
+
+#[test]
+fn test_serve_battery_perf_floor_no_tps() {
+    // No TPS reported → pass (not all backends emit tok/s)
+    let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(MockCommandRunner::new()));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_perf_floor(None, &scenario, &start);
+    assert!(ev.outcome.is_pass(), "Missing TPS should pass (skip)");
+    assert_eq!(ev.gate_id, "F-A5-PERF-001");
+}
+
+#[test]
+fn test_serve_battery_perf_floor_boundary() {
+    // Exactly at floor → pass (not strictly less)
+    let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(MockCommandRunner::new()));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_perf_floor(Some(0.1), &scenario, &start);
+    assert!(ev.outcome.is_pass(), "Exactly at floor should pass");
+}
+
+#[test]
+fn test_serve_battery_perf_floor_just_below() {
+    // Just below floor → fail
+    let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(MockCommandRunner::new()));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_perf_floor(Some(0.099), &scenario, &start);
+    assert!(ev.outcome.is_fail(), "Just below floor should fail");
 }

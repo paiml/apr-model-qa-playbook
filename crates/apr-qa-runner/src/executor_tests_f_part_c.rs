@@ -54,6 +54,14 @@ fn test_metadata_only_skips_inference() {
         f.write_all(&[0u8; 16]).unwrap();
     }
 
+    // Write tokenizer files for G0-TOKENIZER checks
+    std::fs::write(tmp.path().join("tokenizer.json"), b"{}").unwrap();
+    std::fs::write(
+        tmp.path().join("tokenizer_config.json"),
+        br#"{"eos_token":"<|endoftext|>"}"#,
+    )
+    .unwrap();
+
     let playbook_yaml = r#"
 name: test-dim-smoke
 version: "1.0"

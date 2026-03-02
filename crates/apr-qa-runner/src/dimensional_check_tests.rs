@@ -33,6 +33,15 @@ fn write_config_json(dir: &Path, config: &serde_json::Value) {
         .unwrap();
 }
 
+fn write_minimal_tokenizer(dir: &Path) {
+    let path = dir.join("tokenizer.json");
+    let mut f = std::fs::File::create(path).unwrap();
+    f.write_all(b"{}").unwrap();
+    let tc_path = dir.join("tokenizer_config.json");
+    let mut f2 = std::fs::File::create(tc_path).unwrap();
+    f2.write_all(br#"{"eos_token":"<|endoftext|>"}"#).unwrap();
+}
+
 fn write_minimal_safetensors(dir: &Path, tensors: &[(&str, &[usize])]) {
     use std::collections::HashMap;
     let path = dir.join("model.safetensors");
@@ -79,6 +88,7 @@ fn test_check_valid_config() {
             ("lm_head.weight", &[151_936, 896]),
         ],
     );
+    write_minimal_tokenizer(dir.path());
 
     let playbook = make_minimal_playbook("Qwen/Qwen2.5-Coder-0.5B-Instruct");
     let result = run_dimensional_check(dir.path(), &playbook);
@@ -90,8 +100,8 @@ fn test_check_valid_config() {
     );
     assert!(result.duration_ms < 5000, "should complete quickly");
     assert!(
-        result.checks.len() >= 8,
-        "expected at least 8 checks, got {}",
+        result.checks.len() >= 12,
+        "expected at least 12 checks, got {}",
         result.checks.len()
     );
 }
@@ -157,6 +167,7 @@ fn test_check_safetensors_header() {
             ("model.layers.0.self_attn.q_proj.weight", &[896, 896]),
         ],
     );
+    write_minimal_tokenizer(dir.path());
 
     let playbook = make_minimal_playbook("Qwen/Qwen2.5-Coder-0.5B-Instruct");
     let result = run_dimensional_check(dir.path(), &playbook);
@@ -231,6 +242,7 @@ fn test_check_no_expected_params() {
     });
     write_config_json(dir.path(), &config);
     write_minimal_safetensors(dir.path(), &[("some.tensor", &[10, 20])]);
+    write_minimal_tokenizer(dir.path());
 
     let yaml = r#"
 name: test-playbook
@@ -286,6 +298,7 @@ fn test_mamba_ssm_no_attention_heads() {
             ("lm_head.weight", &[50280, 1024]),
         ],
     );
+    write_minimal_tokenizer(dir.path());
 
     let yaml = r#"
 name: mamba-370m-dim-smoke
@@ -339,6 +352,7 @@ fn test_openelm_array_heads_skipped() {
             ("lm_head.weight", &[32000, 1280]),
         ],
     );
+    write_minimal_tokenizer(dir.path());
 
     let yaml = r#"
 name: openelm-270m-dim-smoke
@@ -488,6 +502,7 @@ fn test_check_tensor_no_expected_dims() {
     });
     write_config_json(dir.path(), &config);
     write_minimal_safetensors(dir.path(), &[("model.embed_tokens.weight", &[1000, 500])]);
+    write_minimal_tokenizer(dir.path());
 
     // Use a playbook with NO expected dim/vocab/heads
     let yaml = r#"
@@ -532,6 +547,7 @@ fn test_rwkv7_null_num_heads() {
             ("head.weight", &[65536, 768]),
         ],
     );
+    write_minimal_tokenizer(dir.path());
 
     let yaml = r#"
 name: rwkv7-dim-smoke

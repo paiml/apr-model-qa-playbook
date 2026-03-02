@@ -2,7 +2,7 @@
 // G0 gateway checks — see executor_gates.rs
 include!("executor_gates.rs");
 
-// Serve battery: spawn once, run 8 endpoint checks, kill once
+// Serve battery: spawn once, run 10 endpoint checks, kill once
 include!("executor_serve_battery.rs");
 
 impl Executor {

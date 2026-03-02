@@ -364,7 +364,7 @@ impl Executor {
     /// Execute scenario loop with failure policy handling.
     ///
     /// Serve scenarios are partitioned out and batched: one server lifecycle
-    /// per `(format, backend)` group, with 8 endpoint checks per lifecycle.
+    /// per `(format, backend)` group, with 10 endpoint checks per lifecycle.
     fn execute_scenarios(
         &mut self,
         scenarios: Vec<QaScenario>,

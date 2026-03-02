@@ -132,6 +132,72 @@ pub fn read_safetensors_metadata(
     Ok(tensors)
 }
 
+/// Tensor metadata including dtype (for G0-DTYPE checks)
+#[derive(Debug, Clone)]
+pub struct TensorDtypeInfo {
+    /// Tensor shape dimensions
+    pub shape: Vec<usize>,
+    /// Dtype string from SafeTensors header (e.g., "F32", "BF16", "F16")
+    pub dtype: String,
+}
+
+/// Read SafeTensors header to extract tensor shapes AND dtypes.
+///
+/// Like `read_safetensors_metadata` but also captures the dtype field
+/// from each tensor entry, needed for G0-DTYPE validation.
+///
+/// # Errors
+///
+/// Returns an error string if the file cannot be opened, the header
+/// is malformed, or the JSON cannot be parsed.
+pub fn read_safetensors_metadata_with_dtypes(
+    path: &Path,
+) -> std::result::Result<HashMap<String, TensorDtypeInfo>, String> {
+    let mut file = File::open(path).map_err(|e| format!("Failed to open: {e}"))?;
+
+    let mut header_len_bytes = [0u8; 8];
+    file.read_exact(&mut header_len_bytes)
+        .map_err(|e| format!("Failed to read header length: {e}"))?;
+    let header_len = u64::from_le_bytes(header_len_bytes) as usize;
+
+    if header_len > MAX_HEADER_SIZE {
+        return Err(format!("Header too large: {header_len}"));
+    }
+
+    let mut header_bytes = vec![0u8; header_len];
+    file.read_exact(&mut header_bytes)
+        .map_err(|e| format!("Failed to read header: {e}"))?;
+
+    let header_str =
+        std::str::from_utf8(&header_bytes).map_err(|e| format!("Invalid UTF-8: {e}"))?;
+
+    let header: serde_json::Value =
+        serde_json::from_str(header_str).map_err(|e| format!("JSON parse error: {e}"))?;
+
+    let obj = header.as_object().ok_or("Header is not JSON object")?;
+
+    let tensors = obj
+        .iter()
+        .filter(|(name, _)| *name != "__metadata__")
+        .filter_map(|(name, value)| {
+            let tensor_obj = value.as_object()?;
+            let shape = tensor_obj.get("shape")?.as_array()?;
+            let dims: Vec<usize> = shape
+                .iter()
+                .filter_map(|v| v.as_u64().map(|n| n as usize))
+                .collect();
+            let dtype = tensor_obj
+                .get("dtype")
+                .and_then(serde_json::Value::as_str)
+                .unwrap_or("UNKNOWN")
+                .to_string();
+            Some((name.clone(), TensorDtypeInfo { shape: dims, dtype }))
+        })
+        .collect();
+
+    Ok(tensors)
+}
+
 /// Helper to extract usize from JSON
 fn get_usize(json: &serde_json::Value, key: &str) -> Option<usize> {
     json.get(key)
