@@ -77,14 +77,14 @@ correctness, but a single failure proves a defect.
 ## Model Certifications
 
 <!-- CERTIFICATION_TABLE_START -->
-**Certification Summary** (updated: 2026-03-01 22:40 UTC)
+**Certification Summary** (updated: 2026-03-02 10:15 UTC)
 
 | Status | Count |
 |--------|-------|
-| Certified | 94/94 |
-| Provisional | 0/94 |
-| Blocked | 0/94 |
-| Pending | 0/94 |
+| Certified | 95/95 |
+| Provisional | 0/95 |
+| Blocked | 0/95 |
+| Pending | 0/95 |
 
 **Priority Family:** Qwen Coder (see [Certified Testing Spec](docs/specifications/certified-testing.md))
 
@@ -166,6 +166,7 @@ correctness, but a single failure proves a defect.
 | [Qwen3-32B](https://huggingface.co/Qwen/Qwen3-32B) | qwen3 | 32B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [Qwen3-Coder-30B-A3B-Instruct](https://huggingface.co/Qwen/Qwen3-Coder-30B-A3B-Instruct) | qwen3-coder-moe | 30B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [Qwen3-30B-A3B](https://huggingface.co/Qwen/Qwen3-30B-A3B) | qwen3-moe | 30B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
+| [Qwen3-Coder-Next](https://huggingface.co/Qwen/Qwen3-Coder-Next) | qwen3-next | 3B | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
 | [SmolLM2-135M-Instruct](https://huggingface.co/HuggingFaceTB/SmolLM2-135M-Instruct) | smollm | 135M | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 925 | B | ✗ | ✗ | - | - | - | - | - | - |
 | [SmolLM2-360M-Instruct](https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct) | smollm | 360M | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 925 | B | ✗ | ✗ | - | - | - | - | - | - |
 | [SmolLM-135M](https://huggingface.co/HuggingFaceTB/SmolLM-135M) | smollm | 135M | ![certified](https://img.shields.io/badge/CERTIFIED-brightgreen) | 1000 | A+ | ✓ | ✗ | - | - | - | - | - | - |
@@ -413,7 +414,7 @@ apr-model-qa-playbook/
 ├── book/                  # mdBook documentation
 ├── scripts/               # Validation and golden output generation
 └── docs/
-    ├── certifications/    # models.csv certification database (94 models)
+    ├── certifications/    # models.csv certification database (95 models)
     ├── specifications/    # Full specification (10 docs)
     ├── tickets/           # Ticket analysis (GH-190, GH-191)
     ├── five-whys/         # Root cause analysis

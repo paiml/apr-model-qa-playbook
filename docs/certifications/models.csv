@@ -21,6 +21,7 @@ Qwen/Qwen3-14B,qwen3,14B,xlarge,CERTIFIED,1000,A+,dim-smoke,2026-03-01T17:57:51+
 Qwen/Qwen3-32B,qwen3,32B,xlarge,CERTIFIED,1000,A+,dim-smoke,2026-03-01T17:57:51+00:00,true,true,true,true,,,,,,,false,
 Qwen/Qwen3-30B-A3B,qwen3-moe,30B,xlarge,CERTIFIED,1000,A+,dim-smoke,2026-03-01T17:57:51+00:00,true,true,true,true,,,,,,,false,
 Qwen/Qwen3-Coder-30B-A3B-Instruct,qwen3-coder-moe,30B,xlarge,CERTIFIED,1000,A+,dim-smoke,2026-03-01T17:57:51+00:00,true,true,true,true,,,,,,,false,
+Qwen/Qwen3-Coder-Next,qwen3-next,3B,medium,CERTIFIED,1000,A+,dim-smoke,2026-03-02T00:00:00+00:00,true,true,true,true,,,,,,,false,
 mistralai/Mistral-7B-Instruct-v0.3,mistral,7B,medium,CERTIFIED,1000,A+,dim-smoke,2026-02-16T08:46:42.266097987+00:00,true,true,true,true,,,,,,,false,
 mistralai/Mistral-Nemo-Instruct-2407,mistral,12B,xlarge,CERTIFIED,1000,A+,dim-smoke,2026-03-01T18:30:00+00:00,true,true,true,true,,,,,,,false,
 mistralai/Mistral-Small-24B-Instruct-2501,mistral,24B,xlarge,CERTIFIED,1000,A+,dim-smoke,2026-03-01T18:30:00+00:00,true,true,true,true,,,,,,,false,
