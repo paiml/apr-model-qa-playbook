@@ -8,102 +8,7 @@ description: >
 params:
   qa_repo: /home/noah/src/apr-model-qa-playbook
   evidence_dir: /home/noah/data/qa-evidence
-  apr_bin: /home/noah/.cargo/bin/apr
   pass_threshold: 50
-  # All MVP-tier models, ordered by RAM (smallest first)
-  models:
-    # Tiny (≤2 GB)
-    - smollm2-135m
-    - smollm2-360m
-    - qwen2.5-coder-0.5b
-    - qwen3-0.6b
-    - tinyllama-1.1b
-    - deepseek-coder-1.3b
-    - qwen2.5-coder-1.5b
-    - qwen2.5-1.5b
-    - deepseek-r1-distill-qwen-1.5b
-    - stablelm-2-zephyr-1.6b
-    - qwen3-1.7b
-    - smollm2-1.7b
-    # Small (3-5 GB)
-    - granite-3.1-2b
-    - qwen2.5-3b
-    - qwen2.5-coder-3b
-    - granite-3b-code
-    - stablelm-zephyr-3b
-    - starcoder2-3b
-    - gemma-3-1b
-    - nemotron-nano-4b
-    - qwen3-4b
-    - phi-4-mini
-    - phi-3.5-mini
-    - gemma-3-4b
-    # Medium (6-15 GB)
-    - yi-1.5-6b
-    - deepseek-coder-6.7b
-    - deepseek-coder-7b
-    - qwen2.5-7b
-    - qwen2.5-coder-7b
-    - deepseek-r1-distill-qwen-7b
-    - falcon-7b
-    - dolphin-2.6-mistral-7b
-    - openchat-3.5
-    - openhermes-2.5-mistral-7b
-    - zephyr-7b-beta
-    - internlm2.5-7b
-    - starcoder2-7b
-    - olmo-2-7b
-    - codegemma-7b
-    - codellama-7b
-    - llama-3.1-8b
-    - deepseek-r1-distill-llama-8b
-    - granite-3.1-8b
-    - hermes-3-llama-3.1-8b
-    - dolphin3.0-llama3.1-8b
-    - qwen3-8b
-    - phi-3-small-8k
-    - gemma-2-9b
-    - yi-1.5-9b
-    - mistral-nemo-12b
-    - gemma-3-12b
-    - olmo-2-13b
-    - codellama-13b
-    - vicuna-13b
-    - qwen2.5-14b
-    - qwen2.5-coder-14b
-    - qwen3-14b
-    - deepseek-r1-distill-qwen-14b
-    - phi-3-medium-4k
-    - starcoder2-15b
-    - deepseek-coder-v2-lite
-    - wizardcoder-15b
-    # Large (16-30 GB)
-    - internlm2.5-20b
-    - codestral-22b
-    - mistral-small-24b
-    - gemma-2-27b
-    - gemma-3-27b
-    - qwen3-30b-a3b
-    - qwen3-coder-30b-a3b
-    # XL (>30 GB)
-    - qwen2.5-32b
-    - qwen2.5-coder-32b
-    - qwen3-32b
-    - qwq-32b
-    - deepseek-r1-distill-qwen-32b
-    - deepseek-coder-33b
-    - wizardcoder-33b
-    - codellama-34b
-    - yi-1.5-34b
-    - falcon-40b
-    - codellama-70b
-    - llama-3.1-70b
-    - llama-3.3-70b
-    - deepseek-r1-distill-llama-70b
-    - nemotron-70b
-    - qwen2.5-72b
-    - qwen3-coder-next
-    - vicuna-7b
 
 machines:
   intel:
@@ -112,7 +17,6 @@ machines:
     user: noah
     arch: x86_64
     ssh_key: ~/.ssh/id_ed25519
-    transport: ssh
 
 resources:
   # ── Tier 0: Build apr-qa binary ────────────────────────────────
@@ -133,7 +37,94 @@ resources:
   dim-smoke:
     type: task
     machine: intel
-    for_each: "{{params.models}}"
+    for_each:
+      - smollm2-135m
+      - smollm2-360m
+      - qwen2.5-coder-0.5b
+      - qwen3-0.6b
+      - tinyllama-1.1b
+      - deepseek-coder-1.3b
+      - qwen2.5-coder-1.5b
+      - qwen2.5-1.5b
+      - deepseek-r1-distill-qwen-1.5b
+      - stablelm-2-zephyr-1.6b
+      - qwen3-1.7b
+      - smollm2-1.7b
+      - granite-3.1-2b
+      - qwen2.5-3b
+      - qwen2.5-coder-3b
+      - granite-3b-code
+      - stablelm-zephyr-3b
+      - starcoder2-3b
+      - gemma-3-1b
+      - nemotron-nano-4b
+      - qwen3-4b
+      - phi-4-mini
+      - phi-3.5-mini
+      - gemma-3-4b
+      - yi-1.5-6b
+      - deepseek-coder-6.7b
+      - deepseek-coder-7b
+      - qwen2.5-7b
+      - qwen2.5-coder-7b
+      - deepseek-r1-distill-qwen-7b
+      - falcon-7b
+      - dolphin-2.6-mistral-7b
+      - openchat-3.5
+      - openhermes-2.5-mistral-7b
+      - zephyr-7b-beta
+      - internlm2.5-7b
+      - starcoder2-7b
+      - olmo-2-7b
+      - codegemma-7b
+      - codellama-7b
+      - llama-3.1-8b
+      - deepseek-r1-distill-llama-8b
+      - granite-3.1-8b
+      - hermes-3-llama-3.1-8b
+      - dolphin3.0-llama3.1-8b
+      - qwen3-8b
+      - phi-3-small-8k
+      - gemma-2-9b
+      - yi-1.5-9b
+      - mistral-nemo-12b
+      - gemma-3-12b
+      - olmo-2-13b
+      - codellama-13b
+      - vicuna-13b
+      - qwen2.5-14b
+      - qwen2.5-coder-14b
+      - qwen3-14b
+      - deepseek-r1-distill-qwen-14b
+      - phi-3-medium-4k
+      - starcoder2-15b
+      - deepseek-coder-v2-lite
+      - wizardcoder-15b
+      - internlm2.5-20b
+      - codestral-22b
+      - mistral-small-24b
+      - gemma-2-27b
+      - gemma-3-27b
+      - qwen3-30b-a3b
+      - qwen3-coder-30b-a3b
+      - qwen2.5-32b
+      - qwen2.5-coder-32b
+      - qwen3-32b
+      - qwq-32b
+      - deepseek-r1-distill-qwen-32b
+      - deepseek-coder-33b
+      - wizardcoder-33b
+      - codellama-34b
+      - yi-1.5-34b
+      - falcon-40b
+      - codellama-70b
+      - llama-3.1-70b
+      - llama-3.3-70b
+      - deepseek-r1-distill-llama-70b
+      - nemotron-70b
+      - qwen2.5-72b
+      - qwen3-coder-next
+      - vicuna-7b
     depends_on: [build]
     working_dir: "{{params.qa_repo}}"
     timeout: 120
@@ -159,7 +150,94 @@ resources:
   smoke:
     type: task
     machine: intel
-    for_each: "{{params.models}}"
+    for_each:
+      - smollm2-135m
+      - smollm2-360m
+      - qwen2.5-coder-0.5b
+      - qwen3-0.6b
+      - tinyllama-1.1b
+      - deepseek-coder-1.3b
+      - qwen2.5-coder-1.5b
+      - qwen2.5-1.5b
+      - deepseek-r1-distill-qwen-1.5b
+      - stablelm-2-zephyr-1.6b
+      - qwen3-1.7b
+      - smollm2-1.7b
+      - granite-3.1-2b
+      - qwen2.5-3b
+      - qwen2.5-coder-3b
+      - granite-3b-code
+      - stablelm-zephyr-3b
+      - starcoder2-3b
+      - gemma-3-1b
+      - nemotron-nano-4b
+      - qwen3-4b
+      - phi-4-mini
+      - phi-3.5-mini
+      - gemma-3-4b
+      - yi-1.5-6b
+      - deepseek-coder-6.7b
+      - deepseek-coder-7b
+      - qwen2.5-7b
+      - qwen2.5-coder-7b
+      - deepseek-r1-distill-qwen-7b
+      - falcon-7b
+      - dolphin-2.6-mistral-7b
+      - openchat-3.5
+      - openhermes-2.5-mistral-7b
+      - zephyr-7b-beta
+      - internlm2.5-7b
+      - starcoder2-7b
+      - olmo-2-7b
+      - codegemma-7b
+      - codellama-7b
+      - llama-3.1-8b
+      - deepseek-r1-distill-llama-8b
+      - granite-3.1-8b
+      - hermes-3-llama-3.1-8b
+      - dolphin3.0-llama3.1-8b
+      - qwen3-8b
+      - phi-3-small-8k
+      - gemma-2-9b
+      - yi-1.5-9b
+      - mistral-nemo-12b
+      - gemma-3-12b
+      - olmo-2-13b
+      - codellama-13b
+      - vicuna-13b
+      - qwen2.5-14b
+      - qwen2.5-coder-14b
+      - qwen3-14b
+      - deepseek-r1-distill-qwen-14b
+      - phi-3-medium-4k
+      - starcoder2-15b
+      - deepseek-coder-v2-lite
+      - wizardcoder-15b
+      - internlm2.5-20b
+      - codestral-22b
+      - mistral-small-24b
+      - gemma-2-27b
+      - gemma-3-27b
+      - qwen3-30b-a3b
+      - qwen3-coder-30b-a3b
+      - qwen2.5-32b
+      - qwen2.5-coder-32b
+      - qwen3-32b
+      - qwq-32b
+      - deepseek-r1-distill-qwen-32b
+      - deepseek-coder-33b
+      - wizardcoder-33b
+      - codellama-34b
+      - yi-1.5-34b
+      - falcon-40b
+      - codellama-70b
+      - llama-3.1-70b
+      - llama-3.3-70b
+      - deepseek-r1-distill-llama-70b
+      - nemotron-70b
+      - qwen2.5-72b
+      - qwen3-coder-next
+      - vicuna-7b
     depends_on: ["dim-smoke-{{item}}"]
     working_dir: "{{params.qa_repo}}"
     timeout: 600
@@ -180,12 +258,98 @@ resources:
   mvp:
     type: task
     machine: intel
-    for_each: "{{params.models}}"
+    for_each:
+      - smollm2-135m
+      - smollm2-360m
+      - qwen2.5-coder-0.5b
+      - qwen3-0.6b
+      - tinyllama-1.1b
+      - deepseek-coder-1.3b
+      - qwen2.5-coder-1.5b
+      - qwen2.5-1.5b
+      - deepseek-r1-distill-qwen-1.5b
+      - stablelm-2-zephyr-1.6b
+      - qwen3-1.7b
+      - smollm2-1.7b
+      - granite-3.1-2b
+      - qwen2.5-3b
+      - qwen2.5-coder-3b
+      - granite-3b-code
+      - stablelm-zephyr-3b
+      - starcoder2-3b
+      - gemma-3-1b
+      - nemotron-nano-4b
+      - qwen3-4b
+      - phi-4-mini
+      - phi-3.5-mini
+      - gemma-3-4b
+      - yi-1.5-6b
+      - deepseek-coder-6.7b
+      - deepseek-coder-7b
+      - qwen2.5-7b
+      - qwen2.5-coder-7b
+      - deepseek-r1-distill-qwen-7b
+      - falcon-7b
+      - dolphin-2.6-mistral-7b
+      - openchat-3.5
+      - openhermes-2.5-mistral-7b
+      - zephyr-7b-beta
+      - internlm2.5-7b
+      - starcoder2-7b
+      - olmo-2-7b
+      - codegemma-7b
+      - codellama-7b
+      - llama-3.1-8b
+      - deepseek-r1-distill-llama-8b
+      - granite-3.1-8b
+      - hermes-3-llama-3.1-8b
+      - dolphin3.0-llama3.1-8b
+      - qwen3-8b
+      - phi-3-small-8k
+      - gemma-2-9b
+      - yi-1.5-9b
+      - mistral-nemo-12b
+      - gemma-3-12b
+      - olmo-2-13b
+      - codellama-13b
+      - vicuna-13b
+      - qwen2.5-14b
+      - qwen2.5-coder-14b
+      - qwen3-14b
+      - deepseek-r1-distill-qwen-14b
+      - phi-3-medium-4k
+      - starcoder2-15b
+      - deepseek-coder-v2-lite
+      - wizardcoder-15b
+      - internlm2.5-20b
+      - codestral-22b
+      - mistral-small-24b
+      - gemma-2-27b
+      - gemma-3-27b
+      - qwen3-30b-a3b
+      - qwen3-coder-30b-a3b
+      - qwen2.5-32b
+      - qwen2.5-coder-32b
+      - qwen3-32b
+      - qwq-32b
+      - deepseek-r1-distill-qwen-32b
+      - deepseek-coder-33b
+      - wizardcoder-33b
+      - codellama-34b
+      - yi-1.5-34b
+      - falcon-40b
+      - codellama-70b
+      - llama-3.1-70b
+      - llama-3.3-70b
+      - deepseek-r1-distill-llama-70b
+      - nemotron-70b
+      - qwen2.5-72b
+      - qwen3-coder-next
+      - vicuna-7b
     depends_on: ["smoke-{{item}}"]
     working_dir: "{{params.qa_repo}}"
     timeout: 7200
     completion_check: |
-      # Skip if already certified with evidence newer than playbook
       pb="playbooks/models/{{item}}-mvp.playbook.yaml"
       ev="certifications/{{item}}/evidence.json"
       test -f "$ev" && test "$ev" -nt "$pb" && \
@@ -199,7 +363,6 @@ resources:
       " "$ev"
     pre_apply: |
       test -f "playbooks/models/{{item}}-mvp.playbook.yaml" || exit 1
-      # Disk guard: refuse if >90% full
       usage=$(df --output=pcent /home/noah 2>/dev/null | tail -1 | tr -d ' %')
       if [ "$usage" -ge 90 ]; then
         echo "[disk] ${usage}% used — skipping {{item}} until space freed"
@@ -217,14 +380,12 @@ resources:
         --timeout 300000 \
         2>&1 | tee "{{params.evidence_dir}}/{{item}}/run.log"
 
-      # Copy evidence to certifications dir
       if [ -f output/evidence.json ]; then
         cp output/evidence.json "{{params.evidence_dir}}/{{item}}/"
         mkdir -p "certifications/{{item}}"
         cp output/evidence.json "certifications/{{item}}/evidence.json"
       fi
 
-      # Verify pass rate meets threshold
       rate=$(python3 -c "
       import json, sys
       data = json.load(open('output/evidence.json'))
@@ -237,13 +398,11 @@ resources:
     output_artifacts:
       - "certifications/{{item}}/evidence.json"
     post_apply: |
-      # Commit evidence to git
       cd "{{params.qa_repo}}"
       git add "certifications/{{item}}/evidence.json" 2>/dev/null || true
       git commit -m "qa: certify {{item}} (mvp) (Refs #10)" 2>/dev/null || true
       git push origin main 2>/dev/null || true
 
-      # Evict HF cache for this model (weights no longer needed)
       hf_repo=$(grep 'hf_repo:' "playbooks/models/{{item}}-mvp.playbook.yaml" | head -1 | sed "s/.*hf_repo:\s*[\"']\?\([^\"']*\)[\"']\?.*/\1/")
       cache_dir="$HOME/.apr/cache/hf/$hf_repo"
       if [ -d "$cache_dir" ]; then
@@ -252,7 +411,6 @@ resources:
         echo "[evict] Freed ${size}MB from HF cache: $hf_repo"
       fi
 
-      # Clean heavy artifacts (workspace/, conversions/)
       for subdir in "{{params.evidence_dir}}/{{item}}"/workspace "{{params.evidence_dir}}/{{item}}"/conversions; do
         [ -d "$subdir" ] && rm -rf "$subdir"
       done
@@ -266,7 +424,6 @@ policy:
   post_apply: |
     echo "=== Certification run complete ==="
     cd {{params.qa_repo}}
-    # Sync README table from CSV
     cargo run --release --bin apr-qa -- export-csv docs/certifications/models.csv 2>/dev/null || true
     git add docs/certifications/models.csv 2>/dev/null || true
     git commit -m "qa: update models.csv after certification batch (Refs #10)" 2>/dev/null || true
