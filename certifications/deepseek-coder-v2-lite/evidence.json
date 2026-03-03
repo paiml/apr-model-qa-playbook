@@ -1,6 +1,48 @@
 [
   {
-    "id": "0000000000000000189955fb913295ee",
+    "id": "000000000000000018995a7c1fb17e2f",
+    "gate_id": "G0-PULL-001",
+    "scenario": {
+      "id": "DeepSeek-Coder-V2-Lite-Instruct_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-Coder-V2-Lite-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "G0 Pull: acquire model via apr pull",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: model acquired via apr pull\n\u001b[1;36m=== APR Pull ===\u001b[0m\n\nModel: \u001b[36mdeepseek-ai\u001b[0m/\u001b[36mDeepSeek-Coder-V2-Lite-Instruct\u001b[0m (\u001b[33m4\u001b[0m shards)\n\n  \u001b[33mDownloading\u001b[0m model.safetensors.index.json\n  \u001b[33m↓\u001b[0m [1/4] model-00001-of-000004.safetensors... 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% \u001b[32mdone\u001b[0m\n  \u001b[33m↓\u001b[0m [2/4] model-00002-of-000004.safetensors... 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% \u001b[32mdone\u001b[0m\n  \u001b[33m↓\u001b[0m [3/4] model-00003-of-000004.safetensors... 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% \u001b[32mdone\u001b[0m\n  \u001b[33m↓\u001b[0m [4/4] model-00004-of-000004.safetensors... 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% \u001b[32mdone\u001b[0m\n  \u001b[32m✓\u001b[0m tokenizer.json\n  \u001b[32m✓\u001b[0m config.json\n  \u001b[32m✓\u001b[0m tokenizer_config.json\n  \u001b[33m⚠\u001b[0m tokenizer.model (not found in repo)\n  \u001b[32m✓\u001b[0m .apr-manifest.json (integrity checksums)\n\n\u001b[32m✓\u001b[0m Downloaded successfully\n  Path: \u001b[32m/home/noah/.apr/cache/hf/deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct/model.safetensors.index.json\u001b[0m\n  Shards: \u001b[33m4\u001b[0m\n\n  \u001b[36mℹ\u001b[0m To convert formats, run:\n    apr convert /home/noah/.apr/cache/hf/deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct/model.safetensors.index.json --format apr\n    apr convert /home/noah/.apr/cache/hf/deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct/model.safetensors.index.json --format gguf\n\n\u001b[1;36mUsage:\u001b[0m\n  apr run /home/noah/.apr/cache/hf/deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct/model.safetensors.index.json\n  apr serve /home/noah/.apr/cache/hf/deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct/model.safetensors.index.json\n",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 346112
+    },
+    "timestamp": "2026-03-03T14:16:57.501173990Z",
+    "host": {
+      "hostname": "mac-server",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "000000000000000018995a7c1fb5fa06",
     "gate_id": "G0-DIM-CONFIG_PARSE",
     "scenario": {
       "id": "DeepSeek-Coder-V2-Lite-Instruct_run_cpu_safetensors_0000000000000000",
@@ -29,9 +71,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 89
+      "duration_ms": 0
     },
-    "timestamp": "2026-03-03T12:54:27.308165317Z",
+    "timestamp": "2026-03-03T14:16:57.501466621Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -42,7 +84,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189955fb9132aa06",
+    "id": "000000000000000018995a7c1fb620c9",
     "gate_id": "G0-DIM-SAFETENSORS_FOUND",
     "scenario": {
       "id": "DeepSeek-Coder-V2-Lite-Instruct_run_cpu_safetensors_0000000000000000",
@@ -61,19 +103,19 @@
       "trace_level": "none",
       "oracle_type": "garbage"
     },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "G0 PASS: safetensors_found expected=>= 1 file actual=4 file(s)",
+    "outcome": "Falsified",
+    "reason": "G0 FAIL: safetensors_found expected=>= 1 file actual=0 file(s)",
+    "output": "expected=>= 1 file actual=0 file(s)",
     "stderr": null,
-    "exit_code": 0,
+    "exit_code": null,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 89
+      "duration_ms": 0
     },
-    "timestamp": "2026-03-03T12:54:27.308170220Z",
+    "timestamp": "2026-03-03T14:16:57.501476215Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -84,49 +126,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189955fb9132b322",
-    "gate_id": "G0-DIM-SAFETENSORS_HEADER",
-    "scenario": {
-      "id": "DeepSeek-Coder-V2-Lite-Instruct_run_cpu_safetensors_0000000000000000",
-      "model": {
-        "org": "deepseek-ai",
-        "name": "DeepSeek-Coder-V2-Lite-Instruct",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "safetensors",
-      "prompt": "Dimensional check: safetensors_header",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "G0 PASS: safetensors_header expected=>= 1 tensor actual=1491 tensor(s)",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 89
-    },
-    "timestamp": "2026-03-03T12:54:27.308172403Z",
-    "host": {
-      "hostname": "mac-server",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189955fb9132bb3a",
+    "id": "000000000000000018995a7c1fb64166",
     "gate_id": "G0-DIM-TOKENIZER_EXISTS",
     "scenario": {
       "id": "DeepSeek-Coder-V2-Lite-Instruct_run_cpu_safetensors_0000000000000000",
@@ -145,19 +145,19 @@
       "trace_level": "none",
       "oracle_type": "garbage"
     },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "G0 PASS: tokenizer_exists expected=valid tokenizer.json or non-empty tokenizer.model actual=tokenizer.json found (valid JSON)",
+    "outcome": "Falsified",
+    "reason": "G0 FAIL: tokenizer_exists expected=valid tokenizer.json or non-empty tokenizer.model actual=no tokenizer file",
+    "output": "expected=valid tokenizer.json or non-empty tokenizer.model actual=no tokenizer file",
     "stderr": null,
-    "exit_code": 0,
+    "exit_code": null,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 89
+      "duration_ms": 0
     },
-    "timestamp": "2026-03-03T12:54:27.308174490Z",
+    "timestamp": "2026-03-03T14:16:57.501484165Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -168,49 +168,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189955fb9132c345",
-    "gate_id": "G0-DIM-TOKENIZER_CONFIG_VALID",
-    "scenario": {
-      "id": "DeepSeek-Coder-V2-Lite-Instruct_run_cpu_safetensors_0000000000000000",
-      "model": {
-        "org": "deepseek-ai",
-        "name": "DeepSeek-Coder-V2-Lite-Instruct",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "safetensors",
-      "prompt": "Dimensional check: tokenizer_config_valid",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "G0 PASS: tokenizer_config_valid expected=valid JSON actual=parsed successfully",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 89
-    },
-    "timestamp": "2026-03-03T12:54:27.308176477Z",
-    "host": {
-      "hostname": "mac-server",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189955fb9132cc83",
+    "id": "000000000000000018995a7c1fb65e3b",
     "gate_id": "G0-DIM-EOS_TOKEN_VALID",
     "scenario": {
       "id": "DeepSeek-Coder-V2-Lite-Instruct_run_cpu_safetensors_0000000000000000",
@@ -229,187 +187,19 @@
       "trace_level": "none",
       "oracle_type": "garbage"
     },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "G0 PASS: eos_token_valid expected=non-empty eos_token actual=<｜end▁of▁sentence｜>",
+    "outcome": "Falsified",
+    "reason": "G0 FAIL: eos_token_valid expected=eos_token or eos_token_id actual=missing (no eos_token or eos_token_id)",
+    "output": "expected=eos_token or eos_token_id actual=missing (no eos_token or eos_token_id)",
     "stderr": null,
-    "exit_code": 0,
+    "exit_code": null,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 89
+      "duration_ms": 0
     },
-    "timestamp": "2026-03-03T12:54:27.308178849Z",
-    "host": {
-      "hostname": "mac-server",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189955fb9132d366",
-    "gate_id": "G0-DIM-BOS_TOKEN_VALID",
-    "scenario": {
-      "id": "DeepSeek-Coder-V2-Lite-Instruct_run_cpu_safetensors_0000000000000000",
-      "model": {
-        "org": "deepseek-ai",
-        "name": "DeepSeek-Coder-V2-Lite-Instruct",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "safetensors",
-      "prompt": "Dimensional check: bos_token_valid",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "G0 PASS: bos_token_valid expected=non-empty bos_token actual=<｜begin▁of▁sentence｜>",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 89
-    },
-    "timestamp": "2026-03-03T12:54:27.308180603Z",
-    "host": {
-      "hostname": "mac-server",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189955fb9132da74",
-    "gate_id": "G0-DIM-DTYPE_SUPPORTED",
-    "scenario": {
-      "id": "DeepSeek-Coder-V2-Lite-Instruct_run_cpu_safetensors_0000000000000000",
-      "model": {
-        "org": "deepseek-ai",
-        "name": "DeepSeek-Coder-V2-Lite-Instruct",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "safetensors",
-      "prompt": "Dimensional check: dtype_supported",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "G0 PASS: dtype_supported expected=all dtypes in supported set actual=all supported (BF16)",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 89
-    },
-    "timestamp": "2026-03-03T12:54:27.308182446Z",
-    "host": {
-      "hostname": "mac-server",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189955fb9132e179",
-    "gate_id": "G0-DIM-DTYPE_CONSISTENT",
-    "scenario": {
-      "id": "DeepSeek-Coder-V2-Lite-Instruct_run_cpu_safetensors_0000000000000000",
-      "model": {
-        "org": "deepseek-ai",
-        "name": "DeepSeek-Coder-V2-Lite-Instruct",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "safetensors",
-      "prompt": "Dimensional check: dtype_consistent",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "G0 PASS: dtype_consistent expected=single dtype across interior 2D weight tensors actual=uniform: BF16",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 89
-    },
-    "timestamp": "2026-03-03T12:54:27.308184265Z",
-    "host": {
-      "hostname": "mac-server",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "0000000000000000189955fb9132ead4",
-    "gate_id": "G0-DIM-DTYPE_CONFIG_MATCH",
-    "scenario": {
-      "id": "DeepSeek-Coder-V2-Lite-Instruct_run_cpu_safetensors_0000000000000000",
-      "model": {
-        "org": "deepseek-ai",
-        "name": "DeepSeek-Coder-V2-Lite-Instruct",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "safetensors",
-      "prompt": "Dimensional check: dtype_config_match",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "G0 PASS: dtype_config_match expected=BF16 (from torch_dtype='bfloat16') actual=BF16",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 89
-    },
-    "timestamp": "2026-03-03T12:54:27.308186767Z",
+    "timestamp": "2026-03-03T14:16:57.501491464Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
