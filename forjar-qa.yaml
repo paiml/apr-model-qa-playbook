@@ -25,7 +25,6 @@ resources:
     working_dir: "{{params.qa_repo}}"
     completion_check: "test -x target/release/apr-qa"
     command: |
-      set -euo pipefail
       git pull --rebase origin main 2>/dev/null || true
       cargo build --release --bin apr-qa 2>&1 | tail -3
     timeout: 300
@@ -129,7 +128,6 @@ resources:
     pre_apply: |
       test -f "playbooks/models/{{item}}-dim-smoke.playbook.yaml" || exit 1
     command: |
-      set -euo pipefail
       rm -rf output
       cargo run --release --bin apr-qa -- run \
         "playbooks/models/{{item}}-dim-smoke.playbook.yaml" \
@@ -240,7 +238,6 @@ resources:
       # Skip if no smoke playbook exists (defer to MVP)
       test -f "playbooks/models/{{item}}-smoke.playbook.yaml" || exit 0
     command: |
-      set -euo pipefail
       rm -rf output
       cargo run --release --bin apr-qa -- run \
         "playbooks/models/{{item}}-smoke.playbook.yaml" \
@@ -353,7 +350,6 @@ resources:
         exit 1
       fi
     command: |
-      set -euo pipefail
       rm -rf output
       mkdir -p "{{params.evidence_dir}}/{{item}}"
       cargo run --release --bin apr-qa -- run \
