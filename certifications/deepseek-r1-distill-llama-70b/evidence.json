@@ -1,0 +1,422 @@
+[
+  {
+    "id": "0000000000000000189955fbac9793d4",
+    "gate_id": "G0-DIM-CONFIG_PARSE",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Llama-70B_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Llama-70B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Dimensional check: config_parse",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: config_parse expected=config.json parseable actual=parsed successfully",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 129
+    },
+    "timestamp": "2026-03-03T12:54:27.767768810Z",
+    "host": {
+      "hostname": "mac-server",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000189955fbac97b109",
+    "gate_id": "G0-DIM-SAFETENSORS_FOUND",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Llama-70B_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Llama-70B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Dimensional check: safetensors_found",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: safetensors_found expected=>= 1 file actual=17 file(s)",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 129
+    },
+    "timestamp": "2026-03-03T12:54:27.767775781Z",
+    "host": {
+      "hostname": "mac-server",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000189955fbac97b85d",
+    "gate_id": "G0-DIM-SAFETENSORS_HEADER",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Llama-70B_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Llama-70B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Dimensional check: safetensors_header",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: safetensors_header expected=>= 1 tensor actual=46 tensor(s)",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 129
+    },
+    "timestamp": "2026-03-03T12:54:27.767777707Z",
+    "host": {
+      "hostname": "mac-server",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000189955fbac97c0fa",
+    "gate_id": "G0-DIM-TOKENIZER_EXISTS",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Llama-70B_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Llama-70B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Dimensional check: tokenizer_exists",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: tokenizer_exists expected=valid tokenizer.json or non-empty tokenizer.model actual=tokenizer.json found (valid JSON)",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 129
+    },
+    "timestamp": "2026-03-03T12:54:27.767779927Z",
+    "host": {
+      "hostname": "mac-server",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000189955fbac97c8d6",
+    "gate_id": "G0-DIM-TOKENIZER_CONFIG_VALID",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Llama-70B_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Llama-70B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Dimensional check: tokenizer_config_valid",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: tokenizer_config_valid expected=valid JSON actual=parsed successfully",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 129
+    },
+    "timestamp": "2026-03-03T12:54:27.767781887Z",
+    "host": {
+      "hostname": "mac-server",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000189955fbac97d2a2",
+    "gate_id": "G0-DIM-EOS_TOKEN_VALID",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Llama-70B_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Llama-70B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Dimensional check: eos_token_valid",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: eos_token_valid expected=non-empty eos_token actual=<｜end▁of▁sentence｜>",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 129
+    },
+    "timestamp": "2026-03-03T12:54:27.767784468Z",
+    "host": {
+      "hostname": "mac-server",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000189955fbac97da0b",
+    "gate_id": "G0-DIM-BOS_TOKEN_VALID",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Llama-70B_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Llama-70B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Dimensional check: bos_token_valid",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: bos_token_valid expected=non-empty bos_token actual=<｜begin▁of▁sentence｜>",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 129
+    },
+    "timestamp": "2026-03-03T12:54:27.767786284Z",
+    "host": {
+      "hostname": "mac-server",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000189955fbac97e116",
+    "gate_id": "G0-DIM-DTYPE_SUPPORTED",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Llama-70B_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Llama-70B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Dimensional check: dtype_supported",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: dtype_supported expected=all dtypes in supported set actual=all supported (BF16)",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 129
+    },
+    "timestamp": "2026-03-03T12:54:27.767788098Z",
+    "host": {
+      "hostname": "mac-server",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000189955fbac97e7e2",
+    "gate_id": "G0-DIM-DTYPE_CONSISTENT",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Llama-70B_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Llama-70B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Dimensional check: dtype_consistent",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: dtype_consistent expected=single dtype across interior 2D weight tensors actual=uniform: BF16",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 129
+    },
+    "timestamp": "2026-03-03T12:54:27.767789884Z",
+    "host": {
+      "hostname": "mac-server",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "0000000000000000189955fbac97f18d",
+    "gate_id": "G0-DIM-DTYPE_CONFIG_MATCH",
+    "scenario": {
+      "id": "DeepSeek-R1-Distill-Llama-70B_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "deepseek-ai",
+        "name": "DeepSeek-R1-Distill-Llama-70B",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Dimensional check: dtype_config_match",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: dtype_config_match expected=BF16 (from torch_dtype='bfloat16') actual=BF16",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 129
+    },
+    "timestamp": "2026-03-03T12:54:27.767792327Z",
+    "host": {
+      "hostname": "mac-server",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  }
+]
