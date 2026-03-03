@@ -1,6 +1,6 @@
 [
   {
-    "id": "000000000000000018995769c97f4029",
+    "id": "0000000000000000189965c237d0da9c",
     "gate_id": "G0-PULL-001",
     "scenario": {
       "id": "Qwen3-1.7B_run_cpu_safetensors_0000000000000000",
@@ -29,9 +29,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 43756
+      "duration_ms": 41263
     },
-    "timestamp": "2026-03-03T13:20:40.210744804Z",
+    "timestamp": "2026-03-03T17:43:33.181497229Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -42,7 +42,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018995769c980a069",
+    "id": "0000000000000000189965c237d25524",
     "gate_id": "G0-DIM-CONFIG_PARSE",
     "scenario": {
       "id": "Qwen3-1.7B_run_cpu_safetensors_0000000000000000",
@@ -73,7 +73,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-03-03T13:20:40.210834048Z",
+    "timestamp": "2026-03-03T17:43:33.181593473Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -84,7 +84,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018995769c980b0f3",
+    "id": "0000000000000000189965c237d26800",
     "gate_id": "G0-DIM-SAFETENSORS_FOUND",
     "scenario": {
       "id": "Qwen3-1.7B_run_cpu_safetensors_0000000000000000",
@@ -115,7 +115,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-03-03T13:20:40.210838171Z",
+    "timestamp": "2026-03-03T17:43:33.181598173Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -126,7 +126,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018995769c980be79",
+    "id": "0000000000000000189965c237d2785a",
     "gate_id": "G0-DIM-TOKENIZER_EXISTS",
     "scenario": {
       "id": "Qwen3-1.7B_run_cpu_safetensors_0000000000000000",
@@ -157,7 +157,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-03-03T13:20:40.210841821Z",
+    "timestamp": "2026-03-03T17:43:33.181602429Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -168,7 +168,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018995769c980cd03",
+    "id": "0000000000000000189965c237d289b9",
     "gate_id": "G0-DIM-EOS_TOKEN_VALID",
     "scenario": {
       "id": "Qwen3-1.7B_run_cpu_safetensors_0000000000000000",
@@ -199,7 +199,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-03-03T13:20:40.210845670Z",
+    "timestamp": "2026-03-03T17:43:33.181607119Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
