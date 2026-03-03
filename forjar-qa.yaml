@@ -402,7 +402,7 @@ policy:
   lock_file: true
   post_apply: |
     echo "=== Certification run complete ==="
-    cd {{params.qa_repo}}
+    cd /home/noah/src/apr-model-qa-playbook
     cargo run --release --bin apr-qa -- export-csv docs/certifications/models.csv 2>/dev/null || true
     git add docs/certifications/models.csv 2>/dev/null || true
     git commit -m "qa: update models.csv after certification batch (Refs #10)" 2>/dev/null || true
