@@ -127,6 +127,11 @@ resources:
     completion_check: "test -d certifications/{{item}} && find certifications/{{item}} -name evidence.json -newer playbooks/models/{{item}}-dim-smoke.playbook.yaml 2>/dev/null | grep -q ."
     pre_apply: |
       test -f "playbooks/models/{{item}}-dim-smoke.playbook.yaml" || exit 1
+      usage="$(df --output=pcent /home/noah 2>/dev/null | tail -1 | tr -d ' %')"
+      if [ "$usage" -ge 90 ]; then
+        echo "disk: ${usage}% used, skipping {{item}} until space freed"
+        exit 1
+      fi
     command: |
       rm -rf output
       cargo run --release --bin apr-qa -- run \
@@ -138,6 +143,7 @@ resources:
         --metadata-only
     output_artifacts:
       - "output/evidence.json"
+    post_apply: "scripts/post-dim-smoke.sh {{item}} {{params.qa_repo}}"
 
   # ── Tier 2: Smoke (3 tests, quick inference, ~2-5 min) ─────────
   smoke:
