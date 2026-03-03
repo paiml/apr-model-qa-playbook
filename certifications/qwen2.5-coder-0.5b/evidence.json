@@ -1,6 +1,6 @@
 [
   {
-    "id": "000000000000000018943c8e0f7a4d44",
+    "id": "000000000000000018995729208cf4f4",
     "gate_id": "G0-PULL-001",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -21,7 +21,7 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "G0 PASS: model acquired via apr pull\n\u001b[1;36m=== APR Pull ===\u001b[0m\n\nModel: \u001b[36mhf://Qwen/Qwen2.5-Coder-0.5B-Instruct/model.safetensors\u001b[0m\n\n\u001b[33mDownloading...\u001b[0m\n\r  [==================================================] 100.0% (0 B/0 B)\r  [==================================================] 100.0% (942.32 MB/942.32 MB)\n\n\u001b[32m✓\u001b[0m Downloaded successfully\n  Path: \u001b[32m/home/noah/.cache/pacha/models/d71534cb948e32eb.safetensors\u001b[0m\n  Size: \u001b[33m942.32 MB\u001b[0m\n  Format: SafeTensors(SafeTensorsInfo { tensor_count: 290, tensors: {\"model.layers.22.self_attn.k_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.17.self_attn.k_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.14.self_attn.v_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.20.self_attn.k_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.19.self_attn.q_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.18.self_attn.v_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.15.self_attn.k_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.10.mlp.up_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.18.self_attn.q_proj.bias\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.1.self_attn.o_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.8.self_attn.k_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.20.input_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.5.self_attn.o_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.13.self_attn.k_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.6.self_attn.q_proj.bias\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.8.self_attn.v_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.11.mlp.up_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.4.mlp.up_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.15.self_attn.v_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.embed_tokens.weight\": TensorInfo { shape: [151936, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.22.self_attn.q_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.15.self_attn.o_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.13.mlp.gate_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.21.self_attn.k_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.21.mlp.up_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.6.self_attn.q_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.0.self_attn.q_proj.bias\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.12.self_attn.k_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.15.mlp.down_proj.weight\": TensorInfo { shape: [896, 4864], dtype: \"BF16\", offset: 0 }, \"model.layers.12.self_attn.q_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.0.input_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.19.self_attn.q_proj.bias\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.14.input_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.14.self_attn.q_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.16.self_attn.q_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.23.self_attn.o_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.5.input_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.3.post_attention_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.21.self_attn.k_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.17.self_attn.o_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.6.self_attn.k_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.norm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.22.mlp.up_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.11.self_attn.k_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.10.self_attn.q_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.10.self_attn.o_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.6.post_attention_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.10.post_attention_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.22.self_attn.v_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.10.self_attn.q_proj.bias\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.6.mlp.gate_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.12.self_attn.v_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.5.self_attn.k_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.1.mlp.up_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.21.post_attention_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.11.input_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.15.mlp.up_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.1.input_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.23.self_attn.q_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.11.self_attn.v_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.17.mlp.up_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.13.self_attn.q_proj.bias\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.22.input_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.2.self_attn.v_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.13.self_attn.k_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.15.post_attention_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.10.self_attn.k_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.22.mlp.down_proj.weight\": TensorInfo { shape: [896, 4864], dtype: \"BF16\", offset: 0 }, \"model.layers.9.self_attn.q_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.0.mlp.gate_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.15.self_attn.q_proj.bias\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.18.self_attn.k_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.6.self_attn.k_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.0.self_attn.v_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.20.self_attn.v_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.13.self_attn.v_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.5.mlp.up_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.13.input_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.5.self_attn.q_proj.bias\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.13.post_attention_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.6.self_attn.v_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.22.mlp.gate_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.2.self_attn.k_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.5.post_attention_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.21.self_attn.v_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.17.mlp.down_proj.weight\": TensorInfo { shape: [896, 4864], dtype: \"BF16\", offset: 0 }, \"model.layers.17.self_attn.v_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.17.mlp.gate_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.17.self_attn.q_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.3.self_attn.k_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.21.self_attn.q_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.21.mlp.gate_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.16.input_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.4.self_attn.v_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.7.mlp.gate_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.4.mlp.down_proj.weight\": TensorInfo { shape: [896, 4864], dtype: \"BF16\", offset: 0 }, \"model.layers.2.self_attn.q_proj.bias\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.11.post_attention_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.9.self_attn.v_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.12.self_attn.k_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.23.mlp.gate_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.20.self_attn.v_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.6.input_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.19.input_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.7.input_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.3.mlp.up_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.5.self_attn.q_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.18.mlp.up_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.20.mlp.gate_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.18.self_attn.q_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.10.self_attn.v_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.8.input_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.21.self_attn.o_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.2.post_attention_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.4.mlp.gate_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.1.mlp.down_proj.weight\": TensorInfo { shape: [896, 4864], dtype: \"BF16\", offset: 0 }, \"model.layers.4.self_attn.o_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.1.self_attn.k_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.16.self_attn.k_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.12.mlp.up_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.12.self_attn.o_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.23.post_attention_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.14.post_attention_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.2.mlp.gate_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.14.self_attn.k_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.3.self_attn.v_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.14.self_attn.q_proj.bias\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.5.mlp.gate_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.9.post_attention_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.4.self_attn.v_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.3.self_attn.o_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.20.self_attn.q_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.0.post_attention_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.14.self_attn.v_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.7.self_attn.q_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.8.self_attn.k_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.3.input_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.7.self_attn.v_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.23.self_attn.v_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.23.input_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.9.self_attn.k_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.2.mlp.down_proj.weight\": TensorInfo { shape: [896, 4864], dtype: \"BF16\", offset: 0 }, \"model.layers.10.self_attn.k_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.19.self_attn.v_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.9.input_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.9.mlp.down_proj.weight\": TensorInfo { shape: [896, 4864], dtype: \"BF16\", offset: 0 }, \"model.layers.9.self_attn.o_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.7.self_attn.k_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.9.mlp.gate_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.0.self_attn.k_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.22.post_attention_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.18.mlp.gate_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.7.self_attn.o_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.5.self_attn.v_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.13.self_attn.o_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.19.self_attn.k_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.22.self_attn.k_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.15.self_attn.k_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.4.input_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.17.post_attention_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.12.mlp.down_proj.weight\": TensorInfo { shape: [896, 4864], dtype: \"BF16\", offset: 0 }, \"model.layers.4.self_attn.k_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.15.mlp.gate_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.2.self_attn.k_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.9.self_attn.k_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.14.mlp.up_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.2.self_attn.v_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.6.self_attn.v_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.18.self_attn.k_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.14.mlp.down_proj.weight\": TensorInfo { shape: [896, 4864], dtype: \"BF16\", offset: 0 }, \"model.layers.0.mlp.up_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.7.post_attention_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.20.mlp.down_proj.weight\": TensorInfo { shape: [896, 4864], dtype: \"BF16\", offset: 0 }, \"model.layers.20.mlp.up_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.21.self_attn.v_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.12.mlp.gate_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.2.self_attn.o_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.7.self_attn.q_proj.bias\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.11.self_attn.v_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.16.self_attn.q_proj.bias\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.8.self_attn.o_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.17.self_attn.k_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.14.mlp.gate_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.19.mlp.up_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.19.self_attn.o_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.1.self_attn.q_proj.bias\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.10.mlp.down_proj.weight\": TensorInfo { shape: [896, 4864], dtype: \"BF16\", offset: 0 }, \"model.layers.2.self_attn.q_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.11.mlp.gate_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.6.self_attn.o_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.7.self_attn.v_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.4.self_attn.q_proj.bias\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.8.mlp.up_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.21.input_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.23.self_attn.k_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.10.self_attn.v_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.23.self_attn.v_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.9.self_attn.q_proj.bias\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.11.self_attn.q_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.11.mlp.down_proj.weight\": TensorInfo { shape: [896, 4864], dtype: \"BF16\", offset: 0 }, \"model.layers.22.self_attn.v_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.19.mlp.gate_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.3.self_attn.v_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.21.self_attn.q_proj.bias\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.23.self_attn.k_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.3.self_attn.k_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.10.input_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.12.input_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.19.post_attention_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.13.mlp.up_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.17.self_attn.q_proj.bias\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.7.self_attn.k_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.7.mlp.up_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.17.input_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.16.mlp.down_proj.weight\": TensorInfo { shape: [896, 4864], dtype: \"BF16\", offset: 0 }, \"model.layers.5.self_attn.k_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.14.self_attn.k_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.18.mlp.down_proj.weight\": TensorInfo { shape: [896, 4864], dtype: \"BF16\", offset: 0 }, \"model.layers.10.mlp.gate_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.6.mlp.down_proj.weight\": TensorInfo { shape: [896, 4864], dtype: \"BF16\", offset: 0 }, \"model.layers.19.mlp.down_proj.weight\": TensorInfo { shape: [896, 4864], dtype: \"BF16\", offset: 0 }, \"model.layers.1.post_attention_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.4.self_attn.q_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.0.self_attn.v_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.9.mlp.up_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.16.self_attn.v_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.20.post_attention_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.23.self_attn.q_proj.bias\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.1.self_attn.q_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.8.mlp.gate_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.8.self_attn.q_proj.bias\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.18.self_attn.o_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.1.self_attn.v_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.9.self_attn.v_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.22.self_attn.o_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.6.mlp.up_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.4.post_attention_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.8.self_attn.v_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.15.input_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.13.self_attn.v_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.12.self_attn.q_proj.bias\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.18.self_attn.v_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.15.self_attn.v_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.8.post_attention_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.1.self_attn.k_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.11.self_attn.q_proj.bias\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.14.self_attn.o_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.23.mlp.down_proj.weight\": TensorInfo { shape: [896, 4864], dtype: \"BF16\", offset: 0 }, \"model.layers.3.self_attn.q_proj.bias\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.19.self_attn.k_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.16.self_attn.o_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.0.self_attn.o_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.11.self_attn.o_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.20.self_attn.o_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.18.input_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.8.mlp.down_proj.weight\": TensorInfo { shape: [896, 4864], dtype: \"BF16\", offset: 0 }, \"model.layers.19.self_attn.v_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.16.mlp.up_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.2.mlp.up_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.8.self_attn.q_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.12.post_attention_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.16.post_attention_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.21.mlp.down_proj.weight\": TensorInfo { shape: [896, 4864], dtype: \"BF16\", offset: 0 }, \"model.layers.18.post_attention_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.23.mlp.up_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.0.self_attn.k_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.5.self_attn.v_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.4.self_attn.k_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.17.self_attn.v_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.16.self_attn.k_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.5.mlp.down_proj.weight\": TensorInfo { shape: [896, 4864], dtype: \"BF16\", offset: 0 }, \"model.layers.1.self_attn.v_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.20.self_attn.q_proj.bias\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.2.input_layernorm.weight\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.20.self_attn.k_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.0.self_attn.q_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.0.mlp.down_proj.weight\": TensorInfo { shape: [896, 4864], dtype: \"BF16\", offset: 0 }, \"model.layers.3.mlp.down_proj.weight\": TensorInfo { shape: [896, 4864], dtype: \"BF16\", offset: 0 }, \"model.layers.13.mlp.down_proj.weight\": TensorInfo { shape: [896, 4864], dtype: \"BF16\", offset: 0 }, \"model.layers.16.mlp.gate_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.3.mlp.gate_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.22.self_attn.q_proj.bias\": TensorInfo { shape: [896], dtype: \"BF16\", offset: 0 }, \"model.layers.15.self_attn.q_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.16.self_attn.v_proj.weight\": TensorInfo { shape: [128, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.3.self_attn.q_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.13.self_attn.q_proj.weight\": TensorInfo { shape: [896, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.11.self_attn.k_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.1.mlp.gate_proj.weight\": TensorInfo { shape: [4864, 896], dtype: \"BF16\", offset: 0 }, \"model.layers.12.self_attn.v_proj.bias\": TensorInfo { shape: [128], dtype: \"BF16\", offset: 0 }, \"model.layers.7.mlp.down_proj.weight\": TensorInfo { shape: [896, 4864], dtype: \"BF16\", offset: 0 }}, metadata: {\"format\": \"pt\"}, parameters: Some(494032768), dtype: Some(\"BF16\") })\n  Hash: d71534cb948e32eb\n  \u001b[32m✓\u001b[0m \u001b[2md71534cb948e32eb.tokenizer.json\u001b[0m (already exists)\n  \u001b[32m✓\u001b[0m \u001b[2md71534cb948e32eb.config.json\u001b[0m (already exists)\n\n\u001b[33mConverting formats...\u001b[0m\n  \u001b[32m✓\u001b[0m d71534cb948e32eb.apr (SafeTensors → APR)\n  \u001b[32m✓\u001b[0m d71534cb948e32eb.gguf (APR → GGUF)\n\n\u001b[1;36mUsage:\u001b[0m\n  apr run /home/noah/.cache/pacha/models/d71534cb948e32eb.safetensors\n  apr serve /home/noah/.cache/pacha/models/d71534cb948e32eb.safetensors\n",
+    "output": "G0 PASS: model acquired via apr pull\n\u001b[1;36m=== APR Pull ===\u001b[0m\n\nModel: \u001b[36mhf://Qwen/Qwen2.5-Coder-0.5B-Instruct/model.safetensors\u001b[0m\n\u001b[32m✓\u001b[0m Model already cached\n  Path: /home/noah/.cache/pacha/models/1e3be9285aea6923.safetensors\n  Size: 942.3 MB\n\n\u001b[1;36mUsage:\u001b[0m\n  apr run /home/noah/.cache/pacha/models/1e3be9285aea6923.safetensors\n  apr serve /home/noah/.cache/pacha/models/1e3be9285aea6923.safetensors\n",
     "stderr": null,
     "exit_code": 0,
     "metrics": {
@@ -29,11 +29,11 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 41477
+      "duration_ms": 180
     },
-    "timestamp": "2026-02-14T22:12:14.306151509Z",
+    "timestamp": "2026-03-03T13:16:02.498387381Z",
     "host": {
-      "hostname": "noah-Lambda-Vector",
+      "hostname": "mac-server",
       "os": "linux",
       "cpu": "unknown",
       "gpu": null,
@@ -42,92 +42,8 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018943c926fde51c9",
-    "gate_id": "G0-FORMAT-APR-001",
-    "scenario": {
-      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_apr_0000000000000000",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-0.5B-Instruct",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "apr",
-      "prompt": "G0 Format: prepare Apr workspace",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "G0 PASS: converted to apr\n\u001b[1;36m=== Rosetta Stone Conversion ===\u001b[0m\n\nSource: /home/noah/.cache/pacha/models/d71534cb948e32eb.safetensors\nTarget: output/workspace/Qwen/Qwen2.5-Coder-0.5B-Instruct/apr/model.apr\n\n\u001b[33m--- Source Inspection ---\u001b[0m\n╭──────────────┬─────────────╮\n│       Format │ SafeTensors │\n├──────────────┼─────────────┤\n│    File Size │ 942.32 MiB  │\n│      Tensors │ 290         │\n│   Parameters │ 494,032,768 │\n│ Architecture │ qwen2       │\n╰──────────────┴─────────────╯\n\n\u001b[33mConverting...\u001b[0m\n\n\u001b[33m--- Target Inspection ---\u001b[0m\n╭──────────────┬─────────────╮\n│       Format │ APR         │\n├──────────────┼─────────────┤\n│    File Size │ 2.35 GiB    │\n│      Tensors │ 291         │\n│   Parameters │ 630,167,424 │\n│ Architecture │ qwen2       │\n╰──────────────┴─────────────╯\n\n\u001b[1;36m=== Conversion Summary ===\u001b[0m\nPath: SafeTensors → APR\nDuration: 15642ms\nTensors: 290 -> 291\n\n\u001b[33mWarning: Tensor count changed during conversion\u001b[0m\n",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 18775
-    },
-    "timestamp": "2026-02-14T22:12:33.103185401Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943c9967387d67",
-    "gate_id": "G0-FORMAT-GGUF-001",
-    "scenario": {
-      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_gguf_0000000000000000",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-0.5B-Instruct",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "gguf",
-      "prompt": "G0 Format: prepare Gguf workspace",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "G0 PASS: converted to gguf\n\u001b[1;36m=== Rosetta Stone Conversion ===\u001b[0m\n\nSource: /home/noah/.cache/pacha/models/d71534cb948e32eb.safetensors\nTarget: output/workspace/Qwen/Qwen2.5-Coder-0.5B-Instruct/gguf/model.gguf\n\n\u001b[33m--- Source Inspection ---\u001b[0m\n╭──────────────┬─────────────╮\n│       Format │ SafeTensors │\n├──────────────┼─────────────┤\n│    File Size │ 942.32 MiB  │\n│      Tensors │ 290         │\n│   Parameters │ 494,032,768 │\n│ Architecture │ qwen2       │\n╰──────────────┴─────────────╯\n\n\u001b[33mConverting...\u001b[0m\n\n\u001b[33m--- Target Inspection ---\u001b[0m\n╭──────────────┬─────────────╮\n│       Format │ GGUF        │\n├──────────────┼─────────────┤\n│    File Size │ 1.22 GiB    │\n│      Tensors │ 291         │\n│   Parameters │ 630,167,424 │\n│ Architecture │ qwen2       │\n│ Quantization │ 0           │\n╰──────────────┴─────────────╯\n\n\u001b[1;36m=== Conversion Summary ===\u001b[0m\nPath: SafeTensors → GGUF\nDuration: 26744ms\nTensors: 290 -> 291\n\n\u001b[33mWarning: Tensor count changed during conversion\u001b[0m\n",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 29919
-    },
-    "timestamp": "2026-02-14T22:13:03.022870133Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943c9a0b6f1777",
-    "gate_id": "G0-VALIDATE-001",
+    "id": "00000000000000001899572920c317aa",
+    "gate_id": "G0-DIM-CONFIG_PARSE",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000000",
       "model": {
@@ -138,16 +54,16 @@
       "modality": "run",
       "backend": "cpu",
       "format": "safetensors",
-      "prompt": "G0 Validate: NaN/Inf/all-zeros tensor check",
+      "prompt": "Dimensional check: config_parse",
       "temperature": 0.0,
       "max_tokens": 32,
       "seed": 0,
       "trace_level": "none",
-      "oracle_type": "arithmetic"
+      "oracle_type": "garbage"
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "G0 PASS: model.safetensors physics validated\n{\n  \"checks\": [\n    {\n      \"detail\": \"\",\n      \"name\": \"model.embed_tokens.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.0.input_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.0.mlp.down_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.0.mlp.gate_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.0.mlp.up_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.0.post_attention_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.0.self_attn.k_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.0.self_attn.k_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.0.self_attn.o_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.0.self_attn.q_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.0.self_attn.q_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.0.self_attn.v_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.0.self_attn.v_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.1.input_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.1.mlp.down_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.1.mlp.gate_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.1.mlp.up_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.1.post_attention_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.1.self_attn.k_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.1.self_attn.k_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.1.self_attn.o_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.1.self_attn.q_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.1.self_attn.q_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.1.self_attn.v_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.1.self_attn.v_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.10.input_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.10.mlp.down_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.10.mlp.gate_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.10.mlp.up_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.10.post_attention_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.10.self_attn.k_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.10.self_attn.k_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.10.self_attn.o_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.10.self_attn.q_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.10.self_attn.q_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.10.self_attn.v_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.10.self_attn.v_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.11.input_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.11.mlp.down_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.11.mlp.gate_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.11.mlp.up_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.11.post_attention_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.11.self_attn.k_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.11.self_attn.k_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.11.self_attn.o_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.11.self_attn.q_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.11.self_attn.q_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.11.self_attn.v_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.11.self_attn.v_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.12.input_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.12.mlp.down_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.12.mlp.gate_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.12.mlp.up_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.12.post_attention_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.12.self_attn.k_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.12.self_attn.k_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.12.self_attn.o_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.12.self_attn.q_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.12.self_attn.q_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.12.self_attn.v_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.12.self_attn.v_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.13.input_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.13.mlp.down_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.13.mlp.gate_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.13.mlp.up_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.13.post_attention_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.13.self_attn.k_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.13.self_attn.k_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.13.self_attn.o_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.13.self_attn.q_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.13.self_attn.q_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.13.self_attn.v_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.13.self_attn.v_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.14.input_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.14.mlp.down_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.14.mlp.gate_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.14.mlp.up_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.14.post_attention_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.14.self_attn.k_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.14.self_attn.k_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.14.self_attn.o_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.14.self_attn.q_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.14.self_attn.q_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.14.self_attn.v_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.14.self_attn.v_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.15.input_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.15.mlp.down_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.15.mlp.gate_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.15.mlp.up_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.15.post_attention_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.15.self_attn.k_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.15.self_attn.k_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.15.self_attn.o_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.15.self_attn.q_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.15.self_attn.q_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.15.self_attn.v_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.15.self_attn.v_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.16.input_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.16.mlp.down_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.16.mlp.gate_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.16.mlp.up_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.16.post_attention_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.16.self_attn.k_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.16.self_attn.k_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.16.self_attn.o_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.16.self_attn.q_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.16.self_attn.q_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.16.self_attn.v_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.16.self_attn.v_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.17.input_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.17.mlp.down_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.17.mlp.gate_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.17.mlp.up_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.17.post_attention_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.17.self_attn.k_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.17.self_attn.k_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.17.self_attn.o_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.17.self_attn.q_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.17.self_attn.q_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.17.self_attn.v_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.17.self_attn.v_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.18.input_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.18.mlp.down_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.18.mlp.gate_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.18.mlp.up_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.18.post_attention_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.18.self_attn.k_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.18.self_attn.k_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.18.self_attn.o_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.18.self_attn.q_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.18.self_attn.q_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.18.self_attn.v_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.18.self_attn.v_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.19.input_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.19.mlp.down_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.19.mlp.gate_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.19.mlp.up_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.19.post_attention_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.19.self_attn.k_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.19.self_attn.k_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.19.self_attn.o_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.19.self_attn.q_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.19.self_attn.q_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.19.self_attn.v_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.19.self_attn.v_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.2.input_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.2.mlp.down_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.2.mlp.gate_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.2.mlp.up_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.2.post_attention_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.2.self_attn.k_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.2.self_attn.k_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.2.self_attn.o_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.2.self_attn.q_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.2.self_attn.q_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.2.self_attn.v_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.2.self_attn.v_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.20.input_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.20.mlp.down_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.20.mlp.gate_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.20.mlp.up_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.20.post_attention_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.20.self_attn.k_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.20.self_attn.k_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.20.self_attn.o_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.20.self_attn.q_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.20.self_attn.q_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.20.self_attn.v_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.20.self_attn.v_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.21.input_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.21.mlp.down_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.21.mlp.gate_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.21.mlp.up_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.21.post_attention_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.21.self_attn.k_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.21.self_attn.k_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.21.self_attn.o_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.21.self_attn.q_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.21.self_attn.q_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.21.self_attn.v_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.21.self_attn.v_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.22.input_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.22.mlp.down_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.22.mlp.gate_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.22.mlp.up_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.22.post_attention_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.22.self_attn.k_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.22.self_attn.k_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.22.self_attn.o_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.22.self_attn.q_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.22.self_attn.q_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.22.self_attn.v_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.22.self_attn.v_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.23.input_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.23.mlp.down_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.23.mlp.gate_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.23.mlp.up_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.23.post_attention_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.23.self_attn.k_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.23.self_attn.k_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.23.self_attn.o_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.23.self_attn.q_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.23.self_attn.q_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.23.self_attn.v_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.23.self_attn.v_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.3.input_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.3.mlp.down_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.3.mlp.gate_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.3.mlp.up_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.3.post_attention_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.3.self_attn.k_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.3.self_attn.k_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.3.self_attn.o_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.3.self_attn.q_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.3.self_attn.q_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.3.self_attn.v_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.3.self_attn.v_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.4.input_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.4.mlp.down_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.4.mlp.gate_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.4.mlp.up_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.4.post_attention_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.4.self_attn.k_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.4.self_attn.k_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.4.self_attn.o_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.4.self_attn.q_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.4.self_attn.q_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.4.self_attn.v_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.4.self_attn.v_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.5.input_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.5.mlp.down_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.5.mlp.gate_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.5.mlp.up_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.5.post_attention_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.5.self_attn.k_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.5.self_attn.k_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.5.self_attn.o_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.5.self_attn.q_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.5.self_attn.q_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.5.self_attn.v_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.5.self_attn.v_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.6.input_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.6.mlp.down_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.6.mlp.gate_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.6.mlp.up_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.6.post_attention_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.6.self_attn.k_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.6.self_attn.k_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.6.self_attn.o_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.6.self_attn.q_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.6.self_attn.q_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.6.self_attn.v_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.6.self_attn.v_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.7.input_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.7.mlp.down_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.7.mlp.gate_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.7.mlp.up_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.7.post_attention_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.7.self_attn.k_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.7.self_attn.k_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.7.self_attn.o_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.7.self_attn.q_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.7.self_attn.q_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.7.self_attn.v_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.7.self_attn.v_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.8.input_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.8.mlp.down_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.8.mlp.gate_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.8.mlp.up_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.8.post_attention_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.8.self_attn.k_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.8.self_attn.k_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.8.self_attn.o_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.8.self_attn.q_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.8.self_attn.q_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.8.self_attn.v_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.8.self_attn.v_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.9.input_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.9.mlp.down_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.9.mlp.gate_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.9.mlp.up_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.9.post_attention_layernorm.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.9.self_attn.k_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.9.self_attn.k_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.9.self_attn.o_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.9.self_attn.q_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.9.self_attn.q_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.9.self_attn.v_proj.bias\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.layers.9.self_attn.v_proj.weight\",\n      \"status\": \"PASS\"\n    },\n    {\n      \"detail\": \"\",\n      \"name\": \"model.norm.weight\",\n      \"status\": \"PASS\"\n    }\n  ],\n  \"duration_ms\": 2750,\n  \"failed\": 0,\n  \"failed_tensors\": 0,\n  \"format\": \"rosetta\",\n  \"model\": \"output/workspace/Qwen/Qwen2.5-Coder-0.5B-Instruct/safetensors/model.safetensors\",\n  \"passed\": true,\n  \"total_checks\": 290,\n  \"total_inf\": 0,\n  \"total_nan\": 0,\n  \"total_tensors\": 290\n}\n",
+    "output": "G0 PASS: config_parse expected=config.json parseable actual=parsed successfully",
     "stderr": null,
     "exit_code": 0,
     "metrics": {
@@ -155,11 +71,11 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 2754
+      "duration_ms": 3
     },
-    "timestamp": "2026-02-14T22:13:05.777914285Z",
+    "timestamp": "2026-03-03T13:16:02.501934599Z",
     "host": {
-      "hostname": "noah-Lambda-Vector",
+      "hostname": "mac-server",
       "os": "linux",
       "cpu": "unknown",
       "gpu": null,
@@ -168,8 +84,8 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018943c9a0b81b441",
-    "gate_id": "G0-TENSOR-001",
+    "id": "00000000000000001899572920c34242",
+    "gate_id": "G0-DIM-HIDDEN_SIZE",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000000",
       "model": {
@@ -180,16 +96,16 @@
       "modality": "run",
       "backend": "cpu",
       "format": "safetensors",
-      "prompt": "G0 Validate: NaN/Inf/all-zeros tensor check",
+      "prompt": "Dimensional check: hidden_size",
       "temperature": 0.0,
       "max_tokens": 32,
       "seed": 0,
       "trace_level": "none",
-      "oracle_type": "arithmetic"
+      "oracle_type": "garbage"
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "G0 SKIP: Family contract not found for 'qwen2': Execution error: YAML parse error: constraints.has_bias: invalid type: string \"true\", expected a boolean at line 86 column 13",
+    "output": "G0 PASS: hidden_size expected=896 actual=896",
     "stderr": null,
     "exit_code": 0,
     "metrics": {
@@ -197,11 +113,11 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 1
+      "duration_ms": 3
     },
-    "timestamp": "2026-02-14T22:13:05.779128562Z",
+    "timestamp": "2026-03-03T13:16:02.501945682Z",
     "host": {
-      "hostname": "noah-Lambda-Vector",
+      "hostname": "mac-server",
       "os": "linux",
       "cpu": "unknown",
       "gpu": null,
@@ -210,8 +126,8 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018943c9a0ba81ded",
-    "gate_id": "G0-INTEGRITY-CONFIG",
+    "id": "00000000000000001899572920c3606c",
+    "gate_id": "G0-DIM-NUM_LAYERS",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000000",
       "model": {
@@ -222,7 +138,7 @@
       "modality": "run",
       "backend": "cpu",
       "format": "safetensors",
-      "prompt": "G0 Integrity: config.json vs tensor metadata",
+      "prompt": "Dimensional check: num_layers",
       "temperature": 0.0,
       "max_tokens": 32,
       "seed": 0,
@@ -231,7 +147,7 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "G0 PASS: config.json matches tensor metadata",
+    "output": "G0 PASS: num_layers expected=24 actual=24",
     "stderr": null,
     "exit_code": 0,
     "metrics": {
@@ -239,11 +155,11 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 3
     },
-    "timestamp": "2026-02-14T22:13:05.781646163Z",
+    "timestamp": "2026-03-03T13:16:02.501953150Z",
     "host": {
-      "hostname": "noah-Lambda-Vector",
+      "hostname": "mac-server",
       "os": "linux",
       "cpu": "unknown",
       "gpu": null,
@@ -252,8 +168,8 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018943c9da74408f0",
-    "gate_id": "F-A1-001",
+    "id": "00000000000000001899572920c37bd1",
+    "gate_id": "G0-DIM-NUM_HEADS",
     "scenario": {
       "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000000",
       "model": {
@@ -264,763 +180,7 @@
       "modality": "run",
       "backend": "cpu",
       "format": "safetensors",
-      "prompt": "Given x=5 and y=3, what is x*y? Then what is the result plus 10?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "\u001b[1;36m=== Benchmark Results ===\u001b[0m\ntokens: 32\nlatency: 12651.41ms\nmodel: output/workspace/Qwen/Qwen2.5-Coder-0.5B-Instruct/safetensors/model.safetensors\n\n{\"tok_s\": 2.5, \"tokens\": 32, \"latency_ms\": 12651.41}",
-    "stderr": "[GH-189] Loaded tokenizer from output/workspace/Qwen/Qwen2.5-Coder-0.5B-Instruct/safetensors/tokenizer.json: 22 special tokens\n\u001b[32mGenerated 32 tokens in 8468.4ms (3.8 tok/s)\u001b[0m\n",
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": 2.5,
-      "time_to_first_token_ms": null,
-      "total_tokens": 32,
-      "memory_peak_mb": null,
-      "duration_ms": 15493
-    },
-    "timestamp": "2026-02-14T22:13:21.277238029Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943ca2cbe45915",
-    "gate_id": "F-A1-001",
-    "scenario": {
-      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_apr_0000000000000001",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-0.5B-Instruct",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "apr",
-      "prompt": "Given x=5 and y=3, what is x*y? Then what is the result plus 10?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 1,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "\u001b[1;36m=== Benchmark Results ===\u001b[0m\ntokens: 32\nlatency: 15423.47ms\nmodel: output/workspace/Qwen/Qwen2.5-Coder-0.5B-Instruct/apr/model.apr\n\n{\"tok_s\": 2.1, \"tokens\": 32, \"latency_ms\": 15423.47}",
-    "stderr": "[GH-187] Embedding 'lm_head.weight': shape=[151936, 896], dtype=F32\n[GH-187] Embedding 'model.embed_tokens.weight': shape=[151936, 896], dtype=F32\n[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\n[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\n\u001b[32mGenerated 32 tokens in 9219.4ms (3.5 tok/s)\u001b[0m\n",
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": 2.1,
-      "time_to_first_token_ms": null,
-      "total_tokens": 32,
-      "memory_peak_mb": null,
-      "duration_ms": 22089
-    },
-    "timestamp": "2026-02-14T22:13:43.366560902Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943ca4c9dd3c70",
-    "gate_id": "F-A1-001",
-    "scenario": {
-      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_gguf_0000000000000002",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-0.5B-Instruct",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "gguf",
-      "prompt": "Given x=5 and y=3, what is x*y? Then what is the result plus 10?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 2,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "\u001b[1;36m=== Benchmark Results ===\u001b[0m\ntokens: 32\nlatency: 3841.65ms\nmodel: output/workspace/Qwen/Qwen2.5-Coder-0.5B-Instruct/gguf/model.gguf\n\n{\"tok_s\": 8.3, \"tokens\": 32, \"latency_ms\": 3841.65}",
-    "stderr": "\u001b[32mGenerated 32 tokens in 2299.4ms (13.9 tok/s)\u001b[0m\n",
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": 8.3,
-      "time_to_first_token_ms": null,
-      "total_tokens": 32,
-      "memory_peak_mb": null,
-      "duration_ms": 8555
-    },
-    "timestamp": "2026-02-14T22:13:51.922474206Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943ca69158db73",
-    "gate_id": "F-A2-001",
-    "scenario": {
-      "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_safetensors_0000000000000003",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-0.5B-Instruct",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "gpu",
-      "format": "safetensors",
-      "prompt": "Given x=5 and y=3, what is x*y? Then what is the result plus 10?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 3,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "\u001b[1;36m=== Benchmark Results ===\u001b[0m\ntokens: 32\nlatency: 4867.94ms\nmodel: output/workspace/Qwen/Qwen2.5-Coder-0.5B-Instruct/safetensors/model.safetensors\n\n{\"tok_s\": 6.6, \"tokens\": 32, \"latency_ms\": 4867.94}",
-    "stderr": "[GH-189] Loaded tokenizer from output/workspace/Qwen/Qwen2.5-Coder-0.5B-Instruct/safetensors/tokenizer.json: 22 special tokens\n\u001b[32mGenerated 32 tokens in 1202.6ms (26.6 tok/s)\u001b[0m\n",
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": 6.6,
-      "time_to_first_token_ms": null,
-      "total_tokens": 32,
-      "memory_peak_mb": null,
-      "duration_ms": 7641
-    },
-    "timestamp": "2026-02-14T22:13:59.564208811Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943cabcc270f7b",
-    "gate_id": "F-A2-001",
-    "scenario": {
-      "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_apr_0000000000000004",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-0.5B-Instruct",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "gpu",
-      "format": "apr",
-      "prompt": "Given x=5 and y=3, what is x*y? Then what is the result plus 10?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 4,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "\u001b[1;36m=== Benchmark Results ===\u001b[0m\ntokens: 32\nlatency: 15767.29ms\nmodel: output/workspace/Qwen/Qwen2.5-Coder-0.5B-Instruct/apr/model.apr\n\n{\"tok_s\": 2.0, \"tokens\": 32, \"latency_ms\": 15767.29}",
-    "stderr": "[GH-187] Embedding 'lm_head.weight': shape=[151936, 896], dtype=F32\n[GH-187] Embedding 'model.embed_tokens.weight': shape=[151936, 896], dtype=F32\n[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\n[PMAT-171] Loaded embedded BPE tokenizer: 151936 vocab, 151387 merges, 23 special tokens\n\u001b[32mGenerated 32 tokens in 8257.2ms (3.9 tok/s)\u001b[0m\n",
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": 2.0,
-      "time_to_first_token_ms": null,
-      "total_tokens": 32,
-      "memory_peak_mb": null,
-      "duration_ms": 22461
-    },
-    "timestamp": "2026-02-14T22:14:22.025638526Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943caddbbe3fa3",
-    "gate_id": "F-A2-001",
-    "scenario": {
-      "id": "Qwen2.5-Coder-0.5B-Instruct_run_gpu_gguf_0000000000000005",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-0.5B-Instruct",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "gpu",
-      "format": "gguf",
-      "prompt": "Given x=5 and y=3, what is x*y? Then what is the result plus 10?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 5,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "\u001b[1;36m=== Benchmark Results ===\u001b[0m\ntokens: 32\nlatency: 4150.74ms\nmodel: output/workspace/Qwen/Qwen2.5-Coder-0.5B-Instruct/gguf/model.gguf\n\n{\"tok_s\": 7.7, \"tokens\": 32, \"latency_ms\": 4150.74}",
-    "stderr": "\u001b[32mGenerated 32 tokens in 2573.4ms (12.4 tok/s)\u001b[0m\n",
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": 7.7,
-      "time_to_first_token_ms": null,
-      "total_tokens": 32,
-      "memory_peak_mb": null,
-      "duration_ms": 8851
-    },
-    "timestamp": "2026-02-14T22:14:30.877139001Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943cb62e6d96e8",
-    "gate_id": "F-A3-001",
-    "scenario": {
-      "id": "Qwen2.5-Coder-0.5B-Instruct_chat_cpu_safetensors_0000000000000006",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-0.5B-Instruct",
-        "variant": null
-      },
-      "modality": "chat",
-      "backend": "cpu",
-      "format": "safetensors",
-      "prompt": "Given x=5 and y=3, what is x*y? Then what is the result plus 10?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 6,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "\u001b[1;36m=== Model Chat (SafeTensors Format) ===\u001b[0m\n\n\u001b[36mUsing SafeTensors with mmap (Native Library Mandate)\u001b[0m\n\n  \u001b[1;37mModel\u001b[0m: output/workspace/Qwen/Qwen2.5-Coder-0.5B-Instruct/safetensors/model.safetensors\n  \u001b[1;37mChat Template\u001b[0m: Raw\n  \u001b[1;37mTemperature\u001b[0m: 0.7\n  \u001b[1;37mTop-P\u001b[0m: 0.9\n  \u001b[1;37mMax Tokens\u001b[0m: 512\n\n\u001b[1;37mCommands:\u001b[0m\n  /quit     Exit the chat\n  /clear    Clear conversation history\n  /system   Set system prompt\n  /help     Show help\n\n════════════════════════════════════════════════════════════\n\n\u001b[36mLoading model...\u001b[0m\n\u001b[32mLoaded\u001b[0m SafeTensors format in 0.63s (988.1 MB)\n\u001b[32mLoaded tokenizer:\u001b[0m output/workspace/Qwen/Qwen2.5-Coder-0.5B-Instruct/safetensors/tokenizer.json (\u001b[2m151936 tokens\u001b[0m)\n\u001b[32mLoaded\u001b[0m config: 24 layers, 896 hidden, 14 heads\n\u001b[32mDetected\u001b[0m \u001b[36mChatML\u001b[0m chat template\n\u001b[92m[SafeTensors CUDA: NVIDIA GeForce RTX 4090 (24045 MB VRAM) — pre-cached]\u001b[0m\n\u001b[1;32mYou: \u001b[0m\u001b[1;34mAssistant:\u001b[0m To solve the problem, we need to follow these steps:\n\n1. Calculate the product of \\(x\\) and \\(y\\).\n2. Add 10 to the result of the product.\n\nLet's start with the first step. We know that \\(x = 5\\) and \\(y = 3\\). The product of these two numbers is calculated as follows:\n\\[\nx \\times y = 5 \\times 3 = 15\n\\]\n\nNext, we need to add 10 to the result of the product. So, we add 10 to 15:\n\\[\n15 + 10 = 25\n\\]\n\nTherefore, the result of the product plus 10 is \\(\\boxed{25}\\).\n\n\u001b[1;32mYou: \u001b[0m\n\u001b[36mGoodbye!\u001b[0m",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": 32,
-      "memory_peak_mb": null,
-      "duration_ms": 35746
-    },
-    "timestamp": "2026-02-14T22:15:06.624101264Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943cbfd2e95daf",
-    "gate_id": "F-A3-001",
-    "scenario": {
-      "id": "Qwen2.5-Coder-0.5B-Instruct_chat_cpu_apr_0000000000000007",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-0.5B-Instruct",
-        "variant": null
-      },
-      "modality": "chat",
-      "backend": "cpu",
-      "format": "apr",
-      "prompt": "Given x=5 and y=3, what is x*y? Then what is the result plus 10?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 7,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "\u001b[1;36m=== Model Chat (APR Format) ===\u001b[0m\n\n\u001b[36mUsing APR v2 format with mmap (Native Library Mandate)\u001b[0m\n\n  \u001b[1;37mModel\u001b[0m: output/workspace/Qwen/Qwen2.5-Coder-0.5B-Instruct/apr/model.apr\n  \u001b[1;37mChat Template\u001b[0m: Raw\n  \u001b[1;37mTemperature\u001b[0m: 0.7\n  \u001b[1;37mTop-P\u001b[0m: 0.9\n  \u001b[1;37mMax Tokens\u001b[0m: 512\n\n\u001b[1;37mCommands:\u001b[0m\n  /quit     Exit the chat\n  /clear    Clear conversation history\n  /system   Set system prompt\n  /help     Show help\n\n════════════════════════════════════════════════════════════\n\n\u001b[36mLoading model...\u001b[0m\n\u001b[32mLoaded\u001b[0m APR format in 1.26s (2524.5 MB)\n\u001b[32mLoaded tokenizer from HuggingFace cache:\u001b[0m /home/noah/.cache/huggingface/hub/models--Qwen--Qwen2-0.5B-Instruct/snapshots/c540970f9e29518b1d8f06ab8b24cba66ad77b6d/tokenizer.json (\u001b[2m151936 tokens\u001b[0m)\n\u001b[32mDetected\u001b[0m \u001b[36mChatML\u001b[0m chat template\n\u001b[92m[APR CUDA: NVIDIA GeForce RTX 4090 (24045 MB VRAM) — pre-cached]\u001b[0m\n\u001b[1;32mYou: \u001b[0m\u001b[1;34mAssistant:\u001b[0m To solve the problem, we need to follow these steps:\n\n1. Calculate the product of \\(x\\) and \\(y\\).\n2. Add 10 to the result of the product.\n\nLet's start with the first step. We know that \\(x = 5\\) and \\(y = 3\\). The product of these two numbers is calculated as follows:\n\\[\nx \\times y = 5 \\times 3 = 15\n\\]\n\nNext, we need to add 10 to the result of the product. So, we add 10 to 15:\n\\[\n15 + 10 = 25\n\\]\n\nTherefore, the result of the product plus 10 is \\(\\boxed{25}\\).\n\n\u001b[1;32mYou: \u001b[0m\n\u001b[36mGoodbye!\u001b[0m",
-    "stderr": "[GH-187] Embedding 'lm_head.weight': shape=[151936, 896], dtype=F32\n[GH-187] Embedding 'model.embed_tokens.weight': shape=[151936, 896], dtype=F32\n[AprV2ModelCuda] VRAM sufficient (22675 MB free), using full cache mode\n[AprV2ModelCuda] Pre-cached 1884 MB of weights on GPU (24 layers, 0 quantized, 168 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 519 MB\n",
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": 32,
-      "memory_peak_mb": null,
-      "duration_ms": 41414
-    },
-    "timestamp": "2026-02-14T22:15:48.038381696Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943cc6063e94cf",
-    "gate_id": "F-A3-001",
-    "scenario": {
-      "id": "Qwen2.5-Coder-0.5B-Instruct_chat_cpu_gguf_0000000000000008",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-0.5B-Instruct",
-        "variant": null
-      },
-      "modality": "chat",
-      "backend": "cpu",
-      "format": "gguf",
-      "prompt": "Given x=5 and y=3, what is x*y? Then what is the result plus 10?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 8,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "\u001b[1;36m=== Model Chat (GGUF Format) ===\u001b[0m\n\n\u001b[36mUsing GGUF format with realizar inference engine\u001b[0m\n\n  \u001b[1;37mModel\u001b[0m: output/workspace/Qwen/Qwen2.5-Coder-0.5B-Instruct/gguf/model.gguf\n  \u001b[1;37mChat Template\u001b[0m: Raw\n  \u001b[1;37mTemperature\u001b[0m: 0.7\n  \u001b[1;37mTop-P\u001b[0m: 0.9\n  \u001b[1;37mMax Tokens\u001b[0m: 512\n\n\u001b[1;37mCommands:\u001b[0m\n  /quit     Exit the chat\n  /clear    Clear conversation history\n  /system   Set system prompt\n  /help     Show help\n\n════════════════════════════════════════════════════════════\n\n\u001b[36mLoading model...\u001b[0m\n\u001b[32mLoaded\u001b[0m GGUF format in 0.66s (1310.6 MB)\n\u001b[32mLoaded\u001b[0m tokenizer with 151936 tokens\n\u001b[32mDetected\u001b[0m \u001b[36mChatML\u001b[0m chat template\n\u001b[33m[GGUF CUDA init failed: Inference error: PARITY-GATE FAILED: GPU computes a DIFFERENT function than CPU.\n\nCosine similarity: NaN (required: ≥0.99)\nCPU argmax: 151935 | GPU argmax: 151935\nMax absolute logit difference: 0.0000\n\nThis model's dimensions (hidden=896, heads=14, kv_heads=2) cause\nGPU forward pass to diverge from CPU. The GPU CANNOT serve this model.\n\nRun `apr parity <model>` for full SPC diagnosis.\nSet SKIP_PARITY_GATE=1 to bypass (for debugging only)., will use CPU]\u001b[0m\n\u001b[1;32mYou: \u001b[0m\u001b[1;34mAssistant:\u001b[0m HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH\n\n\u001b[1;32mYou: \u001b[0m\n\u001b[36mGoodbye!\u001b[0m",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": 32,
-      "memory_peak_mb": null,
-      "duration_ms": 26630
-    },
-    "timestamp": "2026-02-14T22:16:14.669409182Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943cc8701ae251",
-    "gate_id": "F-A4-001",
-    "scenario": {
-      "id": "Qwen2.5-Coder-0.5B-Instruct_chat_gpu_safetensors_0000000000000009",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-0.5B-Instruct",
-        "variant": null
-      },
-      "modality": "chat",
-      "backend": "gpu",
-      "format": "safetensors",
-      "prompt": "Given x=5 and y=3, what is x*y? Then what is the result plus 10?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 9,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "\u001b[1;36m=== Model Chat (SafeTensors Format) ===\u001b[0m\n\n\u001b[36mUsing SafeTensors with mmap (Native Library Mandate)\u001b[0m\n\n  \u001b[1;37mModel\u001b[0m: output/workspace/Qwen/Qwen2.5-Coder-0.5B-Instruct/safetensors/model.safetensors\n  \u001b[1;37mChat Template\u001b[0m: Raw\n  \u001b[1;37mTemperature\u001b[0m: 0.7\n  \u001b[1;37mTop-P\u001b[0m: 0.9\n  \u001b[1;37mMax Tokens\u001b[0m: 512\n\n\u001b[1;37mCommands:\u001b[0m\n  /quit     Exit the chat\n  /clear    Clear conversation history\n  /system   Set system prompt\n  /help     Show help\n\n════════════════════════════════════════════════════════════\n\n\u001b[36mLoading model...\u001b[0m\n\u001b[32mLoaded\u001b[0m SafeTensors format in 0.52s (988.1 MB)\n\u001b[32mLoaded tokenizer:\u001b[0m output/workspace/Qwen/Qwen2.5-Coder-0.5B-Instruct/safetensors/tokenizer.json (\u001b[2m151936 tokens\u001b[0m)\n\u001b[32mLoaded\u001b[0m config: 24 layers, 896 hidden, 14 heads\n\u001b[32mDetected\u001b[0m \u001b[36mChatML\u001b[0m chat template\n\u001b[92m[SafeTensors CUDA: NVIDIA GeForce RTX 4090 (24045 MB VRAM) — pre-cached]\u001b[0m\n\u001b[1;32mYou: \u001b[0m\u001b[1;34mAssistant:\u001b[0m to the result of the product.\n\nLet's start with the first step. We know that \\(x = 5\\) and \\(y = 3\\). The product of these two numbers is calculated as follows:\n\\[\nx \\times y = 5 \\times 3 = 15\n\\]\n\nNext, we need to add 10 to the result of the product. So, we add 10 to 15:\n\\[\n15 + 10 = 25\n\\]\n\nTherefore, the result of the product plus 10 is \\(\\boxed{25}\\).\n\n\u001b[1;32mYou: \u001b[0m\n\u001b[36mGoodbye!\u001b[0m",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": 32,
-      "memory_peak_mb": null,
-      "duration_ms": 10365
-    },
-    "timestamp": "2026-02-14T22:16:25.035388775Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943cf2962be5b7",
-    "gate_id": "F-A4-001",
-    "scenario": {
-      "id": "Qwen2.5-Coder-0.5B-Instruct_chat_gpu_apr_000000000000000a",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-0.5B-Instruct",
-        "variant": null
-      },
-      "modality": "chat",
-      "backend": "gpu",
-      "format": "apr",
-      "prompt": "Given x=5 and y=3, what is x*y? Then what is the result plus 10?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 10,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "\u001b[1;36m=== Model Chat (APR Format) ===\u001b[0m\n\n\u001b[36mUsing APR v2 format with mmap (Native Library Mandate)\u001b[0m\n\n  \u001b[1;37mModel\u001b[0m: output/workspace/Qwen/Qwen2.5-Coder-0.5B-Instruct/apr/model.apr\n  \u001b[1;37mChat Template\u001b[0m: Raw\n  \u001b[1;37mTemperature\u001b[0m: 0.7\n  \u001b[1;37mTop-P\u001b[0m: 0.9\n  \u001b[1;37mMax Tokens\u001b[0m: 512\n\n\u001b[1;37mCommands:\u001b[0m\n  /quit     Exit the chat\n  /clear    Clear conversation history\n  /system   Set system prompt\n  /help     Show help\n\n════════════════════════════════════════════════════════════\n\n\u001b[36mLoading model...\u001b[0m\n\u001b[32mLoaded\u001b[0m APR format in 1.30s (2524.5 MB)\n\u001b[32mLoaded tokenizer from HuggingFace cache:\u001b[0m /home/noah/.cache/huggingface/hub/models--Qwen--Qwen2-0.5B-Instruct/snapshots/c540970f9e29518b1d8f06ab8b24cba66ad77b6d/tokenizer.json (\u001b[2m151936 tokens\u001b[0m)\n\u001b[32mDetected\u001b[0m \u001b[36mChatML\u001b[0m chat template\n\u001b[92m[APR CUDA: NVIDIA GeForce RTX 4090 (24045 MB VRAM) — pre-cached]\u001b[0m\n\u001b[1;32mYou: \u001b[0m\u001b[1;34mAssistant:\u001b[0m To solve the problem, we need to follow these steps:\n\n1. Calculate the product of \\(x\\) and \\(y\\).\n2. Add 10 to the result of the product.\n\nLet's start with the first step. We know that \\(x = 5\\) and \\(y = 3\\). The product of these two numbers is calculated as follows:\n\\[\nx \\times y = 5 \\times 3 = 15\n\\]\n\nNext, we need to add 10 to the result of the product. So, we add 10 to 15:\n\\[\n15 + 10 = 25\n\\]\n\nTherefore, the result of the product plus 10 is \\(\\boxed{25}\\).\n\n\u001b[1;32mYou: \u001b[0m\n\u001b[36mGoodbye!\u001b[0m",
-    "stderr": "[GH-187] Embedding 'lm_head.weight': shape=[151936, 896], dtype=F32\n[GH-187] Embedding 'model.embed_tokens.weight': shape=[151936, 896], dtype=F32\n[AprV2ModelCuda] VRAM sufficient (22665 MB free), using full cache mode\n[AprV2ModelCuda] Pre-cached 1884 MB of weights on GPU (24 layers, 0 quantized, 168 F32 tensors)\n[AprV2ModelCuda] Cached embedding table: 519 MB\n",
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": 32,
-      "memory_peak_mb": null,
-      "duration_ms": 181027
-    },
-    "timestamp": "2026-02-14T22:19:26.062664918Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943cf93ae47d2d",
-    "gate_id": "F-A4-001",
-    "scenario": {
-      "id": "Qwen2.5-Coder-0.5B-Instruct_chat_gpu_gguf_000000000000000b",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-0.5B-Instruct",
-        "variant": null
-      },
-      "modality": "chat",
-      "backend": "gpu",
-      "format": "gguf",
-      "prompt": "Given x=5 and y=3, what is x*y? Then what is the result plus 10?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 11,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "\u001b[1;36m=== Model Chat (GGUF Format) ===\u001b[0m\n\n\u001b[36mUsing GGUF format with realizar inference engine\u001b[0m\n\n  \u001b[1;37mModel\u001b[0m: output/workspace/Qwen/Qwen2.5-Coder-0.5B-Instruct/gguf/model.gguf\n  \u001b[1;37mChat Template\u001b[0m: Raw\n  \u001b[1;37mTemperature\u001b[0m: 0.7\n  \u001b[1;37mTop-P\u001b[0m: 0.9\n  \u001b[1;37mMax Tokens\u001b[0m: 512\n\n\u001b[1;37mCommands:\u001b[0m\n  /quit     Exit the chat\n  /clear    Clear conversation history\n  /system   Set system prompt\n  /help     Show help\n\n════════════════════════════════════════════════════════════\n\n\u001b[36mLoading model...\u001b[0m\n\u001b[32mLoaded\u001b[0m GGUF format in 0.79s (1310.6 MB)\n\u001b[32mLoaded\u001b[0m tokenizer with 151936 tokens\n\u001b[32mDetected\u001b[0m \u001b[36mChatML\u001b[0m chat template\n\u001b[33m[GGUF CUDA init failed: Inference error: PARITY-GATE FAILED: GPU computes a DIFFERENT function than CPU.\n\nCosine similarity: NaN (required: ≥0.99)\nCPU argmax: 151935 | GPU argmax: 151935\nMax absolute logit difference: 0.0000\n\nThis model's dimensions (hidden=896, heads=14, kv_heads=2) cause\nGPU forward pass to diverge from CPU. The GPU CANNOT serve this model.\n\nRun `apr parity <model>` for full SPC diagnosis.\nSet SKIP_PARITY_GATE=1 to bypass (for debugging only)., will use CPU]\u001b[0m\n\u001b[1;32mYou: \u001b[0m\u001b[1;34mAssistant:\u001b[0m HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH\n\n\u001b[1;32mYou: \u001b[0m\n\u001b[36mGoodbye!\u001b[0m",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": 32,
-      "memory_peak_mb": null,
-      "duration_ms": 28533
-    },
-    "timestamp": "2026-02-14T22:19:54.596028375Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943cfccb422c5a",
-    "gate_id": "F-A5-001",
-    "scenario": {
-      "id": "Qwen2.5-Coder-0.5B-Instruct_serve_cpu_safetensors_000000000000000c",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-0.5B-Instruct",
-        "variant": null
-      },
-      "modality": "serve",
-      "backend": "cpu",
-      "format": "safetensors",
-      "prompt": "Given x=5 and y=3, what is x*y? Then what is the result plus 10?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 12,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "{\"latency_ms\":7202,\"text\":\" Let's break down the problem step-by-step and use Python to ensure the result is accurate.\\n\\n1. Calculate \\\\( x \\\\times y \\\\).\\n2. Add\",\"tok_per_sec\":4.442758062339141,\"tokens_generated\":32}",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": 32,
-      "memory_peak_mb": null,
-      "duration_ms": 15306
-    },
-    "timestamp": "2026-02-14T22:20:09.902988539Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943cff216406ac",
-    "gate_id": "F-A5-001",
-    "scenario": {
-      "id": "Qwen2.5-Coder-0.5B-Instruct_serve_cpu_apr_000000000000000d",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-0.5B-Instruct",
-        "variant": null
-      },
-      "modality": "serve",
-      "backend": "cpu",
-      "format": "apr",
-      "prompt": "Given x=5 and y=3, what is x*y? Then what is the result plus 10?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 13,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": 32,
-      "memory_peak_mb": null,
-      "duration_ms": 10034
-    },
-    "timestamp": "2026-02-14T22:20:19.937983296Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943d067c0f93f6",
-    "gate_id": "F-A5-001",
-    "scenario": {
-      "id": "Qwen2.5-Coder-0.5B-Instruct_serve_cpu_gguf_000000000000000e",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-0.5B-Instruct",
-        "variant": null
-      },
-      "modality": "serve",
-      "backend": "cpu",
-      "format": "gguf",
-      "prompt": "Given x=5 and y=3, what is x*y? Then what is the result plus 10?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 14,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "{\"token_ids\":[22043,856,28,20,323,379,28,18,11,1128,374,856,33247,30,5005,1128,374,279,1102,5519,220,16,15,30,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49],\"text\":\"Given x=5 and y=3, what is x*y? Then what is the result plus 10?RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR\",\"num_generated\":32}",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": 32,
-      "memory_peak_mb": null,
-      "duration_ms": 31585
-    },
-    "timestamp": "2026-02-14T22:20:51.523947045Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943d0a0a5bb707",
-    "gate_id": "F-A6-001",
-    "scenario": {
-      "id": "Qwen2.5-Coder-0.5B-Instruct_serve_gpu_safetensors_000000000000000f",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-0.5B-Instruct",
-        "variant": null
-      },
-      "modality": "serve",
-      "backend": "gpu",
-      "format": "safetensors",
-      "prompt": "Given x=5 and y=3, what is x*y? Then what is the result plus 10?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 15,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "{\"latency_ms\":7210,\"text\":\" Let's break down the problem step-by-step and use Python to ensure the result is accurate.\\n\\n1. Calculate \\\\( x \\\\times y \\\\).\\n2. Add\",\"tok_per_sec\":4.438097993900486,\"tokens_generated\":32}",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": 32,
-      "memory_peak_mb": null,
-      "duration_ms": 15272
-    },
-    "timestamp": "2026-02-14T22:21:06.796203007Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943d0c6099e8c0",
-    "gate_id": "F-A6-001",
-    "scenario": {
-      "id": "Qwen2.5-Coder-0.5B-Instruct_serve_gpu_apr_0000000000000010",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-0.5B-Instruct",
-        "variant": null
-      },
-      "modality": "serve",
-      "backend": "gpu",
-      "format": "apr",
-      "prompt": "Given x=5 and y=3, what is x*y? Then what is the result plus 10?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 16,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": 32,
-      "memory_peak_mb": null,
-      "duration_ms": 10036
-    },
-    "timestamp": "2026-02-14T22:21:16.833052544Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943d1488ee96b7",
-    "gate_id": "F-A6-001",
-    "scenario": {
-      "id": "Qwen2.5-Coder-0.5B-Instruct_serve_gpu_gguf_0000000000000011",
-      "model": {
-        "org": "Qwen",
-        "name": "Qwen2.5-Coder-0.5B-Instruct",
-        "variant": null
-      },
-      "modality": "serve",
-      "backend": "gpu",
-      "format": "gguf",
-      "prompt": "Given x=5 and y=3, what is x*y? Then what is the result plus 10?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 17,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "{\"token_ids\":[22043,856,28,20,323,379,28,18,11,1128,374,856,33247,30,5005,1128,374,279,1102,5519,220,16,15,30,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49],\"text\":\"Given x=5 and y=3, what is x*y? Then what is the result plus 10?RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR\",\"num_generated\":32}",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": 32,
-      "memory_peak_mb": null,
-      "duration_ms": 35036
-    },
-    "timestamp": "2026-02-14T22:21:51.869429922Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943d1c6c7dbe27",
-    "gate_id": "F-CONV-Gguf-Apr",
-    "scenario": {
-      "id": "test_run_cpu_apr_0000000000000000",
-      "model": {
-        "org": "conversion",
-        "name": "test",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "apr",
-      "prompt": "Convert Gguf to Apr",
+      "prompt": "Dimensional check: num_heads",
       "temperature": 0.0,
       "max_tokens": 32,
       "seed": 0,
@@ -1029,7 +189,7 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Conversion successful, max_diff: 0.00e0",
+    "output": "G0 PASS: num_heads expected=14 actual=14",
     "stderr": null,
     "exit_code": 0,
     "metrics": {
@@ -1037,11 +197,11 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 3
     },
-    "timestamp": "2026-02-14T22:22:25.752009848Z",
+    "timestamp": "2026-03-03T13:16:02.501959648Z",
     "host": {
-      "hostname": "noah-Lambda-Vector",
+      "hostname": "mac-server",
       "os": "linux",
       "cpu": "unknown",
       "gpu": null,
@@ -1050,145 +210,19 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018943d249024c0fe",
-    "gate_id": "F-CONV-Gguf-Apr",
+    "id": "00000000000000001899572920c39cbc",
+    "gate_id": "G0-DIM-NUM_KV_HEADS",
     "scenario": {
-      "id": "test_run_gpu_apr_0000000000000000",
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000000",
       "model": {
-        "org": "conversion",
-        "name": "test",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "gpu",
-      "format": "apr",
-      "prompt": "Convert Gguf to Apr",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Conversion successful, max_diff: 0.00e0",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-14T22:23:00.709896377Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943d31af1bfded",
-    "gate_id": "F-CONV-Apr-Gguf",
-    "scenario": {
-      "id": "test_run_cpu_gguf_0000000000000000",
-      "model": {
-        "org": "conversion",
-        "name": "test",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "gguf",
-      "prompt": "Convert Apr to Gguf",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Conversion successful, max_diff: 7.80e-1",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-14T22:23:57.063991015Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943d3ec68c81b7",
-    "gate_id": "F-CONV-Apr-Gguf",
-    "scenario": {
-      "id": "test_run_gpu_gguf_0000000000000000",
-      "model": {
-        "org": "conversion",
-        "name": "test",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "gpu",
-      "format": "gguf",
-      "prompt": "Convert Apr to Gguf",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Conversion successful, max_diff: 7.80e-1",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-14T22:24:53.291815201Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943d494c2a4d3f",
-    "gate_id": "F-CONV-Gguf-SafeTensors",
-    "scenario": {
-      "id": "test_run_cpu_safetensors_0000000000000000",
-      "model": {
-        "org": "conversion",
-        "name": "test",
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
         "variant": null
       },
       "modality": "run",
       "backend": "cpu",
       "format": "safetensors",
-      "prompt": "Convert Gguf to SafeTensors",
+      "prompt": "Dimensional check: num_kv_heads",
       "temperature": 0.0,
       "max_tokens": 32,
       "seed": 0,
@@ -1197,7 +231,7 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Conversion successful, max_diff: 7.97e-1",
+    "output": "G0 PASS: num_kv_heads expected=2 actual=2",
     "stderr": null,
     "exit_code": 0,
     "metrics": {
@@ -1205,11 +239,11 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 3
     },
-    "timestamp": "2026-02-14T22:25:38.483199726Z",
+    "timestamp": "2026-03-03T13:16:02.501968026Z",
     "host": {
-      "hostname": "noah-Lambda-Vector",
+      "hostname": "mac-server",
       "os": "linux",
       "cpu": "unknown",
       "gpu": null,
@@ -1218,892 +252,10 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018943d54c26e24b5",
-    "gate_id": "F-CONV-Gguf-SafeTensors",
+    "id": "00000000000000001899572920c3b3e7",
+    "gate_id": "G0-DIM-VOCAB_SIZE",
     "scenario": {
-      "id": "test_run_gpu_safetensors_0000000000000000",
-      "model": {
-        "org": "conversion",
-        "name": "test",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "gpu",
-      "format": "safetensors",
-      "prompt": "Convert Gguf to SafeTensors",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Conversion successful, max_diff: 7.97e-1",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-14T22:26:27.711997249Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943d6993018d75",
-    "gate_id": "F-CONV-SafeTensors-Gguf",
-    "scenario": {
-      "id": "test_run_cpu_gguf_0000000000000000",
-      "model": {
-        "org": "conversion",
-        "name": "test",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "gguf",
-      "prompt": "Convert SafeTensors to Gguf",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Conversion successful, max_diff: 7.77e-1",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-14T22:27:57.110754412Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943d78da848706",
-    "gate_id": "F-CONV-SafeTensors-Gguf",
-    "scenario": {
-      "id": "test_run_gpu_gguf_0000000000000000",
-      "model": {
-        "org": "conversion",
-        "name": "test",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "gpu",
-      "format": "gguf",
-      "prompt": "Convert SafeTensors to Gguf",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Conversion successful, max_diff: 7.76e-1",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-14T22:29:02.734963866Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943d8c16cea332",
-    "gate_id": "F-CONV-Apr-SafeTensors",
-    "scenario": {
-      "id": "test_run_cpu_safetensors_0000000000000000",
-      "model": {
-        "org": "conversion",
-        "name": "test",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "safetensors",
-      "prompt": "Convert Apr to SafeTensors",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Conversion successful, max_diff: 8.02e-1",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-14T22:30:25.350809391Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943da386cda543",
-    "gate_id": "F-CONV-Apr-SafeTensors",
-    "scenario": {
-      "id": "test_run_gpu_safetensors_0000000000000000",
-      "model": {
-        "org": "conversion",
-        "name": "test",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "gpu",
-      "format": "safetensors",
-      "prompt": "Convert Apr to SafeTensors",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Conversion successful, max_diff: 8.02e-1",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-14T22:32:06.014063370Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943db105c8a40c",
-    "gate_id": "F-CONV-SafeTensors-Apr",
-    "scenario": {
-      "id": "test_run_cpu_apr_0000000000000000",
-      "model": {
-        "org": "conversion",
-        "name": "test",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "apr",
-      "prompt": "Convert SafeTensors to Apr",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Conversion successful, max_diff: 7.46e-1",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-14T22:33:03.979001206Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943dbbd903265b",
-    "gate_id": "F-CONV-SafeTensors-Apr",
-    "scenario": {
-      "id": "test_run_gpu_apr_0000000000000000",
-      "model": {
-        "org": "conversion",
-        "name": "test",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "gpu",
-      "format": "apr",
-      "prompt": "Convert SafeTensors to Apr",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Conversion successful, max_diff: 7.46e-1",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-14T22:33:50.472491864Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943dd20888627f",
-    "gate_id": "F-CONV-Gguf-Gguf",
-    "scenario": {
-      "id": "test_run_cpu_gguf_0000000000000000",
-      "model": {
-        "org": "conversion",
-        "name": "test",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "gguf",
-      "prompt": "Convert Gguf to Gguf",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Conversion successful, max_diff: 0.00e0",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-14T22:35:25.759033462Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943de9292d8a27",
-    "gate_id": "F-CONV-Gguf-Gguf",
-    "scenario": {
-      "id": "test_run_gpu_gguf_0000000000000000",
-      "model": {
-        "org": "conversion",
-        "name": "test",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "gpu",
-      "format": "gguf",
-      "prompt": "Convert Gguf to Gguf",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Conversion successful, max_diff: 0.00e0",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-14T22:37:05.090975895Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943e001c8828fe",
-    "gate_id": "F-CONV-SafeTensors-SafeTensors",
-    "scenario": {
-      "id": "test_run_cpu_safetensors_0000000000000000",
-      "model": {
-        "org": "conversion",
-        "name": "test",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "safetensors",
-      "prompt": "Convert SafeTensors to SafeTensors",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Conversion successful, max_diff: 0.00e0",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-14T22:38:43.663060060Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943e1a0131efe6",
-    "gate_id": "F-CONV-SafeTensors-SafeTensors",
-    "scenario": {
-      "id": "test_run_gpu_safetensors_0000000000000000",
-      "model": {
-        "org": "conversion",
-        "name": "test",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "gpu",
-      "format": "safetensors",
-      "prompt": "Convert SafeTensors to SafeTensors",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Conversion successful, max_diff: 0.00e0",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-14T22:40:34.873574262Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943e33cbb31862",
-    "gate_id": "F-CONV-SafeTensors-SafeTensors",
-    "scenario": {
-      "id": "test_run_cpu_safetensors_0000000000000000",
-      "model": {
-        "org": "conversion",
-        "name": "test",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "safetensors",
-      "prompt": "Convert SafeTensors to SafeTensors",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Conversion successful, max_diff: 0.00e0",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-14T22:42:25.645218241Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943e50d08e6d63",
-    "gate_id": "F-CONV-SafeTensors-SafeTensors",
-    "scenario": {
-      "id": "test_run_gpu_safetensors_0000000000000000",
-      "model": {
-        "org": "conversion",
-        "name": "test",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "gpu",
-      "format": "safetensors",
-      "prompt": "Convert SafeTensors to SafeTensors",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Conversion successful, max_diff: 0.00e0",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-14T22:44:30.280752924Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943e69b66c9ca8",
-    "gate_id": "F-CONV-SafeTensors-SafeTensors",
-    "scenario": {
-      "id": "test_run_cpu_safetensors_0000000000000000",
-      "model": {
-        "org": "conversion",
-        "name": "test",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "safetensors",
-      "prompt": "Convert SafeTensors to SafeTensors",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Conversion successful, max_diff: 0.00e0",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-14T22:46:17.216511695Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943e822e6efc91",
-    "gate_id": "F-CONV-SafeTensors-SafeTensors",
-    "scenario": {
-      "id": "test_run_gpu_safetensors_0000000000000000",
-      "model": {
-        "org": "conversion",
-        "name": "test",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "gpu",
-      "format": "safetensors",
-      "prompt": "Convert SafeTensors to SafeTensors",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Conversion successful, max_diff: 0.00e0",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-14T22:48:02.309148364Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943e96ff489c79",
-    "gate_id": "F-CONV-SafeTensors-Apr",
-    "scenario": {
-      "id": "test_run_cpu_apr_0000000000000000",
-      "model": {
-        "org": "conversion",
-        "name": "test",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "apr",
-      "prompt": "Convert SafeTensors to Apr",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Conversion successful, max_diff: 0.00e0",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-14T22:49:31.712417070Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943eac2e0d39ed",
-    "gate_id": "F-CONV-SafeTensors-Apr",
-    "scenario": {
-      "id": "test_run_gpu_apr_0000000000000000",
-      "model": {
-        "org": "conversion",
-        "name": "test",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "gpu",
-      "format": "apr",
-      "prompt": "Convert SafeTensors to Apr",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Conversion successful, max_diff: 0.00e0",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-14T22:51:02.691367845Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943eb927d1ac33",
-    "gate_id": "F-CONV-Gguf-Apr",
-    "scenario": {
-      "id": "test_run_cpu_apr_0000000000000000",
-      "model": {
-        "org": "conversion",
-        "name": "test",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "apr",
-      "prompt": "Convert Gguf to Apr",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Conversion successful, max_diff: 0.00e0",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-14T22:51:58.421375801Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943ec62ad1180f",
-    "gate_id": "F-CONV-Gguf-Apr",
-    "scenario": {
-      "id": "test_run_gpu_apr_0000000000000000",
-      "model": {
-        "org": "conversion",
-        "name": "test",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "gpu",
-      "format": "apr",
-      "prompt": "Convert Gguf to Apr",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Conversion successful, max_diff: 0.00e0",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-14T22:52:54.306244923Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943edd4f259f68",
-    "gate_id": "F-CONV-Gguf-Apr",
-    "scenario": {
-      "id": "test_run_cpu_apr_0000000000000000",
-      "model": {
-        "org": "conversion",
-        "name": "test",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "apr",
-      "prompt": "Convert Gguf to Apr",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Conversion successful, max_diff: 0.00e0",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-14T22:54:33.700011159Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943ef45899a75a",
-    "gate_id": "F-CONV-Gguf-Apr",
-    "scenario": {
-      "id": "test_run_gpu_apr_0000000000000000",
-      "model": {
-        "org": "conversion",
-        "name": "test",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "gpu",
-      "format": "apr",
-      "prompt": "Convert Gguf to Apr",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 0,
-      "trace_level": "none",
-      "oracle_type": "garbage"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "Conversion successful, max_diff: 0.00e0",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-14T22:56:12.642858963Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "000000000000000018943efebc855b98",
-    "gate_id": "F-GOLDEN-RULE-001",
-    "scenario": {
-      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_apr_0000000000000000",
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000000",
       "model": {
         "org": "Qwen",
         "name": "Qwen2.5-Coder-0.5B-Instruct",
@@ -2111,8 +263,8 @@
       },
       "modality": "run",
       "backend": "cpu",
-      "format": "apr",
-      "prompt": "Golden Rule: convert → inference → diff",
+      "format": "safetensors",
+      "prompt": "Dimensional check: vocab_size",
       "temperature": 0.0,
       "max_tokens": 32,
       "seed": 0,
@@ -2121,7 +273,7 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "Golden Rule PASS: identical output: ",
+    "output": "G0 PASS: vocab_size expected=151936 actual=151936",
     "stderr": null,
     "exit_code": 0,
     "metrics": {
@@ -2129,11 +281,11 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 3
     },
-    "timestamp": "2026-02-14T22:56:57.268924340Z",
+    "timestamp": "2026-03-03T13:16:02.501974020Z",
     "host": {
-      "hostname": "noah-Lambda-Vector",
+      "hostname": "mac-server",
       "os": "linux",
       "cpu": "unknown",
       "gpu": null,
@@ -2142,10 +294,10 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018943effe46bb2d5",
-    "gate_id": "F-CONTRACT-I2-001",
+    "id": "00000000000000001899572920c3cca7",
+    "gate_id": "G0-DIM-SAFETENSORS_FOUND",
     "scenario": {
-      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_apr_0000000000000000",
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000000",
       "model": {
         "org": "Qwen",
         "name": "Qwen2.5-Coder-0.5B-Instruct",
@@ -2153,8 +305,8 @@
       },
       "modality": "run",
       "backend": "cpu",
-      "format": "apr",
-      "prompt": "Format contract invariant",
+      "format": "safetensors",
+      "prompt": "Dimensional check: safetensors_found",
       "temperature": 0.0,
       "max_tokens": 32,
       "seed": 0,
@@ -2162,8 +314,8 @@
       "oracle_type": "garbage"
     },
     "outcome": "Corroborated",
-    "reason": "I-2 Tensor Name Bijection: all 0 source tensors present in APR (0 total)",
-    "output": "source=0, apr=0",
+    "reason": "Test passed",
+    "output": "G0 PASS: safetensors_found expected=>= 1 file actual=1 file(s)",
     "stderr": null,
     "exit_code": 0,
     "metrics": {
@@ -2171,11 +323,11 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 3
     },
-    "timestamp": "2026-02-14T22:57:02.233297321Z",
+    "timestamp": "2026-03-03T13:16:02.501980197Z",
     "host": {
-      "hostname": "noah-Lambda-Vector",
+      "hostname": "mac-server",
       "os": "linux",
       "cpu": "unknown",
       "gpu": null,
@@ -2184,10 +336,10 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018943f0256456676",
-    "gate_id": "F-CONTRACT-I3-001",
+    "id": "00000000000000001899572920c3e57a",
+    "gate_id": "G0-DIM-SAFETENSORS_HEADER",
     "scenario": {
-      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_apr_0000000000000000",
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000000",
       "model": {
         "org": "Qwen",
         "name": "Qwen2.5-Coder-0.5B-Instruct",
@@ -2195,8 +347,8 @@
       },
       "modality": "run",
       "backend": "cpu",
-      "format": "apr",
-      "prompt": "Format contract invariant",
+      "format": "safetensors",
+      "prompt": "Dimensional check: safetensors_header",
       "temperature": 0.0,
       "max_tokens": 32,
       "seed": 0,
@@ -2204,8 +356,8 @@
       "oracle_type": "garbage"
     },
     "outcome": "Corroborated",
-    "reason": "I-3 No Silent Fallbacks: no F32 fallbacks detected",
-    "output": "\n\u001b[1;36m=== Model Self-Test (PMAT-112: Real Validation) ===\u001b[0m\nModel: \u001b[36moutput/workspace/Qwen/Qwen2.5-Coder-0.5B-Instruct/apr/model.apr\u001b[0m\n\n┌─────┬─────────────────────┬──────────────────────────────────────┬──────┐\n│  #  │      Component      │               Details                │ Pass │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 1   │ Tokenizer           │ tokens=[1, 2]                        │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 2   │ Embedding           │ Found embedding tensor               │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 3   │ Positional Encoding │ RoPE computed inline                 │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 4   │ Q/K/V Projection    │ Q/K/V found                          │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 5   │ Attention Scores    │ Attention output found               │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 6   │ Feed-Forward (MLP)  │ MLP found                            │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 7   │ Layer Norm          │ 24 layers                            │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 8   │ LM Head             │ vocab_size=151936                    │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 9   │ Logits → Probs      │ logits[151936]                       │ \u001b[32m✅   \u001b[0m │\n├─────┼─────────────────────┼──────────────────────────────────────┼──────┤\n│ 10  │ Sampler/Decode      │ softmax sum = 1.000068               │ \u001b[32m✅   \u001b[0m │\n└─────┴─────────────────────┴──────────────────────────────────────┴──────┘\n\n\u001b[1;32m✅ 10/10 STAGES PASSED. MODEL PROVEN CORRECT.\u001b[0m\n",
+    "reason": "Test passed",
+    "output": "G0 PASS: safetensors_header expected=>= 1 tensor actual=290 tensor(s)",
     "stderr": null,
     "exit_code": 0,
     "metrics": {
@@ -2213,11 +365,221 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 0
+      "duration_ms": 3
     },
-    "timestamp": "2026-02-14T22:57:12.733326451Z",
+    "timestamp": "2026-03-03T13:16:02.501986557Z",
     "host": {
-      "hostname": "noah-Lambda-Vector",
+      "hostname": "mac-server",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001899572920c40326",
+    "gate_id": "G0-DIM-TENSOR_EMBED_TOKENS",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Dimensional check: tensor_embed_tokens",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: tensor_embed_tokens expected=dim0=151936, dim1=896 actual=[151936, 896]",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 3
+    },
+    "timestamp": "2026-03-03T13:16:02.501994287Z",
+    "host": {
+      "hostname": "mac-server",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001899572920c42229",
+    "gate_id": "G0-DIM-TOKENIZER_EXISTS",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Dimensional check: tokenizer_exists",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "G0 FAIL: tokenizer_exists expected=valid tokenizer.json or non-empty tokenizer.model actual=no tokenizer file",
+    "output": "expected=valid tokenizer.json or non-empty tokenizer.model actual=no tokenizer file",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 3
+    },
+    "timestamp": "2026-03-03T13:16:02.502002755Z",
+    "host": {
+      "hostname": "mac-server",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001899572920c440c5",
+    "gate_id": "G0-DIM-EOS_TOKEN_VALID",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Dimensional check: eos_token_valid",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "G0 FAIL: eos_token_valid expected=eos_token or eos_token_id actual=missing (no eos_token or eos_token_id)",
+    "output": "expected=eos_token or eos_token_id actual=missing (no eos_token or eos_token_id)",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 3
+    },
+    "timestamp": "2026-03-03T13:16:02.502010207Z",
+    "host": {
+      "hostname": "mac-server",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001899572920c45722",
+    "gate_id": "G0-DIM-DTYPE_SUPPORTED",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Dimensional check: dtype_supported",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: dtype_supported expected=all dtypes in supported set actual=all supported (BF16)",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 3
+    },
+    "timestamp": "2026-03-03T13:16:02.502015663Z",
+    "host": {
+      "hostname": "mac-server",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "00000000000000001899572920c46c52",
+    "gate_id": "G0-DIM-DTYPE_CONSISTENT",
+    "scenario": {
+      "id": "Qwen2.5-Coder-0.5B-Instruct_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "Qwen",
+        "name": "Qwen2.5-Coder-0.5B-Instruct",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Dimensional check: dtype_consistent",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: dtype_consistent expected=single dtype across interior 2D weight tensors actual=uniform: BF16",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 3
+    },
+    "timestamp": "2026-03-03T13:16:02.502021014Z",
+    "host": {
+      "hostname": "mac-server",
       "os": "linux",
       "cpu": "unknown",
       "gpu": null,
