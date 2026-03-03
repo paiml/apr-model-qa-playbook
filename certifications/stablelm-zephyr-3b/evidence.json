@@ -1,6 +1,48 @@
 [
   {
-    "id": "00000000000000001894ab4dad11a3c5",
+    "id": "000000000000000018996a1cdea51dad",
+    "gate_id": "G0-PULL-001",
+    "scenario": {
+      "id": "stablelm-zephyr-3b_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "stabilityai",
+        "name": "stablelm-zephyr-3b",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "G0 Pull: acquire model via apr pull",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: model acquired via apr pull\n\u001b[1;36m=== APR Pull ===\u001b[0m\n\nModel: \u001b[36mhf://stabilityai/stablelm-zephyr-3b/model.safetensors\u001b[0m\n\n\u001b[33mDownloading (streaming)...\u001b[0m\n 10% 20% 30% 40% 50% 60% 70% 80% 90% 100%\n\u001b[32m✓\u001b[0m Downloaded successfully\n  Path: \u001b[32m/home/noah/.cache/pacha/models/3db9fa487a7b488b.safetensors\u001b[0m\n  Size: \u001b[33m5.2 GB\u001b[0m\n  Hash: 900238ffddac27b8\n  \u001b[32m✓\u001b[0m 3db9fa487a7b488b.tokenizer.json (\u001b[2m2.0 MB\u001b[0m)\n  \u001b[32m✓\u001b[0m 3db9fa487a7b488b.config.json (\u001b[2m599 B\u001b[0m)\n  \u001b[32m✓\u001b[0m 3db9fa487a7b488b.tokenizer_config.json (\u001b[2m5.1 KB\u001b[0m)\n  \u001b[33m⚠\u001b[0m \u001b[2m3db9fa487a7b488b.tokenizer.model\u001b[0m (not found in repo)\n\n  \u001b[36mℹ\u001b[0m To convert formats, run:\n    apr convert /home/noah/.cache/pacha/models/3db9fa487a7b488b.safetensors --format apr\n    apr convert /home/noah/.cache/pacha/models/3db9fa487a7b488b.safetensors --format gguf\n\n\u001b[1;36mUsage:\u001b[0m\n  apr run /home/noah/.cache/pacha/models/3db9fa487a7b488b.safetensors\n  apr serve /home/noah/.cache/pacha/models/3db9fa487a7b488b.safetensors\n",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 89164
+    },
+    "timestamp": "2026-03-03T19:03:20.573994819Z",
+    "host": {
+      "hostname": "mac-server",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "000000000000000018996a1cdec90777",
     "gate_id": "G0-DIM-CONFIG_PARSE",
     "scenario": {
       "id": "stablelm-zephyr-3b_run_cpu_safetensors_0000000000000000",
@@ -31,9 +73,9 @@
       "memory_peak_mb": null,
       "duration_ms": 2
     },
-    "timestamp": "2026-02-16T08:01:43.567895238Z",
+    "timestamp": "2026-03-03T19:03:20.576347176Z",
     "host": {
-      "hostname": "noah-Lambda-Vector",
+      "hostname": "mac-server",
       "os": "linux",
       "cpu": "unknown",
       "gpu": null,
@@ -42,7 +84,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001894ab4dad11dcb1",
+    "id": "000000000000000018996a1cdec9268a",
     "gate_id": "G0-DIM-HIDDEN_SIZE",
     "scenario": {
       "id": "stablelm-zephyr-3b_run_cpu_safetensors_0000000000000000",
@@ -73,9 +115,9 @@
       "memory_peak_mb": null,
       "duration_ms": 2
     },
-    "timestamp": "2026-02-16T08:01:43.567908358Z",
+    "timestamp": "2026-03-03T19:03:20.576354616Z",
     "host": {
-      "hostname": "noah-Lambda-Vector",
+      "hostname": "mac-server",
       "os": "linux",
       "cpu": "unknown",
       "gpu": null,
@@ -84,7 +126,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001894ab4dad11e71a",
+    "id": "000000000000000018996a1cdec939a6",
     "gate_id": "G0-DIM-NUM_LAYERS",
     "scenario": {
       "id": "stablelm-zephyr-3b_run_cpu_safetensors_0000000000000000",
@@ -115,9 +157,9 @@
       "memory_peak_mb": null,
       "duration_ms": 2
     },
-    "timestamp": "2026-02-16T08:01:43.567910932Z",
+    "timestamp": "2026-03-03T19:03:20.576359735Z",
     "host": {
-      "hostname": "noah-Lambda-Vector",
+      "hostname": "mac-server",
       "os": "linux",
       "cpu": "unknown",
       "gpu": null,
@@ -126,7 +168,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001894ab4dad11efc9",
+    "id": "000000000000000018996a1cdec949ca",
     "gate_id": "G0-DIM-NUM_HEADS",
     "scenario": {
       "id": "stablelm-zephyr-3b_run_cpu_safetensors_0000000000000000",
@@ -157,9 +199,9 @@
       "memory_peak_mb": null,
       "duration_ms": 2
     },
-    "timestamp": "2026-02-16T08:01:43.567913155Z",
+    "timestamp": "2026-03-03T19:03:20.576363899Z",
     "host": {
-      "hostname": "noah-Lambda-Vector",
+      "hostname": "mac-server",
       "os": "linux",
       "cpu": "unknown",
       "gpu": null,
@@ -168,7 +210,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001894ab4dad11f86e",
+    "id": "000000000000000018996a1cdec9d080",
     "gate_id": "G0-DIM-NUM_KV_HEADS",
     "scenario": {
       "id": "stablelm-zephyr-3b_run_cpu_safetensors_0000000000000000",
@@ -199,9 +241,9 @@
       "memory_peak_mb": null,
       "duration_ms": 2
     },
-    "timestamp": "2026-02-16T08:01:43.567915409Z",
+    "timestamp": "2026-03-03T19:03:20.576398575Z",
     "host": {
-      "hostname": "noah-Lambda-Vector",
+      "hostname": "mac-server",
       "os": "linux",
       "cpu": "unknown",
       "gpu": null,
@@ -210,7 +252,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001894ab4dad12027c",
+    "id": "000000000000000018996a1cdec9e797",
     "gate_id": "G0-DIM-VOCAB_SIZE",
     "scenario": {
       "id": "stablelm-zephyr-3b_run_cpu_safetensors_0000000000000000",
@@ -241,9 +283,9 @@
       "memory_peak_mb": null,
       "duration_ms": 2
     },
-    "timestamp": "2026-02-16T08:01:43.567917973Z",
+    "timestamp": "2026-03-03T19:03:20.576404324Z",
     "host": {
-      "hostname": "noah-Lambda-Vector",
+      "hostname": "mac-server",
       "os": "linux",
       "cpu": "unknown",
       "gpu": null,
@@ -252,7 +294,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001894ab4dad120c08",
+    "id": "000000000000000018996a1cdec9feea",
     "gate_id": "G0-DIM-SAFETENSORS_FOUND",
     "scenario": {
       "id": "stablelm-zephyr-3b_run_cpu_safetensors_0000000000000000",
@@ -283,9 +325,9 @@
       "memory_peak_mb": null,
       "duration_ms": 2
     },
-    "timestamp": "2026-02-16T08:01:43.567920386Z",
+    "timestamp": "2026-03-03T19:03:20.576410102Z",
     "host": {
-      "hostname": "noah-Lambda-Vector",
+      "hostname": "mac-server",
       "os": "linux",
       "cpu": "unknown",
       "gpu": null,
@@ -294,7 +336,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001894ab4dad1214b7",
+    "id": "000000000000000018996a1cdeca129b",
     "gate_id": "G0-DIM-SAFETENSORS_HEADER",
     "scenario": {
       "id": "stablelm-zephyr-3b_run_cpu_safetensors_0000000000000000",
@@ -325,9 +367,9 @@
       "memory_peak_mb": null,
       "duration_ms": 2
     },
-    "timestamp": "2026-02-16T08:01:43.567922650Z",
+    "timestamp": "2026-03-03T19:03:20.576415081Z",
     "host": {
-      "hostname": "noah-Lambda-Vector",
+      "hostname": "mac-server",
       "os": "linux",
       "cpu": "unknown",
       "gpu": null,
@@ -336,7 +378,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001894ab4dad121d71",
+    "id": "000000000000000018996a1cdeca2d10",
     "gate_id": "G0-DIM-TENSOR_EMBED_TOKENS",
     "scenario": {
       "id": "stablelm-zephyr-3b_run_cpu_safetensors_0000000000000000",
@@ -367,9 +409,9 @@
       "memory_peak_mb": null,
       "duration_ms": 2
     },
-    "timestamp": "2026-02-16T08:01:43.567924883Z",
+    "timestamp": "2026-03-03T19:03:20.576422022Z",
     "host": {
-      "hostname": "noah-Lambda-Vector",
+      "hostname": "mac-server",
       "os": "linux",
       "cpu": "unknown",
       "gpu": null,
@@ -378,7 +420,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001894ab4dad122706",
+    "id": "000000000000000018996a1cdeca412d",
     "gate_id": "G0-DIM-TENSOR_LM_HEAD",
     "scenario": {
       "id": "stablelm-zephyr-3b_run_cpu_safetensors_0000000000000000",
@@ -409,9 +451,177 @@
       "memory_peak_mb": null,
       "duration_ms": 2
     },
-    "timestamp": "2026-02-16T08:01:43.567927307Z",
+    "timestamp": "2026-03-03T19:03:20.576427085Z",
     "host": {
-      "hostname": "noah-Lambda-Vector",
+      "hostname": "mac-server",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "000000000000000018996a1cdeca58ee",
+    "gate_id": "G0-DIM-TOKENIZER_EXISTS",
+    "scenario": {
+      "id": "stablelm-zephyr-3b_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "stabilityai",
+        "name": "stablelm-zephyr-3b",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Dimensional check: tokenizer_exists",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "G0 FAIL: tokenizer_exists expected=valid tokenizer.json or non-empty tokenizer.model actual=no tokenizer file",
+    "output": "expected=valid tokenizer.json or non-empty tokenizer.model actual=no tokenizer file",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 2
+    },
+    "timestamp": "2026-03-03T19:03:20.576433488Z",
+    "host": {
+      "hostname": "mac-server",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "000000000000000018996a1cdeca706b",
+    "gate_id": "G0-DIM-EOS_TOKEN_VALID",
+    "scenario": {
+      "id": "stablelm-zephyr-3b_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "stabilityai",
+        "name": "stablelm-zephyr-3b",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Dimensional check: eos_token_valid",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "G0 FAIL: eos_token_valid expected=eos_token or eos_token_id actual=missing (no eos_token or eos_token_id)",
+    "output": "expected=eos_token or eos_token_id actual=missing (no eos_token or eos_token_id)",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 2
+    },
+    "timestamp": "2026-03-03T19:03:20.576439177Z",
+    "host": {
+      "hostname": "mac-server",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "000000000000000018996a1cdeca80f2",
+    "gate_id": "G0-DIM-DTYPE_SUPPORTED",
+    "scenario": {
+      "id": "stablelm-zephyr-3b_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "stabilityai",
+        "name": "stablelm-zephyr-3b",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Dimensional check: dtype_supported",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: dtype_supported expected=all dtypes in supported set actual=all supported (BF16)",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 2
+    },
+    "timestamp": "2026-03-03T19:03:20.576443374Z",
+    "host": {
+      "hostname": "mac-server",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "000000000000000018996a1cdeca9178",
+    "gate_id": "G0-DIM-DTYPE_CONSISTENT",
+    "scenario": {
+      "id": "stablelm-zephyr-3b_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "stabilityai",
+        "name": "stablelm-zephyr-3b",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Dimensional check: dtype_consistent",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: dtype_consistent expected=single dtype across interior 2D weight tensors actual=uniform: BF16",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 2
+    },
+    "timestamp": "2026-03-03T19:03:20.576447577Z",
+    "host": {
+      "hostname": "mac-server",
       "os": "linux",
       "cpu": "unknown",
       "gpu": null,
