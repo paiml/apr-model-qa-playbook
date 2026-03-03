@@ -234,10 +234,9 @@ resources:
     depends_on: ["dim-smoke-{{item}}"]
     working_dir: "{{params.qa_repo}}"
     timeout: 600
-    pre_apply: |
-      # Skip if no smoke playbook exists (defer to MVP)
-      test -f "playbooks/models/{{item}}-smoke.playbook.yaml" || exit 0
+    completion_check: "test ! -f playbooks/models/{{item}}-smoke.playbook.yaml || (test -d certifications/{{item}} && find certifications/{{item}} -name evidence.json -newer playbooks/models/{{item}}-smoke.playbook.yaml 2>/dev/null | grep -q .)"
     command: |
+      test -f "playbooks/models/{{item}}-smoke.playbook.yaml" || exit 0
       rm -rf output
       cargo run --release --bin apr-qa -- run \
         "playbooks/models/{{item}}-smoke.playbook.yaml" \
