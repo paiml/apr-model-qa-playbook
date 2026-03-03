@@ -1,6 +1,6 @@
 [
   {
-    "id": "00000000000000001893d4507da2918e",
+    "id": "000000000000000018996a0803e50bf2",
     "gate_id": "G0-PULL-001",
     "scenario": {
       "id": "stablelm-2-zephyr-1_6b_run_cpu_safetensors_0000000000000000",
@@ -21,7 +21,7 @@
     },
     "outcome": "Corroborated",
     "reason": "Test passed",
-    "output": "G0 PASS: model acquired via apr pull\n\u001b[1;36m=== APR Pull ===\u001b[0m\n\nModel: \u001b[36mhf://stabilityai/stablelm-2-zephyr-1_6b/stablelm-2-zephyr-1_6b-Q4_0.gguf\u001b[0m\n\n\u001b[33mDownloading...\u001b[0m\n\r  [==================================================] 100.0% (0 B/0 B)\r  [==================================================] 100.0% (937.25 MB/937.25 MB)\n\n\u001b[32m✓\u001b[0m Downloaded successfully\n  Path: \u001b[32m/home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf\u001b[0m\n  Size: \u001b[33m937.25 MB\u001b[0m\n  Format: Gguf(GgufInfo { version: 3, tensor_count: 340, metadata_count: 20, architecture: None, quantization: None, context_length: None, embedding_dim: None, num_layers: None, num_heads: None, vocab_size: None, parameters: None, name: None, author: None, license: None })\n  Hash: cb7ee7cd50590460\n\n\u001b[1;36mUsage:\u001b[0m\n  apr run /home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf\n  apr serve /home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf\n",
+    "output": "G0 PASS: model acquired via apr pull\n\u001b[1;36m=== APR Pull ===\u001b[0m\n\nModel: \u001b[36mhf://stabilityai/stablelm-2-zephyr-1_6b/stablelm-2-zephyr-1_6b-Q4_0.gguf\u001b[0m\n\n\u001b[33mDownloading (streaming)...\u001b[0m\n 10% 20% 30% 40% 50% 60% 70% 80% 90% 100%\n\u001b[32m✓\u001b[0m Downloaded successfully\n  Path: \u001b[32m/home/noah/.cache/pacha/models/c773729f77ba8315.gguf\u001b[0m\n  Size: \u001b[33m937.3 MB\u001b[0m\n  Hash: cb7ee7cd50590460\n\n\u001b[1;36mUsage:\u001b[0m\n  apr run /home/noah/.cache/pacha/models/c773729f77ba8315.gguf\n  apr serve /home/noah/.cache/pacha/models/c773729f77ba8315.gguf\n",
     "stderr": null,
     "exit_code": 0,
     "metrics": {
@@ -29,11 +29,11 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 40935
+      "duration_ms": 15205
     },
-    "timestamp": "2026-02-13T14:22:00.657016174Z",
+    "timestamp": "2026-03-03T19:01:51.004628530Z",
     "host": {
-      "hostname": "noah-Lambda-Vector",
+      "hostname": "mac-server",
       "os": "linux",
       "cpu": "unknown",
       "gpu": null,
@@ -42,8 +42,8 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001893d4507dad29f1",
-    "gate_id": "G0-LAYOUT-001",
+    "id": "000000000000000018996a0803e6ec01",
+    "gate_id": "G0-DIM-CONFIG_PARSE",
     "scenario": {
       "id": "stablelm-2-zephyr-1_6b_run_cpu_safetensors_0000000000000000",
       "model": {
@@ -54,18 +54,18 @@
       "modality": "run",
       "backend": "cpu",
       "format": "safetensors",
-      "prompt": "G0 Layout: tensor shape contract validation",
+      "prompt": "Dimensional check: config_parse",
       "temperature": 0.0,
       "max_tokens": 32,
       "seed": 0,
       "trace_level": "none",
       "oracle_type": "garbage"
     },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "G0 PASS: Tensor layouts conform to contract\n  Rules checked: 0\n  Rules passed: 0",
+    "outcome": "Falsified",
+    "reason": "G0 FAIL: config_parse expected=config.json parseable actual=no config.json or empty",
+    "output": "expected=config.json parseable actual=no config.json or empty",
     "stderr": null,
-    "exit_code": 0,
+    "exit_code": null,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
@@ -73,9 +73,9 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-13T14:22:00.657710014Z",
+    "timestamp": "2026-03-03T19:01:51.004750573Z",
     "host": {
-      "hostname": "noah-Lambda-Vector",
+      "hostname": "mac-server",
       "os": "linux",
       "cpu": "unknown",
       "gpu": null,
@@ -84,8 +84,8 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001893d4507dae4ae5",
-    "gate_id": "F-A1-001",
+    "id": "000000000000000018996a0803e71341",
+    "gate_id": "G0-DIM-SAFETENSORS_FOUND",
     "scenario": {
       "id": "stablelm-2-zephyr-1_6b_run_cpu_safetensors_0000000000000000",
       "model": {
@@ -96,616 +96,28 @@
       "modality": "run",
       "backend": "cpu",
       "format": "safetensors",
-      "prompt": "What is 2+2?",
+      "prompt": "Dimensional check: safetensors_found",
       "temperature": 0.0,
       "max_tokens": 32,
       "seed": 0,
       "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Skipped",
-    "reason": "Format SafeTensors not available for model file",
-    "output": "",
-    "stderr": null,
-    "exit_code": null,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-13T14:22:00.657783885Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "00000000000000001893d4507daef364",
-    "gate_id": "F-A1-001",
-    "scenario": {
-      "id": "stablelm-2-zephyr-1_6b_run_cpu_apr_0000000000000001",
-      "model": {
-        "org": "stabilityai",
-        "name": "stablelm-2-zephyr-1_6b",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "apr",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 1,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Skipped",
-    "reason": "Format Apr not available for model file",
-    "output": "",
-    "stderr": null,
-    "exit_code": null,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-13T14:22:00.657827071Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "00000000000000001893d453f90ed50e",
-    "gate_id": "F-A1-001",
-    "scenario": {
-      "id": "stablelm-2-zephyr-1_6b_run_cpu_gguf_0000000000000002",
-      "model": {
-        "org": "stabilityai",
-        "name": "stablelm-2-zephyr-1_6b",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "cpu",
-      "format": "gguf",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 2,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: /home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf\n\n\u001b[1;36m=== Benchmark Results ===\u001b[0m\ntokens: 32\nlatency: 3274.83ms\nmodel: /home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf",
-    "stderr": "\u001b[32mGenerated 32 tokens in 1808.3ms (17.7 tok/s)\u001b[0m\n",
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": 9.8,
-      "time_to_first_token_ms": null,
-      "total_tokens": 32,
-      "memory_peak_mb": null,
-      "duration_ms": 14954
-    },
-    "timestamp": "2026-02-13T14:22:15.612611719Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "00000000000000001893d453f9100847",
-    "gate_id": "F-A2-001",
-    "scenario": {
-      "id": "stablelm-2-zephyr-1_6b_run_gpu_safetensors_0000000000000003",
-      "model": {
-        "org": "stabilityai",
-        "name": "stablelm-2-zephyr-1_6b",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "gpu",
-      "format": "safetensors",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 3,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Skipped",
-    "reason": "Format SafeTensors not available for model file",
-    "output": "",
-    "stderr": null,
-    "exit_code": null,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-13T14:22:15.612689006Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "00000000000000001893d453f910aee6",
-    "gate_id": "F-A2-001",
-    "scenario": {
-      "id": "stablelm-2-zephyr-1_6b_run_gpu_apr_0000000000000004",
-      "model": {
-        "org": "stabilityai",
-        "name": "stablelm-2-zephyr-1_6b",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "gpu",
-      "format": "apr",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 4,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Skipped",
-    "reason": "Format Apr not available for model file",
-    "output": "",
-    "stderr": null,
-    "exit_code": null,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-13T14:22:15.612731480Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "00000000000000001893d4577186e05f",
-    "gate_id": "F-A2-001",
-    "scenario": {
-      "id": "stablelm-2-zephyr-1_6b_run_gpu_gguf_0000000000000005",
-      "model": {
-        "org": "stabilityai",
-        "name": "stablelm-2-zephyr-1_6b",
-        "variant": null
-      },
-      "modality": "run",
-      "backend": "gpu",
-      "format": "gguf",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 5,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "\u001b[1;36m=== APR Run ===\u001b[0m\n\nSource: /home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf\n\n\u001b[1;36m=== Benchmark Results ===\u001b[0m\ntokens: 32\nlatency: 3234.35ms\nmodel: /home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf",
-    "stderr": "\u001b[32mGenerated 32 tokens in 1861.8ms (17.2 tok/s)\u001b[0m\n",
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": 9.9,
-      "time_to_first_token_ms": null,
-      "total_tokens": 32,
-      "memory_peak_mb": null,
-      "duration_ms": 14905
-    },
-    "timestamp": "2026-02-13T14:22:30.518647405Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "00000000000000001893d4577187ef18",
-    "gate_id": "F-A3-001",
-    "scenario": {
-      "id": "stablelm-2-zephyr-1_6b_chat_cpu_safetensors_0000000000000006",
-      "model": {
-        "org": "stabilityai",
-        "name": "stablelm-2-zephyr-1_6b",
-        "variant": null
-      },
-      "modality": "chat",
-      "backend": "cpu",
-      "format": "safetensors",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 6,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Skipped",
-    "reason": "Format SafeTensors not available for model file",
-    "output": "",
-    "stderr": null,
-    "exit_code": null,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-13T14:22:30.518714677Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "00000000000000001893d4577188a2dc",
-    "gate_id": "F-A3-001",
-    "scenario": {
-      "id": "stablelm-2-zephyr-1_6b_chat_cpu_apr_0000000000000007",
-      "model": {
-        "org": "stabilityai",
-        "name": "stablelm-2-zephyr-1_6b",
-        "variant": null
-      },
-      "modality": "chat",
-      "backend": "cpu",
-      "format": "apr",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 7,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Skipped",
-    "reason": "Format Apr not available for model file",
-    "output": "",
-    "stderr": null,
-    "exit_code": null,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-13T14:22:30.518760486Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "00000000000000001893d462352c5904",
-    "gate_id": "F-A3-001",
-    "scenario": {
-      "id": "stablelm-2-zephyr-1_6b_chat_cpu_gguf_0000000000000008",
-      "model": {
-        "org": "stabilityai",
-        "name": "stablelm-2-zephyr-1_6b",
-        "variant": null
-      },
-      "modality": "chat",
-      "backend": "cpu",
-      "format": "gguf",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 8,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "\u001b[1;36m=== Model Chat (GGUF Format) ===\u001b[0m\n\n\u001b[36mUsing GGUF format with realizar inference engine\u001b[0m\n\n  \u001b[1;37mModel\u001b[0m: /home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf\n  \u001b[1;37mChat Template\u001b[0m: Raw\n  \u001b[1;37mTemperature\u001b[0m: 0.7\n  \u001b[1;37mTop-P\u001b[0m: 0.9\n  \u001b[1;37mMax Tokens\u001b[0m: 512\n\n\u001b[1;37mCommands:\u001b[0m\n  /quit     Exit the chat\n  /clear    Clear conversation history\n  /system   Set system prompt\n  /help     Show help\n\n════════════════════════════════════════════════════════════\n\n\u001b[36mLoading model...\u001b[0m\n\u001b[32mLoaded\u001b[0m GGUF format in 0.49s (982.8 MB)\n\u001b[32mLoaded\u001b[0m tokenizer with 100352 tokens\n\u001b[32mDetected\u001b[0m \u001b[36mRaw\u001b[0m chat template\n\u001b[92m[GGUF CUDA: NVIDIA GeForce RTX 4090 (24045 MB VRAM) — pre-cached]\u001b[0m\n\u001b[1;32mYou: \u001b[0m\u001b[1;34mAssistant:\u001b[0m The story movie anime pop culture + + + = =/wait → × × × × − ن التが هゲiteliusissuerivervvmsettingsiterationsiterationsiterationsiterationsfeedfeedfeedfeed@gilion×/?V @ | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | |..\n| | | | | | | | | | | | | | | |\t\t\n\t\t\n\t\t\n�όं | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | |lla | | | | crow| | | | | | | | | | | || |_( | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | fares | | | | | | | | | | | | | | | | | | | | | | | | | | \" | | | | | | | | | apex | | | | | | LO | | | | | | | | | | | || | | | | | | | | | | | | | | | | | | | | | | op | | | | R | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | crow | | |\n\n\u001b[1;32mYou: \u001b[0m\n\u001b[36mGoodbye!\u001b[0m",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": 32,
-      "memory_peak_mb": null,
-      "duration_ms": 46231
-    },
-    "timestamp": "2026-02-13T14:23:16.750721048Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "00000000000000001893d462352d57d0",
-    "gate_id": "F-A4-001",
-    "scenario": {
-      "id": "stablelm-2-zephyr-1_6b_chat_gpu_safetensors_0000000000000009",
-      "model": {
-        "org": "stabilityai",
-        "name": "stablelm-2-zephyr-1_6b",
-        "variant": null
-      },
-      "modality": "chat",
-      "backend": "gpu",
-      "format": "safetensors",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 9,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Skipped",
-    "reason": "Format SafeTensors not available for model file",
-    "output": "",
-    "stderr": null,
-    "exit_code": null,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-13T14:23:16.750784845Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "00000000000000001893d462352de1a4",
-    "gate_id": "F-A4-001",
-    "scenario": {
-      "id": "stablelm-2-zephyr-1_6b_chat_gpu_apr_000000000000000a",
-      "model": {
-        "org": "stabilityai",
-        "name": "stablelm-2-zephyr-1_6b",
-        "variant": null
-      },
-      "modality": "chat",
-      "backend": "gpu",
-      "format": "apr",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 10,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Skipped",
-    "reason": "Format Apr not available for model file",
-    "output": "",
-    "stderr": null,
-    "exit_code": null,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-13T14:23:16.750820038Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "00000000000000001893d466686a3ca1",
-    "gate_id": "F-A4-001",
-    "scenario": {
-      "id": "stablelm-2-zephyr-1_6b_chat_gpu_gguf_000000000000000b",
-      "model": {
-        "org": "stabilityai",
-        "name": "stablelm-2-zephyr-1_6b",
-        "variant": null
-      },
-      "modality": "chat",
-      "backend": "gpu",
-      "format": "gguf",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 11,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Corroborated",
-    "reason": "Test passed",
-    "output": "\u001b[1;36m=== Model Chat (GGUF Format) ===\u001b[0m\n\n\u001b[36mUsing GGUF format with realizar inference engine\u001b[0m\n\n  \u001b[1;37mModel\u001b[0m: /home/noah/.cache/pacha/models/cb7ee7cd50590460.gguf\n  \u001b[1;37mChat Template\u001b[0m: Raw\n  \u001b[1;37mTemperature\u001b[0m: 0.7\n  \u001b[1;37mTop-P\u001b[0m: 0.9\n  \u001b[1;37mMax Tokens\u001b[0m: 512\n\n\u001b[1;37mCommands:\u001b[0m\n  /quit     Exit the chat\n  /clear    Clear conversation history\n  /system   Set system prompt\n  /help     Show help\n\n════════════════════════════════════════════════════════════\n\n\u001b[36mLoading model...\u001b[0m\n\u001b[32mLoaded\u001b[0m GGUF format in 0.49s (982.8 MB)\n\u001b[32mLoaded\u001b[0m tokenizer with 100352 tokens\n\u001b[32mDetected\u001b[0m \u001b[36mRaw\u001b[0m chat template\n\u001b[92m[GGUF CUDA: NVIDIA GeForce RTX 4090 (24045 MB VRAM) — pre-cached]\u001b[0m\n\u001b[1;32mYou: \u001b[0m\u001b[1;34mAssistant:\u001b[0m Г告рыюююня местойк源 formDataagemtekovi?emanifoldleinweisepunkfrau.cz.nan.m.pencilacticeFullYearCredentialsKeywordsCredentialsihan@classvaisenameijklीanonymous\"]').pletweenfooterpronnectlemaNnameofkeywordskeywordskeywordswordsncpynmkeywordsensesentialsrokesrokeshin.nih.nan-r-r-rhubnikrutrutnamnamnickr@r(r(r)nkeyword(r(r(r(r)()vierviervierviervierrrrrrrrrrrrrrrrrrrrrrrrrrrrrinvemailcentralinrrrrrfdplanetrrrrrrrrrrrrrrrrrrrrrrRQRRRRRRRRRRPPPPPPPPRRPPPPRRRRRRRRRRRRRRPPPPLPPPPPPPPPPPPPPPPRRPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPM PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP R PP PP PP PP YYS PP PP PP>Password\tthrows PP R PP PP PP PP PP PP PP PP PP PP PP R R R R R R R PP PP R PP PP R R R R PP R R PP R PP PP R R PP R R R R R R R R PP R R R R R R R R R R R R R R R R R R R R R R R PP PP PP R R R R R R R R PP PP PP PP PP PP PP PP PP R R R R R R R R PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP PP R R R R R P P PP PP PP PP PP PP PP PP R R R R R R R R R PP PP PP PP PP PP PP PP PP PP PP PP PP R R R R R R R PP PP PP PP PP PP PP R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R R PP PP PP PP PP PP PP PP R R R R R R R R R R PP PP PP PP PP PP PP\n\n\u001b[1;32mYou: \u001b[0m\n\u001b[36mGoodbye!\u001b[0m",
-    "stderr": null,
-    "exit_code": 0,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": 32,
-      "memory_peak_mb": null,
-      "duration_ms": 18039
-    },
-    "timestamp": "2026-02-13T14:23:34.790284043Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "00000000000000001893d466686b67df",
-    "gate_id": "F-A5-001",
-    "scenario": {
-      "id": "stablelm-2-zephyr-1_6b_serve_cpu_safetensors_000000000000000c",
-      "model": {
-        "org": "stabilityai",
-        "name": "stablelm-2-zephyr-1_6b",
-        "variant": null
-      },
-      "modality": "serve",
-      "backend": "cpu",
-      "format": "safetensors",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 12,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Skipped",
-    "reason": "Format SafeTensors not available for model file",
-    "output": "",
-    "stderr": null,
-    "exit_code": null,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-13T14:23:34.790359387Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "00000000000000001893d466686bed8c",
-    "gate_id": "F-A5-001",
-    "scenario": {
-      "id": "stablelm-2-zephyr-1_6b_serve_cpu_apr_000000000000000d",
-      "model": {
-        "org": "stabilityai",
-        "name": "stablelm-2-zephyr-1_6b",
-        "variant": null
-      },
-      "modality": "serve",
-      "backend": "cpu",
-      "format": "apr",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 13,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Skipped",
-    "reason": "Format Apr not available for model file",
-    "output": "",
-    "stderr": null,
-    "exit_code": null,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-13T14:23:34.790393539Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "00000000000000001893d4826ead8e3a",
-    "gate_id": "G2-BASIC",
-    "scenario": {
-      "id": "stablelm-2-zephyr-1_6b_serve_cpu_gguf_000000000000000e",
-      "model": {
-        "org": "stabilityai",
-        "name": "stablelm-2-zephyr-1_6b",
-        "variant": null
-      },
-      "modality": "serve",
-      "backend": "cpu",
-      "format": "gguf",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 14,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
+      "oracle_type": "garbage"
     },
     "outcome": "Falsified",
-    "reason": "Command failed (exit 1): Server failed to become ready within 120s",
-    "output": "",
-    "stderr": "Server failed to become ready within 120s",
-    "exit_code": 1,
+    "reason": "G0 FAIL: safetensors_found expected=>= 1 file actual=0 file(s)",
+    "output": "expected=>= 1 file actual=0 file(s)",
+    "stderr": null,
+    "exit_code": null,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 120364
+      "duration_ms": 0
     },
-    "timestamp": "2026-02-13T14:25:35.154443007Z",
+    "timestamp": "2026-03-03T19:01:51.004760284Z",
     "host": {
-      "hostname": "noah-Lambda-Vector",
+      "hostname": "mac-server",
       "os": "linux",
       "cpu": "unknown",
       "gpu": null,
@@ -714,124 +126,82 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001893d4826eaead39",
-    "gate_id": "F-A6-001",
+    "id": "000000000000000018996a0803e73650",
+    "gate_id": "G0-DIM-TOKENIZER_EXISTS",
     "scenario": {
-      "id": "stablelm-2-zephyr-1_6b_serve_gpu_safetensors_000000000000000f",
+      "id": "stablelm-2-zephyr-1_6b_run_cpu_safetensors_0000000000000000",
       "model": {
         "org": "stabilityai",
         "name": "stablelm-2-zephyr-1_6b",
         "variant": null
       },
-      "modality": "serve",
-      "backend": "gpu",
+      "modality": "run",
+      "backend": "cpu",
       "format": "safetensors",
-      "prompt": "What is 2+2?",
+      "prompt": "Dimensional check: tokenizer_exists",
       "temperature": 0.0,
       "max_tokens": 32,
-      "seed": 15,
+      "seed": 0,
       "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Skipped",
-    "reason": "Format SafeTensors not available for model file",
-    "output": "",
-    "stderr": null,
-    "exit_code": null,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-13T14:25:35.154515607Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "00000000000000001893d4826eaf3427",
-    "gate_id": "F-A6-001",
-    "scenario": {
-      "id": "stablelm-2-zephyr-1_6b_serve_gpu_apr_0000000000000010",
-      "model": {
-        "org": "stabilityai",
-        "name": "stablelm-2-zephyr-1_6b",
-        "variant": null
-      },
-      "modality": "serve",
-      "backend": "gpu",
-      "format": "apr",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 16,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
-    },
-    "outcome": "Skipped",
-    "reason": "Format Apr not available for model file",
-    "output": "",
-    "stderr": null,
-    "exit_code": null,
-    "metrics": {
-      "tokens_per_second": null,
-      "time_to_first_token_ms": null,
-      "total_tokens": null,
-      "memory_peak_mb": null,
-      "duration_ms": 0
-    },
-    "timestamp": "2026-02-13T14:25:35.154550129Z",
-    "host": {
-      "hostname": "noah-Lambda-Vector",
-      "os": "linux",
-      "cpu": "unknown",
-      "gpu": null,
-      "apr_version": "unknown"
-    },
-    "metadata": {}
-  },
-  {
-    "id": "00000000000000001893d49e72196849",
-    "gate_id": "G2-BASIC",
-    "scenario": {
-      "id": "stablelm-2-zephyr-1_6b_serve_gpu_gguf_0000000000000011",
-      "model": {
-        "org": "stabilityai",
-        "name": "stablelm-2-zephyr-1_6b",
-        "variant": null
-      },
-      "modality": "serve",
-      "backend": "gpu",
-      "format": "gguf",
-      "prompt": "What is 2+2?",
-      "temperature": 0.0,
-      "max_tokens": 32,
-      "seed": 17,
-      "trace_level": "none",
-      "oracle_type": "arithmetic"
+      "oracle_type": "garbage"
     },
     "outcome": "Falsified",
-    "reason": "Command failed (exit 1): Server failed to become ready within 120s",
-    "output": "",
-    "stderr": "Server failed to become ready within 120s",
-    "exit_code": 1,
+    "reason": "G0 FAIL: tokenizer_exists expected=valid tokenizer.json or non-empty tokenizer.model actual=no tokenizer file",
+    "output": "expected=valid tokenizer.json or non-empty tokenizer.model actual=no tokenizer file",
+    "stderr": null,
+    "exit_code": null,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 120316
+      "duration_ms": 0
     },
-    "timestamp": "2026-02-13T14:27:35.470927579Z",
+    "timestamp": "2026-03-03T19:01:51.004769491Z",
     "host": {
-      "hostname": "noah-Lambda-Vector",
+      "hostname": "mac-server",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "000000000000000018996a0803e75775",
+    "gate_id": "G0-DIM-EOS_TOKEN_VALID",
+    "scenario": {
+      "id": "stablelm-2-zephyr-1_6b_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "stabilityai",
+        "name": "stablelm-2-zephyr-1_6b",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Dimensional check: eos_token_valid",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "G0 FAIL: eos_token_valid expected=eos_token or eos_token_id actual=missing (no eos_token or eos_token_id)",
+    "output": "expected=eos_token or eos_token_id actual=missing (no eos_token or eos_token_id)",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-03-03T19:01:51.004777594Z",
+    "host": {
+      "hostname": "mac-server",
       "os": "linux",
       "cpu": "unknown",
       "gpu": null,
