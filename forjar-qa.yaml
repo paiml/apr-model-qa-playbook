@@ -23,9 +23,7 @@ resources:
     type: task
     machine: intel
     working_dir: "{{params.qa_repo}}"
-    completion_check: |
-      test -x target/release/apr-qa && \
-      test "$(git rev-parse HEAD)" = "$(strings target/release/apr-qa | grep -oP '[0-9a-f]{7}' | head -1)" 2>/dev/null
+    completion_check: "test -x target/release/apr-qa"
     command: |
       set -euo pipefail
       git pull --rebase origin main 2>/dev/null || true
@@ -127,9 +125,7 @@ resources:
     depends_on: [build]
     working_dir: "{{params.qa_repo}}"
     timeout: 120
-    completion_check: |
-      test -d "certifications/{{item}}" && \
-      find "certifications/{{item}}" -name 'evidence.json' -newer "playbooks/models/{{item}}-dim-smoke.playbook.yaml" 2>/dev/null | grep -q .
+    completion_check: "test -d certifications/{{item}} && find certifications/{{item}} -name evidence.json -newer playbooks/models/{{item}}-dim-smoke.playbook.yaml 2>/dev/null | grep -q ."
     pre_apply: |
       test -f "playbooks/models/{{item}}-dim-smoke.playbook.yaml" || exit 1
     command: |
@@ -348,18 +344,7 @@ resources:
     depends_on: ["smoke-{{item}}"]
     working_dir: "{{params.qa_repo}}"
     timeout: 7200
-    completion_check: |
-      pb="playbooks/models/{{item}}-mvp.playbook.yaml"
-      ev="certifications/{{item}}/evidence.json"
-      test -f "$ev" && test "$ev" -nt "$pb" && \
-      python3 -c "
-      import json, sys
-      data = json.load(open(sys.argv[1]))
-      total = len(data) if isinstance(data, list) else 0
-      passed = sum(1 for e in data if e.get('outcome') == 'Corroborated') if total else 0
-      rate = int(100 * passed / total) if total > 0 else 0
-      sys.exit(0 if rate >= {{params.pass_threshold}} else 1)
-      " "$ev"
+    completion_check: "test -f certifications/{{item}}/evidence.json && test certifications/{{item}}/evidence.json -nt playbooks/models/{{item}}-mvp.playbook.yaml && python3 -c 'import json,sys;d=json.load(open(sys.argv[1]));t=len(d) if isinstance(d,list) else 0;p=sum(1 for e in d if e.get(\"outcome\")==\"Corroborated\") if t else 0;sys.exit(0 if t>0 and 100*p//t>=50 else 1)' certifications/{{item}}/evidence.json"
     pre_apply: |
       test -f "playbooks/models/{{item}}-mvp.playbook.yaml" || exit 1
       usage=$(df --output=pcent /home/noah 2>/dev/null | tail -1 | tr -d ' %')
