@@ -1,6 +1,6 @@
 [
   {
-    "id": "00000000000000001899572943bde508",
+    "id": "0000000000000000189964aac40994ff",
     "gate_id": "G0-PULL-001",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -29,9 +29,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 190
+      "duration_ms": 186
     },
-    "timestamp": "2026-03-03T13:16:03.088797182Z",
+    "timestamp": "2026-03-03T17:23:32.943183539Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -42,7 +42,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001899572943f612b3",
+    "id": "0000000000000000189964aac44d15c1",
     "gate_id": "G0-DIM-CONFIG_PARSE",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -71,9 +71,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 3
+      "duration_ms": 4
     },
-    "timestamp": "2026-03-03T13:16:03.092477825Z",
+    "timestamp": "2026-03-03T17:23:32.947606422Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -84,7 +84,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001899572943f633f4",
+    "id": "0000000000000000189964aac44d3f63",
     "gate_id": "G0-DIM-HIDDEN_SIZE",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -113,9 +113,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 3
+      "duration_ms": 4
     },
-    "timestamp": "2026-03-03T13:16:03.092486057Z",
+    "timestamp": "2026-03-03T17:23:32.947617326Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -126,7 +126,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001899572943f64670",
+    "id": "0000000000000000189964aac44d5dc2",
     "gate_id": "G0-DIM-NUM_LAYERS",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -155,9 +155,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 3
+      "duration_ms": 4
     },
-    "timestamp": "2026-03-03T13:16:03.092490556Z",
+    "timestamp": "2026-03-03T17:23:32.947624840Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -168,7 +168,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001899572943f65a37",
+    "id": "0000000000000000189964aac44d7ccb",
     "gate_id": "G0-DIM-NUM_HEADS",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -197,9 +197,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 3
+      "duration_ms": 4
     },
-    "timestamp": "2026-03-03T13:16:03.092496114Z",
+    "timestamp": "2026-03-03T17:23:32.947632589Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -210,7 +210,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001899572943f67251",
+    "id": "0000000000000000189964aac44d9f1a",
     "gate_id": "G0-DIM-NUM_KV_HEADS",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -239,9 +239,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 3
+      "duration_ms": 4
     },
-    "timestamp": "2026-03-03T13:16:03.092501753Z",
+    "timestamp": "2026-03-03T17:23:32.947641446Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -252,7 +252,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001899572943f681d7",
+    "id": "0000000000000000189964aac44db90e",
     "gate_id": "G0-DIM-VOCAB_SIZE",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -281,9 +281,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 3
+      "duration_ms": 4
     },
-    "timestamp": "2026-03-03T13:16:03.092505839Z",
+    "timestamp": "2026-03-03T17:23:32.947647872Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -294,7 +294,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001899572943f692bb",
+    "id": "0000000000000000189964aac44dd174",
     "gate_id": "G0-DIM-SAFETENSORS_FOUND",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -323,9 +323,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 3
+      "duration_ms": 4
     },
-    "timestamp": "2026-03-03T13:16:03.092510006Z",
+    "timestamp": "2026-03-03T17:23:32.947653878Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -336,7 +336,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001899572943f6a2e9",
+    "id": "0000000000000000189964aac44de9ff",
     "gate_id": "G0-DIM-SAFETENSORS_HEADER",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -365,9 +365,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 3
+      "duration_ms": 4
     },
-    "timestamp": "2026-03-03T13:16:03.092514192Z",
+    "timestamp": "2026-03-03T17:23:32.947660310Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -378,7 +378,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001899572943f6b7af",
+    "id": "0000000000000000189964aac44e077b",
     "gate_id": "G0-DIM-TENSOR_EMBED_TOKENS",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -407,9 +407,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 3
+      "duration_ms": 4
     },
-    "timestamp": "2026-03-03T13:16:03.092519413Z",
+    "timestamp": "2026-03-03T17:23:32.947667929Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -420,7 +420,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001899572943f6ca07",
+    "id": "0000000000000000189964aac44e2525",
     "gate_id": "G0-DIM-TOKENIZER_EXISTS",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -449,9 +449,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 3
+      "duration_ms": 4
     },
-    "timestamp": "2026-03-03T13:16:03.092524147Z",
+    "timestamp": "2026-03-03T17:23:32.947675423Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -462,7 +462,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001899572943f6dc0c",
+    "id": "0000000000000000189964aac44e40be",
     "gate_id": "G0-DIM-EOS_TOKEN_VALID",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -491,9 +491,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 3
+      "duration_ms": 4
     },
-    "timestamp": "2026-03-03T13:16:03.092528726Z",
+    "timestamp": "2026-03-03T17:23:32.947682596Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -504,7 +504,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001899572943f6e93b",
+    "id": "0000000000000000189964aac44e5613",
     "gate_id": "G0-DIM-DTYPE_SUPPORTED",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -533,9 +533,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 3
+      "duration_ms": 4
     },
-    "timestamp": "2026-03-03T13:16:03.092532133Z",
+    "timestamp": "2026-03-03T17:23:32.947687900Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -546,7 +546,7 @@
     "metadata": {}
   },
   {
-    "id": "00000000000000001899572943f6f65c",
+    "id": "0000000000000000189964aac44e6b04",
     "gate_id": "G0-DIM-DTYPE_CONSISTENT",
     "scenario": {
       "id": "Qwen2.5-Coder-1.5B-Instruct_run_cpu_safetensors_0000000000000000",
@@ -575,9 +575,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 3
+      "duration_ms": 4
     },
-    "timestamp": "2026-03-03T13:16:03.092535436Z",
+    "timestamp": "2026-03-03T17:23:32.947693173Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
