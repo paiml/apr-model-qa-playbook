@@ -1,6 +1,6 @@
 [
   {
-    "id": "0000000000000000189955fb77c96d27",
+    "id": "000000000000000018995a2b0818a13c",
     "gate_id": "G0-PULL-001",
     "scenario": {
       "id": "deepseek-coder-7b-instruct_run_cpu_safetensors_0000000000000000",
@@ -29,9 +29,9 @@
       "time_to_first_token_ms": null,
       "total_tokens": null,
       "memory_peak_mb": null,
-      "duration_ms": 134378
+      "duration_ms": 139715
     },
-    "timestamp": "2026-03-03T12:54:26.881844727Z",
+    "timestamp": "2026-03-03T14:11:09.212928854Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -42,7 +42,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189955fb77cbfc03",
+    "id": "000000000000000018995a2b081b761a",
     "gate_id": "G0-DIM-CONFIG_PARSE",
     "scenario": {
       "id": "deepseek-coder-7b-instruct_run_cpu_safetensors_0000000000000000",
@@ -73,7 +73,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-03-03T12:54:26.882011335Z",
+    "timestamp": "2026-03-03T14:11:09.213112994Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -84,7 +84,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189955fb77cc1c74",
+    "id": "000000000000000018995a2b081b9516",
     "gate_id": "G0-DIM-HIDDEN_SIZE",
     "scenario": {
       "id": "deepseek-coder-7b-instruct_run_cpu_safetensors_0000000000000000",
@@ -115,7 +115,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-03-03T12:54:26.882020071Z",
+    "timestamp": "2026-03-03T14:11:09.213120926Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -126,7 +126,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189955fb77cc3e1f",
+    "id": "000000000000000018995a2b081bb146",
     "gate_id": "G0-DIM-NUM_LAYERS",
     "scenario": {
       "id": "deepseek-coder-7b-instruct_run_cpu_safetensors_0000000000000000",
@@ -157,7 +157,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-03-03T12:54:26.882028250Z",
+    "timestamp": "2026-03-03T14:11:09.213128266Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -168,7 +168,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189955fb77cc58bf",
+    "id": "000000000000000018995a2b081bca9d",
     "gate_id": "G0-DIM-NUM_HEADS",
     "scenario": {
       "id": "deepseek-coder-7b-instruct_run_cpu_safetensors_0000000000000000",
@@ -199,7 +199,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-03-03T12:54:26.882035290Z",
+    "timestamp": "2026-03-03T14:11:09.213134653Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -210,7 +210,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189955fb77cc7c20",
+    "id": "000000000000000018995a2b081bee8d",
     "gate_id": "G0-DIM-NUM_KV_HEADS",
     "scenario": {
       "id": "deepseek-coder-7b-instruct_run_cpu_safetensors_0000000000000000",
@@ -241,7 +241,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-03-03T12:54:26.882043965Z",
+    "timestamp": "2026-03-03T14:11:09.213143724Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -252,7 +252,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189955fb77cc92f6",
+    "id": "000000000000000018995a2b081c0651",
     "gate_id": "G0-DIM-VOCAB_SIZE",
     "scenario": {
       "id": "deepseek-coder-7b-instruct_run_cpu_safetensors_0000000000000000",
@@ -283,7 +283,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-03-03T12:54:26.882049717Z",
+    "timestamp": "2026-03-03T14:11:09.213150048Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -294,7 +294,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189955fb77ccb047",
+    "id": "000000000000000018995a2b081c2515",
     "gate_id": "G0-DIM-SAFETENSORS_FOUND",
     "scenario": {
       "id": "deepseek-coder-7b-instruct_run_cpu_safetensors_0000000000000000",
@@ -325,7 +325,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-03-03T12:54:26.882057626Z",
+    "timestamp": "2026-03-03T14:11:09.213157890Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -336,7 +336,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189955fb77cccea0",
+    "id": "000000000000000018995a2b081c4558",
     "gate_id": "G0-DIM-TOKENIZER_EXISTS",
     "scenario": {
       "id": "deepseek-coder-7b-instruct_run_cpu_safetensors_0000000000000000",
@@ -367,7 +367,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-03-03T12:54:26.882065043Z",
+    "timestamp": "2026-03-03T14:11:09.213165930Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -378,7 +378,7 @@
     "metadata": {}
   },
   {
-    "id": "0000000000000000189955fb77ccf2e2",
+    "id": "000000000000000018995a2b081c68b5",
     "gate_id": "G0-DIM-EOS_TOKEN_VALID",
     "scenario": {
       "id": "deepseek-coder-7b-instruct_run_cpu_safetensors_0000000000000000",
@@ -409,7 +409,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-03-03T12:54:26.882075277Z",
+    "timestamp": "2026-03-03T14:11:09.213175221Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
