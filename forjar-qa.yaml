@@ -13,10 +13,9 @@ params:
 machines:
   intel:
     hostname: intel
-    addr: 192.168.50.100
+    addr: localhost
     user: noah
     arch: x86_64
-    ssh_key: ~/.ssh/id_ed25519
 
 resources:
   # ── Tier 0: Build apr-qa binary ────────────────────────────────
