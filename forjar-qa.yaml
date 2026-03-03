@@ -12,7 +12,7 @@ params:
 
 machines:
   intel:
-    hostname: intel
+    hostname: localhost
     addr: localhost
     user: noah
     arch: x86_64
