@@ -1,6 +1,48 @@
 [
   {
-    "id": "000000000000000018985c684f5df7d3",
+    "id": "000000000000000018996b5c1dbe9e0f",
+    "gate_id": "G0-PULL-001",
+    "scenario": {
+      "id": "zephyr-7b-beta_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "HuggingFaceH4",
+        "name": "zephyr-7b-beta",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "G0 Pull: acquire model via apr pull",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: model acquired via apr pull\n\u001b[1;36m=== APR Pull ===\u001b[0m\n\nModel: \u001b[36mHuggingFaceH4\u001b[0m/\u001b[36mzephyr-7b-beta\u001b[0m (\u001b[33m8\u001b[0m shards)\n\n  \u001b[33mDownloading\u001b[0m model.safetensors.index.json\n  \u001b[33m↓\u001b[0m [1/8] model-00001-of-00008.safetensors... 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% \u001b[32mdone\u001b[0m\n  \u001b[33m↓\u001b[0m [2/8] model-00002-of-00008.safetensors... 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% \u001b[32mdone\u001b[0m\n  \u001b[33m↓\u001b[0m [3/8] model-00003-of-00008.safetensors... 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% \u001b[32mdone\u001b[0m\n  \u001b[33m↓\u001b[0m [4/8] model-00004-of-00008.safetensors... 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% \u001b[32mdone\u001b[0m\n  \u001b[33m↓\u001b[0m [5/8] model-00005-of-00008.safetensors... 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% \u001b[32mdone\u001b[0m\n  \u001b[33m↓\u001b[0m [6/8] model-00006-of-00008.safetensors... 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% \u001b[32mdone\u001b[0m\n  \u001b[33m↓\u001b[0m [7/8] model-00007-of-00008.safetensors... 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% \u001b[32mdone\u001b[0m\n  \u001b[33m↓\u001b[0m [8/8] model-00008-of-00008.safetensors... 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% \u001b[32mdone\u001b[0m\n  \u001b[32m✓\u001b[0m tokenizer.json\n  \u001b[32m✓\u001b[0m config.json\n  \u001b[32m✓\u001b[0m tokenizer_config.json\n  \u001b[32m✓\u001b[0m tokenizer.model\n  \u001b[32m✓\u001b[0m .apr-manifest.json (integrity checksums)\n\n\u001b[32m✓\u001b[0m Downloaded successfully\n  Path: \u001b[32m/home/noah/.apr/cache/hf/HuggingFaceH4/zephyr-7b-beta/model.safetensors.index.json\u001b[0m\n  Shards: \u001b[33m8\u001b[0m\n\n  \u001b[36mℹ\u001b[0m To convert formats, run:\n    apr convert /home/noah/.apr/cache/hf/HuggingFaceH4/zephyr-7b-beta/model.safetensors.index.json --format apr\n    apr convert /home/noah/.apr/cache/hf/HuggingFaceH4/zephyr-7b-beta/model.safetensors.index.json --format gguf\n\n\u001b[1;36mUsage:\u001b[0m\n  apr run /home/noah/.apr/cache/hf/HuggingFaceH4/zephyr-7b-beta/model.safetensors.index.json\n  apr serve /home/noah/.apr/cache/hf/HuggingFaceH4/zephyr-7b-beta/model.safetensors.index.json\n",
+    "stderr": null,
+    "exit_code": 0,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 143339
+    },
+    "timestamp": "2026-03-03T19:26:11.727197970Z",
+    "host": {
+      "hostname": "mac-server",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "000000000000000018996b5c1dc0545a",
     "gate_id": "G0-DIM-CONFIG_PARSE",
     "scenario": {
       "id": "zephyr-7b-beta_run_cpu_safetensors_0000000000000000",
@@ -19,11 +61,11 @@
       "trace_level": "none",
       "oracle_type": "garbage"
     },
-    "outcome": "Falsified",
-    "reason": "G0 FAIL: config_parse expected=config.json parseable actual=no config.json or empty",
-    "output": "expected=config.json parseable actual=no config.json or empty",
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: config_parse expected=config.json parseable actual=parsed successfully",
     "stderr": null,
-    "exit_code": null,
+    "exit_code": 0,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
@@ -31,7 +73,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-28T08:40:56.448204564Z",
+    "timestamp": "2026-03-03T19:26:11.727308550Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -42,7 +84,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018985c684f5e2ce0",
+    "id": "000000000000000018996b5c1dc06596",
     "gate_id": "G0-DIM-HIDDEN_SIZE",
     "scenario": {
       "id": "zephyr-7b-beta_run_cpu_safetensors_0000000000000000",
@@ -61,11 +103,11 @@
       "trace_level": "none",
       "oracle_type": "garbage"
     },
-    "outcome": "Falsified",
-    "reason": "G0 FAIL: hidden_size expected=4096 actual=missing",
-    "output": "expected=4096 actual=missing",
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: hidden_size expected=4096 actual=4096",
     "stderr": null,
-    "exit_code": null,
+    "exit_code": 0,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
@@ -73,7 +115,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-28T08:40:56.448217541Z",
+    "timestamp": "2026-03-03T19:26:11.727312781Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -84,7 +126,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018985c684f5e4b67",
+    "id": "000000000000000018996b5c1dc071bf",
     "gate_id": "G0-DIM-NUM_LAYERS",
     "scenario": {
       "id": "zephyr-7b-beta_run_cpu_safetensors_0000000000000000",
@@ -103,11 +145,11 @@
       "trace_level": "none",
       "oracle_type": "garbage"
     },
-    "outcome": "Falsified",
-    "reason": "G0 FAIL: num_layers expected=32 actual=missing",
-    "output": "expected=32 actual=missing",
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: num_layers expected=32 actual=32",
     "stderr": null,
-    "exit_code": null,
+    "exit_code": 0,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
@@ -115,7 +157,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-28T08:40:56.448225212Z",
+    "timestamp": "2026-03-03T19:26:11.727316347Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -126,7 +168,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018985c684f5e6645",
+    "id": "000000000000000018996b5c1dc07edc",
     "gate_id": "G0-DIM-NUM_HEADS",
     "scenario": {
       "id": "zephyr-7b-beta_run_cpu_safetensors_0000000000000000",
@@ -145,11 +187,11 @@
       "trace_level": "none",
       "oracle_type": "garbage"
     },
-    "outcome": "Falsified",
-    "reason": "G0 FAIL: num_heads expected=32 actual=missing",
-    "output": "expected=32 actual=missing",
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: num_heads expected=32 actual=32",
     "stderr": null,
-    "exit_code": null,
+    "exit_code": 0,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
@@ -157,7 +199,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-28T08:40:56.448231999Z",
+    "timestamp": "2026-03-03T19:26:11.727319255Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -168,7 +210,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018985c684f5e800e",
+    "id": "000000000000000018996b5c1dc08da0",
     "gate_id": "G0-DIM-NUM_KV_HEADS",
     "scenario": {
       "id": "zephyr-7b-beta_run_cpu_safetensors_0000000000000000",
@@ -187,11 +229,11 @@
       "trace_level": "none",
       "oracle_type": "garbage"
     },
-    "outcome": "Falsified",
-    "reason": "G0 FAIL: num_kv_heads expected=8 actual=missing",
-    "output": "expected=8 actual=missing",
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: num_kv_heads expected=8 actual=8",
     "stderr": null,
-    "exit_code": null,
+    "exit_code": 0,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
@@ -199,7 +241,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-28T08:40:56.448238576Z",
+    "timestamp": "2026-03-03T19:26:11.727323062Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -210,7 +252,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018985c684f5e9d8a",
+    "id": "000000000000000018996b5c1dc096cd",
     "gate_id": "G0-DIM-VOCAB_SIZE",
     "scenario": {
       "id": "zephyr-7b-beta_run_cpu_safetensors_0000000000000000",
@@ -229,11 +271,11 @@
       "trace_level": "none",
       "oracle_type": "garbage"
     },
-    "outcome": "Falsified",
-    "reason": "G0 FAIL: vocab_size expected=32000 actual=missing",
-    "output": "expected=32000 actual=missing",
+    "outcome": "Corroborated",
+    "reason": "Test passed",
+    "output": "G0 PASS: vocab_size expected=32000 actual=32000",
     "stderr": null,
-    "exit_code": null,
+    "exit_code": 0,
     "metrics": {
       "tokens_per_second": null,
       "time_to_first_token_ms": null,
@@ -241,7 +283,7 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-28T08:40:56.448246400Z",
+    "timestamp": "2026-03-03T19:26:11.727325261Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
@@ -252,7 +294,7 @@
     "metadata": {}
   },
   {
-    "id": "000000000000000018985c684f5ebbdb",
+    "id": "000000000000000018996b5c1dc0a28b",
     "gate_id": "G0-DIM-SAFETENSORS_FOUND",
     "scenario": {
       "id": "zephyr-7b-beta_run_cpu_safetensors_0000000000000000",
@@ -283,7 +325,91 @@
       "memory_peak_mb": null,
       "duration_ms": 0
     },
-    "timestamp": "2026-02-28T08:40:56.448253754Z",
+    "timestamp": "2026-03-03T19:26:11.727328474Z",
+    "host": {
+      "hostname": "mac-server",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "000000000000000018996b5c1dc0ade1",
+    "gate_id": "G0-DIM-TOKENIZER_EXISTS",
+    "scenario": {
+      "id": "zephyr-7b-beta_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "HuggingFaceH4",
+        "name": "zephyr-7b-beta",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Dimensional check: tokenizer_exists",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "G0 FAIL: tokenizer_exists expected=valid tokenizer.json or non-empty tokenizer.model actual=no tokenizer file",
+    "output": "expected=valid tokenizer.json or non-empty tokenizer.model actual=no tokenizer file",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-03-03T19:26:11.727331207Z",
+    "host": {
+      "hostname": "mac-server",
+      "os": "linux",
+      "cpu": "unknown",
+      "gpu": null,
+      "apr_version": "unknown"
+    },
+    "metadata": {}
+  },
+  {
+    "id": "000000000000000018996b5c1dc0be65",
+    "gate_id": "G0-DIM-EOS_TOKEN_VALID",
+    "scenario": {
+      "id": "zephyr-7b-beta_run_cpu_safetensors_0000000000000000",
+      "model": {
+        "org": "HuggingFaceH4",
+        "name": "zephyr-7b-beta",
+        "variant": null
+      },
+      "modality": "run",
+      "backend": "cpu",
+      "format": "safetensors",
+      "prompt": "Dimensional check: eos_token_valid",
+      "temperature": 0.0,
+      "max_tokens": 32,
+      "seed": 0,
+      "trace_level": "none",
+      "oracle_type": "garbage"
+    },
+    "outcome": "Falsified",
+    "reason": "G0 FAIL: eos_token_valid expected=eos_token or eos_token_id actual=missing (no eos_token or eos_token_id)",
+    "output": "expected=eos_token or eos_token_id actual=missing (no eos_token or eos_token_id)",
+    "stderr": null,
+    "exit_code": null,
+    "metrics": {
+      "tokens_per_second": null,
+      "time_to_first_token_ms": null,
+      "total_tokens": null,
+      "memory_peak_mb": null,
+      "duration_ms": 0
+    },
+    "timestamp": "2026-03-03T19:26:11.727335372Z",
     "host": {
       "hostname": "mac-server",
       "os": "linux",
