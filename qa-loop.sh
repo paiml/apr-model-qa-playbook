@@ -17,6 +17,8 @@ QA_MACHINE="${QA_MACHINE:-intel}"
 QA_DB="${QA_DB:-/home/noah/data/qa-jobs/qa-jobs.db}"
 QA_REPO="${QA_REPO:-/home/noah/src/apr-model-qa-playbook}"
 COOLDOWN=30
+DISK_THRESHOLD=90   # Refuse new jobs above this % usage
+CURRENT_PLAYBOOK="" # Tracks in-flight job for trap cleanup
 
 # Route DB commands through SSH when running on local machine
 if [ "$QA_MACHINE" = "local" ]; then
@@ -86,6 +88,57 @@ cleanup_evidence() {
     fi
 }
 
+# ── Trap: clean up on kill (SIGTERM/SIGINT/EXIT) ──────────────────
+# If the loop is killed mid-run, cleanup_evidence never runs.
+# This trap ensures heavy artifacts are always removed.
+cleanup_on_exit() {
+    echo "[trap] Loop interrupted — cleaning up..."
+    if [ -n "$CURRENT_PLAYBOOK" ]; then
+        cleanup_evidence "$CURRENT_PLAYBOOK"
+        # Reset the job so it can be re-claimed
+        $JOBS_CMD reset-stale "$QA_MACHINE" 2>/dev/null || true
+    fi
+    rm -rf "$QA_REPO/output"
+    echo "[trap] Cleanup complete."
+}
+trap cleanup_on_exit EXIT INT TERM
+
+# ── Disk guard: refuse new jobs if disk too full ──────────────────
+disk_usage_pct() {
+    df --output=pcent /home/noah 2>/dev/null | tail -1 | tr -d ' %'
+}
+
+check_disk() {
+    usage=$(disk_usage_pct)
+    if [ "$usage" -ge "$DISK_THRESHOLD" ]; then
+        echo "[disk] ${usage}% used (threshold: ${DISK_THRESHOLD}%) — pausing"
+        return 1
+    fi
+    return 0
+}
+
+# ── Evict HF cache for certified models ───────────────────────────
+# After a model is certified, its weights are no longer needed.
+# Delete cached weights to reclaim disk space.
+evict_hf_cache() {
+    playbook="$1"
+    model_short=$(echo "$playbook" | sed 's/-mvp$//')
+
+    # Find the HF repo from the playbook YAML
+    pb_file="$QA_REPO/playbooks/models/${playbook}.playbook.yaml"
+    [ -f "$pb_file" ] || return 0
+
+    hf_repo=$(grep 'hf_repo:' "$pb_file" | head -1 | sed 's/.*hf_repo:\s*["'\'']\?\([^"'\'']*\)["'\'']\?.*/\1/')
+    [ -n "$hf_repo" ] || return 0
+
+    cache_dir="$HOME/.apr/cache/hf/$hf_repo"
+    if [ -d "$cache_dir" ]; then
+        size=$(du -sm "$cache_dir" 2>/dev/null | cut -f1 || echo 0)
+        rm -rf "$cache_dir"
+        echo "[evict] Freed ${size}MB from HF cache: $hf_repo"
+    fi
+}
+
 # ── Commit evidence to git (best-effort) ────────────────────────
 commit_evidence() {
     playbook="$1"
@@ -117,6 +170,12 @@ while [ "$iteration" -lt 999999 ]; do
     # Sync repo (non-fatal)
     cd "$QA_REPO" && git pull --rebase origin main 2>/dev/null || true
 
+    # Disk guard: skip claiming if disk too full
+    if ! check_disk; then
+        sleep 60
+        continue
+    fi
+
     # Claim next job
     playbook=$($JOBS_CMD claim "$QA_MACHINE" || true)
 
@@ -127,6 +186,7 @@ while [ "$iteration" -lt 999999 ]; do
     fi
 
     echo "[$iteration] Claimed: $playbook"
+    CURRENT_PLAYBOOK="$playbook"
 
     start_time=$(date +%s)
 
@@ -177,6 +237,12 @@ while [ "$iteration" -lt 999999 ]; do
     cleanup_evidence "$playbook"
     rm -rf "$QA_REPO/output"
 
+    # Evict HF cache for certified models (weights no longer needed)
+    if [ "$pipeline_ok" = true ]; then
+        evict_hf_cache "$playbook"
+    fi
+
+    CURRENT_PLAYBOOK=""
     echo "[$iteration] Cooldown ${COOLDOWN}s..."
     sleep "$COOLDOWN"
 done
