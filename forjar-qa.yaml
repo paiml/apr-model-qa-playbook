@@ -370,26 +370,7 @@ resources:
       scripts/check-certified.sh output/evidence.json "{{params.pass_threshold}}"
     output_artifacts:
       - "certifications/{{item}}/evidence.json"
-    post_apply: |
-      cd "{{params.qa_repo}}" || exit 1
-      git add "certifications/{{item}}/evidence.json" 2>/dev/null || true
-      git commit -m "qa: certify {{item}} (mvp) (Refs #10)" 2>/dev/null || true
-      git push origin main 2>/dev/null || true
-
-      hf_repo="$(grep 'hf_repo:' "playbooks/models/{{item}}-mvp.playbook.yaml" | head -1 | sed "s/.*hf_repo:\s*[\"']\?\([^\"']*\)[\"']\?.*/\1/")"
-      cache_dir="$HOME/.apr/cache/hf/${hf_repo:?}"
-      if [ -d "$cache_dir" ] && [ -n "$cache_dir" ]; then
-        size="$(du -sm "$cache_dir" 2>/dev/null | cut -f1 || echo 0)"
-        rm -rf "${cache_dir:?}" || exit 1
-        echo "evict: Freed ${size}MB from HF cache: $hf_repo"
-      fi
-
-      for subdir in "{{params.evidence_dir}}/{{item}}"/workspace "{{params.evidence_dir}}/{{item}}"/conversions; do
-        if [ -d "$subdir" ] && [ -n "$subdir" ]; then
-          rm -rf "${subdir:?}" || exit 1
-        fi
-      done
-      rm -rf output || true
+    post_apply: "scripts/post-certify.sh {{item}} {{params.qa_repo}} {{params.evidence_dir}}"
 
 policy:
   failure: continue_independent
