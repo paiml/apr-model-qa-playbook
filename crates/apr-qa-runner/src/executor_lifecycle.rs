@@ -98,17 +98,77 @@ impl Executor {
             });
         }
 
+        // Jidoka: stop the line on any G0 sub-gate failure
+        if format_failed > 0 {
+            return Ok(ExecutionResult {
+                playbook_name: playbook.name.clone(),
+                total_scenarios: total + pull_passed + format_passed + format_failed + validate_passed,
+                passed: pull_passed + format_passed + validate_passed,
+                failed: total + format_failed,
+                skipped: 0,
+                duration_ms: start.elapsed().as_millis() as u64,
+                gateway_failed: Some(
+                    "G0-FORMAT: Model format check failed".to_string(),
+                ),
+                evidence: self.collector.clone(),
+            });
+        }
+
         let (tensor_passed, tensor_failed) = self.check_g0_tensor(playbook);
+        if tensor_failed > 0 {
+            return Ok(ExecutionResult {
+                playbook_name: playbook.name.clone(),
+                total_scenarios: total + pull_passed + format_passed + validate_passed + tensor_passed + tensor_failed,
+                passed: pull_passed + format_passed + validate_passed + tensor_passed,
+                failed: total + tensor_failed,
+                skipped: 0,
+                duration_ms: start.elapsed().as_millis() as u64,
+                gateway_failed: Some(
+                    "G0-TENSOR-001: Tensor template mismatch".to_string(),
+                ),
+                evidence: self.collector.clone(),
+            });
+        }
+
         let (integrity_passed, integrity_failed) =
             self.config.model_path.clone().map_or((0, 0), |model_path| {
                 let model_id = playbook.model_id();
                 self.run_g0_integrity_check(Path::new(&model_path), &model_id)
             });
+        if integrity_failed > 0 {
+            return Ok(ExecutionResult {
+                playbook_name: playbook.name.clone(),
+                total_scenarios: total + pull_passed + format_passed + validate_passed + tensor_passed + integrity_passed + integrity_failed,
+                passed: pull_passed + format_passed + validate_passed + tensor_passed + integrity_passed,
+                failed: total + integrity_failed,
+                skipped: 0,
+                duration_ms: start.elapsed().as_millis() as u64,
+                gateway_failed: Some(
+                    "G0-INTEGRITY: Config/tensor metadata mismatch".to_string(),
+                ),
+                evidence: self.collector.clone(),
+            });
+        }
+
         let (layout_passed, layout_failed) =
             self.config.model_path.clone().map_or((0, 0), |model_path| {
                 let model_id = playbook.model_id();
                 self.run_g0_layout_check(Path::new(&model_path), &model_id)
             });
+        if layout_failed > 0 {
+            return Ok(ExecutionResult {
+                playbook_name: playbook.name.clone(),
+                total_scenarios: total + pull_passed + format_passed + validate_passed + tensor_passed + integrity_passed + layout_passed + layout_failed,
+                passed: pull_passed + format_passed + validate_passed + tensor_passed + integrity_passed + layout_passed,
+                failed: total + layout_failed,
+                skipped: 0,
+                duration_ms: start.elapsed().as_millis() as u64,
+                gateway_failed: Some(
+                    "G0-LAYOUT: Tensor layout contract violation".to_string(),
+                ),
+                evidence: self.collector.clone(),
+            });
+        }
 
         // Execute scenarios
         let (passed, failed, skipped) = self.execute_scenarios(scenarios, &playbook.name);
@@ -233,7 +293,23 @@ impl Executor {
                     evidence: self.collector.clone(),
                 });
             }
-            PathBuf::from(pulled_path.unwrap_or_default())
+            match pulled_path {
+                Some(p) if !p.is_empty() => PathBuf::from(p),
+                _ => {
+                    return Ok(ExecutionResult {
+                        playbook_name: playbook.name.clone(),
+                        total_scenarios: 0,
+                        passed: 0,
+                        failed: 1,
+                        skipped: 0,
+                        duration_ms: start.elapsed().as_millis() as u64,
+                        gateway_failed: Some(
+                            "G0-PULL-001: Pull succeeded but returned no path".to_string(),
+                        ),
+                        evidence: self.collector.clone(),
+                    });
+                }
+            }
         };
 
         let check_result = crate::dimensional_check::run_dimensional_check(&model_path, playbook);
@@ -491,7 +567,11 @@ impl Executor {
                 self.print_fail_fast_diagnostics(evidence, playbook_name);
                 true
             }
-            FailurePolicy::StopOnP0 => evidence.gate_id.contains("-P0-"),
+            FailurePolicy::StopOnP0 => {
+                evidence.gate_id.starts_with("G0-")
+                    || evidence.gate_id.starts_with("F-INT-")
+                    || evidence.gate_id.starts_with("F-SEC-")
+            }
             FailurePolicy::CollectAll => false,
         }
     }

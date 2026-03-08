@@ -358,8 +358,10 @@ fn save_evidence(model_output: &std::path::Path, result: &apr_qa_runner::Executi
     }
     let evidence_path = model_output.join("evidence.json");
     if let Ok(json) = result.evidence.to_json() {
-        let _ = std::fs::write(&evidence_path, json);
-        println!("  Evidence: {}", evidence_path.display());
+        match std::fs::write(&evidence_path, json) {
+            Ok(()) => println!("  Evidence: {}", evidence_path.display()),
+            Err(e) => eprintln!("  Error writing evidence: {e}"),
+        }
     }
 }
 

@@ -150,7 +150,8 @@ fn test_proportional_score() {
     assert_eq!(MqsCalculator::proportional_score_or_full(10, 10, 200), 200);
     assert_eq!(MqsCalculator::proportional_score_or_full(5, 10, 200), 100);
     assert_eq!(MqsCalculator::proportional_score_or_full(0, 10, 200), 0);
-    assert_eq!(MqsCalculator::proportional_score_or_full(0, 0, 200), 200);
+    // Untested categories score zero (Popper: untested ≠ qualified)
+    assert_eq!(MqsCalculator::proportional_score_or_full(0, 0, 200), 0);
 }
 
 /// Verify calculate_grade maps scores to correct letter grades
@@ -404,18 +405,15 @@ fn test_mqs_calculator_check_gateways() {
     assert_eq!(gateways.len(), 5);
 }
 
-/// Verify with_failure_multiplier sets the failure penalty multiplier
-#[test]
-fn test_mqs_calculator_with_failure_multiplier() {
-    let calc = MqsCalculator::new().with_failure_multiplier(2.0);
-    assert_eq!(calc.failure_multiplier, 2.0);
-}
-
-/// Verify default MqsCalculator uses 1.5 failure multiplier
+/// Verify default MqsCalculator is constructible
 #[test]
 fn test_mqs_calculator_default() {
     let calc = MqsCalculator::default();
-    assert_eq!(calc.failure_multiplier, 1.5);
+    let score = calc
+        .calculate("test/model", &EvidenceCollector::new())
+        .expect("Calculation failed");
+    // Empty evidence = untested = F grade
+    assert_eq!(score.grade, "F");
 }
 
 /// Verify MqsCalculator Debug format contains struct name

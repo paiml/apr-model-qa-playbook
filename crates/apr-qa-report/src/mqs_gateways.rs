@@ -33,7 +33,7 @@ impl MqsCalculator {
         // G1: Model loads successfully
         let has_load_failure = evidence
             .iter()
-            .any(|e| e.gate_id.contains("G1") && e.outcome.is_fail());
+            .any(|e| e.gate_id.starts_with("G1") && e.outcome.is_fail());
         if has_load_failure {
             results.push(GatewayResult::failed(
                 "G1",
@@ -47,7 +47,7 @@ impl MqsCalculator {
         // G2: Basic inference works
         let has_inference_failure = evidence
             .iter()
-            .any(|e| e.gate_id.contains("G2") && e.outcome.is_fail());
+            .any(|e| e.gate_id.starts_with("G2") && e.outcome.is_fail());
         if has_inference_failure {
             results.push(GatewayResult::failed(
                 "G2",
@@ -76,7 +76,7 @@ impl MqsCalculator {
         // G4: Output is not garbage
         let garbage_failures = evidence
             .iter()
-            .filter(|e| e.gate_id.contains("G4") && e.outcome.is_fail())
+            .filter(|e| e.gate_id.starts_with("G4") && e.outcome.is_fail())
             .count();
         if garbage_failures > evidence.len() / 4 {
             // More than 25% garbage output
@@ -114,7 +114,7 @@ impl MqsCalculator {
             Self::proportional_score_or_full(pass, total, max)
         };
 
-        // Categories with 0 tests get full credit (no evidence of failure)
+        // Categories with 0 tests score zero (Popper: untested ≠ qualified)
         CategoryScores {
             qual: score_for("QUAL", CategoryScores::MAX_QUAL),
             perf: score_for("PERF", CategoryScores::MAX_PERF),
@@ -160,12 +160,12 @@ impl MqsCalculator {
             .unwrap_or_else(|| "QUAL".to_string())
     }
 
-    /// Calculate proportional score, awarding full credit when no tests exist.
-    /// Rationale: absence of evidence is not evidence of absence -- categories
-    /// with 0 tests should not penalize the overall score.
+    /// Calculate proportional score. Untested categories score zero.
+    /// Rationale (Popper): absence of evidence means the category was never
+    /// subjected to falsification — it cannot earn points it never defended.
     fn proportional_score_or_full(passed: usize, total: usize, max: u32) -> u32 {
         if total == 0 {
-            return max;
+            return 0;
         }
         let ratio = passed as f64 / total as f64;
         (ratio * f64::from(max)).round() as u32

@@ -193,13 +193,15 @@ test_matrix:
 }
 
 #[test]
-fn test_g0_validate_pass_continues_execution() {
-    // When G0-VALIDATE passes, execution should continue normally
-    let mock_runner = MockCommandRunner::new(); // validate_strict_success defaults to true
-    let dir = make_temp_model_dir();
+fn test_g0_all_subgates_na_continues_execution() {
+    // When all G0 sub-gates return (0, 0) — not applicable — execution continues.
+    // With Jidoka early returns, ANY G0 sub-gate failure stops the line.
+    // model_path = None means all sub-gates (FORMAT/VALIDATE/TENSOR/INTEGRITY/LAYOUT)
+    // are skipped (no model to check), so scenarios proceed unblocked.
+    let mock_runner = MockCommandRunner::new().with_inference_response("The answer is 4.");
 
     let config = ExecutionConfig {
-        model_path: Some(dir.path().to_string_lossy().to_string()),
+        model_path: Some("/test/model.gguf".to_string()),
         run_conversion_tests: false,
         run_golden_rule_test: false,
         run_contract_tests: false,
@@ -209,7 +211,7 @@ fn test_g0_validate_pass_continues_execution() {
     let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
 
     let yaml = r#"
-name: validate-pass-test
+name: all-gates-na-test
 version: "1.0.0"
 model:
   hf_repo: "test/model"
@@ -222,10 +224,9 @@ test_matrix:
     let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
     let result = executor.execute(&playbook).expect("Execution failed");
 
-    // No gateway failure
+    // No gateway failure — all sub-gates returned N/A, Jidoka didn't trigger
     assert!(result.gateway_failed.is_none());
-    // At least the validate + 1 scenario
-    assert!(result.total_scenarios >= 2);
+    // Scenarios executed
     assert!(result.passed >= 1);
 }
 

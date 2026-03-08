@@ -60,9 +60,9 @@ fn run_i3_no_silent_fallbacks(
 /// Check if output contains evidence of silent F32 fallback.
 fn contains_f32_fallback(output: &str) -> bool {
     let lower = output.to_lowercase();
-    lower.contains("fallback") && lower.contains("f32")
+    (lower.contains("fallback") && lower.contains("f32"))
         || lower.contains("defaulting to f32")
-        || lower.contains("unknown dtype")
+        || (lower.contains("unknown dtype") && lower.contains("f32"))
 }
 
 /// I-4: Statistical Preservation — tensor stats within dtype tolerance.
@@ -89,7 +89,7 @@ fn run_i4_statistical_preservation(
         );
     }
 
-    if result.stdout.contains("\"passed\":true") || result.stdout.contains("passed") {
+    if result.stdout.contains("\"passed\":true") || result.stdout.contains("\"passed\": true") {
         let mut ev =
             Evidence::corroborated(gate_id, contract_scenario(model_id), &result.stdout, 0);
         ev.reason = "I-4 Statistical Preservation: tensor statistics preserved within tolerance"

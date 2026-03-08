@@ -383,6 +383,8 @@ fn run_tool_tests(
     println!("{}", "-".repeat(60));
     println!("Total: {passed} passed, {failed} failed\n");
 
+    let has_failures = failed > 0;
+
     // Save results to JSON
     if let Err(e) = std::fs::create_dir_all(output_dir) {
         eprintln!("Error creating output directory: {e}");
@@ -411,6 +413,10 @@ fn run_tool_tests(
         eprintln!("Error saving tool test results: {e}");
     } else {
         println!("Results saved to: {}", results_path.display());
+    }
+
+    if has_failures {
+        std::process::exit(1);
     }
 }
 

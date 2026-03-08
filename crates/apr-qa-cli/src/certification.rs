@@ -46,6 +46,15 @@ fn run_certification(
 
     println!("Models to certify: {}\n", models_to_certify.len());
 
+    if models_to_certify.is_empty() {
+        eprintln!("Error: No models matched the given filter.");
+        if let Some(ref fam) = family {
+            eprintln!("  Family '{fam}' not found in models.csv.");
+        }
+        eprintln!("  Use --all or specify valid model IDs.");
+        std::process::exit(1);
+    }
+
     if dry_run {
         for model_id in &models_to_certify {
             let playbook_name = playbook_path_for_model(model_id, tier);
