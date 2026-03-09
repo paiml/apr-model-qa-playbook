@@ -180,11 +180,15 @@ impl EvidenceExport {
         playbook: PlaybookMeta,
     ) -> Self {
         let total_scenarios = mqs.total_tests;
-        let passed = mqs.tests_passed;
         let failed = mqs.tests_failed;
-        let skipped = total_scenarios
-            .saturating_sub(passed)
-            .saturating_sub(failed);
+
+        // Count skipped from evidence (MqsScore.tests_passed includes Skipped
+        // via is_pass(), so we must separate them to avoid always-zero skipped)
+        let skipped = evidence
+            .iter()
+            .filter(|e| e.get("outcome").and_then(|o| o.as_str()) == Some("Skipped"))
+            .count();
+        let passed = mqs.tests_passed.saturating_sub(skipped);
 
         let pass_rate = if total_scenarios > 0 {
             passed as f64 / total_scenarios as f64

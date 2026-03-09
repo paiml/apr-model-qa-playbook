@@ -3,28 +3,30 @@ impl MqsCalculator {
     fn check_gateways(&self, evidence: &[Evidence]) -> Vec<GatewayResult> {
         let mut results = Vec::new();
 
-        // G0: Model integrity (config/tensor consistency)
-        // Checks for G0-INTEGRITY-* gate IDs
-        let integrity_failures: Vec<&Evidence> = evidence
+        // G0: Model integrity — all G0-* sub-gates (INTEGRITY, DIM, FORMAT, VALIDATE,
+        // TENSOR, LAYOUT, PULL). The executor enforces Jidoka early returns, but when
+        // evidence is scored independently (via `score` or `report` CLI), we must catch
+        // ALL G0 failures, not just G0-INTEGRITY.
+        let g0_failures: Vec<&Evidence> = evidence
             .iter()
-            .filter(|e| e.gate_id.starts_with("G0-INTEGRITY") && e.outcome.is_fail())
+            .filter(|e| e.gate_id.starts_with("G0-") && e.outcome.is_fail())
             .collect();
-        if integrity_failures.is_empty() {
+        if g0_failures.is_empty() {
             results.push(GatewayResult::passed(
                 "G0",
-                "Model integrity (config/tensor match)",
+                "Model integrity (config/tensor/format/layout)",
             ));
         } else {
-            let error_details: Vec<&str> = integrity_failures
+            let error_details: Vec<&str> = g0_failures
                 .iter()
                 .map(|e| e.reason.as_str())
                 .collect();
             results.push(GatewayResult::failed(
                 "G0",
-                "Model integrity (config/tensor match)",
+                "Model integrity (config/tensor/format/layout)",
                 format!(
-                    "{} integrity check(s) failed: {}",
-                    integrity_failures.len(),
+                    "{} G0 check(s) failed: {}",
+                    g0_failures.len(),
                     error_details.join("; ")
                 ),
             ));

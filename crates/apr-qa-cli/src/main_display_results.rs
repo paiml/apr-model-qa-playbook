@@ -47,8 +47,11 @@ fn print_playbook_results(result: &apr_qa_runner::ExecutionResult) {
     }
 }
 
-/// Serialize and write execution evidence to a JSON file or directory
-fn save_playbook_evidence(result: &apr_qa_runner::ExecutionResult, output_dir: &PathBuf) {
+/// Serialize and write execution evidence to a JSON file or directory.
+///
+/// Returns `true` on success, `false` on any I/O or serialization failure.
+/// Callers should exit non-zero when this returns false to avoid silent data loss.
+fn save_playbook_evidence(result: &apr_qa_runner::ExecutionResult, output_dir: &PathBuf) -> bool {
     // GH-212: If --output ends with .json, treat as file path, not directory
     let evidence_path = if output_dir
         .extension()
@@ -57,13 +60,13 @@ fn save_playbook_evidence(result: &apr_qa_runner::ExecutionResult, output_dir: &
         let parent = output_dir.parent().unwrap_or_else(|| Path::new("."));
         if let Err(e) = std::fs::create_dir_all(parent) {
             eprintln!("Error creating output directory: {e}");
-            return;
+            return false;
         }
         output_dir.clone()
     } else {
         if let Err(e) = std::fs::create_dir_all(output_dir) {
             eprintln!("Error creating output directory: {e}");
-            return;
+            return false;
         }
         output_dir.join("evidence.json")
     };
@@ -71,15 +74,19 @@ fn save_playbook_evidence(result: &apr_qa_runner::ExecutionResult, output_dir: &
         Ok(json) => {
             if let Err(e) = std::fs::write(&evidence_path, json) {
                 eprintln!("Error writing evidence: {e}");
-            } else {
-                println!(
-                    "\n{} {}",
-                    "Evidence saved to:".green(),
-                    evidence_path.display().to_string().cyan()
-                );
+                return false;
             }
+            println!(
+                "\n{} {}",
+                "Evidence saved to:".green(),
+                evidence_path.display().to_string().cyan()
+            );
+            true
         }
-        Err(e) => eprintln!("Error serializing evidence: {e}"),
+        Err(e) => {
+            eprintln!("Error serializing evidence: {e}");
+            false
+        }
     }
 }
 

@@ -315,7 +315,7 @@ fn test_gateway_g0_integrity_failure() {
     assert_eq!(score.normalized_score, 0.0);
     let g0 = score.gateways.iter().find(|g| g.id == "G0").unwrap();
     assert!(!g0.passed);
-    assert!(g0.failure_reason.as_ref().unwrap().contains("integrity"));
+    assert!(g0.failure_reason.as_ref().unwrap().contains("1 G0 check"));
 }
 
 #[test]
@@ -355,7 +355,7 @@ fn test_gateway_g0_integrity_multiple_failures() {
     let g0 = score.gateways.iter().find(|g| g.id == "G0").unwrap();
     assert!(!g0.passed);
     // Should mention all 3 failures
-    assert!(g0.failure_reason.as_ref().unwrap().contains("3 integrity"));
+    assert!(g0.failure_reason.as_ref().unwrap().contains("3 G0 check"));
 }
 
 #[test]
@@ -388,6 +388,50 @@ fn test_gateway_order_g0_first() {
     assert_eq!(gateways[2].id, "G2");
     assert_eq!(gateways[3].id, "G3");
     assert_eq!(gateways[4].id, "G4");
+}
+
+/// Verify G0 gateway catches non-INTEGRITY G0 sub-gate failures (DIM, FORMAT, LAYOUT, etc.)
+/// Regression test: prior to round 16, only "G0-INTEGRITY" prefix was checked.
+#[test]
+fn test_gateway_g0_catches_dim_and_format_failures() {
+    let calc = MqsCalculator::new();
+    let mut collector = EvidenceCollector::new();
+
+    // G0-DIM failure (from metadata-only mode)
+    collector.add(Evidence::falsified(
+        "G0-DIM-HIDDEN_SIZE",
+        test_scenario(),
+        "expected hidden_size=896 actual=0",
+        "",
+        50,
+    ));
+    // G0-FORMAT failure
+    collector.add(Evidence::falsified(
+        "G0-FORMAT-APR-001",
+        test_scenario(),
+        "APR workspace conversion failed",
+        "",
+        50,
+    ));
+    // G0-LAYOUT failure
+    collector.add(Evidence::falsified(
+        "G0-LAYOUT-001",
+        test_scenario(),
+        "Tensor layout contract violation",
+        "",
+        50,
+    ));
+
+    let score = calc
+        .calculate("test/model", &collector)
+        .expect("Calculation failed");
+
+    // All three G0 failures must zero the score
+    assert!(!score.gateways_passed);
+    assert_eq!(score.raw_score, 0);
+    let g0 = score.gateways.iter().find(|g| g.id == "G0").unwrap();
+    assert!(!g0.passed);
+    assert!(g0.failure_reason.as_ref().unwrap().contains("3 G0 check"));
 }
 
 #[test]

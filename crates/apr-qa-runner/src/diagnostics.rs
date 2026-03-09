@@ -366,33 +366,89 @@ impl FailFastReporter {
         Some(result)
     }
 
-    /// Run an external command and capture output with timeout detection
+    /// Run an external command with enforced timeout.
+    ///
+    /// Spawns the process and polls `try_wait` with 100ms intervals. If the
+    /// process exceeds `timeout`, it is killed and reaped — the caller gets
+    /// `timed_out = true` instead of blocking indefinitely.
     fn run_command_with_timeout(&self, args: &[&str], timeout: Duration) -> DiagnosticResult {
+        use std::io::Read;
+        use std::process::Stdio;
+
         let start = Instant::now();
         let command_str = args.join(" ");
 
-        let output = Command::new(args[0]).args(&args[1..]).output();
+        let mut child = match Command::new(args[0])
+            .args(&args[1..])
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+        {
+            Ok(c) => c,
+            Err(e) => {
+                return DiagnosticResult {
+                    command: command_str,
+                    success: false,
+                    stdout: String::new(),
+                    stderr: format!("Failed to execute: {e}"),
+                    duration_ms: 0,
+                    timed_out: false,
+                };
+            }
+        };
 
-        let duration = start.elapsed();
-        let timed_out = duration > timeout;
-
-        match output {
-            Ok(out) => DiagnosticResult {
-                command: command_str,
-                success: out.status.success(),
-                stdout: String::from_utf8_lossy(&out.stdout).to_string(),
-                stderr: String::from_utf8_lossy(&out.stderr).to_string(),
-                duration_ms: duration.as_millis() as u64,
-                timed_out,
-            },
-            Err(e) => DiagnosticResult {
-                command: command_str,
-                success: false,
-                stdout: String::new(),
-                stderr: format!("Failed to execute: {e}"),
-                duration_ms: duration.as_millis() as u64,
-                timed_out,
-            },
+        let poll_interval = Duration::from_millis(100);
+        loop {
+            match child.try_wait() {
+                Ok(Some(status)) => {
+                    // Process exited — read output from pipes
+                    let mut stdout = String::new();
+                    let mut stderr = String::new();
+                    if let Some(ref mut out) = child.stdout {
+                        let _ = out.read_to_string(&mut stdout);
+                    }
+                    if let Some(ref mut err) = child.stderr {
+                        let _ = err.read_to_string(&mut stderr);
+                    }
+                    return DiagnosticResult {
+                        command: command_str,
+                        success: status.success(),
+                        stdout,
+                        stderr,
+                        duration_ms: start.elapsed().as_millis() as u64,
+                        timed_out: false,
+                    };
+                }
+                Ok(None) => {
+                    // Still running — check timeout
+                    if start.elapsed() > timeout {
+                        let _ = child.kill();
+                        let _ = child.wait(); // reap zombie
+                        return DiagnosticResult {
+                            command: command_str,
+                            success: false,
+                            stdout: String::new(),
+                            stderr: format!(
+                                "Process killed after {}ms timeout",
+                                timeout.as_millis()
+                            ),
+                            duration_ms: start.elapsed().as_millis() as u64,
+                            timed_out: true,
+                        };
+                    }
+                    std::thread::sleep(poll_interval);
+                }
+                Err(e) => {
+                    return DiagnosticResult {
+                        command: command_str,
+                        success: false,
+                        stdout: String::new(),
+                        stderr: format!("Error waiting for process: {e}"),
+                        duration_ms: start.elapsed().as_millis() as u64,
+                        timed_out: false,
+                    };
+                }
+            }
         }
     }
 

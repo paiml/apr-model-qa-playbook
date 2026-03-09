@@ -465,5 +465,8 @@ fn run_playbook(
     };
 
     print_playbook_results(&result);
-    save_playbook_evidence(&result, output_dir);
+    if !save_playbook_evidence(&result, output_dir) {
+        eprintln!("Error: evidence save failed — results may be lost");
+        std::process::exit(1);
+    }
 }

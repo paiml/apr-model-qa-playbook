@@ -5,7 +5,7 @@ metadata:
   description: "GarbageOracle output quality gate (G4) with LAYOUT-002 detection"
   registry: true
   references:
-    - "crates/apr-qa-gen/src/oracle.rs:132 — GarbageOracle::evaluate(prompt, output)"
+    - "crates/apr-qa-gen/src/oracle.rs:149 — GarbageOracle::evaluate(prompt, output)"
     - "§10.2 Oracle Definitions"
     - "§4.1.1 LAYOUT-002: Row-Major Mandate"
     - "docs/tickets/GH-190-GGUF-APR-CONVERSION-GARBAGE-OUTPUT.md"
