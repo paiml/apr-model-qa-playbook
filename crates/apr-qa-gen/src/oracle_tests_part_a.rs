@@ -164,7 +164,7 @@ fn test_code_syntax_oracle_with_patterns() {
     assert!(result.is_corroborated());
 }
 
-/// Verify code syntax oracle tolerates documentation prose
+/// Verify code syntax oracle falsifies long prose without code patterns
 #[test]
 fn test_code_syntax_oracle_long_prose() {
     let oracle = CodeSyntaxOracle::new();
@@ -172,7 +172,7 @@ fn test_code_syntax_oracle_long_prose() {
         "test",
         "This is a long description that doesn't contain any code patterns whatsoever.",
     );
-    assert!(result.is_corroborated()); // Might be documentation
+    assert!(result.is_falsified()); // Popperian: no code patterns → falsified
 }
 
 /// Verify code syntax oracle falsifies empty output
@@ -491,5 +491,27 @@ fn test_char_ngram_partial_coverage_not_flagged() {
     assert!(!check_substring_repetition("abcabcXYZ"));
 }
 
+// --- NaN/Inf word-boundary tests ---
 
+/// Verify NaN/Inf detection does not false-positive on common English words
+#[test]
+fn test_garbage_oracle_no_false_positive_on_inf_words() {
+    let oracle = GarbageOracle::new();
+    // "information" contains "inf" but should NOT be flagged
+    assert!(oracle.evaluate("test", "For more information, visit our website").is_corroborated());
+    // "Infinity" contains "Inf" but is a different token
+    assert!(oracle.evaluate("test", "Infinity stones are fictional").is_corroborated());
+    // "Infrastructure" contains "Inf" substring
+    assert!(oracle.evaluate("test", "Cloud infrastructure is important").is_corroborated());
+}
+
+/// Verify NaN/Inf detection catches standalone tokens
+#[test]
+fn test_garbage_oracle_catches_standalone_nan_inf() {
+    let oracle = GarbageOracle::new();
+    assert!(oracle.evaluate("test", "result: NaN").is_falsified());
+    assert!(oracle.evaluate("test", "result: nan").is_falsified());
+    assert!(oracle.evaluate("test", "loss: inf").is_falsified());
+    assert!(oracle.evaluate("test", "[NaN, Inf, -Inf]").is_falsified());
+}
 

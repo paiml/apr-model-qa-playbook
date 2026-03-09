@@ -473,4 +473,9 @@ fn run_playbook(
         eprintln!("Error: evidence save failed — results may be lost");
         std::process::exit(1);
     }
+
+    // Jidoka: non-zero exit on any failure or gateway blow
+    if result.failed > 0 || result.gateway_failed.is_some() {
+        std::process::exit(1);
+    }
 }

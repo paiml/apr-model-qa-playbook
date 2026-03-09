@@ -116,7 +116,7 @@ fn run_certification(
     );
     println!("{} {}", "Total:".dimmed(), models_to_certify.len());
 
-    if failed_count > 0 && fail_fast {
+    if failed_count > 0 {
         std::process::exit(1);
     }
 }

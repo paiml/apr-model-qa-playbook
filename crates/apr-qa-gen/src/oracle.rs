@@ -113,8 +113,12 @@ impl Oracle for ArithmeticOracle {
             };
         };
 
-        // Check if output contains the expected value
-        if output.contains(&expected.to_string()) {
+        // Check if output contains the expected value as a word boundary
+        // (not just substring — "4" matching "42" is a false positive)
+        let expected_str = expected.to_string();
+        let found = output.split(|c: char| !c.is_ascii_digit() && c != '-')
+            .any(|word| word == expected_str);
+        if found {
             OracleResult::Corroborated {
                 evidence: format!("Found expected value {expected} in output"),
             }
@@ -168,7 +172,8 @@ impl Oracle for GarbageOracle {
         }
 
         // Check for NaN/Inf (numerical explosion)
-        if output.contains("NaN") || output.contains("Inf") || output.contains("inf") {
+        // Use word-boundary matching to avoid false positives on "information", "Infinity", etc.
+        if has_nan_or_inf(output) {
             return OracleResult::Falsified {
                 reason: "Output contains NaN or Inf".to_string(),
                 evidence: format!("Output: {}", truncate(output, 100)),
@@ -262,9 +267,11 @@ impl Oracle for CodeSyntaxOracle {
                 evidence: "Output appears to be valid code".to_string(),
             }
         } else {
-            // Not necessarily a failure - might be a docstring or comment
-            OracleResult::Corroborated {
-                evidence: "Output may be code documentation".to_string(),
+            // Output has no code-like patterns and is long enough to expect them.
+            // Popperian: this falsifies the hypothesis "model generates code".
+            OracleResult::Falsified {
+                reason: "Output does not contain code-like patterns".to_string(),
+                evidence: format!("Output ({} chars): {}", output.len(), truncate(output, 100)),
             }
         }
     }
@@ -376,6 +383,16 @@ fn is_code_prompt(prompt: &str) -> bool {
         || prompt.starts_with("class ")
         || prompt.starts_with("async ")
         || prompt.contains("```")
+}
+
+/// Check if output contains NaN or Inf as standalone tokens (word-boundary aware).
+///
+/// Avoids false positives on common words like "information", "Infinity",
+/// "Infrastructure", etc. Matches: "NaN", "nan", "Inf", "inf", "-Inf", "-inf".
+fn has_nan_or_inf(output: &str) -> bool {
+    let tokens = ["NaN", "nan", "NAN", "Inf", "inf", "-Inf", "-inf", "+Inf", "+inf"];
+    output.split(|c: char| c.is_whitespace() || c == ',' || c == ';' || c == ':' || c == '[' || c == ']' || c == '(' || c == ')')
+        .any(|word| tokens.contains(&word))
 }
 
 /// Check if a string contains a repeating substring pattern
