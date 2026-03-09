@@ -323,14 +323,19 @@ impl EvidenceCollector {
     }
 }
 
-/// Generate a simple UUID v4
+/// Generate a unique ID from timestamp + atomic counter.
+/// Counter ensures uniqueness even when multiple Evidence objects are
+/// created within the same nanosecond (parallel Rayon execution).
 fn uuid_v4() -> String {
+    use std::sync::atomic::{AtomicU64, Ordering};
     use std::time::{SystemTime, UNIX_EPOCH};
+    static COUNTER: AtomicU64 = AtomicU64::new(0);
     let timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map(|d| d.as_nanos())
         .unwrap_or(0);
-    format!("{timestamp:032x}")
+    let seq = COUNTER.fetch_add(1, Ordering::Relaxed);
+    format!("{timestamp:024x}{seq:08x}")
 }
 
 #[cfg(test)]

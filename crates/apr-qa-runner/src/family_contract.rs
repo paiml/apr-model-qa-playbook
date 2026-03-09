@@ -306,7 +306,16 @@ impl FamilyContract {
     /// Get required tensors for a given size variant.
     #[must_use]
     pub fn required_tensors_for_size(&self, size: &str) -> Vec<String> {
-        let num_layers = self.get_size_variant(size).map_or(0, |v| v.num_layers);
+        let num_layers = self.get_size_variant(size).map_or_else(
+            || {
+                eprintln!(
+                    "[JIDOKA] Size variant '{size}' not found in family '{}' — using 0 layers",
+                    self.family
+                );
+                0
+            },
+            |v| v.num_layers,
+        );
 
         self.tensor_template
             .as_ref()
@@ -377,9 +386,17 @@ impl FamilyRegistry {
                     continue;
                 }
 
-                if let Ok(contract) = FamilyContract::from_file(&path) {
-                    self.contracts.insert(contract.family.clone(), contract);
-                    count += 1;
+                match FamilyContract::from_file(&path) {
+                    Ok(contract) => {
+                        self.contracts.insert(contract.family.clone(), contract);
+                        count += 1;
+                    }
+                    Err(e) => {
+                        eprintln!(
+                            "[JIDOKA] Failed to parse family contract {}: {e}",
+                            path.display()
+                        );
+                    }
                 }
             }
         }

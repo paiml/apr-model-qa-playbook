@@ -298,10 +298,16 @@ impl Executor {
                     }
                     match serde_json::from_str::<GoldenMeta>(&data) {
                         Ok(meta) => meta.prompt,
-                        Err(_) => continue, // Skip if can't parse
+                        Err(e) => {
+                            eprintln!("[JIDOKA] Failed to parse golden meta {}: {e}", golden_path.display());
+                            continue;
+                        }
                     }
                 }
-                Err(_) => continue, // Skip if can't read
+                Err(e) => {
+                    eprintln!("[JIDOKA] Failed to read golden file {}: {e}", golden_path.display());
+                    continue;
+                }
             };
 
             // Load golden logits
