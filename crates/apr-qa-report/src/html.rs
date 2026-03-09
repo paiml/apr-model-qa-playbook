@@ -5,7 +5,7 @@
 use apr_qa_runner::EvidenceCollector;
 
 use crate::error::Result;
-use crate::mqs::MqsScore;
+use crate::mqs::{CategoryScores, MqsScore};
 use crate::popperian::PopperianScore;
 
 /// HTML dashboard generator
@@ -289,12 +289,12 @@ impl HtmlDashboard {
     /// Render category breakdown HTML
     fn render_categories(&self, mqs: &MqsScore) -> String {
         let categories = [
-            ("QUAL", mqs.categories.qual, 200),
-            ("PERF", mqs.categories.perf, 150),
-            ("STAB", mqs.categories.stab, 200),
-            ("COMP", mqs.categories.comp, 150),
-            ("EDGE", mqs.categories.edge, 150),
-            ("REGR", mqs.categories.regr, 150),
+            ("QUAL", mqs.categories.qual, CategoryScores::MAX_QUAL),
+            ("PERF", mqs.categories.perf, CategoryScores::MAX_PERF),
+            ("STAB", mqs.categories.stab, CategoryScores::MAX_STAB),
+            ("COMP", mqs.categories.comp, CategoryScores::MAX_COMP),
+            ("EDGE", mqs.categories.edge, CategoryScores::MAX_EDGE),
+            ("REGR", mqs.categories.regr, CategoryScores::MAX_REGR),
         ];
 
         let mut html = String::new();

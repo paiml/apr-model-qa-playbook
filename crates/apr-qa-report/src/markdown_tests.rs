@@ -252,16 +252,29 @@ fn test_qualification_status_tiers() {
     }
 }
 
-/// Verify category extraction from gate IDs
+/// Verify category extraction from gate IDs matches MQS calculator logic
 #[test]
 fn test_extract_category() {
+    // Standard F-{CATEGORY}-xxx pattern
     assert_eq!(extract_category("F-QUAL-001"), "QUAL");
     assert_eq!(extract_category("F-PERF-042"), "PERF");
     assert_eq!(extract_category("F-STAB-100"), "STAB");
     assert_eq!(extract_category("F-COMP-001"), "COMP");
     assert_eq!(extract_category("F-EDGE-001"), "EDGE");
     assert_eq!(extract_category("F-REGR-001"), "REGR");
-    assert_eq!(extract_category("UNKNOWN"), "UNKNOWN");
+    // Prefix-mapped gate IDs
+    assert_eq!(extract_category("G0-INTEGRITY"), "STAB");
+    assert_eq!(extract_category("G0-DIM-001"), "STAB");
+    assert_eq!(extract_category("F-CONV-RT-001"), "REGR");
+    assert_eq!(extract_category("F-CONV-IDEM-001"), "REGR");
+    assert_eq!(extract_category("F-CONV-COM-001"), "REGR");
+    assert_eq!(extract_category("F-CONV-001"), "COMP");
+    assert_eq!(extract_category("F-CONTRACT-001"), "COMP");
+    // Modality gate IDs (F-A1 through F-A6) default to QUAL
+    assert_eq!(extract_category("F-A1-001"), "QUAL");
+    assert_eq!(extract_category("F-A5-COMP-001"), "QUAL");
+    // Unknown/malformed gate IDs default to QUAL
+    assert_eq!(extract_category("UNKNOWN"), "QUAL");
 }
 
 /// Verify evidence detail markdown contains gate ID and outcome
