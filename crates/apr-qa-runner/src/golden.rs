@@ -126,6 +126,13 @@ impl Executor {
             return (0, 0);
         };
         let Some(ref model_path_str) = self.config.model_path else {
+            let model_id = playbook.model_id();
+            let ev = Evidence::skipped(
+                "F-TRANSFORM-SKIP-001",
+                Self::golden_scenario(&model_id),
+                "Transformation tests skipped: model_path not set in ExecutionConfig",
+            );
+            self.collector.add(ev);
             return (0, 0);
         };
         let model_path = model_path_str.clone();
