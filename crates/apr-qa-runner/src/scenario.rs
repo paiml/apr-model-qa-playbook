@@ -253,3 +253,7 @@ mod tests_prune_battery;
 #[cfg(test)]
 #[path = "executor_tests_distill_battery.rs"]
 mod tests_distill_battery;
+
+#[cfg(test)]
+#[path = "executor_tests_transformation.rs"]
+mod tests_transformation;
