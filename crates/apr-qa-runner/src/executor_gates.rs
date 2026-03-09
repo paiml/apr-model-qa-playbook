@@ -12,7 +12,9 @@ impl Executor {
     ///
     /// (passed_count, failed_count) - evidence is added to collector
     fn run_g0_integrity_check(&mut self, model_path: &Path, model_id: &ModelId) -> (usize, usize) {
+        let start = Instant::now();
         let result = Self::run_integrity_analysis(model_path);
+        let duration = start.elapsed().as_millis() as u64;
         let Some(result) = result else {
             let ev = Evidence::skipped(
                 integrity::gate_ids::CONFIG,
@@ -28,7 +30,7 @@ impl Executor {
                 integrity::gate_ids::CONFIG,
                 Self::integrity_scenario(model_id),
                 "G0 PASS: config.json matches tensor metadata",
-                0,
+                duration,
             );
             self.collector.add(ev);
             return (1, 0);
@@ -45,7 +47,7 @@ impl Executor {
                     "Config: {:?}, Tensors: {:?}",
                     result.config_values, result.tensor_values
                 ),
-                0,
+                duration,
             );
             self.collector.add(ev);
             failed += 1;
