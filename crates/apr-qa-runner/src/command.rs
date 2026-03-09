@@ -97,6 +97,7 @@ pub trait CommandRunner: Send + Sync {
         max_p99: Option<f64>,
         warmup: u32,
         measure: u32,
+        no_gpu: bool,
     ) -> CommandOutput;
 
     /// Execute apr rosetta diff-tensors

@@ -80,6 +80,7 @@ impl CommandRunner for RealCommandRunner {
         max_p99: Option<f64>,
         warmup: u32,
         measure: u32,
+        no_gpu: bool,
     ) -> CommandOutput {
         let path_str = model_path.display().to_string();
         let warmup_str = warmup.to_string();
@@ -95,6 +96,10 @@ impl CommandRunner for RealCommandRunner {
             &measure_str,
             "--json",
         ];
+
+        if no_gpu {
+            args.push("--no-gpu");
+        }
 
         let throughput_str;
         if let Some(t) = min_throughput {

@@ -398,8 +398,7 @@ fn test_update_readme_duplicate_end_marker() {
     // If END marker appears twice, only the first is used — content between
     // START and first END gets replaced, second END stays in the "after" section
     let readme = format!(
-        "before\n{}\nold table\n{}\nmiddle\n{}\nafter",
-        START_MARKER, END_MARKER, END_MARKER
+        "before\n{START_MARKER}\nold table\n{END_MARKER}\nmiddle\n{END_MARKER}\nafter",
     );
     let result = update_readme(&readme, "new table").expect("should succeed");
     assert!(result.contains("new table"));

@@ -187,6 +187,7 @@ impl ToolExecutor {
             None,      // No p99 assertion
             1,         // warmup
             2,         // measure
+            false,     // use default backend
         );
 
         let duration_ms = start.elapsed().as_millis() as u64;
@@ -237,8 +238,9 @@ impl ToolExecutor {
             Path::new(&self.model_path),
             Some(1_000_000.0), // Impossible: 1M tok/s
             None,
-            1, // warmup
-            1, // measure
+            1,     // warmup
+            1,     // measure
+            false, // use default backend
         );
 
         let duration_ms = start.elapsed().as_millis() as u64;
@@ -287,6 +289,7 @@ impl ToolExecutor {
             Some(10_000.0), // 10 seconds max p99
             1,              // warmup
             2,              // measure
+            false,          // use default backend
         );
 
         let duration_ms = start.elapsed().as_millis() as u64;

@@ -142,6 +142,7 @@ fn test_executor_conversion_infrastructure_failure() {
             _max_p99: Option<f64>,
             _warmup: u32,
             _measure: u32,
+            _no_gpu: bool,
         ) -> CommandOutput {
             CommandOutput::success("")
         }
@@ -276,7 +277,7 @@ test_matrix:
     assert!(runner.bench_model(p).success);
     assert!(runner.check_model(p).success);
     assert!(runner.profile_model(p, 1, 1).success);
-    assert!(runner.profile_ci(p, None, None, 1, 1).success);
+    assert!(runner.profile_ci(p, None, None, 1, 1, false).success);
     assert!(runner.diff_tensors(p, p, false).success);
     assert!(runner.compare_inference(p, p, "", 1, 0.0).success);
     assert!(runner.profile_with_flamegraph(p, p, false).success);

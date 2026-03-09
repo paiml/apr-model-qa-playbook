@@ -150,7 +150,7 @@ fn test_real_runner_profile_model() {
 fn test_real_runner_profile_ci_all_options() {
     let runner = RealCommandRunner::with_binary("/nonexistent/binary");
     let path = PathBuf::from("model.gguf");
-    let output = runner.profile_ci(&path, Some(10.0), Some(100.0), 5, 10);
+    let output = runner.profile_ci(&path, Some(10.0), Some(100.0), 5, 10, false);
     assert!(!output.success);
 }
 
@@ -158,7 +158,7 @@ fn test_real_runner_profile_ci_all_options() {
 fn test_real_runner_profile_ci_throughput_only() {
     let runner = RealCommandRunner::with_binary("/nonexistent/binary");
     let path = PathBuf::from("model.gguf");
-    let output = runner.profile_ci(&path, Some(50.0), None, 1, 1);
+    let output = runner.profile_ci(&path, Some(50.0), None, 1, 1, false);
     assert!(!output.success);
 }
 
@@ -166,7 +166,7 @@ fn test_real_runner_profile_ci_throughput_only() {
 fn test_real_runner_profile_ci_p99_only() {
     let runner = RealCommandRunner::with_binary("/nonexistent/binary");
     let path = PathBuf::from("model.gguf");
-    let output = runner.profile_ci(&path, None, Some(200.0), 1, 1);
+    let output = runner.profile_ci(&path, None, Some(200.0), 1, 1, false);
     assert!(!output.success);
 }
 
@@ -174,7 +174,7 @@ fn test_real_runner_profile_ci_p99_only() {
 fn test_real_runner_profile_ci_no_options() {
     let runner = RealCommandRunner::with_binary("/nonexistent/binary");
     let path = PathBuf::from("model.gguf");
-    let output = runner.profile_ci(&path, None, None, 1, 1);
+    let output = runner.profile_ci(&path, None, None, 1, 1, false);
     assert!(!output.success);
 }
 

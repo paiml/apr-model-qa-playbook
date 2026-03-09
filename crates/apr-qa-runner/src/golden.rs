@@ -1,66 +1,69 @@
 impl Executor {
 
-    /// Run extended tests: conversion, golden rule, contracts, parity, perf, ollama, transformations
+    /// Run extended tests: conversion, golden rule, contracts, parity, perf, ollama, transformations.
+    ///
+    /// Jidoka (Issue #29): checks failure_policy between batteries. If `StopOnFirst`
+    /// or `FailFast`, stops after the first battery that produces failures.
+    /// If `StopOnP0`, stops after conversion failures (F-CONV-* are P0).
     fn run_extended_tests(&mut self, playbook: &Playbook) -> (usize, usize) {
         let mut total_passed = 0;
         let mut total_failed = 0;
 
+        // Helper macro: run battery, check Jidoka stop condition
+        macro_rules! run_battery {
+            ($body:expr) => {{
+                let (p, f) = $body;
+                total_passed += p;
+                total_failed += f;
+                if f > 0 && self.config.failure_policy.stops_on_any_failure() {
+                    return (total_passed, total_failed);
+                }
+            }};
+        }
+
         if self.config.run_conversion_tests {
             if let Some(model_path) = self.config.model_path.clone() {
                 let model_id = playbook.model_id();
-                let (p, f) = self.run_conversion_tests(Path::new(&model_path), &model_id);
-                total_passed += p;
-                total_failed += f;
+                run_battery!(self.run_conversion_tests(Path::new(&model_path), &model_id));
             }
         }
 
         if self.config.run_golden_rule_test {
             if let Some(model_path) = self.config.model_path.clone() {
                 let model_id = playbook.model_id();
-                let (p, f) = self.run_golden_rule_test(Path::new(&model_path), &model_id);
-                total_passed += p;
-                total_failed += f;
+                run_battery!(self.run_golden_rule_test(Path::new(&model_path), &model_id));
             }
         }
 
         if self.config.run_contract_tests {
             if let Some(model_path) = self.config.model_path.clone() {
                 let model_id = playbook.model_id();
-                let (p, f) =
-                    self.run_contract_invariants(Path::new(&model_path), &model_id, playbook);
-                total_passed += p;
-                total_failed += f;
+                run_battery!(
+                    self.run_contract_invariants(Path::new(&model_path), &model_id, playbook)
+                );
             }
         }
 
         if self.config.run_hf_parity {
             let model_id = playbook.model_id();
-            let (p, f) = self.run_hf_parity_tests(&model_id);
-            total_passed += p;
-            total_failed += f;
+            run_battery!(self.run_hf_parity_tests(&model_id));
         }
 
         if self.config.run_profile_ci {
             if let Some(model_path) = self.config.model_path.clone() {
                 let model_id = playbook.model_id();
-                let (p, f) = self.run_perf_gates(Path::new(&model_path), &model_id, playbook);
-                total_passed += p;
-                total_failed += f;
+                run_battery!(self.run_perf_gates(Path::new(&model_path), &model_id, playbook));
             }
         }
 
         if self.config.run_ollama_parity {
             if let Some(model_path) = self.config.model_path.clone() {
-                let (p, f) = self.run_ollama_parity_tests(Path::new(&model_path), playbook);
-                total_passed += p;
-                total_failed += f;
+                run_battery!(self.run_ollama_parity_tests(Path::new(&model_path), playbook));
             }
         }
 
         // Transformation tests (opt-in via playbook transformations: block)
-        let (p, f) = self.execute_transformation_tests(playbook);
-        total_passed += p;
-        total_failed += f;
+        run_battery!(self.execute_transformation_tests(playbook));
 
         (total_passed, total_failed)
     }

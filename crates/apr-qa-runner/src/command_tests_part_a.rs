@@ -145,7 +145,7 @@ fn test_mock_runner_profile() {
 fn test_mock_runner_profile_ci_pass() {
     let runner = MockCommandRunner::new().with_tps(20.0);
     let path = PathBuf::from("model.gguf");
-    let output = runner.profile_ci(&path, Some(10.0), Some(200.0), 1, 2);
+    let output = runner.profile_ci(&path, Some(10.0), Some(200.0), 1, 2, false);
     assert!(output.success);
     assert!(output.stdout.contains("\"passed\":true"));
 }
@@ -154,7 +154,7 @@ fn test_mock_runner_profile_ci_pass() {
 fn test_mock_runner_profile_ci_fail_throughput() {
     let runner = MockCommandRunner::new().with_tps(5.0);
     let path = PathBuf::from("model.gguf");
-    let output = runner.profile_ci(&path, Some(10.0), None, 1, 2);
+    let output = runner.profile_ci(&path, Some(10.0), None, 1, 2, false);
     assert!(!output.success);
     assert!(output.stdout.contains("\"passed\":false"));
 }
@@ -164,7 +164,7 @@ fn test_mock_runner_profile_ci_fail_p99() {
     let runner = MockCommandRunner::new();
     let path = PathBuf::from("model.gguf");
     // p99 is 156.5ms, threshold is 100ms
-    let output = runner.profile_ci(&path, None, Some(100.0), 1, 2);
+    let output = runner.profile_ci(&path, None, Some(100.0), 1, 2, false);
     assert!(!output.success);
 }
 
@@ -350,7 +350,7 @@ fn test_mock_runner_profile_ci_no_assertions() {
     let runner = MockCommandRunner::new().with_tps(15.0);
     let path = PathBuf::from("model.gguf");
     // No throughput or p99 assertions
-    let output = runner.profile_ci(&path, None, None, 1, 2);
+    let output = runner.profile_ci(&path, None, None, 1, 2, false);
     assert!(output.success);
     assert!(output.stdout.contains("\"passed\":true"));
 }
@@ -387,7 +387,7 @@ fn test_mock_runner_profile_ci_both_assertions_pass() {
     let runner = MockCommandRunner::new().with_tps(200.0);
     let path = PathBuf::from("model.gguf");
     // Both assertions should pass
-    let output = runner.profile_ci(&path, Some(100.0), Some(500.0), 1, 2);
+    let output = runner.profile_ci(&path, Some(100.0), Some(500.0), 1, 2, false);
     assert!(output.success);
     assert!(output.stdout.contains("\"passed\":true"));
 }
@@ -397,7 +397,7 @@ fn test_mock_runner_profile_ci_both_assertions_fail() {
     let runner = MockCommandRunner::new().with_tps(5.0);
     let path = PathBuf::from("model.gguf");
     // Throughput too low, p99 too high (156.5 > 100)
-    let output = runner.profile_ci(&path, Some(100.0), Some(100.0), 1, 2);
+    let output = runner.profile_ci(&path, Some(100.0), Some(100.0), 1, 2, false);
     assert!(!output.success);
     assert!(output.stdout.contains("\"passed\":false"));
 }
@@ -406,7 +406,7 @@ fn test_mock_runner_profile_ci_both_assertions_fail() {
 fn test_mock_runner_profile_ci_unavailable() {
     let runner = MockCommandRunner::new().with_profile_ci_unavailable();
     let path = PathBuf::from("model.gguf");
-    let output = runner.profile_ci(&path, Some(10.0), None, 1, 2);
+    let output = runner.profile_ci(&path, Some(10.0), None, 1, 2, false);
     assert!(!output.success);
     assert!(output.stderr.contains("unexpected argument"));
 }
@@ -417,7 +417,7 @@ fn test_mock_runner_profile_ci_custom_stderr() {
         .with_profile_ci_unavailable()
         .with_profile_ci_stderr("Custom error: --ci not supported");
     let path = PathBuf::from("model.gguf");
-    let output = runner.profile_ci(&path, None, None, 1, 2);
+    let output = runner.profile_ci(&path, None, None, 1, 2, false);
     assert!(!output.success);
     assert!(output.stderr.contains("Custom error"));
 }

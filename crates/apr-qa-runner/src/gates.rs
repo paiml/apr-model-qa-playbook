@@ -108,10 +108,10 @@ impl Executor {
             let measure = profile_config.measure as u32;
             let cpu_output = self
                 .command_runner
-                .profile_ci(model_path, None, None, warmup, measure);
+                .profile_ci(model_path, None, None, warmup, measure, true);
             let gpu_output = self
                 .command_runner
-                .profile_ci(model_path, None, None, warmup, measure);
+                .profile_ci(model_path, None, None, warmup, measure, false);
 
             let cpu_tps = crate::executor::parse_throughput(&cpu_output.stdout);
             let gpu_tps = crate::executor::parse_throughput(&gpu_output.stdout);

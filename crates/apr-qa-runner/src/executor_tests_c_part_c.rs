@@ -64,6 +64,7 @@ fn test_executor_golden_rule_converted_inference_fails() {
             _max_p99: Option<f64>,
             _warmup: u32,
             _measure: u32,
+            _no_gpu: bool,
         ) -> CommandOutput {
             CommandOutput::success("")
         }
@@ -258,6 +259,7 @@ fn test_executor_golden_rule_output_differs_with_data() {
             _max_p99: Option<f64>,
             _warmup: u32,
             _measure: u32,
+            _no_gpu: bool,
         ) -> CommandOutput {
             CommandOutput::success("")
         }

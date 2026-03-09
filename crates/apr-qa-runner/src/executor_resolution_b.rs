@@ -99,15 +99,15 @@ impl Executor {
         (passed, failed)
     }
 
-    /// Check gateway conditions
+    /// Pre-flight gateway stub.
+    ///
+    /// Actual gateway enforcement is split across:
+    /// - G0 sub-gates: checked in `execute()` via `run_g0_*` (Jidoka early returns)
+    /// - G1-G4: evaluated post-execution by MQS scorer in `apr-qa-report`
+    ///
+    /// This hook exists for future pre-flight validation (e.g., model file
+    /// existence, config.json accessibility) before heavy computation begins.
     fn check_gateways(&self, _playbook: &Playbook) -> Result<()> {
-        // Gateway checks would verify:
-        // G1: Model loads
-        // G2: Basic inference works
-        // G3: No crashes
-        // G4: Output not garbage
-
-        // For now, assume gateways pass
         Ok(())
     }
 

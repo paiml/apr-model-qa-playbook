@@ -57,6 +57,7 @@ fn test_executor_subprocess_trace_with_stdout() {
             _max_p99: Option<f64>,
             _warmup: u32,
             _measure: u32,
+            _no_gpu: bool,
         ) -> CommandOutput {
             CommandOutput::success("")
         }

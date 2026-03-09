@@ -140,6 +140,7 @@ impl CommandRunner for MockCommandRunner {
         max_p99: Option<f64>,
         _warmup: u32,
         _measure: u32,
+        _no_gpu: bool,
     ) -> CommandOutput {
         // Simulate feature not available
         if self.profile_ci_unavailable {

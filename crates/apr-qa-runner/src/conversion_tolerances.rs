@@ -291,12 +291,27 @@ impl ConversionTest {
         // succeeded but inference fails, validate at file level.
         let converted_output = match self.run_inference(&converted_path, &self.target_format) {
             Ok(output) => output,
-            Err(_) if self.source_format != self.target_format && converted_path.exists() => {
-                return Ok(ConversionResult::Corroborated {
-                    source_format: self.source_format,
-                    target_format: self.target_format,
-                    backend: self.backend,
-                    max_diff: 0.0,
+            Err(e) if self.source_format != self.target_format && converted_path.exists() => {
+                // Popperian: inference failure after conversion is falsification,
+                // not corroboration. The file existing on disk proves nothing about
+                // semantic correctness. (Issue #28)
+                return Ok(ConversionResult::Falsified {
+                    gate_id: self.gate_id(),
+                    reason: format!(
+                        "Conversion {:?} → {:?} produced file but inference failed: {e}",
+                        self.source_format, self.target_format,
+                    ),
+                    evidence: ConversionEvidence {
+                        source_hash: Self::hash_output(&source_output),
+                        converted_hash: String::new(),
+                        max_diff: f64::NAN,
+                        diff_indices: vec![],
+                        source_format: self.source_format,
+                        target_format: self.target_format,
+                        backend: self.backend,
+                        failure_type: Some(ConversionFailureType::InferenceFailure),
+                        quant_type: self.quant_type,
+                    },
                 });
             }
             Err(e) => return Err(e),
