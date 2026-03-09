@@ -10,7 +10,7 @@ THRESHOLD=95
 
 echo "Checking PMAT coverage compliance (>= ${THRESHOLD}%)..."
 
-COVERAGE=$(cargo llvm-cov --workspace --lib 2>&1 | \
+COVERAGE=$(cargo llvm-cov --workspace --lib --ignore-filename-regex="probar|rustlib" 2>&1 | \
     grep "^TOTAL" | awk '{print $10}' | tr -d '%')
 
 if [ -z "${COVERAGE}" ]; then

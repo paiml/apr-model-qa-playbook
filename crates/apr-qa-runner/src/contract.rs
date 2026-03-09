@@ -371,6 +371,7 @@ fn resolve_safetensors_path(model_path: &Path) -> PathBuf {
 /// model uses tied embeddings (no separate `lm_head` in SafeTensors). The
 /// converter materializes `lm_head.weight` from `embed_tokens.weight`, which
 /// is correct behavior per `write.rs:49-89`.
+#[allow(clippy::too_many_lines)]
 fn run_i2_tensor_bijection(
     runner: &Arc<dyn CommandRunner>,
     model_path: &Path,
@@ -414,7 +415,10 @@ fn run_i2_tensor_bijection(
                 st_names.len(),
                 apr_names.len()
             ),
-            &format!("st_stdout: {}, apr_stdout: {}", st_inspect.stdout, apr_inspect.stdout),
+            &format!(
+                "st_stdout: {}, apr_stdout: {}",
+                st_inspect.stdout, apr_inspect.stdout
+            ),
             duration,
         );
     }

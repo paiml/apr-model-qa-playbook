@@ -472,3 +472,7 @@ mod tests_c;
 #[cfg(test)]
 #[path = "lib_tests_d.rs"]
 mod tests_d;
+
+#[cfg(test)]
+#[path = "lib_tests_e.rs"]
+mod tests_e;

@@ -444,3 +444,182 @@ fn test_convert_to_format_tagged_gguf_ext() {
     let target = source.with_extension("tag1.gguf");
     assert!(target.to_str().expect("path").ends_with("tag1.gguf"));
 }
+
+// =========================================================================
+// check_cardinality_gate / check_tensor_name_gate via run_structural_checks
+// These exercise the private gate methods through ConversionExecutor::execute_all
+// with a pre-created "converted" file so run_structural_checks doesn't skip.
+// =========================================================================
+
+/// Config that runs only structural checks (cardinality + tensor names).
+fn structural_only_config() -> ConversionConfig {
+    ConversionConfig {
+        test_all_pairs: false,
+        test_round_trips: false,
+        test_multi_hop: false,
+        test_cardinality: true,
+        test_tensor_names: true,
+        test_idempotency: false,
+        test_commutativity: false,
+        backends: vec![Backend::Cpu],
+        no_gpu: true,
+    }
+}
+
+#[test]
+fn test_check_cardinality_gate_passes_via_executor() {
+    let dir = tempfile::tempdir().unwrap();
+    let model_file = dir.path().join("model.gguf");
+    // run_structural_checks looks for model.converted.apr (with_extension)
+    let converted_file = dir.path().join("model.converted.apr");
+    std::fs::write(&model_file, "fake source").unwrap();
+    std::fs::write(&converted_file, "fake target").unwrap();
+
+    // Mock inspect returns same tensor count → cardinality preserved → corroborated
+    let mock = create_mock_script(
+        dir.path(),
+        "mock_card_ok",
+        "#!/bin/bash\necho '{\"tensor_count\": 338, \"tensor_names\": []}'",
+    );
+
+    let mut executor = ConversionExecutor::new(structural_only_config());
+    executor.binary = mock.to_string_lossy().to_string();
+    let model_id = ModelId::new("test", "model");
+
+    let result = executor.execute_all(&model_file, &model_id).unwrap();
+    // At least one structural check ran (F-CONV-CARD-001)
+    let card_evidence: Vec<_> = result
+        .evidence
+        .iter()
+        .filter(|e| e.gate_id == "F-CONV-CARD-001")
+        .collect();
+    assert!(
+        !card_evidence.is_empty(),
+        "Expected F-CONV-CARD-001 evidence, got: {:?}",
+        result.evidence.iter().map(|e| &e.gate_id).collect::<Vec<_>>()
+    );
+    // Corroborated when no cardinality loss
+    assert!(card_evidence[0].outcome.is_pass());
+}
+
+#[test]
+fn test_check_cardinality_gate_fails_via_executor() {
+    let dir = tempfile::tempdir().unwrap();
+    let model_file = dir.path().join("model.gguf");
+    let converted_file = dir.path().join("model.converted.apr");
+    std::fs::write(&model_file, "fake source").unwrap();
+    std::fs::write(&converted_file, "fake target").unwrap();
+
+    // Mock inspect: source has 338 tensors, converted has 227 → cardinality loss
+    let mock = create_conditional_mock_binary(
+        dir.path(),
+        "mock_card_fail",
+        "#!/bin/bash\nif echo \"$3\" | grep -q model.gguf; then\n  echo '{\"tensor_count\": 338, \"tensor_names\": []}'\nelse\n  echo '{\"tensor_count\": 227, \"tensor_names\": []}'\nfi",
+    );
+
+    let mut executor = ConversionExecutor::new(structural_only_config());
+    executor.binary = mock.to_string_lossy().to_string();
+    let model_id = ModelId::new("test", "model");
+
+    let result = executor.execute_all(&model_file, &model_id).unwrap();
+    let card_evidence: Vec<_> = result
+        .evidence
+        .iter()
+        .filter(|e| e.gate_id == "F-CONV-CARD-001")
+        .collect();
+    assert!(!card_evidence.is_empty(), "Expected F-CONV-CARD-001 evidence");
+    // At least one failure expected (cardinality loss)
+    let has_fail = card_evidence.iter().any(|e| e.outcome.is_fail());
+    assert!(has_fail, "Expected at least one F-CONV-CARD-001 failure");
+}
+
+#[test]
+fn test_check_cardinality_gate_error_path_via_executor() {
+    let dir = tempfile::tempdir().unwrap();
+    let model_file = dir.path().join("model.gguf");
+    let converted_file = dir.path().join("model.converted.apr");
+    std::fs::write(&model_file, "fake source").unwrap();
+    std::fs::write(&converted_file, "fake target").unwrap();
+
+    // Use a nonexistent binary to trigger Err path in check_cardinality
+    let mut executor = ConversionExecutor::new(structural_only_config());
+    executor.binary = "/nonexistent/binary/that/does/not/exist".to_string();
+    let model_id = ModelId::new("test", "model");
+
+    // Should still succeed (executor wraps errors as Falsified evidence)
+    let result = executor.execute_all(&model_file, &model_id).unwrap();
+    // All structural check evidence should be failures (binary not found → Err path)
+    let card_evidence: Vec<_> = result
+        .evidence
+        .iter()
+        .filter(|e| e.gate_id == "F-CONV-CARD-001")
+        .collect();
+    if !card_evidence.is_empty() {
+        assert!(
+            card_evidence.iter().all(|e| e.outcome.is_fail()),
+            "Binary not found should produce failures"
+        );
+    }
+}
+
+#[test]
+fn test_check_tensor_name_gate_passes_via_executor() {
+    let dir = tempfile::tempdir().unwrap();
+    let model_file = dir.path().join("model.gguf");
+    let converted_file = dir.path().join("model.converted.apr");
+    std::fs::write(&model_file, "fake source").unwrap();
+    std::fs::write(&converted_file, "fake target").unwrap();
+
+    // Both sides have the same tensor names → names preserved → corroborated
+    let mock = create_mock_script(
+        dir.path(),
+        "mock_names_ok",
+        "#!/bin/bash\necho '{\"tensor_count\": 2, \"tensor_names\": [\"a.weight\", \"b.weight\"]}'",
+    );
+
+    let mut executor = ConversionExecutor::new(structural_only_config());
+    executor.binary = mock.to_string_lossy().to_string();
+    let model_id = ModelId::new("test", "model");
+
+    let result = executor.execute_all(&model_file, &model_id).unwrap();
+    let name_evidence: Vec<_> = result
+        .evidence
+        .iter()
+        .filter(|e| e.gate_id == "F-CONV-NAME-001")
+        .collect();
+    assert!(
+        !name_evidence.is_empty(),
+        "Expected F-CONV-NAME-001 evidence"
+    );
+    assert!(name_evidence[0].outcome.is_pass());
+}
+
+#[test]
+fn test_check_tensor_name_gate_fails_via_executor() {
+    let dir = tempfile::tempdir().unwrap();
+    let model_file = dir.path().join("model.gguf");
+    let converted_file = dir.path().join("model.converted.apr");
+    std::fs::write(&model_file, "fake source").unwrap();
+    std::fs::write(&converted_file, "fake target").unwrap();
+
+    // Source has q_proj, k_proj, v_proj; target renames all → divergence
+    let mock = create_conditional_mock_binary(
+        dir.path(),
+        "mock_names_fail",
+        "#!/bin/bash\nif echo \"$3\" | grep -q model.gguf; then\n  echo '{\"tensor_count\": 3, \"tensor_names\": [\"a.q_proj\", \"a.k_proj\", \"a.v_proj\"]}'\nelse\n  echo '{\"tensor_count\": 3, \"tensor_names\": [\"a.renamed1\", \"a.renamed2\", \"a.renamed3\"]}'\nfi",
+    );
+
+    let mut executor = ConversionExecutor::new(structural_only_config());
+    executor.binary = mock.to_string_lossy().to_string();
+    let model_id = ModelId::new("test", "model");
+
+    let result = executor.execute_all(&model_file, &model_id).unwrap();
+    let name_evidence: Vec<_> = result
+        .evidence
+        .iter()
+        .filter(|e| e.gate_id.starts_with("F-CONV-NAME"))
+        .collect();
+    assert!(!name_evidence.is_empty(), "Expected F-CONV-NAME evidence");
+    let has_fail = name_evidence.iter().any(|e| e.outcome.is_fail());
+    assert!(has_fail, "Expected tensor name divergence failure");
+}

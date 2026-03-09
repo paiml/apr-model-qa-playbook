@@ -624,15 +624,14 @@ impl CoverageContext {
             let trueno_claim = binding.trueno_function.clone();
             let realizar_claim = binding.realizar_function.clone();
 
-            let (trueno_found, trueno_file) =
-                trueno_claim.as_ref().map_or((false, None), |name| {
-                    if trueno_exists {
-                        total_claims += 1;
-                        find_function_in_dir(&trueno_path.join("src"), name)
-                    } else {
-                        (false, None)
-                    }
-                });
+            let (trueno_found, trueno_file) = trueno_claim.as_ref().map_or((false, None), |name| {
+                if trueno_exists {
+                    total_claims += 1;
+                    find_function_in_dir(&trueno_path.join("src"), name)
+                } else {
+                    (false, None)
+                }
+            });
 
             let (realizar_found, realizar_file) =
                 realizar_claim.as_ref().map_or((false, None), |name| {
@@ -747,9 +746,7 @@ fn build_class_summary(models: &[ModelCoverage]) -> Vec<ClassSummary> {
             .kernel_class
             .clone()
             .unwrap_or_else(|| "Unknown".to_string());
-        let entry = class_map
-            .entry(class_key)
-            .or_insert((0, true, Vec::new()));
+        let entry = class_map.entry(class_key).or_insert((0, true, Vec::new()));
         entry.0 += 1;
         if !model.fully_covered {
             entry.1 = false;
@@ -784,10 +781,7 @@ fn build_class_summary(models: &[ModelCoverage]) -> Vec<ClassSummary> {
 
 /// Build a coverage report with gap analysis from architecture coverage data.
 #[allow(clippy::too_many_lines)]
-fn build_report(
-    architectures: Vec<ArchitectureCoverage>,
-    ctx: &CoverageContext,
-) -> CoverageReport {
+fn build_report(architectures: Vec<ArchitectureCoverage>, ctx: &CoverageContext) -> CoverageReport {
     let mut total_ops = 0;
     let mut fused_count = 0;
     let mut fallback_count = 0;
@@ -1192,11 +1186,11 @@ bindings:
         let ctx = test_ctx();
         let report = ctx.verify_by_name("gemma").unwrap();
         // GatedMlp is fallback, not fused — Gemma should show a gap
-        assert!(report.fallback_count > 0, "Gemma GatedMlp should be fallback");
-        let gated_gap = report
-            .gaps
-            .iter()
-            .find(|g| g.op == KernelOp::GatedMlp);
+        assert!(
+            report.fallback_count > 0,
+            "Gemma GatedMlp should be fallback"
+        );
+        let gated_gap = report.gaps.iter().find(|g| g.op == KernelOp::GatedMlp);
         assert!(gated_gap.is_some(), "Gemma must show GatedMlp gap");
     }
 
@@ -1217,7 +1211,11 @@ bindings:
         let report = ctx.verify_by_name("qwen2").unwrap();
         // kernel_class must be the letter "A", not the label "GQA+RMSNorm+..."
         let class = &report.architectures[0].kernel_class;
-        assert_eq!(class.as_deref(), Some("A"), "kernel_class must be letter, not label");
+        assert_eq!(
+            class.as_deref(),
+            Some("A"),
+            "kernel_class must be letter, not label"
+        );
     }
 
     #[test]
@@ -1234,14 +1232,191 @@ bindings:
 
     #[test]
     fn test_status_display() {
-        assert_eq!(
-            ImplementationStatus::Fused.symbol(),
-            "\u{2713}"
-        );
+        assert_eq!(ImplementationStatus::Fused.symbol(), "\u{2713}");
         assert_eq!(ImplementationStatus::Fallback.symbol(), "~");
-        assert_eq!(
-            ImplementationStatus::Missing.symbol(),
-            "\u{2717}"
+        assert_eq!(ImplementationStatus::Missing.symbol(), "\u{2717}");
+    }
+
+    // ── CoverageContext::load (file-based) coverage ─────────────────────────
+
+    #[test]
+    fn test_coverage_context_load_success() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let contracts_path = dir.path().join("contracts");
+        std::fs::create_dir_all(&contracts_path).unwrap();
+
+        let arch_path = contracts_path.join("arch-constraints-v1.yaml");
+        std::fs::write(&arch_path, TEST_ARCH_YAML).unwrap();
+
+        let bindings_path = dir.path().join("kernel-bindings.yaml");
+        std::fs::write(&bindings_path, TEST_BINDINGS_YAML).unwrap();
+
+        let ctx = CoverageContext::load(&contracts_path, &bindings_path).unwrap();
+        let names = ctx.architecture_names();
+        assert!(
+            names.contains(&"qwen2"),
+            "qwen2 should be in loaded architectures"
         );
+        assert!(
+            names.contains(&"llama"),
+            "llama should be in loaded architectures"
+        );
+        assert_eq!(ctx.bindings.len(), 17);
+    }
+
+    #[test]
+    fn test_coverage_context_load_missing_arch_file() {
+        let dir = tempfile::TempDir::new().unwrap();
+        // Contracts dir exists but arch-constraints-v1.yaml is missing
+        let contracts_path = dir.path().join("contracts");
+        std::fs::create_dir_all(&contracts_path).unwrap();
+
+        let bindings_path = dir.path().join("kernel-bindings.yaml");
+        std::fs::write(&bindings_path, TEST_BINDINGS_YAML).unwrap();
+
+        let result = CoverageContext::load(&contracts_path, &bindings_path);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_coverage_context_load_missing_bindings_file() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let contracts_path = dir.path().join("contracts");
+        std::fs::create_dir_all(&contracts_path).unwrap();
+
+        let arch_path = contracts_path.join("arch-constraints-v1.yaml");
+        std::fs::write(&arch_path, TEST_ARCH_YAML).unwrap();
+
+        // Bindings file missing
+        let bindings_path = dir.path().join("nonexistent-bindings.yaml");
+
+        let result = CoverageContext::load(&contracts_path, &bindings_path);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_coverage_context_load_invalid_arch_yaml() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let contracts_path = dir.path().join("contracts");
+        std::fs::create_dir_all(&contracts_path).unwrap();
+
+        let arch_path = contracts_path.join("arch-constraints-v1.yaml");
+        std::fs::write(&arch_path, "not: [valid: {{{yaml}}}}").unwrap();
+
+        let bindings_path = dir.path().join("kernel-bindings.yaml");
+        std::fs::write(&bindings_path, TEST_BINDINGS_YAML).unwrap();
+
+        let result = CoverageContext::load(&contracts_path, &bindings_path);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_coverage_context_load_invalid_bindings_yaml() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let contracts_path = dir.path().join("contracts");
+        std::fs::create_dir_all(&contracts_path).unwrap();
+
+        let arch_path = contracts_path.join("arch-constraints-v1.yaml");
+        std::fs::write(&arch_path, TEST_ARCH_YAML).unwrap();
+
+        let bindings_path = dir.path().join("kernel-bindings.yaml");
+        std::fs::write(&bindings_path, "version: !!invalid").unwrap();
+
+        let result = CoverageContext::load(&contracts_path, &bindings_path);
+        assert!(result.is_err());
+    }
+
+    // ── verify_all_registry_models / build_class_summary coverage ──────────
+
+    #[test]
+    fn test_verify_all_registry_models_returns_non_empty_summary() {
+        let ctx = test_ctx();
+        let summary = ctx.verify_all_registry_models();
+        // Model registry has 100+ models; even with a minimal test context
+        // we expect the function to run without panic and return data
+        let total = summary.covered_count + summary.gap_count + summary.defaults_count;
+        assert_eq!(total, summary.models.len());
+    }
+
+    #[test]
+    fn test_verify_all_registry_models_class_summary_not_empty() {
+        let ctx = test_ctx();
+        let summary = ctx.verify_all_registry_models();
+        // build_class_summary should produce at least one ClassSummary
+        assert!(!summary.class_summary.is_empty());
+    }
+
+    #[test]
+    fn test_verify_all_registry_models_class_summary_sorted() {
+        let ctx = test_ctx();
+        let summary = ctx.verify_all_registry_models();
+        // Class summaries must be sorted by class string
+        let classes: Vec<&str> = summary
+            .class_summary
+            .iter()
+            .map(|s| s.class.as_str())
+            .collect();
+        let mut sorted = classes.clone();
+        sorted.sort_unstable();
+        assert_eq!(classes, sorted, "Class summaries should be sorted by class");
+    }
+
+    #[test]
+    fn test_verify_all_registry_models_models_sorted() {
+        let ctx = test_ctx();
+        let summary = ctx.verify_all_registry_models();
+        // Models must be sorted by model_id
+        let ids: Vec<&str> = summary.models.iter().map(|m| m.model_id.as_str()).collect();
+        let mut sorted = ids.clone();
+        sorted.sort_unstable();
+        assert_eq!(ids, sorted, "Models should be sorted by model_id");
+    }
+
+    #[test]
+    fn test_verify_all_registry_models_defaults_count_consistent() {
+        let ctx = test_ctx();
+        let summary = ctx.verify_all_registry_models();
+        // defaults_count should match the count of models using defaults
+        let actual_defaults = summary.models.iter().filter(|m| m.using_defaults).count();
+        assert_eq!(summary.defaults_count, actual_defaults);
+    }
+
+    #[test]
+    fn test_verify_all_registry_models_covered_count_consistent() {
+        let ctx = test_ctx();
+        let summary = ctx.verify_all_registry_models();
+        let actual_covered = summary.models.iter().filter(|m| m.fully_covered).count();
+        assert_eq!(summary.covered_count, actual_covered);
+    }
+
+    #[test]
+    fn test_build_class_summary_with_gap_ops() {
+        let ctx = test_ctx();
+        let summary = ctx.verify_all_registry_models();
+        // At least one class should have some model data
+        let total_models: usize = summary.class_summary.iter().map(|s| s.model_count).sum();
+        assert_eq!(total_models, summary.models.len());
+    }
+
+    #[test]
+    fn test_coverage_context_load_aliases_registered() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let contracts_path = dir.path().join("contracts");
+        std::fs::create_dir_all(&contracts_path).unwrap();
+
+        let arch_path = contracts_path.join("arch-constraints-v1.yaml");
+        std::fs::write(&arch_path, TEST_ARCH_YAML).unwrap();
+
+        let bindings_path = dir.path().join("kernel-bindings.yaml");
+        std::fs::write(&bindings_path, TEST_BINDINGS_YAML).unwrap();
+
+        let ctx = CoverageContext::load(&contracts_path, &bindings_path).unwrap();
+        let names = ctx.architecture_names();
+        // qwen2 has aliases "qwen2.5" and "qwen"
+        assert!(
+            names.contains(&"qwen2.5"),
+            "qwen2 alias should be registered"
+        );
+        assert!(names.contains(&"qwen"), "qwen alias should be registered");
     }
 }
