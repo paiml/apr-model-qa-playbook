@@ -171,12 +171,8 @@ fn compute_certification_scores(
     };
 
     let cert_tier = match tier {
-        CertTier::Mvp => CertificationTier::Mvp,
-        CertTier::DimensionalSmoke
-        | CertTier::Smoke
-        | CertTier::Quick
-        | CertTier::Standard
-        | CertTier::Deep => CertificationTier::Full,
+        CertTier::Mvp | CertTier::DimensionalSmoke | CertTier::Smoke => CertificationTier::Mvp,
+        CertTier::Quick | CertTier::Standard | CertTier::Deep => CertificationTier::Full,
     };
 
     let pass_rate = result.pass_rate() / 100.0;
@@ -317,6 +313,7 @@ fn update_certification_record(
     use chrono::Utc;
 
     let Some(cert) = certifications.iter_mut().find(|c| c.model_id == model_id) else {
+        eprintln!("  [WARN] Model {model_id} not found in models.csv — certification result not recorded");
         return;
     };
 
@@ -447,10 +444,15 @@ fn run_auto_ticket_generation(
         let evidence_path = output_dir
             .join(short.to_lowercase().replace('.', "-"))
             .join("evidence.json");
-        if let Ok(json) = std::fs::read_to_string(&evidence_path) {
-            if let Ok(ev) = parse_evidence(&json) {
-                all_evidence.extend(ev);
+        match std::fs::read_to_string(&evidence_path) {
+            Ok(json) => match parse_evidence(&json) {
+                Ok(ev) => all_evidence.extend(ev),
+                Err(e) => eprintln!("  [WARN] Failed to parse evidence for {model_id}: {e}"),
+            },
+            Err(e) if e.kind() != std::io::ErrorKind::NotFound => {
+                eprintln!("  [WARN] Failed to read evidence for {model_id}: {e}");
             }
+            Err(_) => {} // NotFound is expected for skipped models
         }
     }
 
