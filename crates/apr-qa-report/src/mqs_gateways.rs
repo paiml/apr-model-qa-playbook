@@ -204,15 +204,18 @@ impl MqsCalculator {
         }
 
         // Serve battery: F-A{1-6}-SUFFIX-001 → map suffix to category.
-        // Suffixes: STREAM/CSTREAM→COMP, ERR→STAB, METRICS/PERF→PERF,
-        // INFO/MODELS/TMPL→COMP, CHARS→EDGE, rest→QUAL.
+        // COMP/CHAT/STREAM/CSTREAM/INFO/MODELS/TMPL → API compatibility (COMP)
+        // ERR → stability (STAB)
+        // METRICS/PERF → performance (PERF)
+        // CHARS → edge cases (EDGE)
+        // rest (001, STOP, EOS, DETERM, MULTI, TOK, MAXTOK, SCHEMA) → quality (QUAL)
         if let Some(suffix) = Self::extract_serve_suffix(gate_id) {
             return match suffix {
-                "STREAM" | "CSTREAM" | "INFO" | "MODELS" | "TMPL" => "COMP",
+                "COMP" | "CHAT" | "STREAM" | "CSTREAM" | "INFO" | "MODELS" | "TMPL" => "COMP",
                 "ERR" => "STAB",
                 "METRICS" | "PERF" => "PERF",
                 "CHARS" => "EDGE",
-                _ => "QUAL", // 001, COMP, CHAT, STOP, EOS, DETERM, MULTI, TOK, MAXTOK
+                _ => "QUAL", // 001, STOP, EOS, DETERM, MULTI, TOK, MAXTOK, SCHEMA
             }
             .to_string();
         }
