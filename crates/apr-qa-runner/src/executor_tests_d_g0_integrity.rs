@@ -443,6 +443,74 @@ fn test_run_golden_rule_single_file_model() {
     assert_eq!(failed, 0);
 }
 
+/// G0 layout check: valid-but-empty SafeTensors (0 tensors) → result.passed = true → corroborated
+#[test]
+fn test_run_g0_layout_check_corroborated_empty_safetensors() {
+    let contract_path = std::path::Path::new(crate::layout_contract::DEFAULT_CONTRACT_PATH);
+    if !contract_path.exists() {
+        return; // CI without aprender: skip
+    }
+
+    let dir = tempfile::TempDir::new().expect("create temp dir");
+
+    // Build a valid-but-empty SafeTensors file: 8-byte LE u64 header_len=2 + "{}"
+    let mut bytes = Vec::new();
+    bytes.extend_from_slice(&2u64.to_le_bytes());
+    bytes.extend_from_slice(b"{}");
+    let safetensors_file = dir.path().join("model.safetensors");
+    std::fs::write(&safetensors_file, &bytes).expect("write empty safetensors");
+
+    let mut executor = Executor::new();
+    let model_id = ModelId::new("test", "model");
+
+    let (passed, failed) = executor.run_g0_layout_check(dir.path(), &model_id);
+    // 0 tensors → all rules pass → corroborated
+    assert_eq!(passed, 1, "Expected 1 passed for empty-tensor model");
+    assert_eq!(failed, 0, "Expected 0 failed for empty-tensor model");
+
+    let evidence = executor.evidence().all();
+    let corr = evidence.iter().find(|e| e.gate_id == "G0-LAYOUT-001" && e.outcome.is_pass());
+    assert!(corr.is_some(), "Expected G0-LAYOUT-001 corroborated evidence");
+    assert!(
+        corr.unwrap().output.contains("G0 PASS"),
+        "Corroborated output should contain 'G0 PASS'"
+    );
+}
+
+/// G0 layout check: garbage SafeTensors → PARSE-ERROR in tensor_results → falsified via loop
+#[test]
+fn test_run_g0_layout_check_tensor_results_loop_parse_error() {
+    let contract_path = std::path::Path::new(crate::layout_contract::DEFAULT_CONTRACT_PATH);
+    if !contract_path.exists() {
+        return; // CI without aprender: skip
+    }
+
+    let dir = tempfile::TempDir::new().expect("create temp dir");
+
+    // Garbage bytes → read_safetensors_metadata fails → PARSE-ERROR tensor result
+    // (header_len from first 8 bytes >> MAX_HEADER_SIZE → "Header too large")
+    let safetensors_file = dir.path().join("model.safetensors");
+    std::fs::write(&safetensors_file, b"not a valid safetensors file at all").expect("write garbage");
+
+    let mut executor = Executor::new();
+    let model_id = ModelId::new("test", "model");
+
+    let (passed, failed) = executor.run_g0_layout_check(dir.path(), &model_id);
+    // PARSE-ERROR → tensor_results loop → 1 falsified, no critical_failures
+    assert_eq!(passed, 0, "Expected 0 passed for garbage safetensors");
+    assert!(failed >= 1, "Expected ≥1 failure for garbage safetensors");
+
+    let evidence = executor.evidence().all();
+    let parse_err = evidence
+        .iter()
+        .find(|e| e.gate_id == "PARSE-ERROR" && e.outcome.is_fail());
+    assert!(
+        parse_err.is_some(),
+        "Expected PARSE-ERROR falsified evidence, got gates: {:?}",
+        evidence.iter().map(|e| &e.gate_id).collect::<Vec<_>>()
+    );
+}
+
 /// Verify integrity check rejects execution when lock file hash does not match
 #[test]
 fn test_integrity_check_refuses_on_mismatch() {

@@ -199,6 +199,163 @@ test_matrix:
     );
 }
 
+/// Helper: create a temp HF parity corpus with the given manifest content
+fn setup_hf_parity_corpus(manifest_json: &str) -> (tempfile::TempDir, String, String) {
+    let dir = tempfile::tempdir().expect("create temp dir");
+    let model_family = "test-model/v1";
+    let family_dir = dir.path().join("test-model").join("v1");
+    std::fs::create_dir_all(&family_dir).expect("create family dir");
+    std::fs::write(family_dir.join("manifest.json"), manifest_json)
+        .expect("write manifest");
+    let corpus_path = dir.path().to_string_lossy().to_string();
+    (dir, corpus_path, model_family.to_string())
+}
+
+/// HF parity: manifest JSON parse failure → F-HF-PARITY-003
+#[test]
+fn test_hf_parity_manifest_invalid_json() {
+    let (dir, corpus_path, model_family) = setup_hf_parity_corpus("not valid json {{");
+    let mock_runner = MockCommandRunner::new();
+    let config = ExecutionConfig {
+        run_hf_parity: true,
+        hf_parity_corpus_path: Some(corpus_path),
+        hf_parity_model_family: Some(model_family),
+        run_conversion_tests: false,
+        run_golden_rule_test: false,
+        ..Default::default()
+    };
+    let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+    let model_id = ModelId::new("test", "model");
+    let (passed, failed) = executor.run_hf_parity_tests(&model_id);
+    assert_eq!(passed, 0);
+    assert_eq!(failed, 1);
+    let evidence = executor.evidence().all();
+    assert!(
+        evidence.iter().any(|e| e.gate_id == "F-HF-PARITY-003"),
+        "Expected F-HF-PARITY-003 for JSON parse failure"
+    );
+    drop(dir);
+}
+
+/// HF parity: manifest has empty prompts list → skip
+#[test]
+fn test_hf_parity_manifest_empty_prompts() {
+    let (dir, corpus_path, model_family) = setup_hf_parity_corpus(r#"{"prompts":[]}"#);
+    let mock_runner = MockCommandRunner::new();
+    let config = ExecutionConfig {
+        run_hf_parity: true,
+        hf_parity_corpus_path: Some(corpus_path),
+        hf_parity_model_family: Some(model_family),
+        run_conversion_tests: false,
+        run_golden_rule_test: false,
+        ..Default::default()
+    };
+    let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+    let model_id = ModelId::new("test", "model");
+    let (passed, failed) = executor.run_hf_parity_tests(&model_id);
+    assert_eq!(passed, 0);
+    assert_eq!(failed, 0);
+    let evidence = executor.evidence().all();
+    assert!(
+        evidence.iter().any(|e| e.gate_id == "F-HF-PARITY-SKIP"),
+        "Expected F-HF-PARITY-SKIP for empty prompts"
+    );
+    drop(dir);
+}
+
+/// HF parity: golden .json file missing → F-HF-PARITY-004
+#[test]
+fn test_hf_parity_golden_file_missing() {
+    let (dir, corpus_path, model_family) =
+        setup_hf_parity_corpus(r#"{"prompts":["abc123nonexistent"]}"#);
+    let mock_runner = MockCommandRunner::new();
+    let config = ExecutionConfig {
+        run_hf_parity: true,
+        hf_parity_corpus_path: Some(corpus_path),
+        hf_parity_model_family: Some(model_family),
+        run_conversion_tests: false,
+        run_golden_rule_test: false,
+        ..Default::default()
+    };
+    let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+    let model_id = ModelId::new("test", "model");
+    let (passed, failed) = executor.run_hf_parity_tests(&model_id);
+    assert_eq!(passed, 0);
+    assert!(failed >= 1);
+    let evidence = executor.evidence().all();
+    // F-HF-PARITY-004: golden file read failed
+    assert!(
+        evidence.iter().any(|e| e.gate_id == "F-HF-PARITY-004"),
+        "Expected F-HF-PARITY-004 for missing golden file, got: {:?}",
+        evidence.iter().map(|e| &e.gate_id).collect::<Vec<_>>()
+    );
+    drop(dir);
+}
+
+/// HF parity: golden .json file exists but has bad JSON → F-HF-PARITY-004
+#[test]
+fn test_hf_parity_golden_meta_bad_json() {
+    let (dir, corpus_path, model_family) = setup_hf_parity_corpus(r#"{"prompts":["hash001"]}"#);
+    // Create the golden JSON file with invalid content
+    let family_dir = dir.path().join("test-model").join("v1");
+    std::fs::write(family_dir.join("hash001.json"), "not json at all {{ bad")
+        .expect("write bad golden json");
+    let mock_runner = MockCommandRunner::new();
+    let config = ExecutionConfig {
+        run_hf_parity: true,
+        hf_parity_corpus_path: Some(corpus_path),
+        hf_parity_model_family: Some(model_family),
+        run_conversion_tests: false,
+        run_golden_rule_test: false,
+        ..Default::default()
+    };
+    let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+    let model_id = ModelId::new("test", "model");
+    let (passed, failed) = executor.run_hf_parity_tests(&model_id);
+    assert_eq!(passed, 0);
+    assert!(failed >= 1);
+    let evidence = executor.evidence().all();
+    assert!(
+        evidence.iter().any(|e| e.gate_id == "F-HF-PARITY-004"),
+        "Expected F-HF-PARITY-004 for bad JSON meta, got: {:?}",
+        evidence.iter().map(|e| &e.gate_id).collect::<Vec<_>>()
+    );
+    drop(dir);
+}
+
+/// HF parity: golden meta valid but oracle.load_golden fails (no .safetensors) → F-HF-PARITY-004
+#[test]
+fn test_hf_parity_oracle_load_golden_fails() {
+    let (dir, corpus_path, model_family) = setup_hf_parity_corpus(r#"{"prompts":["hash002"]}"#);
+    // Valid golden JSON with a prompt, but NO .safetensors for the prompt's hash
+    let family_dir = dir.path().join("test-model").join("v1");
+    std::fs::write(family_dir.join("hash002.json"), r#"{"prompt":"test prompt xyz"}"#)
+        .expect("write golden json");
+    // No .safetensors file → oracle.load_golden fails
+    let mock_runner = MockCommandRunner::new();
+    let config = ExecutionConfig {
+        run_hf_parity: true,
+        hf_parity_corpus_path: Some(corpus_path),
+        hf_parity_model_family: Some(model_family),
+        run_conversion_tests: false,
+        run_golden_rule_test: false,
+        ..Default::default()
+    };
+    let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
+    let model_id = ModelId::new("test", "model");
+    let (passed, failed) = executor.run_hf_parity_tests(&model_id);
+    assert_eq!(passed, 0);
+    assert!(failed >= 1);
+    let evidence = executor.evidence().all();
+    // load_golden fails → F-HF-PARITY-004 "Failed to load golden for prompt"
+    assert!(
+        evidence.iter().any(|e| e.gate_id == "F-HF-PARITY-004"),
+        "Expected F-HF-PARITY-004 for oracle load_golden failure, got: {:?}",
+        evidence.iter().map(|e| &e.gate_id).collect::<Vec<_>>()
+    );
+    drop(dir);
+}
+
 // ============================================================
 // G0-FORMAT Workspace Tests
 // ============================================================

@@ -440,4 +440,224 @@ ollama_parity:
     assert!(evidence.iter().any(|e| e.gate_id == "F-OLLAMA-001"));
 }
 
+// ── run_ollama_prompt_gates: uncovered branches ─────────────────────────────
+
+fn ollama_parity_playbook_with_prompt(name: &str, prompt: &str) -> Playbook {
+    let yaml = format!(
+        r#"
+name: {name}
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+ollama_parity:
+  enabled: true
+  model_tag: "test:latest"
+  prompts: ["{prompt}"]
+  temperature: 0.0
+"#
+    );
+    Playbook::from_yaml(&yaml).expect("Failed to parse ollama playbook")
+}
+
+/// F-OLLAMA-001: ollama inference failure → falsified "Ollama inference failed"
+#[test]
+fn test_ollama_prompt_gates_ollama_inference_failure() {
+    let runner = Arc::new(MockCommandRunner::new().with_ollama_failure());
+    let config = ExecutionConfig {
+        run_ollama_parity: true,
+        model_path: Some("/mock/model".to_string()),
+        ..Default::default()
+    };
+    let mut executor = Executor::with_runner(config, runner);
+    let playbook = ollama_parity_playbook_with_prompt("ollama-fail", "What is 2+2?");
+
+    let (_passed, failed) = executor.run_ollama_parity_tests(Path::new("/mock/model"), &playbook);
+    assert!(failed >= 1, "Expected ≥1 failure for ollama inference failure");
+
+    let evidence = executor.evidence().all();
+    let ol_ev = evidence
+        .iter()
+        .find(|e| e.gate_id == "F-OLLAMA-001" && e.outcome.is_fail());
+    assert!(ol_ev.is_some(), "Expected F-OLLAMA-001 falsified evidence");
+    assert!(
+        ol_ev.unwrap().reason.contains("Ollama inference failed"),
+        "Expected 'Ollama inference failed' reason, got: {}",
+        ol_ev.unwrap().reason
+    );
+}
+
+/// F-OLLAMA-001: APR inference failure → falsified "APR inference failed"
+#[test]
+fn test_ollama_prompt_gates_apr_inference_failure() {
+    let runner = Arc::new(MockCommandRunner::new().with_inference_failure());
+    let config = ExecutionConfig {
+        run_ollama_parity: true,
+        model_path: Some("/mock/model".to_string()),
+        ..Default::default()
+    };
+    let mut executor = Executor::with_runner(config, runner);
+    let playbook = ollama_parity_playbook_with_prompt("apr-fail", "What is 2+2?");
+
+    let (_passed, failed) = executor.run_ollama_parity_tests(Path::new("/mock/model"), &playbook);
+    assert!(failed >= 1, "Expected ≥1 failure for APR inference failure");
+
+    let evidence = executor.evidence().all();
+    let ol_ev = evidence
+        .iter()
+        .find(|e| e.gate_id == "F-OLLAMA-001" && e.outcome.is_fail());
+    assert!(ol_ev.is_some(), "Expected F-OLLAMA-001 falsified evidence");
+    assert!(
+        ol_ev.unwrap().reason.contains("APR inference failed"),
+        "Expected 'APR inference failed' reason, got: {}",
+        ol_ev.unwrap().reason
+    );
+}
+
+/// F-OLLAMA-001: identical extracted outputs → corroborated
+///
+/// APR returns "Output:\nhello\nCompleted in 1.5s" → extract_output_text → "hello"
+/// Ollama returns "hello" (plain, no wrapper) → ollama_text = "hello"
+/// → apr_text == ollama_text → corroborated
+#[test]
+fn test_ollama_prompt_gates_corroborated_matching_output() {
+    use crate::command::CommandOutput;
+    struct MatchingOllamaRunner;
+    impl CommandRunner for MatchingOllamaRunner {
+        fn run_inference(
+            &self, _: &Path, _: &str, _: u32, _: bool, _: &[&str],
+        ) -> CommandOutput {
+            CommandOutput::success("Output:\nhello\nCompleted in 1.5s")
+        }
+        fn run_ollama_inference(&self, _: &str, _: &str, _: f64) -> CommandOutput {
+            // Return plain text without "Output:" wrapper so ollama_text == apr_text
+            CommandOutput::success("hello")
+        }
+        fn convert_model(&self, _: &Path, _: &Path) -> CommandOutput { CommandOutput::success("") }
+        fn inspect_model(&self, _: &Path) -> CommandOutput { CommandOutput::success("") }
+        fn validate_model(&self, _: &Path) -> CommandOutput { CommandOutput::success("") }
+        fn bench_model(&self, _: &Path) -> CommandOutput { CommandOutput::success("") }
+        fn check_model(&self, _: &Path) -> CommandOutput { CommandOutput::success("All checks passed") }
+        fn profile_model(&self, _: &Path, _: u32, _: u32) -> CommandOutput { CommandOutput::success("") }
+        fn profile_ci(&self, _: &Path, _: Option<f64>, _: Option<f64>, _: u32, _: u32, _: bool) -> CommandOutput { CommandOutput::success("") }
+        fn diff_tensors(&self, _: &Path, _: &Path, _: bool) -> CommandOutput { CommandOutput::success("") }
+        fn compare_inference(&self, _: &Path, _: &Path, _: &str, _: u32, _: f64) -> CommandOutput { CommandOutput::success("") }
+        fn profile_with_flamegraph(&self, _: &Path, _: &Path, _: bool) -> CommandOutput { CommandOutput::success("") }
+        fn profile_with_focus(&self, _: &Path, _: &str, _: bool) -> CommandOutput { CommandOutput::success("") }
+        fn fingerprint_model(&self, _: &Path, _: bool) -> CommandOutput { CommandOutput::success("") }
+        fn validate_stats(&self, _: &Path, _: &Path) -> CommandOutput { CommandOutput::success("") }
+        fn validate_model_strict(&self, _: &Path) -> CommandOutput { CommandOutput::success(r#"{"valid":true,"tensors_checked":0,"issues":[]}"#) }
+        fn pull_model(&self, _: &str) -> CommandOutput { CommandOutput::success("Path: /mock/model.safetensors") }
+        fn inspect_model_json(&self, _: &Path) -> CommandOutput { CommandOutput::success(r#"{"format":"SafeTensors","tensor_count":0,"tensor_names":[]}"#) }
+        fn pull_ollama_model(&self, _: &str) -> CommandOutput { CommandOutput::success("done") }
+        fn create_ollama_model(&self, _: &str, _: &Path) -> CommandOutput { CommandOutput::success("done") }
+        fn serve_model(&self, _: &Path, _: u16) -> CommandOutput { CommandOutput::success(r#"{"status":"listening"}"#) }
+        fn http_get(&self, _: &str) -> CommandOutput { CommandOutput::success(r#"{"models":[]}"#) }
+        fn profile_memory(&self, _: &Path) -> CommandOutput { CommandOutput::success(r#"{"peak_rss_mb":512}"#) }
+        fn run_chat(&self, _: &Path, _: &str, _: bool, _: &[&str]) -> CommandOutput { CommandOutput::success("") }
+        fn http_post(&self, _: &str, _: &str) -> CommandOutput { CommandOutput::success("{}") }
+        fn spawn_serve(&self, _: &Path, _: u16, _: bool) -> CommandOutput { CommandOutput::success("12345") }
+        fn quantize_model(&self, _: &Path, _: &Path, _: &str) -> CommandOutput { CommandOutput::success("") }
+        fn import_model(&self, _: &Path, _: &Path) -> CommandOutput { CommandOutput::success("") }
+        fn prune_model(&self, _: &Path, _: &Path, _: &str, _: f64) -> CommandOutput { CommandOutput::success("") }
+        fn distill_model(&self, _: &Path, _: &Path, _: &Path, _: &str) -> CommandOutput { CommandOutput::success("") }
+    }
+
+    let config = ExecutionConfig {
+        run_ollama_parity: true,
+        model_path: Some("/mock/model".to_string()),
+        ..Default::default()
+    };
+    let mut executor = Executor::with_runner(config, Arc::new(MatchingOllamaRunner));
+    let playbook = ollama_parity_playbook_with_prompt("ollama-corr", "hello test");
+
+    let (passed, _failed) = executor.run_ollama_parity_tests(Path::new("/mock/model"), &playbook);
+    assert!(passed >= 1, "Expected ≥1 passed for matching output");
+
+    let evidence = executor.evidence().all();
+    let corr = evidence
+        .iter()
+        .find(|e| e.gate_id == "F-OLLAMA-001" && e.outcome.is_pass());
+    assert!(corr.is_some(), "Expected F-OLLAMA-001 corroborated evidence");
+}
+
+/// F-OLLAMA-003: TTFT ratio > 3.0 → falsified "TTFT ratio exceeds 3.0x threshold"
+///
+/// APR returns "Completed in 4.0s" (4000ms), Ollama returns "Completed in 1.0s" (1000ms)
+/// ratio = 4.0 > 3.0 → TTFT FAILED (lines 696-705)
+#[test]
+fn test_ollama_prompt_gates_ttft_ratio_exceeded() {
+    use crate::command::CommandOutput;
+    struct SlowAprRunner;
+    impl CommandRunner for SlowAprRunner {
+        fn run_inference(
+            &self, _: &Path, _: &str, _: u32, _: bool, _: &[&str],
+        ) -> CommandOutput {
+            // High timing to trigger TTFT failure (4000ms >> 3x Ollama 1000ms)
+            CommandOutput::success("Output:\nhello slow\nCompleted in 4.0s")
+        }
+        fn run_ollama_inference(&self, _: &str, _: &str, _: f64) -> CommandOutput {
+            CommandOutput::success("Output:\nhello fast\nCompleted in 1.0s")
+        }
+        fn convert_model(&self, _: &Path, _: &Path) -> CommandOutput { CommandOutput::success("") }
+        fn inspect_model(&self, _: &Path) -> CommandOutput { CommandOutput::success("") }
+        fn validate_model(&self, _: &Path) -> CommandOutput { CommandOutput::success("") }
+        fn bench_model(&self, _: &Path) -> CommandOutput { CommandOutput::success("") }
+        fn check_model(&self, _: &Path) -> CommandOutput { CommandOutput::success("All checks passed") }
+        fn profile_model(&self, _: &Path, _: u32, _: u32) -> CommandOutput { CommandOutput::success("") }
+        fn profile_ci(&self, _: &Path, _: Option<f64>, _: Option<f64>, _: u32, _: u32, _: bool) -> CommandOutput { CommandOutput::success("") }
+        fn diff_tensors(&self, _: &Path, _: &Path, _: bool) -> CommandOutput { CommandOutput::success("") }
+        fn compare_inference(&self, _: &Path, _: &Path, _: &str, _: u32, _: f64) -> CommandOutput { CommandOutput::success("") }
+        fn profile_with_flamegraph(&self, _: &Path, _: &Path, _: bool) -> CommandOutput { CommandOutput::success("") }
+        fn profile_with_focus(&self, _: &Path, _: &str, _: bool) -> CommandOutput { CommandOutput::success("") }
+        fn fingerprint_model(&self, _: &Path, _: bool) -> CommandOutput { CommandOutput::success("") }
+        fn validate_stats(&self, _: &Path, _: &Path) -> CommandOutput { CommandOutput::success("") }
+        fn validate_model_strict(&self, _: &Path) -> CommandOutput { CommandOutput::success(r#"{"valid":true,"tensors_checked":0,"issues":[]}"#) }
+        fn pull_model(&self, _: &str) -> CommandOutput { CommandOutput::success("Path: /mock/model.safetensors") }
+        fn inspect_model_json(&self, _: &Path) -> CommandOutput { CommandOutput::success(r#"{"format":"SafeTensors","tensor_count":0,"tensor_names":[]}"#) }
+        fn pull_ollama_model(&self, _: &str) -> CommandOutput { CommandOutput::success("done") }
+        fn create_ollama_model(&self, _: &str, _: &Path) -> CommandOutput { CommandOutput::success("done") }
+        fn serve_model(&self, _: &Path, _: u16) -> CommandOutput { CommandOutput::success(r#"{"status":"listening"}"#) }
+        fn http_get(&self, _: &str) -> CommandOutput { CommandOutput::success(r#"{"models":[]}"#) }
+        fn profile_memory(&self, _: &Path) -> CommandOutput { CommandOutput::success(r#"{"peak_rss_mb":512}"#) }
+        fn run_chat(&self, _: &Path, _: &str, _: bool, _: &[&str]) -> CommandOutput { CommandOutput::success("") }
+        fn http_post(&self, _: &str, _: &str) -> CommandOutput { CommandOutput::success("{}") }
+        fn spawn_serve(&self, _: &Path, _: u16, _: bool) -> CommandOutput { CommandOutput::success("12345") }
+        fn quantize_model(&self, _: &Path, _: &Path, _: &str) -> CommandOutput { CommandOutput::success("") }
+        fn import_model(&self, _: &Path, _: &Path) -> CommandOutput { CommandOutput::success("") }
+        fn prune_model(&self, _: &Path, _: &Path, _: &str, _: f64) -> CommandOutput { CommandOutput::success("") }
+        fn distill_model(&self, _: &Path, _: &Path, _: &Path, _: &str) -> CommandOutput { CommandOutput::success("") }
+    }
+
+    let config = ExecutionConfig {
+        run_ollama_parity: true,
+        model_path: Some("/mock/model".to_string()),
+        ..Default::default()
+    };
+    let mut executor = Executor::with_runner(config, Arc::new(SlowAprRunner));
+    let playbook = ollama_parity_playbook_with_prompt("ollama-ttft-fail", "hello test");
+
+    let (_passed, failed) = executor.run_ollama_parity_tests(Path::new("/mock/model"), &playbook);
+    // Output differs + TTFT ratio > 3.0 → both emit falsified evidence
+    assert!(failed >= 1, "Expected ≥1 failure for high TTFT ratio");
+
+    let evidence = executor.evidence().all();
+    let ttft_ev = evidence
+        .iter()
+        .find(|e| e.gate_id == "F-OLLAMA-003" && e.outcome.is_fail());
+    assert!(
+        ttft_ev.is_some(),
+        "Expected F-OLLAMA-003 falsified (TTFT exceeded), got gates: {:?}",
+        evidence.iter().map(|e| &e.gate_id).collect::<Vec<_>>()
+    );
+    assert!(
+        ttft_ev.unwrap().reason.contains("ratio"),
+        "Expected ratio in reason, got: {}",
+        ttft_ev.unwrap().reason
+    );
+}
+
 // ── Integration: execute() with profile_ci (perf gates) enabled ───
