@@ -337,7 +337,16 @@ impl MqsCalculator {
             total_penalty += penalty;
         }
 
+        // Calculate max possible score (with or without proof bonus)
+        // When proof bonus is present, denominator expands to MAX_TOTAL + 50
+        let max_possible = if self.proof_bonus.is_some() {
+            CategoryScores::MAX_TOTAL + crate::proof_status::MAX_PROOF_BONUS
+        } else {
+            CategoryScores::MAX_TOTAL
+        };
+
         // Calculate raw score with penalties + proof bonus (capped at MAX_PROOF_BONUS)
+        // Cap at max_possible to prevent overflow from corrupted evidence
         let bonus_points = self
             .proof_bonus
             .as_ref()
@@ -345,16 +354,11 @@ impl MqsCalculator {
         let raw_score = categories
             .total()
             .saturating_sub(total_penalty)
-            .saturating_add(bonus_points);
+            .saturating_add(bonus_points)
+            .min(max_possible);
 
         // Normalize to 0-100 using logarithmic scaling
         // This makes 100/100 extremely difficult to achieve
-        // When proof bonus is present, denominator expands to MAX_TOTAL + 50
-        let max_possible = if self.proof_bonus.is_some() {
-            CategoryScores::MAX_TOTAL + crate::proof_status::MAX_PROOF_BONUS
-        } else {
-            CategoryScores::MAX_TOTAL
-        };
         let normalized = self.normalize_score_with_max(raw_score, categories.total(), max_possible);
 
         let grade = Self::calculate_grade(normalized);

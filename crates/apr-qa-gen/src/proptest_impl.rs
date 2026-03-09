@@ -69,7 +69,7 @@ pub fn arithmetic_prompt_strategy() -> impl Strategy<Value = String> {
     (
         1i32..100,
         1i32..100,
-        prop::sample::select(vec!['+', '-', '*']),
+        prop::sample::select(vec!['+', '-', '*', '/']),
     )
         .prop_map(|(a, b, op)| format!("What is {a}{op}{b}?"))
 }
@@ -205,7 +205,7 @@ mod tests {
         #[test]
         fn prop_arithmetic_prompts_contain_operator(prompt in arithmetic_prompt_strategy()) {
             prop_assert!(
-                prompt.contains('+') || prompt.contains('-') || prompt.contains('*'),
+                prompt.contains('+') || prompt.contains('-') || prompt.contains('*') || prompt.contains('/'),
                 "Prompt should contain arithmetic operator: {}", prompt
             );
         }

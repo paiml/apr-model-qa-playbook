@@ -279,7 +279,7 @@ pub fn bootstrap_playbook(
         kernel_ops: profile
             .kernel_ops
             .iter()
-            .map(|op| format!("{op:?}"))
+            .map(|op| op.serde_name().to_string())
             .collect(),
         prompt_count: profile.prompt_count(),
         long_context: profile.long_context,

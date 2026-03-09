@@ -188,7 +188,7 @@ impl MqsCalculator {
     /// Normalize with explicit max possible score.
     /// When proof bonus is active, max includes the bonus cap.
     fn normalize_score_with_max(&self, raw: u32, pre_penalty: u32, max_possible: u32) -> f64 {
-        if pre_penalty == 0 {
+        if pre_penalty == 0 || max_possible == 0 {
             return 0.0;
         }
 

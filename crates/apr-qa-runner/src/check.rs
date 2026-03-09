@@ -61,7 +61,11 @@ impl ConversionExecutor {
                 );
                 evidence.push(ev);
             }
-            Err(_) => {} // Inspect not available, skip gate
+            Err(e) => {
+                eprintln!(
+                    "[JIDOKA] Tensor cardinality check failed for {source:?}→{target:?}: {e}"
+                );
+            }
         }
     }
 
@@ -109,7 +113,11 @@ impl ConversionExecutor {
                 );
                 evidence.push(ev);
             }
-            Err(_) => {} // Inspect not available, skip gate
+            Err(e) => {
+                eprintln!(
+                    "[JIDOKA] Tensor name check failed for {source:?}→{target:?}: {e}"
+                );
+            }
         }
     }
 }

@@ -133,7 +133,7 @@ fn run_i5_tokenizer_roundtrip(
         );
     }
 
-    if result.stdout.contains("\"passed\":true") {
+    if result.stdout.contains("\"passed\":true") || result.stdout.contains("\"passed\": true") {
         let mut ev =
             Evidence::corroborated(gate_id, contract_scenario(model_id), &result.stdout, 0);
         ev.reason = "I-5 Tokenizer Roundtrip: tokenizer roundtrip verified".to_string();

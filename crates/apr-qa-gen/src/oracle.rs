@@ -71,9 +71,20 @@ impl ArithmeticOracle {
         // Find the FIRST operator by string position, not by operator priority.
         // Searching by operator type [+,-,*,/] is wrong: "3-2+1" would find '+'
         // at position 3, then try to parse "3-2" as i64, which fails.
+        // Skip position 0 for '-' to handle negative numbers like "-5+3".
         let first_op = ['+', '-', '*', '/']
             .iter()
-            .filter_map(|&op| expr.find(op).map(|pos| (pos, op)))
+            .filter_map(|&op| {
+                expr.find(op)
+                    .and_then(|pos| {
+                        // Skip '-' at position 0 (negative sign, not subtraction)
+                        if pos == 0 && op == '-' {
+                            expr[1..].find(op).map(|p| (p + 1, op))
+                        } else {
+                            Some((pos, op))
+                        }
+                    })
+            })
             .min_by_key(|&(pos, _)| pos);
 
         if let Some((pos, op)) = first_op {

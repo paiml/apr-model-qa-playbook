@@ -227,7 +227,7 @@ impl HtmlDashboard {
             grade_color = grade_color,
             normalized_score = mqs.normalized_score,
             raw_score = mqs.raw_score,
-            grade = mqs.grade,
+            grade = Self::escape_html(&mqs.grade),
             qualification_status = if mqs.qualifies() {
                 "Qualified"
             } else {

@@ -59,6 +59,30 @@ pub enum KernelOp {
 }
 
 impl KernelOp {
+    /// Serde-compatible snake_case name (matches `#[serde(rename_all = "snake_case")]`).
+    #[must_use]
+    pub const fn serde_name(&self) -> &'static str {
+        match self {
+            Self::FusedQ4kMatvec => "fused_q4k_matvec",
+            Self::FusedQ5kMatvec => "fused_q5k_matvec",
+            Self::FusedQ6kMatvec => "fused_q6k_matvec",
+            Self::RmsNorm => "rms_norm",
+            Self::LayerNorm => "layer_norm",
+            Self::Silu => "silu",
+            Self::Gelu => "gelu",
+            Self::SwiGlu => "swi_glu",
+            Self::Rope => "rope",
+            Self::GroupedQueryAttention => "grouped_query_attention",
+            Self::MultiHeadAttention => "multi_head_attention",
+            Self::MultiQueryAttention => "multi_query_attention",
+            Self::BiasAdd => "bias_add",
+            Self::TiedEmbeddings => "tied_embeddings",
+            Self::Alibi => "alibi",
+            Self::AbsolutePosition => "absolute_position",
+            Self::GatedMlp => "gated_mlp",
+        }
+    }
+
     /// Human-readable description of this kernel operation.
     #[must_use]
     pub const fn description(&self) -> &'static str {

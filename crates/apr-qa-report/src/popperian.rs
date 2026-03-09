@@ -145,7 +145,9 @@ impl PopperianScore {
     /// Get falsification summary
     #[must_use]
     pub fn falsification_summary(&self) -> String {
-        if self.falsified == 0 {
+        if self.hypotheses_tested == 0 {
+            "No hypotheses tested".to_string()
+        } else if self.falsified == 0 {
             "No falsifications - strongly corroborated".to_string()
         } else {
             format!(
