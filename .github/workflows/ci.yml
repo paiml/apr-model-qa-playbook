@@ -133,6 +133,24 @@ jobs:
       - name: Validate evidence JSON and models.csv
         run: ./scripts/validate-schemas.sh
 
+  contract-lint:
+    name: Contract Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-action@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install pv
+        run: cargo install provable-contracts-cli
+
+      - name: Lint contracts
+        run: pv lint contracts/ --min-score 0.40 --binding contracts/binding.yaml
+
   examples:
     name: Build Examples
     runs-on: ubuntu-latest
@@ -156,3 +174,4 @@ jobs:
           cargo build --example generate_rag_markdown -p apr-qa-report
           cargo build --example fail_fast_demo -p apr-qa-cli
           cargo build --example integrity_lock_demo -p apr-qa-cli
+          cargo build --example provable_contracts_demo -p apr-qa-runner

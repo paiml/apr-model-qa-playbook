@@ -1,5 +1,5 @@
 roadmap_version: '1.0'
-github_enabled: "true"
+github_enabled: true
 github_repo: paiml/apr-model-qa-playbook
 roadmap:
 - id: PMAT-001
@@ -38,4 +38,24 @@ roadmap:
   subtasks: []
   estimated_effort: null
   labels: []
+  notes: null
+- id: PMAT-003
+  github_issue: null
+  item_type: task
+  title: Integrate provable-contracts (pv lint) quality gate
+  status: inprogress
+  priority: high
+  assigned_to: null
+  created: 2026-03-08T16:10:05Z
+  updated: 2026-03-08T16:10:07.802364577+00:00
+  spec: null
+  acceptance_criteria:
+  - Express QA invariants (I-1..I-5) as pv-format contract YAMLs. Add contracts/, .pv.toml, binding.yaml. Wire pv lint into Makefile check chain and CI. Implements spec §18.
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - contracts
+  - pv-lint
+  - quality-gate
   notes: null

@@ -66,13 +66,16 @@ that stress-test the exact kernels each model uses.
 
 ### Kernel Operations
 
-Each model family exercises a specific set of kernel operations:
+Each model family exercises a specific set of kernel operations (17 total):
 
-| Family | Attention | Norm | Activation | Positional |
-|--------|-----------|------|------------|------------|
-| LLaMA/Qwen | GQA | RMSNorm | SiLU/SwiGLU | RoPE |
-| Falcon | MHA/MQA | LayerNorm | GELU | ALiBi |
-| GPT-NeoX | MHA | LayerNorm | GELU | RoPE |
+| Family | Attention | Norm | Activation | MLP | Positional |
+|--------|-----------|------|------------|-----|------------|
+| LLaMA/Qwen | GQA | RMSNorm | SiLU | SwiGLU | RoPE |
+| Falcon-7B | MHA | LayerNorm | GELU | - | RoPE |
+| Falcon-40B | MQA | LayerNorm | GELU | - | ALiBi |
+| Gemma | GQA | RMSNorm | GELU | GatedMlp | RoPE |
+| GPT-NeoX | MHA | LayerNorm | GELU | - | RoPE |
+| Mamba/RWKV | none | RMSNorm | SiLU | SwiGLU | none |
 
 ### Architecture Constraints to Kernel Profile
 
@@ -122,3 +125,44 @@ apr-qa bootstrap qwen2 1.5b \
     --tier mvp \
     --output playbooks/models/qwen2.5-coder-1.5b-mvp.playbook.yaml
 ```
+
+## Kernel Coverage Verification
+
+The `kernel_coverage` module verifies that the sovereign stack (trueno/realizar)
+implements all kernel operations required by each HuggingFace architecture. It loads
+constraints from `arch-constraints-v1.yaml` (provable-contracts) and bindings from
+`kernel-bindings.yaml` — zero hardcoded data.
+
+### CoverageContext
+
+```rust
+use apr_qa_gen::CoverageContext;
+
+// Load from YAML files
+let ctx = CoverageContext::load(
+    "../provable-contracts/contracts",
+    "playbooks/kernel-bindings.yaml",
+)?;
+
+// Verify a single architecture
+let result = ctx.verify_architecture("qwen2");
+
+// Verify all architectures (canonical names only, no aliases)
+let results = ctx.verify_all_architectures();
+```
+
+Key semantics:
+- `fully_covered` is `false` when using LLaMA defaults (actual kernel requirements unknown)
+- `gap_count` excludes models using defaults (separates unverified from real gaps)
+- `canonical_names` prevents alias duplication in `--all` output
+
+### Kernel Equivalence Classes (A-F)
+
+| Class | Pipeline | Representative |
+|-------|----------|---------------|
+| A | GQA+RMSNorm+SiLU+SwiGLU+RoPE | Qwen2.5-Coder-0.5B |
+| B | MHA+LayerNorm+GELU | GPT-NeoX-20B |
+| C | MQA+LayerNorm+GELU+ALiBi | Falcon-40B |
+| D | GQA+LayerNorm+GELU/SiLU | Phi-3 |
+| E | MoE+GQA+RMSNorm+SwiGLU | Mixtral-8x7B |
+| F | RMSNorm+GELU+GatedMlp+RoPE | Gemma-2-2B |

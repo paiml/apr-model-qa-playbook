@@ -1,15 +1,54 @@
 # APR Model QA Playbook Specification
 
-**Version:** 1.5.0
+**Version:** 1.6.0
 **Status:** DRAFT - Awaiting Peer Review
 **Author:** PAIML Engineering
-**Date:** 2026-02-04
+**Date:** 2026-03-08
 **PMAT Compliance:** Required (95% coverage, zero SATD)
 **Quality Philosophy:** Toyota Way + Popperian Falsification + Black Swan Theory
 
 ---
 
 ## Changelog
+
+### v1.8.0 (2026-03-08)
+- **feat(kernel-coverage):** Add Kernel Coverage Verification (§20)
+  - `apr-qa kernel-coverage` subcommand (#15): discovers HF kernel requirements,
+    verifies implementation in sovereign stack (trueno/realizar/aprender)
+  - Kernel binding registry: maps 16 KernelOp variants to trueno/realizar functions
+    with status (Fused, Fallback, Missing)
+  - Architecture-driven analysis: parse config.json or specify architecture name
+    to derive required kernel ops via existing `profile_from_constraints()`
+  - Automatic ticket generation for gaps: `--file-tickets` emits upstream ticket
+    markdown with five-whys root cause, severity, and reproduction steps
+  - Coverage matrix output: text and JSON formats showing per-architecture kernel
+    support with gap analysis
+  - `contracts/kernel-coverage-v1.yaml` provable contract for pv lint validation
+  - Jidoka principle: stop the line when the stack cannot serve a model architecture
+
+### v1.7.0 (2026-03-08)
+- **feat(verify):** Add Contract Verification Playbook (§19)
+  - Zero-inference playbook that validates contracts against source code
+  - Binding drift detection: verify function names and signatures in Rust source
+  - Contract claim verification: spot-check hardcoded values (MQS weights, grade thresholds, gateway count) against code
+  - Contract-specific unit test runner: filtered `cargo test` for contract/gateway/mqs/garbage tests only
+  - `forjar-contract-verify.yaml` orchestration pipeline (4 phases, <60s total)
+  - `scripts/verify-contract-bindings.sh` standalone binding verifier
+  - Makefile `contract-verify` target for ad-hoc invocation
+  - Popperian principle: contracts are hypotheses, code is evidence — verify the hypothesis matches the evidence
+
+### v1.6.0 (2026-03-08)
+- **feat(contracts):** Add Provable Contracts integration (§18)
+  - Express QA invariants (I-1..I-5) as pv-format contract YAMLs
+  - `pv lint` quality gate: validate → audit → score pipeline
+  - Gateway contract (G0-G4) with formal proof obligations
+  - MQS scoring contract with weighted category equations
+  - GarbageOracle contract with LAYOUT-002 detection invariants
+  - `.pv.toml` configuration with project-specific rule tuning
+  - Makefile `contract-lint` target wired into `make check`
+  - CI integration with SARIF output and GitHub PR annotations
+  - Trend tracking for contract quality drift detection
+  - Binding registry mapping obligations to crate implementations
 
 ### v1.5.0 (2026-02-04)
 - **feat(oracle):** Add Batuta Oracle enhancement for failure analysis (§12.1.1)
@@ -119,6 +158,10 @@ The framework embodies two complementary philosophies:
 14. [Peer-Reviewed Citations](#14-peer-reviewed-citations)
 15. [Falsification Checklist](#15-falsification-checklist)
 16. [Implementation Roadmap](#16-implementation-roadmap)
+17. [Invariant Testing](#17-invariant-testing-v140--five-whys-gh-190)
+18. [Provable Contracts Integration](#18-provable-contracts-integration-v160)
+19. [Contract Verification Playbook](#19-contract-verification-playbook-v170)
+20. [Kernel Coverage Verification](#20-kernel-coverage-verification-v180)
 
 ---
 
@@ -5209,12 +5252,20 @@ mod tests {
 18. **Dijkstra, E. W.** (1970). *Notes on Structured Programming*.
     - "Program testing can be used to show the presence of bugs, but never to show their absence."
 
-### 14.8 Numerical Stability & Arithmetic
+### 14.8 Design by Contract
 
-19. **Goldberg, D.** (1991). What Every Computer Scientist Should Know About Floating-Point Arithmetic. *ACM Computing Surveys (CSUR)*, 23(1), 5-48.
+19. **Meyer, B.** (1992). Applying "Design by Contract". *Computer*, 25(10), 40-51. IEEE.
+    - **Relevance:** Foundation for contract-first specification: preconditions (G0-G4), postconditions (MQS threshold), invariants (I-1..I-5). §18 formalizes the QA framework's implicit contracts as machine-checkable YAML contracts validated by `pv lint`.
+
+20. **Barnett, M., Leino, K. R. M., & Schulte, W.** (2005). The Spec# Programming System: An Overview. *CASSIS 2004*, LNCS 3362, 49-69. Springer.
+    - **Relevance:** Provable contract methodology—specifications as first-class artifacts with machine-checked obligations, suppression, and trend analysis.
+
+### 14.9 Numerical Stability & Arithmetic
+
+21. **Goldberg, D.** (1991). What Every Computer Scientist Should Know About Floating-Point Arithmetic. *ACM Computing Surveys (CSUR)*, 23(1), 5-48.
     - **Relevance:** Foundation for $\epsilon$-bound equivalence assertions in Gate F-CONV-001.
 
-20. **Higham, N. J.** (2002). *Accuracy and Stability of Numerical Algorithms* (2nd ed.). SIAM. ISBN 978-0898715217.
+22. **Higham, N. J.** (2002). *Accuracy and Stability of Numerical Algorithms* (2nd ed.). SIAM. ISBN 978-0898715217.
     - **Relevance:** Standards for assessing error propagation in deep format conversion chains (Gates F-CONV-RT-001..003).
 
 ---
@@ -5498,6 +5549,7 @@ mod tests {
 - `realizar/docs/95-coverage-fast-pmat-comply.md` - Coverage methodology
 - `bashrs/docs/playbook-spec.md` - bashrs playbook format
 - `batuta/docs/pipeline-spec.md` - Orchestration specification
+- `provable-contracts/docs/specifications/sub/lint.md` - `pv lint` specification
 
 ---
 
@@ -5505,6 +5557,9 @@ mod tests {
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
+| 1.8.0 | 2026-03-08 | PAIML Engineering | Kernel Coverage Verification (§20), `apr-qa kernel-coverage` subcommand, gap ticketing |
+| 1.7.0 | 2026-03-08 | PAIML Engineering | Contract Verification Playbook (§19), binding drift detection, claim spot-checking |
+| 1.6.0 | 2026-03-08 | PAIML Engineering | Provable Contracts integration (§18), `pv lint` quality gate |
 | 1.4.0 | 2026-01-30 | PAIML Engineering | Golden Rule Test, 5 invariants (Five Whys GH-190), 223 gates |
 | 1.3.1 | 2026-01-30 | PAIML Engineering | GH-186 FIXED: APR format validation gates (F-APR-FORMAT-*), 220 gates |
 | 1.3.0 | 2026-01-30 | PAIML Engineering | Rosetta differential testing, GH-186/189 detection, 217 gates |
@@ -5638,6 +5693,738 @@ fn run_golden_rule_test(
 ```
 
 Auto-enabled when subprocess mode is active. Gate: `F-GOLDEN-RULE-001`.
+
+---
+
+## 18. Provable Contracts Integration (v1.6.0)
+
+### 18.1 Motivation
+
+The QA framework enforces contracts implicitly: gateway checks G0-G4 are
+preconditions, the MQS threshold is a postcondition, and invariants I-1..I-5
+are behavioral contracts on the APR format. But these contracts exist only as
+Rust code and embedded YAML fragments—they are not independently lintable,
+auditable, or trend-trackable.
+
+**provable-contracts** (`pv`) provides machine-checkable contract
+specifications with a formal validation pipeline (validate → audit → score),
+20 lint rules, SARIF output, diff-aware analysis, and quality trend tracking.
+Expressing our contracts in `pv` format closes the gap between implicit
+enforcement (runtime) and explicit specification (static analysis).
+
+This follows Meyer's Design by Contract [19]: preconditions, postconditions,
+and invariants as first-class, machine-verifiable artifacts.
+
+### 18.2 Contract Inventory
+
+The following contracts express the QA framework's behavioral obligations in
+`pv`-compatible YAML format, stored in `contracts/`:
+
+| Contract | Domain | Proof Obligations | Source |
+|----------|--------|-------------------|--------|
+| `apr-format-invariants-v1.yaml` | Format boundary (I-1..I-5) | 5 invariants, 2 equivalences | `apr_format_contract.yaml` |
+| `gateway-contract-v1.yaml` | Gateway pipeline (G0-G4) | 5 preconditions, 1 ordering | §8.3, §11 |
+| `mqs-scoring-v1.yaml` | MQS computation | 3 invariants, 2 bounds | §8.2, §8.11 |
+| `garbage-oracle-v1.yaml` | Output quality (G4) | 2 invariants, 1 soundness | §10.2, LAYOUT-002 |
+| `binding.yaml` | Implementation registry | — | Cross-crate function mapping |
+
+#### 18.2.1 APR Format Invariants Contract
+
+Formalizes the five invariants from §17.2 as provable proof obligations:
+
+```yaml
+metadata:
+  version: "1.0.0"
+  created: "2026-03-08"
+  author: "PAIML Engineering"
+  description: "APR format writer/reader behavioral invariants"
+  references:
+    - "§17 Invariant Testing (Five Whys: GH-190)"
+    - "§4.1.1 LAYOUT-002: Row-Major Mandate"
+  depends_on:
+    - "gateway-contract-v1"
+
+equations:
+  round_trip_identity:
+    formula: "inference(convert(M)) = inference(M)"
+    domain: "M ∈ {SafeTensors models with config.json}"
+    invariants:
+      - "Token-level output equivalence within dtype tolerance"
+      - "Tolerance derived from quantization error analysis (§4.9)"
+  tensor_name_bijection:
+    formula: "names(writer(M)) = names(reader(M))"
+    domain: "M ∈ {APR models}"
+    invariants:
+      - "Exact set equality, no pattern matching"
+      - "Short GGUF naming convention: {layer}.{component}.{param}"
+
+proof_obligations:
+  - type: invariant
+    property: "Round-trip identity"
+    formal: "∀ M: maxdiff(inference(convert(M)), inference(M)) < ε(dtype)"
+    tolerance: "dtype-dependent (see §4.9 tolerance table)"
+    applies_to: all
+  - type: invariant
+    property: "Tensor name bijection"
+    formal: "∀ M: names(write(M)) = names(read(M))"
+    applies_to: all
+  - type: invariant
+    property: "No silent fallbacks"
+    formal: "∀ t ∈ tensors(M): dtype(t) ∉ known_types → Error"
+    applies_to: all
+  - type: invariant
+    property: "Statistical preservation"
+    formal: "|μ(original) - μ(converted)| < atol(dtype)"
+    tolerance: "dtype-dependent"
+    applies_to: all
+  - type: invariant
+    property: "Tokenizer roundtrip"
+    formal: "∀ tokens: encode(decode(tokens)) = tokens"
+    applies_to: all
+```
+
+#### 18.2.2 Gateway Contract
+
+Formalizes the G0-G4 pipeline as ordered preconditions with the zeroing
+invariant:
+
+```yaml
+equations:
+  gateway_zeroing:
+    formula: "∀ g ∈ {G0..G4}: ¬pass(g) → MQS = 0"
+    domain: "g ∈ Gateway"
+    invariants:
+      - "Any single gateway failure zeros the entire score"
+      - "Gateway evaluation order: G0 → G1 → G2 → G3 → G4"
+  gateway_ordering:
+    formula: "cost(G0) < cost(G1) < cost(G2)"
+    domain: "g ∈ Gateway"
+    invariants:
+      - "G0 is metadata-only (no inference, <5s)"
+      - "G1-G4 require model loading and inference"
+      - "Cheapest gates first (Muda elimination)"
+
+proof_obligations:
+  - type: invariant
+    property: "Gateway zeroing"
+    formal: "∀ g ∈ G: ¬pass(g) ⟹ MQS(model) = 0"
+    applies_to: all
+  - type: ordering
+    property: "Evaluation order"
+    formal: "eval_order = [G0, G1, G2, G3, G4]"
+    applies_to: all
+  - type: completeness
+    property: "Gateway exhaustiveness"
+    formal: "|{G0..G4}| = 5 ∧ all evaluated before scoring"
+    applies_to: all
+```
+
+#### 18.2.3 MQS Scoring Contract
+
+Formalizes the scoring formula from §8.11 as bounded, deterministic
+computation:
+
+```yaml
+equations:
+  mqs_composite:
+    formula: "MQS = Σ(w_i × category_i) - penalties"
+    domain: "category_i ∈ {A..F}, w_i ∈ [0,1], Σw_i = 1"
+    invariants:
+      - "MQS ∈ [0, 1000]"
+      - "Category weights: A=350, B=200, C=200, D=100, E=100, F=50"
+      - "Deterministic: same evidence → same score"
+
+proof_obligations:
+  - type: bound
+    property: "Score range"
+    formal: "0 ≤ MQS ≤ 1000"
+    applies_to: all
+  - type: invariant
+    property: "Determinism"
+    formal: "∀ E: score(E) = score(E)"
+    applies_to: all
+  - type: invariant
+    property: "Weight normalization"
+    formal: "Σ w_i = 1000"
+    applies_to: all
+```
+
+#### 18.2.4 GarbageOracle Contract
+
+Formalizes the G4 output quality gate and its connection to LAYOUT-002:
+
+```yaml
+equations:
+  garbage_detection:
+    formula: "garbage(output) = non_ascii_ratio(output) > θ ∨ entropy(output) < η"
+    domain: "output ∈ String"
+    invariants:
+      - "Non-ASCII ratio threshold θ detects encoding failures"
+      - "Low entropy η detects degenerate repetition"
+      - "LAYOUT-002 violations manifest as garbage output"
+
+proof_obligations:
+  - type: soundness
+    property: "No false positives on valid output"
+    formal: "∀ output ∈ ValidModelOutput: ¬garbage(output)"
+    applies_to: all
+  - type: invariant
+    property: "LAYOUT-002 detection"
+    formal: "layout_violation(model) ⟹ garbage(inference(model))"
+    applies_to: all
+```
+
+### 18.3 Binding Registry
+
+The binding registry (`contracts/binding.yaml`) maps proof obligations to
+their implementing functions across the workspace:
+
+```yaml
+# contracts/binding.yaml
+bindings:
+  apr-format-invariants-v1:
+    round_trip_identity:
+      crate: apr-qa-runner
+      function: run_golden_rule_test
+      file: crates/apr-qa-runner/src/executor.rs
+      gate_id: F-GOLDEN-RULE-001
+    tensor_name_bijection:
+      crate: apr-qa-runner
+      function: check_tensor_name_bijection
+      file: crates/apr-qa-runner/src/contract_invariant_checks.rs
+      gate_id: F-CONTRACT-I2-001
+    no_silent_fallbacks:
+      crate: apr-qa-runner
+      function: check_no_silent_fallbacks
+      file: crates/apr-qa-runner/src/contract_invariant_checks.rs
+      gate_id: F-CONTRACT-I3-001
+    statistical_preservation:
+      crate: apr-qa-runner
+      function: check_statistical_preservation
+      file: crates/apr-qa-runner/src/contract_invariant_checks.rs
+      gate_id: F-CONTRACT-I4-001
+    tokenizer_roundtrip:
+      crate: apr-qa-runner
+      function: check_tokenizer_roundtrip
+      file: crates/apr-qa-runner/src/contract_invariant_checks.rs
+      gate_id: F-CONTRACT-I5-001
+
+  gateway-contract-v1:
+    gateway_zeroing:
+      crate: apr-qa-report
+      function: apply_gateways
+      file: crates/apr-qa-report/src/mqs.rs
+    gateway_ordering:
+      crate: apr-qa-runner
+      function: execute_scenarios
+      file: crates/apr-qa-runner/src/executor.rs
+
+  mqs-scoring-v1:
+    mqs_composite:
+      crate: apr-qa-report
+      function: calculate_mqs
+      file: crates/apr-qa-report/src/mqs.rs
+
+  garbage-oracle-v1:
+    garbage_detection:
+      crate: apr-qa-gen
+      function: GarbageOracle::evaluate
+      file: crates/apr-qa-gen/src/oracle.rs
+```
+
+### 18.4 Configuration
+
+Project-level configuration in `.pv.toml`:
+
+```toml
+[lint]
+min_score = 0.60
+severity = "warning"
+contracts_dir = "contracts/"
+binding = "contracts/binding.yaml"
+
+[lint.rules]
+# Kani not yet integrated — suppress provability rules
+PV-PRV-001 = "info"    # Kernel contract without Kani harnesses
+PV-PRV-002 = "info"    # Kernel contract without falsification tests
+PV-PRV-003 = "info"    # Kani harness count < obligation count
+PV-PRV-004 = "info"    # No Lean theorems
+
+# Enforce strictly
+PV-VAL-001 = "error"   # Schema validation error
+PV-VAL-002 = "error"   # Missing metadata.version
+PV-AUD-001 = "warning" # Obligation without falsification test
+PV-SCR-001 = "error"   # Composite score below threshold
+
+[lint.suppress]
+rules = []
+files = []
+
+[lint.diff]
+base_ref = "master"
+
+[lint.trend]
+enabled = true
+retention_days = 90
+drift_threshold = 0.05
+
+[lint.cache]
+enabled = true
+dir = ".pv/cache"
+
+[output]
+format = "text"
+```
+
+### 18.5 Quality Gate Integration
+
+#### 18.5.1 Makefile
+
+```makefile
+.PHONY: contract-lint
+contract-lint:
+	pv lint contracts/ --min-score 0.60 --binding contracts/binding.yaml
+
+.PHONY: contract-lint-trend
+contract-lint-trend:
+	pv lint contracts/ --min-score 0.60 --binding contracts/binding.yaml --trend
+```
+
+The `contract-lint` target is added to the `check` chain:
+
+```makefile
+check: fmt-check lint test docs-check contract-lint
+```
+
+#### 18.5.2 CI Integration
+
+```yaml
+# .github/workflows/ci.yml
+- name: Contract lint (PR annotations)
+  run: pv lint contracts/ -f github --diff origin/master --min-score 0.60
+
+- name: Contract lint (SARIF)
+  run: pv lint contracts/ -f sarif --min-score 0.60 > contract-results.sarif
+
+- name: Upload SARIF
+  uses: github/codeql-action/upload-sarif@v3
+  with:
+    sarif_file: contract-results.sarif
+```
+
+#### 18.5.3 Diff-Aware Mode
+
+In PR workflows, `--diff origin/master` restricts linting to contracts
+changed since the base branch plus their transitive dependents. This keeps
+CI fast while still catching breakage from dependency changes (e.g., a
+change to `gateway-contract-v1` triggers re-lint of
+`apr-format-invariants-v1` which `depends_on` it).
+
+### 18.6 Trend Tracking and Drift Detection
+
+Quality snapshots are recorded via `--trend` and stored in `.pv/trend/`.
+Each snapshot captures:
+
+- Timestamp and git commit
+- Contract count, error count, warning count
+- Mean composite score
+- Pass/fail status
+
+Rule `PV-TRD-001` fires when the mean score drops >5% from the 7-day
+rolling average, providing early warning of contract quality degradation.
+
+### 18.7 Relationship to Existing Contract Infrastructure
+
+| Concern | Before (§17) | After (§18) |
+|---------|--------------|-------------|
+| Contract definition | Rust code + embedded YAML | Rust code + embedded YAML + `pv`-format YAML |
+| Runtime enforcement | Gateway checks, invariant tests | Unchanged (still runtime) |
+| Static validation | `validate-schemas.sh` (JSON schema only) | `pv lint` (schema + audit + score) |
+| Traceability audit | Manual review | `pv lint` audit gate (obligation ↔ test linking) |
+| Quality scoring | None for contracts themselves | `pv lint` composite score with threshold |
+| Trend analysis | None | `pv lint --trend` with drift detection |
+| CI integration | `docs-check` only | `contract-lint` + SARIF upload |
+| Diff-aware | No | `pv lint --diff` with transitive dependents |
+
+The `pv` contracts are **not a replacement** for runtime enforcement. They
+are a complementary static analysis layer: the contracts document what the
+code enforces, and `pv lint` verifies that the documentation is complete,
+traceable, and scored above threshold. Runtime tests prove the contracts
+hold; `pv lint` proves the contracts are well-specified.
+
+### 18.8 Falsification Test Naming Convention
+
+Falsification test IDs in QA contracts follow the pattern
+`FALSIFY-<PREFIX>-NNN`:
+
+| Contract | Prefix | Example |
+|----------|--------|---------|
+| APR Format Invariants | FI | `FALSIFY-FI-001` (round-trip identity) |
+| Gateway | GW | `FALSIFY-GW-001` (zeroing on G0 failure) |
+| MQS Scoring | MQS | `FALSIFY-MQS-001` (score in [0, 1000]) |
+| GarbageOracle | GO | `FALSIFY-GO-001` (no false positives) |
+
+These IDs cross-reference to the existing gate IDs in the runner
+(e.g., `FALSIFY-FI-001` maps to gate `F-GOLDEN-RULE-001`).
+
+### 18.9 Kani Roadmap
+
+Kani bounded model checking harnesses are not yet integrated. The `.pv.toml`
+configuration suppresses `PV-PRV-*` rules to `info` severity. When Kani
+support is added:
+
+1. Add `kani_harnesses` section to each contract YAML
+2. Promote `PV-PRV-001` and `PV-PRV-002` to `error` in `.pv.toml`
+3. Target: harness count ≥ obligation count per contract
+
+This is tracked but not blocking—the validate and audit gates provide
+immediate value without Kani.
+
+## 19. Contract Verification Playbook (v1.7.0)
+
+### 19.1 Motivation
+
+§18 introduced provable contracts as machine-checkable YAML specifications.
+`pv lint` validates the YAML is well-formed and auditable. But `pv lint`
+operates purely on YAML — it cannot verify that `binding.yaml` actually
+points to real functions in the Rust source, or that the contract claims
+(e.g., "MQS categories are QUAL=200, PERF=150, ...") match what the code
+computes.
+
+This creates a **specification-implementation gap**: contracts drift from
+code silently. The binding registry might reference a renamed function.
+A contract might claim 5 gateway types while the code now has 6.
+
+The Contract Verification Playbook closes this gap with a zero-inference
+pipeline that treats contracts as falsifiable hypotheses and source code
+as the evidence base. Following Popper: if a contract claim cannot be
+found in the code, the contract is falsified.
+
+### 19.2 Design Principles
+
+1. **Zero inference**: No model downloads, no GPU, no `apr` binary needed.
+   Pure source-code analysis against contract YAML claims.
+
+2. **Binding as hypothesis**: Each entry in `binding.yaml` is a testable
+   claim: "function `X` exists in module `Y` with signature `Z`." The
+   verification script falsifies or corroborates each claim by grepping
+   the Rust source.
+
+3. **Claim spot-checking**: Contracts embed domain-specific claims
+   (MQS category weights, grade thresholds, gateway count). The verifier
+   extracts these from YAML and confirms they appear in the implementing
+   code.
+
+4. **Fast feedback**: The entire pipeline runs in <60 seconds with no
+   compilation required for phases 0-1 (pure text analysis).
+
+### 19.3 Pipeline Architecture
+
+```
+Phase 0: pv lint (YAML validation)
+    │
+    ▼
+Phase 1: Binding drift detection (source grep)
+    │
+    ▼
+Phase 2: Contract claim verification (value spot-check)
+    │
+    ▼
+Phase 3: Contract-specific unit tests (cargo test --filter)
+```
+
+| Phase | Duration | Requires Build | Description |
+|-------|----------|---------------|-------------|
+| 0 | <1s | No | `pv lint contracts/` — YAML valid, audited, scored |
+| 1 | <5s | No | Parse `binding.yaml`, verify each function exists in source with matching name |
+| 2 | <5s | No | Extract hardcoded values from contract YAML, verify they appear in implementing `.rs` files |
+| 3 | ~30s | Yes | `cargo test` filtered to contract/gateway/mqs/garbage test modules only |
+
+### 19.4 Binding Drift Detection
+
+The binding verifier (`scripts/verify-contract-bindings.sh`) parses each
+entry in `contracts/binding.yaml` and checks:
+
+1. **Function existence**: The named function appears in the crate source.
+   For free functions: `fn <name>`. For methods: `fn <method>` within a
+   file containing `impl <Type>`.
+
+2. **Module path plausibility**: The `module_path` field references a
+   crate that exists in the workspace, and the physical file referenced
+   in `notes` exists on disk.
+
+3. **Status coherence**: Entries with `status: implemented` must have
+   their function found. Entries with `status: not_implemented` must NOT
+   have their function found (or the status is stale).
+
+Exit codes:
+
+| Code | Meaning |
+|------|---------|
+| 0 | All bindings verified |
+| 1 | One or more bindings falsified (drift detected) |
+
+Output format:
+
+```
+=== Binding Drift Detection ===
+
+  [OK]  round_trip_identity        → run_golden_rule_test (golden.rs)
+  [OK]  tensor_name_bijection      → run_i2_tensor_bijection (contract.rs)
+  [OK]  no_silent_fallbacks        → run_i3_no_silent_fallbacks (contract_invariant_checks.rs)
+  ...
+  [DRIFT] grade_mapping            → calculate_grade_OLD (RENAMED?)
+
+  Result: 12/13 verified, 1 drift detected
+```
+
+### 19.5 Contract Claim Verification
+
+Beyond binding existence, contracts make value claims that can be
+spot-checked against source:
+
+| Contract | Claim | Verification |
+|----------|-------|-------------|
+| `mqs-scoring-v1.yaml` | Categories: QUAL=200, PERF=150, STAB=200, COMP=150, EDGE=150, REGR=150 | Grep `mqs.rs` for weight constants |
+| `mqs-scoring-v1.yaml` | Raw score range [0, 1050] | Grep for `1050` or `1000 + 50` |
+| `mqs-scoring-v1.yaml` | 12-grade scale | Count grade arms in `calculate_grade` |
+| `gateway-contract-v1.yaml` | Exactly 5 gateway types (G0-G4) | Count `GatewayResult` variants or gateway enum |
+| `gateway-contract-v1.yaml` | Gateway zeroing via `all(passed)` | Grep for `.all(` pattern in `mqs_gateways.rs` |
+| `garbage-oracle-v1.yaml` | Empty output classified as garbage | Grep for `is_empty()` or `trim().is_empty()` in `oracle.rs` |
+| `apr-format-invariants-v1.yaml` | BF16 dtype byte = 30 | Grep for `30` in dtype mapping |
+
+Each claim is a falsifiable hypothesis. The verifier reports pass/fail
+per claim with the source line that corroborates or contradicts it.
+
+### 19.6 Forjar Orchestration
+
+`forjar-contract-verify.yaml` orchestrates the four phases:
+
+```yaml
+resources:
+  pv-lint:           # Phase 0: YAML validation
+  binding-verify:    # Phase 1: Function existence in source
+  claim-verify:      # Phase 2: Value spot-checks
+  contract-tests:    # Phase 3: Filtered cargo test
+```
+
+Dependency graph:
+
+```
+pv-lint ──┐
+          ├──→ contract-tests
+binding-verify ──┘
+claim-verify ────┘
+```
+
+Phases 0-2 run in parallel (all are read-only text analysis). Phase 3
+depends on phases 0-1 passing (no point running tests if contracts or
+bindings are broken).
+
+### 19.7 Makefile Integration
+
+```makefile
+contract-verify:
+	./scripts/verify-contract-bindings.sh
+	@echo "Binding verification passed"
+```
+
+The `contract-verify` target is independent of `contract-lint` (which
+runs `pv lint`). Both are included in the forjar orchestration but can
+be run standalone.
+
+### 19.8 Relationship to §18
+
+| Concern | §18 (`pv lint`) | §19 (Contract Verify) |
+|---------|-----------------|----------------------|
+| What it checks | YAML structure, audit, scoring | Contracts match code |
+| Touches source? | No — pure YAML | Yes — greps `.rs` files |
+| Requires build? | No | Phase 3 only |
+| Requires model? | No | No |
+| Catches | Missing tests, schema errors, score drift | Renamed functions, stale bindings, wrong constants |
+| Speed | <1s | <60s |
+| Frequency | Every commit (in `make check`) | Every commit (in forjar pipeline) |
+
+Together, §18 and §19 form a complete contract assurance layer:
+
+- §18 proves contracts are **well-specified** (static YAML analysis)
+- §19 proves contracts are **truthful** (code-level verification)
+
+### 19.9 Failure Response Protocol
+
+When binding drift is detected:
+
+1. **Identify**: The verifier reports which binding drifted and what
+   function name was expected vs. what exists.
+
+2. **Five Whys**: Was the function renamed? Moved? Deleted? Signature
+   changed? Each case has a different fix.
+
+3. **Fix at source**: Update `binding.yaml` to match the current code
+   (not the other way around — code is the ground truth for function
+   names). If the code changed semantics, also update the contract YAML.
+
+4. **Re-verify**: Run `make contract-verify` to confirm the fix.
+
+This is Jidoka applied to specification maintenance: stop the line when
+the spec drifts from reality.
+
+## 20. Kernel Coverage Verification (v1.8.0)
+
+### 20.1 Motivation
+
+The Sovereign AI Stack supports 17 HuggingFace model architectures across
+trueno (SIMD kernels), realizar (runtime dispatch), and aprender (format
+conversion). Each architecture requires a specific set of kernel operations:
+attention type, normalization, activation, positional encoding, quantization.
+
+When a new architecture is added or an existing one gains new features (e.g.,
+Qwen3 adding QK normalization), the kernel requirements change. Without
+automated coverage verification, gaps surface only at inference time as
+crashes, garbage output, or silent fallbacks to slow generic paths.
+
+`apr-qa kernel-coverage` closes this gap by treating each architecture's
+kernel requirements as a provable contract and verifying implementation
+coverage across the stack.
+
+### 20.2 Architecture
+
+```
+HuggingFace config.json
+    ↓ parse architecture, constraints
+ArchConstraints (from aprender family contracts)
+    ↓ profile_from_constraints()
+KernelProfile { kernel_ops: [KernelOp; N] }
+    ↓ verify against
+KernelBindingRegistry (static knowledge of trueno/realizar)
+    ↓ classify
+CoverageReport { verified: [...], fallback: [...], gaps: [...] }
+    ↓ if gaps
+Upstream tickets (markdown, gh issue create)
+```
+
+### 20.3 Kernel Binding Registry
+
+The binding registry maps each `KernelOp` variant to its implementing
+function(s) in the stack:
+
+| KernelOp | trueno function | realizar dispatch | Status |
+|----------|----------------|-------------------|--------|
+| `FusedQ4kMatvec` | `matmul_q4k_f32` | `fused_q4k_parallel_matvec_into` | Fused |
+| `FusedQ5kMatvec` | `BlockQ5K::dequantize` | `fused_q5k_parallel_matvec_into` | Fused |
+| `FusedQ6kMatvec` | `matmul_q6k_f32` | `fused_q6k_parallel_matvec_into` | Fused |
+| `RmsNorm` | `rms_norm` (vector ops) | `ops::rms_norm` | Fused |
+| `LayerNorm` | `layer_norm` (vector ops) | `ops::layer_norm` | Fused |
+| `Silu` | `silu_scalar` | `ops::silu` | Fused |
+| `Gelu` | `gelu_scalar` | `gelu` activation | Fused |
+| `SwiGlu` | (composed: silu + elementwise) | `fused_gate_up_*` | Fused |
+| `Rope` | (inline math) | `apply_rope_rotation_simd` | Fused |
+| `GroupedQueryAttention` | `simd_dot_f32` | `attention_with_cache_gqa` | Fused |
+| `MultiHeadAttention` | `simd_dot_f32` | `attention_with_cache_gqa` (kv=heads) | Fused |
+| `MultiQueryAttention` | `simd_dot_f32` | `attention_with_cache_gqa` (kv=1) | Fused |
+| `BiasAdd` | vector add | inline in forward | Fused |
+| `TiedEmbeddings` | — | weight sharing | Fused |
+| `Alibi` | — | — | Missing |
+| `AbsolutePosition` | — | embed + add | Fused |
+
+### 20.4 Implementation Status Classification
+
+| Status | Meaning | Performance | Action |
+|--------|---------|-------------|--------|
+| `Fused` | Optimized implementation exists | Full speed | None |
+| `Fallback` | Works via generic dequant path | 2-5x slower | P1 ticket |
+| `Missing` | Not implemented; inference fails | Broken | P0 ticket |
+
+### 20.5 CLI Subcommand
+
+```
+apr-qa kernel-coverage [OPTIONS]
+
+Options:
+  --architecture <ARCH>  Check specific architecture (e.g., "qwen2", "llama")
+  --all                  Check all 17 known architectures
+  --config <PATH>        Parse HuggingFace config.json to auto-detect
+  --file-tickets         Generate upstream ticket markdown for gaps
+  --output-dir <PATH>    Directory for tickets (default: docs/tickets/)
+  --format <FMT>         Output format: text, json (default: text)
+```
+
+### 20.6 Ticket Generation
+
+When `--file-tickets` is specified, each gap produces a ticket file:
+
+```
+docs/tickets/KERNEL-GAP-{OP}-{ARCH}.md
+```
+
+Ticket format follows the existing upstream ticket protocol (§6):
+
+```markdown
+# KERNEL-GAP-{OP}: {title}
+
+**Priority:** P0/P1
+**Component:** trueno / realizar
+**Affects:** {architectures}
+**Reporter:** apr-qa kernel-coverage
+**Date:** {date}
+
+## Summary
+Kernel operation `{op}` required by {architectures} has no
+{fused/any} implementation in the sovereign stack.
+
+## Severity Justification
+{P0: inference fails | P1: falls back to slow generic path}
+
+## Required Implementation
+- **trueno**: Add `{function}` kernel with SIMD dispatch
+- **realizar**: Add dispatch arm in `fused_matmul_into()`
+
+## Affected Models
+{list of model families requiring this op}
+
+## Five Whys
+1. Why does inference fail/degrade? → Missing kernel for {op}
+2. Why is the kernel missing? → Architecture {arch} not fully supported
+3. Why not fully supported? → No coverage verification existed
+4. Why no verification? → Manual tracking only
+5. Why manual? → Fixed by this tool (§20)
+```
+
+### 20.7 Coverage Matrix
+
+The `--all` flag produces a cross-architecture coverage matrix:
+
+```
+                    Q4K  Q5K  Q6K  RMS  LN   SiLU GELU SwiG RoPE GQA  MHA  MQA  Bias Tied ALi  Abs
+Qwen2 (Class A)     ✓    ✓    ✓    ✓    ·    ✓    ·    ✓    ✓    ✓    ·    ·    ·    ·    ·    ·
+LLaMA (Class A)     ✓    ✓    ✓    ✓    ·    ✓    ·    ✓    ✓    ✓    ·    ·    ·    ·    ·    ·
+Phi (Class D)       ✓    ✓    ✓    ·    ✓    ✓    ·    ✓    ✓    ·    ✓    ·    ✓    ·    ·    ·
+Falcon (Class C)    ✓    ✓    ✓    ·    ✓    ·    ✓    ·    ·    ·    ·    ✓    ·    ·    ✗    ·
+BLOOM (Class C)     ✓    ✓    ✓    ·    ✓    ·    ✓    ·    ·    ·    ·    ✓    ·    ·    ✗    ·
+
+✓ = Fused   · = Not required   ✗ = MISSING
+```
+
+### 20.8 Provable Contract
+
+`contracts/kernel-coverage-v1.yaml` formalizes the coverage requirements:
+
+- **Equations**: `coverage(arch) = required_ops(arch) ⊆ implemented_ops`
+- **Proof obligations**: Coverage completeness for each kernel class A-F
+- **Falsification tests**: Attempt to find an architecture whose required
+  ops are not a subset of implemented ops
+- **Binding**: Maps to `kernel_coverage::verify_architecture()` in apr-qa-gen
+
+### 20.9 Relationship to Existing Infrastructure
+
+| Existing | §20 addition |
+|----------|-------------|
+| `KernelOp` (17 variants) | Adds implementation status per op |
+| `profile_from_constraints()` | Used to derive requirements |
+| `KernelClass` A-F | Used to group coverage analysis |
+| Ticket protocol (§6) | Used to format gap tickets |
+| `pv lint` (§18) | New contract for kernel coverage |
+| `verify-contract-bindings.sh` (§19) | Kernel bindings verified via same mechanism |
 
 ---
 

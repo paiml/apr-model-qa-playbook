@@ -26,7 +26,7 @@ Options:
 - `--all` - Certify all models in registry
 - `--family <NAME>` - Certify by model family (e.g., "qwen-coder", "llama")
 - `--tier <TIER>` - Certification tier: `dim-smoke`, `smoke`, `mvp`, `quick` (default), `standard`, `deep`
-- `--kernel-class <CLASS>` - Kernel equivalence class (A-E) for batch dim-smoke certification
+- `--kernel-class <CLASS>` - Kernel equivalence class (A-F) for batch dim-smoke certification
 - `--output <DIR>` - Output directory for certification artifacts
 - `--dry-run` - Preview what would be certified
 - `--model-cache <DIR>` - Model cache directory (defaults to `~/.cache/apr-models`)
@@ -348,6 +348,59 @@ apr-qa validate-contract model.apr
 # Check only critical tensors, output JSON
 apr-qa validate-contract model.apr --critical-only --format json
 ```
+
+#### kernel-coverage
+
+Verify kernel coverage across HuggingFace architectures (Spec §20):
+
+```bash
+apr-qa kernel-coverage [OPTIONS]
+```
+
+Options:
+- `--architecture <ARCH>` - Check specific architecture (e.g., `qwen2`, `llama`, `phi`)
+- `--all` - Check all known architectures
+- `--models` - Check all models in the registry (100+ models)
+- `--verify` - Verify binding claims against actual source code in sibling repos
+- `--file-tickets` - Generate upstream ticket markdown for gaps
+- `--output-dir <DIR>` - Directory for ticket files (default: `docs/tickets`)
+- `--trueno-path <PATH>` - Path to trueno repo (default: `../trueno`)
+- `--realizar-path <PATH>` - Path to realizar repo (default: `../realizar`)
+- `--format <FORMAT>` - Output format: `text`, `json` (default: `text`)
+- `--contracts-path <DIR>` - Path to provable-contracts/contracts directory (default: `../provable-contracts/contracts`)
+- `--bindings-path <PATH>` - Path to kernel bindings YAML (default: `playbooks/kernel-bindings.yaml`)
+
+All architecture constraints are loaded from `arch-constraints-v1.yaml` (provable-contracts).
+All kernel bindings are loaded from `kernel-bindings.yaml`. Zero hardcoded data.
+
+Examples:
+```bash
+# Check all architectures
+apr-qa kernel-coverage --all
+
+# Check a specific architecture
+apr-qa kernel-coverage --architecture qwen2
+
+# Verify bindings against source code
+apr-qa kernel-coverage --all --verify
+
+# Check all models in registry
+apr-qa kernel-coverage --models
+
+# Generate tickets for gaps
+apr-qa kernel-coverage --all --file-tickets
+```
+
+**Kernel Equivalence Classes (A-F):**
+
+| Class | Pipeline | Representative |
+|-------|----------|---------------|
+| A | GQA+RMSNorm+SiLU+SwiGLU+RoPE | Qwen2.5-Coder-0.5B |
+| B | MHA+LayerNorm+GELU | GPT-NeoX-20B |
+| C | MQA+LayerNorm+GELU+ALiBi | Falcon-40B |
+| D | GQA+LayerNorm+GELU/SiLU | Phi-3 |
+| E | MoE+GQA+RMSNorm+SwiGLU | Mixtral-8x7B |
+| F | RMSNorm+GELU+GatedMlp+RoPE | Gemma-2-2B |
 
 ### Global Options
 

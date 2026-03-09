@@ -29,6 +29,8 @@ This framework embodies two complementary quality philosophies:
 - **End-to-end kernel correctness oracle** for trueno SIMD/CUDA kernels
   via G4 garbage detection, contract invariants (I-1 through I-5), and
   metamorphic relation testing
+- **Provable contracts** via `pv lint` — machine-checkable YAML specifications
+  with validate/audit/score pipeline and CI integration
 
 ## Test Matrix
 
@@ -65,7 +67,8 @@ apr-model-qa-playbook/
 │   ├── apr-qa-runner/   # Playbook execution
 │   ├── apr-qa-report/   # MQS scoring + reports
 │   ├── apr-qa-certify/  # Tier-aware scoring + README sync
-│   └── apr-qa-cli/      # CLI binary (14 subcommands)
+│   └── apr-qa-cli/      # CLI binary (15 subcommands)
+├── contracts/           # Provable contract YAMLs + binding registry
 ├── certifications/      # Model certification evidence
 ├── playbooks/
 │   ├── models/          # Per-model playbooks

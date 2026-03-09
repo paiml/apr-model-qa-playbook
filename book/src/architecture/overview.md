@@ -33,7 +33,7 @@
 1. **apr-qa-gen** generates `QaScenario` instances via proptest
 2. **apr-qa-runner** executes scenarios in parallel, produces `Evidence`
 3. **apr-qa-report** calculates `MqsScore`, generates JUnit/HTML/Markdown reports
-4. **apr-qa-cli** orchestrates the pipeline with 14 subcommands (certify, run, report, etc.)
+4. **apr-qa-cli** orchestrates the pipeline with 15 subcommands (certify, run, report, kernel-coverage, etc.)
 5. **apr-qa-certify** handles tier-aware scoring and README certification table sync
 
 ## Key Types
@@ -119,6 +119,12 @@ output.
 │  G0-G4 gateways, GarbageOracle, contract invariants I-1–I-5 │
 │  Metamorphic relations (RT, CARD, IDEM, COM)                 │
 │  170-point verification matrix, MQS scoring                  │
+└──────────────────────────┬──────────────────────────────────┘
+                           │ contracts
+┌──────────────────────────▼──────────────────────────────────┐
+│            Provability Level (provable-contracts)            │
+│  pv lint: validate → audit → score (4 contracts, 20 tests)  │
+│  binding.yaml: obligation → crate function traceability      │
 └─────────────────────────────────────────────────────────────┘
 ```
 

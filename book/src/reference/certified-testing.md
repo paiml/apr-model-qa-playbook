@@ -332,6 +332,24 @@ the Sovereign AI Stack. While trueno and HuggingFace kernels test individual ker
 operations (RMSNorm, quantized matmul, attention), the QA playbook validates that
 the complete kernel pipeline produces correct model output.
 
+### Kernel Equivalence Classes (A-F)
+
+Models are grouped into kernel equivalence classes that share identical compute pipelines.
+Once kernels are proven via full MVP on one representative model, other models in the
+same class only need dimensional smoke verification.
+
+| Class | Kernel Pipeline | Families | Representative |
+|-------|----------------|----------|---------------|
+| **A** | GQA+RMSNorm+SiLU+SwiGLU+RoPE | LLaMA 3, Qwen2/3, Mistral, Yi, DeepSeek, InternLM2, SmolLM, OLMo | Qwen2.5-Coder-0.5B |
+| **B** | MHA+LayerNorm+GELU | GPT-2, GPT-Neo, GPT-NeoX, GPT-J, OPT, Falcon-7B, CodeGen, BERT | GPT-NeoX-20B |
+| **C** | MQA+LayerNorm+GELU+ALiBi | BLOOM, Falcon-40B | Falcon-40B |
+| **D** | GQA+LayerNorm+GELU/SiLU | Phi-3, Phi-4, StableLM | Phi-3-mini |
+| **E** | MoE+GQA+RMSNorm+SwiGLU | Mixtral, Qwen-MoE | Mixtral-8x7B |
+| **F** | RMSNorm+GELU+GatedMlp+RoPE | Gemma, Gemma2, CodeGemma | Gemma-2-2B |
+
+**Note:** Bare "falcon" is ambiguous — Falcon-7B is Class B, Falcon-40B is Class C.
+SSM architectures (Mamba, RWKV) have no attention mechanism and use a unique kernel pipeline.
+
 ### How Verification Classes Map to Kernel Operations
 
 | Class | Kernel Operations Tested | Detection Method |

@@ -212,30 +212,14 @@ resources:
       - starcoder2-15b
       - deepseek-coder-v2-lite
       - wizardcoder-15b
-      - internlm2.5-20b
-      - codestral-22b
-      - mistral-small-24b
-      - gemma-2-27b
-      - gemma-3-27b
-      - qwen3-30b-a3b
-      - qwen3-coder-30b-a3b
-      - qwen2.5-32b
-      - qwen2.5-coder-32b
-      - qwen3-32b
-      - qwq-32b
-      - deepseek-r1-distill-qwen-32b
-      - deepseek-coder-33b
-      - wizardcoder-33b
-      - codellama-34b
-      - yi-1.5-34b
-      - falcon-40b
-      - codellama-70b
-      - llama-3.1-70b
-      - llama-3.3-70b
-      - deepseek-r1-distill-llama-70b
-      - nemotron-70b
-      - qwen2.5-72b
-      - qwen3-coder-next
+      # Large models (>=20B) removed from smoke for now — too slow for batch runs
+      # internlm2.5-20b, codestral-22b, mistral-small-24b, gemma-2-27b,
+      # gemma-3-27b, qwen3-30b-a3b, qwen3-coder-30b-a3b, qwen2.5-32b,
+      # qwen2.5-coder-32b, qwen3-32b, qwq-32b, deepseek-r1-distill-qwen-32b,
+      # deepseek-coder-33b, wizardcoder-33b, codellama-34b, yi-1.5-34b,
+      # falcon-40b, codellama-70b, llama-3.1-70b, llama-3.3-70b,
+      # deepseek-r1-distill-llama-70b, nemotron-70b, qwen2.5-72b,
+      # qwen3-coder-next
       - vicuna-7b
     depends_on: ["dim-smoke-{{item}}"]
     working_dir: "{{params.qa_repo}}"
@@ -318,30 +302,14 @@ resources:
       - starcoder2-15b
       - deepseek-coder-v2-lite
       - wizardcoder-15b
-      - internlm2.5-20b
-      - codestral-22b
-      - mistral-small-24b
-      - gemma-2-27b
-      - gemma-3-27b
-      - qwen3-30b-a3b
-      - qwen3-coder-30b-a3b
-      - qwen2.5-32b
-      - qwen2.5-coder-32b
-      - qwen3-32b
-      - qwq-32b
-      - deepseek-r1-distill-qwen-32b
-      - deepseek-coder-33b
-      - wizardcoder-33b
-      - codellama-34b
-      - yi-1.5-34b
-      - falcon-40b
-      - codellama-70b
-      - llama-3.1-70b
-      - llama-3.3-70b
-      - deepseek-r1-distill-llama-70b
-      - nemotron-70b
-      - qwen2.5-72b
-      - qwen3-coder-next
+      # Large models (>=20B) removed from MVP for now — too slow for batch runs
+      # internlm2.5-20b, codestral-22b, mistral-small-24b, gemma-2-27b,
+      # gemma-3-27b, qwen3-30b-a3b, qwen3-coder-30b-a3b, qwen2.5-32b,
+      # qwen2.5-coder-32b, qwen3-32b, qwq-32b, deepseek-r1-distill-qwen-32b,
+      # deepseek-coder-33b, wizardcoder-33b, codellama-34b, yi-1.5-34b,
+      # falcon-40b, codellama-70b, llama-3.1-70b, llama-3.3-70b,
+      # deepseek-r1-distill-llama-70b, nemotron-70b, qwen2.5-72b,
+      # qwen3-coder-next
       - vicuna-7b
     depends_on: ["smoke-{{item}}"]
     working_dir: "{{params.qa_repo}}"

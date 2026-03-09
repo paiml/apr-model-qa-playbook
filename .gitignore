@@ -27,6 +27,9 @@ book/book/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+# Provable contracts cache/trend
+.pv/
+
 # PMAT
 .pmat/backup/
 .pmat-qa/

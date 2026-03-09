@@ -4,6 +4,7 @@
 .SUFFIXES:
 
 .PHONY: all build test lint coverage clean check fmt doc docs-check \
+       contract-lint contract-lint-trend contract-verify \
        update-certifications certify-smoke certify-mvp certify-quick certify-standard certify-deep certify-qwen \
        parity-check parity-list golden-generate \
        ci-smoke nightly-7b \
@@ -44,12 +45,24 @@ doc:
 doc-open:
 	cargo doc --workspace --no-deps --open
 
-# Run all checks (build + lint + test + docs)
-check: fmt-check lint test docs-check
+# Run all checks (build + lint + test + docs + contracts)
+check: fmt-check lint test docs-check contract-lint
 
 # Documentation consistency check (prevents drift at interface boundaries)
 docs-check:
 	@./scripts/check-docs-consistency.sh
+
+# Provable contracts quality gate (validate + audit + score)
+contract-lint:
+	pv lint contracts/ --min-score 0.40 --binding contracts/binding.yaml
+
+# Contract verification: binding drift + claim spot-checks (Spec §19)
+contract-verify:
+	@./scripts/verify-contract-bindings.sh
+
+# Contract lint with trend snapshot (for drift detection)
+contract-lint-trend:
+	pv lint contracts/ --min-score 0.40 --binding contracts/binding.yaml
 
 # Coverage with llvm-cov (NEVER use tarpaulin)
 # Uses --lib to test library code only (no binary/main.rs)
@@ -175,6 +188,8 @@ help:
 	@echo "  coverage-summary       Coverage summary (library code)"
 	@echo "  coverage-full          Full coverage including CLI"
 	@echo "  coverage-check         Verify PMAT compliance (>= 95%, see CLAUDE.md)"
+	@echo "  contract-lint          Provable contracts quality gate (pv lint)"
+	@echo "  contract-verify        Verify contract bindings match source code"
 	@echo "  docs-check             Check documentation consistency (prevents drift)"
 	@echo "  doc                    Generate documentation"
 	@echo "  clean                  Clean build artifacts"

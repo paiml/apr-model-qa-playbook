@@ -102,10 +102,10 @@ crates/
    (Smoke/MVP/Quick/Standard/Deep), certification status computation,
    README table sync from models.csv. Binary: `apr-qa-readme-sync`.
 
-5. **apr-qa-cli**: Orchestrates the full pipeline with 14 subcommands:
+5. **apr-qa-cli**: Orchestrates the full pipeline with 15 subcommands:
    certify, run, tools, generate, score, report, list, lock-playbooks,
    tickets, parity, export-csv, export-evidence, bootstrap,
-   validate-contract.
+   validate-contract, kernel-coverage.
 
 ### Key Types
 
@@ -114,7 +114,7 @@ crates/
 - `MqsScore` (apr-qa-report): Qualification score with gateways and category breakdowns
 - `Oracle` (apr-qa-gen): Verifies output correctness (Arithmetic, Garbage, CodeSyntax, Response)
 - `KernelProfile` (apr-qa-gen): Architecture → kernel ops + targeted prompt mapping
-- `KernelClass` (apr-qa-gen): Kernel equivalence class (A-E) for dimensional smoke verification
+- `KernelClass` (apr-qa-gen): Kernel equivalence class (A-F) for dimensional smoke verification
 - `BootstrappedPlaybook` (apr-qa-gen): Complete playbook generated from kernel profile
 - `DimensionalCheckResult` (apr-qa-runner): Metadata-only verification result (config.json + SafeTensors headers)
 

@@ -17,6 +17,7 @@ These examples can be run with `cargo run --example <name> -p <crate>`.
 | `integrity_lock_demo` | apr-qa-cli | `cargo run --example integrity_lock_demo -p apr-qa-cli` |
 | `contract_demo` | apr-qa-runner | `cargo run --example contract_demo -p apr-qa-runner` |
 | `bootstrap_playbook` | apr-qa-gen | `cargo run --example bootstrap_playbook -p apr-qa-gen` |
+| `provable_contracts_demo` | apr-qa-runner | `cargo run --example provable_contracts_demo -p apr-qa-runner` |
 
 ## Generating QA Scenarios
 
@@ -1014,6 +1015,80 @@ Dim-smoke runs 7 dimensional checks under the G0 gateway:
 | `G0-DIM-SAFETENSORS_HEADER` | Header valid | Header parses with >= 1 tensor |
 
 All 7 checks must pass (Corroborated) for A+ 1000/1000 certification.
+
+## Provable Contracts
+
+The `provable_contracts_demo` example shows how the QA framework's behavioral
+invariants are expressed as machine-checkable YAML contracts validated by
+`pv lint`:
+
+```rust
+use std::path::Path;
+
+fn main() {
+    let contracts_dir = Path::new("contracts");
+
+    // 4 contracts express QA obligations in pv-compatible format
+    let contracts = [
+        "apr-format-invariants-v1.yaml",  // I-1..I-5
+        "gateway-contract-v1.yaml",       // G0-G4
+        "mqs-scoring-v1.yaml",            // scoring formula
+        "garbage-oracle-v1.yaml",         // G4/LAYOUT-002
+    ];
+
+    // Each contract has: metadata, equations, proof_obligations,
+    // falsification_tests, enforcement, qa_gate
+    for name in &contracts {
+        let path = contracts_dir.join(name);
+        let content = std::fs::read_to_string(&path).unwrap();
+        let yaml: serde_yaml::Value = serde_yaml::from_str(&content).unwrap();
+
+        let obligations = yaml["proof_obligations"]
+            .as_sequence().map_or(0, |s| s.len());
+        println!("{name}: {obligations} proof obligations");
+    }
+
+    // binding.yaml maps obligations to crate implementations
+    // pv lint validates: schema + traceability + quality score
+}
+```
+
+### Contract Quality Gate
+
+```bash
+# Validate all contracts (in make check chain)
+make contract-lint
+
+# Direct invocation
+pv lint contracts/ --min-score 0.40 --binding contracts/binding.yaml
+
+# Individual contract score
+pv score contracts/gateway-contract-v1.yaml --binding contracts/binding.yaml
+```
+
+### Output
+
+```
+pv lint — contract quality gate
+================================
+
+Gate 1: validate ........... PASS (4 contracts, 0 errors, 0 warnings)
+Gate 2: audit .............. PASS (4 contracts, 0 findings)
+Gate 3: score .............. PASS (4 contracts, min=0.61, mean=0.62, threshold=0.40)
+
+Result: PASS (3/3 gates passed)
+```
+
+### Contract Inventory
+
+| Contract | Obligations | Tests | Domain |
+|----------|------------|-------|--------|
+| `apr-format-invariants-v1` | 7 | 7 | Format boundary (I-1..I-5) |
+| `gateway-contract-v1` | 4 | 4 | Gateway pipeline (G0-G4) |
+| `mqs-scoring-v1` | 5 | 5 | MQS computation |
+| `garbage-oracle-v1` | 4 | 4 | Output quality (G4) |
+
+See [Provable Contracts](./reference/provable-contracts.md) for the full reference.
 
 ## YAML Playbook Examples
 
