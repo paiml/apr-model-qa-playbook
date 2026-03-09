@@ -910,6 +910,7 @@ impl Executor {
                     response,
                     latency: std::time::Duration::from_millis(duration),
                     ttfb: std::time::Duration::from_millis(duration),
+                    brick_trace: None,
                 };
                 let assertion = LlmAssertion::new().assert_response_valid();
                 if assertion.run_all_pass(&timed) {

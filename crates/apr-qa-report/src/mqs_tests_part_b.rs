@@ -248,9 +248,11 @@ fn test_mqs_calculator_calculate_empty() {
         .calculate("test/model", &collector)
         .expect("Calculation failed");
 
-    // Empty collector should pass all gateways (no failures)
-    assert!(score.gateways_passed);
+    // Empty evidence = untested model = cannot qualify
+    assert!(!score.gateways_passed);
     assert_eq!(score.total_tests, 0);
+    assert_eq!(score.raw_score, 0);
+    assert_eq!(score.grade, "F");
 }
 
 #[test]

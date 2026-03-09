@@ -244,10 +244,13 @@ fn test_kernel_op_description_all_variants() {
         (KernelOp::TiedEmbeddings, "Tied input/output embeddings"),
         (KernelOp::Alibi, "ALiBi positional encoding"),
         (KernelOp::AbsolutePosition, "Absolute positional encoding"),
+        (KernelOp::GatedMlp, "Gated MLP (gate-up projection)"),
     ];
     for (op, expected) in variants {
         assert_eq!(op.description(), expected, "Mismatch for {op:?}");
     }
+    // Assert we test ALL 17 variants
+    assert_eq!(variants.len(), 17, "Test must cover all KernelOp variants");
 }
 
 /// Verify profile stores the model family name from constraints
@@ -368,4 +371,50 @@ fn test_kernel_profile_serialize_roundtrip() {
         deserialized.prompt_categories.len(),
         profile.prompt_categories.len()
     );
+}
+
+/// Create SSM-style architecture constraints (mamba/rwkv) with no attention
+fn ssm_constraints() -> ArchConstraints {
+    ArchConstraints {
+        attention_type: Some("none".to_string()),
+        activation: Some("silu".to_string()),
+        norm_type: Some("rmsnorm".to_string()),
+        has_bias: Some(false),
+        tied_embeddings: Some(true),
+        positional_encoding: None,
+        mlp_type: Some("swiglu".to_string()),
+    }
+}
+
+/// SSM architectures must NOT include any attention kernel ops
+#[test]
+fn test_ssm_no_attention_kernel() {
+    let profile = profile_from_constraints("mamba", &ssm_constraints(), None);
+    assert!(
+        !profile.kernel_ops.contains(&KernelOp::MultiHeadAttention),
+        "SSM must not have MHA"
+    );
+    assert!(
+        !profile
+            .kernel_ops
+            .contains(&KernelOp::GroupedQueryAttention),
+        "SSM must not have GQA"
+    );
+    assert!(
+        !profile
+            .kernel_ops
+            .contains(&KernelOp::MultiQueryAttention),
+        "SSM must not have MQA"
+    );
+}
+
+/// SSM profile should still include matvec, norm, activation, mlp ops
+#[test]
+fn test_ssm_has_non_attention_ops() {
+    let profile = profile_from_constraints("mamba", &ssm_constraints(), None);
+    assert!(profile.kernel_ops.contains(&KernelOp::FusedQ4kMatvec));
+    assert!(profile.kernel_ops.contains(&KernelOp::RmsNorm));
+    assert!(profile.kernel_ops.contains(&KernelOp::Silu));
+    assert!(profile.kernel_ops.contains(&KernelOp::SwiGlu));
+    assert!(profile.kernel_ops.contains(&KernelOp::TiedEmbeddings));
 }

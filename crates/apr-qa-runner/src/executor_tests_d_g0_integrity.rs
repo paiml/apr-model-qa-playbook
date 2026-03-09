@@ -277,10 +277,10 @@ fn test_execute_inspect_verified_nonexistent_model() {
     assert!(result.exit_code != 0);
 }
 
-/// Verify StopOnP0 policy halts execution when a P0 gate failure occurs
+/// Verify StopOnP0 policy does NOT halt on non-P0 gate failures
 #[test]
 fn test_execute_scenario_stop_on_p0_gate() {
-    // Create scenarios where gate_id contains "-P0-"
+    // Non-P0 scenario failures (gate_id = F-A1-001) should not stop execution
     let mock_runner = MockCommandRunner::new()
         .with_inference_failure()
         .with_exit_code(1);
@@ -295,7 +295,7 @@ fn test_execute_scenario_stop_on_p0_gate() {
 
     let mut executor = Executor::with_runner(config, Arc::new(mock_runner));
 
-    // Create scenario whose gate_id will contain "-P0-" pattern
+    // Gate IDs will be F-A1-001 (non-P0), so StopOnP0 should collect all
     let yaml = r#"
 name: p0-stop
 version: "1.0.0"
@@ -310,7 +310,7 @@ test_matrix:
     let playbook = Playbook::from_yaml(yaml).expect("Failed to parse");
     let result = executor.execute(&playbook).expect("Execution failed");
 
-    // Should have failed scenarios (StopOnP0 only stops on P0 gates)
+    // Non-P0 failures should be collected, not stopped
     assert!(result.failed >= 1);
 }
 

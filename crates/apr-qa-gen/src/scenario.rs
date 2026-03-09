@@ -65,7 +65,10 @@ impl Modality {
     /// Whether this modality is a transformation (not inference)
     #[must_use]
     pub const fn is_transformation(&self) -> bool {
-        matches!(self, Self::Quantize | Self::Import | Self::Prune | Self::Distill)
+        matches!(
+            self,
+            Self::Quantize | Self::Import | Self::Prune | Self::Distill
+        )
     }
 }
 

@@ -54,6 +54,8 @@ pub enum KernelOp {
     Alibi,
     /// Absolute positional encoding (GPT-2, BERT)
     AbsolutePosition,
+    /// Gated MLP: gate ⊙ activation(up) → down (Gemma uses GELU, Moonshine uses SiLU)
+    GatedMlp,
 }
 
 impl KernelOp {
@@ -77,6 +79,7 @@ impl KernelOp {
             Self::TiedEmbeddings => "Tied input/output embeddings",
             Self::Alibi => "ALiBi positional encoding",
             Self::AbsolutePosition => "Absolute positional encoding",
+            Self::GatedMlp => "Gated MLP (gate-up projection)",
         }
     }
 }
@@ -146,7 +149,7 @@ impl KernelProfile {
 pub struct ArchConstraints {
     /// Attention type: "mha", "gqa", or "mqa"
     pub attention_type: Option<String>,
-    /// Activation function: "silu", "gelu", "relu"
+    /// Activation function: "silu" or "gelu" (defaults to silu if unrecognized)
     pub activation: Option<String>,
     /// Norm type: "rmsnorm" or "layernorm"
     pub norm_type: Option<String>,
@@ -156,7 +159,7 @@ pub struct ArchConstraints {
     pub tied_embeddings: Option<bool>,
     /// Positional encoding: "rope", "absolute", "alibi"
     pub positional_encoding: Option<String>,
-    /// MLP type: "swiglu", "gelu_mlp", "relu_mlp"
+    /// MLP type: "swiglu" or "gated_mlp" (other values produce no MLP-specific kernel op)
     pub mlp_type: Option<String>,
 }
 
@@ -197,9 +200,11 @@ pub fn profile_from_constraints(
 
     // Always include quantized matvec ops (all models use these)
     kernel_ops.push(KernelOp::FusedQ4kMatvec);
+    kernel_ops.push(KernelOp::FusedQ5kMatvec);
     kernel_ops.push(KernelOp::FusedQ6kMatvec);
 
     // Attention type -> kernel ops + prompts
+    // SSM architectures (mamba, rwkv) have no attention mechanism
     match constraints.attention_type.as_deref() {
         Some("gqa") => {
             kernel_ops.push(KernelOp::GroupedQueryAttention);
@@ -208,6 +213,9 @@ pub fn profile_from_constraints(
         Some("mqa") => {
             kernel_ops.push(KernelOp::MultiQueryAttention);
             prompt_categories.push(mqa_prompts());
+        }
+        Some("none") => {
+            // SSM / non-attention architectures: no attention kernel needed
         }
         _ => {
             kernel_ops.push(KernelOp::MultiHeadAttention);
@@ -229,9 +237,12 @@ pub fn profile_from_constraints(
         _ => kernel_ops.push(KernelOp::Silu),
     }
 
-    // MLP type
-    if constraints.mlp_type.as_deref() == Some("swiglu") {
-        kernel_ops.push(KernelOp::SwiGlu);
+    // MLP type: gated MLPs need fused gate+activation kernels
+    match constraints.mlp_type.as_deref() {
+        Some("swiglu") => kernel_ops.push(KernelOp::SwiGlu),
+        Some("gated_mlp") => kernel_ops.push(KernelOp::GatedMlp),
+        // GeluMlp = linear + GELU + linear: no gating, covered by matvec + GELU
+        _ => {}
     }
 
     // Positional encoding

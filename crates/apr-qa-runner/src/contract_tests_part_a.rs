@@ -186,7 +186,8 @@ fn test_contains_f32_fallback_positive() {
         "Warning: fallback to F32 for unknown type"
     ));
     assert!(contains_f32_fallback("defaulting to f32"));
-    assert!(contains_f32_fallback("unknown dtype detected"));
+    assert!(contains_f32_fallback("unknown dtype, defaulting to f32"));
+    assert!(!contains_f32_fallback("unknown dtype detected"));
 }
 
 /// Verify contains_f32_fallback rejects normal output

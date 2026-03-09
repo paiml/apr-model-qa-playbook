@@ -50,7 +50,7 @@ enum Commands {
         #[arg(long, default_value = "quick")]
         tier: String,
 
-        /// Kernel equivalence class (A-E) for batch dim-smoke certification
+        /// Kernel equivalence class (A-F) for batch dim-smoke certification
         #[arg(long)]
         kernel_class: Option<String>,
 
@@ -427,6 +427,57 @@ enum Commands {
         /// Only check critical tensors (lm_head, etc.)
         #[arg(long)]
         critical_only: bool,
+    },
+
+    /// Verify kernel coverage across HuggingFace architectures.
+    ///
+    /// Discovers which kernel operations each model architecture requires,
+    /// checks implementation status in the sovereign stack (trueno/realizar),
+    /// and generates upstream tickets for gaps. (Spec §20)
+    KernelCoverage {
+        /// Check specific architecture (e.g., "qwen2", "llama", "phi")
+        #[arg(long)]
+        architecture: Option<String>,
+
+        /// Check all known architectures
+        #[arg(long)]
+        all: bool,
+
+        /// Check all models in the registry (100+ models)
+        #[arg(long)]
+        models: bool,
+
+        /// Verify binding claims against actual source code in sibling repos
+        #[arg(long)]
+        verify: bool,
+
+        /// Generate upstream ticket markdown for gaps
+        #[arg(long)]
+        file_tickets: bool,
+
+        /// Directory for ticket files
+        #[arg(long, default_value = "docs/tickets")]
+        output_dir: PathBuf,
+
+        /// Path to trueno repo (default: ../trueno)
+        #[arg(long, default_value = "../trueno")]
+        trueno_path: PathBuf,
+
+        /// Path to realizar repo (default: ../realizar)
+        #[arg(long, default_value = "../realizar")]
+        realizar_path: PathBuf,
+
+        /// Output format (text, json)
+        #[arg(long, default_value = "text")]
+        format: String,
+
+        /// Path to provable-contracts/contracts directory (arch-constraints YAML)
+        #[arg(long, default_value = "../provable-contracts/contracts")]
+        contracts_path: PathBuf,
+
+        /// Path to kernel bindings YAML
+        #[arg(long, default_value = "playbooks/kernel-bindings.yaml")]
+        bindings_path: PathBuf,
     },
 }
 

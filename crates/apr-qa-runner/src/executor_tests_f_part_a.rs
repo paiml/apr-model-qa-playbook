@@ -94,7 +94,7 @@ fn test_should_stop_on_failure_stop_on_p0_with_p0_gate() {
         ..Default::default()
     };
     let executor = Executor::with_config(config);
-    let evidence = Evidence::falsified("F-P0-CRITICAL", test_scenario(), "p0 failure", "output", 0);
+    let evidence = Evidence::falsified("F-INT-001", test_scenario(), "p0 failure", "output", 0);
     assert!(executor.should_stop_on_failure(&evidence, "test"));
 }
 

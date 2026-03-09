@@ -300,7 +300,8 @@ fn test_i3_defaulting_to_f32_detected() {
 fn test_i3_unknown_dtype_detected() {
     use crate::command::MockCommandRunner;
     let runner: Arc<dyn CommandRunner> = Arc::new(
-        MockCommandRunner::new().with_check_response("Error: unknown dtype at tensor 3"),
+        MockCommandRunner::new()
+            .with_check_response("Error: unknown dtype at tensor 3, fallback to f32"),
     );
     let model_id = ModelId::new("test", "model");
     let config = ContractTestConfig {

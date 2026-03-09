@@ -188,12 +188,7 @@ pub trait CommandRunner: Send + Sync {
     fn spawn_serve(&self, model_path: &Path, port: u16, no_gpu: bool) -> CommandOutput;
 
     /// Execute `apr quantize --scheme <scheme> --json <model_path> -o <output>`
-    fn quantize_model(
-        &self,
-        model_path: &Path,
-        output_path: &Path,
-        scheme: &str,
-    ) -> CommandOutput;
+    fn quantize_model(&self, model_path: &Path, output_path: &Path, scheme: &str) -> CommandOutput;
 
     /// Execute `apr import --json <source> -o <output>`
     fn import_model(&self, source_path: &Path, output_path: &Path) -> CommandOutput;

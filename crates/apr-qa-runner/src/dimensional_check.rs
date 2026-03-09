@@ -376,10 +376,7 @@ fn check_tokenizer(model_path: &Path, checks: &mut Vec<DimensionalCheck>) {
         checks.push(DimensionalCheck {
             name: "eos_token_valid".to_string(),
             expected: "non-empty eos_token".to_string(),
-            actual: eos
-                .as_deref()
-                .unwrap_or("empty/null")
-                .to_string(),
+            actual: eos.as_deref().unwrap_or("empty/null").to_string(),
             passed: eos.is_some(),
         });
     } else {
@@ -393,10 +390,7 @@ fn check_tokenizer(model_path: &Path, checks: &mut Vec<DimensionalCheck>) {
         checks.push(DimensionalCheck {
             name: "bos_token_valid".to_string(),
             expected: "non-empty bos_token".to_string(),
-            actual: bos
-                .as_deref()
-                .unwrap_or("empty/null")
-                .to_string(),
+            actual: bos.as_deref().unwrap_or("empty/null").to_string(),
             passed: bos.is_some(),
         });
     }
@@ -414,8 +408,7 @@ fn check_eos_token_id_fallback(model_path: &Path, checks: &mut Vec<DimensionalCh
     let eos_id = config_paths.iter().find_map(|p| {
         let content = std::fs::read_to_string(p).ok()?;
         let json: serde_json::Value = serde_json::from_str(&content).ok()?;
-        json.get("eos_token_id")
-            .and_then(serde_json::Value::as_u64)
+        json.get("eos_token_id").and_then(serde_json::Value::as_u64)
     });
 
     checks.push(DimensionalCheck {
@@ -444,11 +437,7 @@ fn is_embedding_tensor(name: &str) -> bool {
 }
 
 /// G0-DTYPE: Check SafeTensors dtype validity and consistency.
-fn check_dtypes(
-    model_path: &Path,
-    config: &LayoutModelConfig,
-    checks: &mut Vec<DimensionalCheck>,
-) {
+fn check_dtypes(model_path: &Path, config: &LayoutModelConfig, checks: &mut Vec<DimensionalCheck>) {
     let st_files = find_safetensors_files(model_path);
     let Some(first_file) = st_files.first() else {
         return;
@@ -473,9 +462,19 @@ fn check_dtypes(
         name: "dtype_supported".to_string(),
         expected: "all dtypes in supported set".to_string(),
         actual: if unsupported.is_empty() {
-            format!("all supported ({})", all_dtypes.iter().copied().collect::<Vec<_>>().join(", "))
+            format!(
+                "all supported ({})",
+                all_dtypes.iter().copied().collect::<Vec<_>>().join(", ")
+            )
         } else {
-            format!("unsupported: {}", unsupported.iter().map(|d| **d).collect::<Vec<_>>().join(", "))
+            format!(
+                "unsupported: {}",
+                unsupported
+                    .iter()
+                    .map(|d| **d)
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            )
         },
         passed: unsupported.is_empty(),
     });
@@ -485,9 +484,7 @@ fn check_dtypes(
     // uses F32 embeddings + BF16 weights for numerical stability.
     let interior_weight_dtypes: HashSet<&str> = tensors
         .iter()
-        .filter(|(name, info)| {
-            info.shape.len() == 2 && !is_embedding_tensor(name)
-        })
+        .filter(|(name, info)| info.shape.len() == 2 && !is_embedding_tensor(name))
         .map(|(_, info)| info.dtype.as_str())
         .collect();
 
@@ -503,11 +500,18 @@ fn check_dtypes(
             name: "dtype_consistent".to_string(),
             expected: "single dtype across interior 2D weight tensors".to_string(),
             actual: if interior_weight_dtypes.len() == 1 {
-                format!("uniform: {}", interior_weight_dtypes.iter().next().unwrap_or(&"?"))
+                format!(
+                    "uniform: {}",
+                    interior_weight_dtypes.iter().next().unwrap_or(&"?")
+                )
             } else {
                 format!(
                     "mixed: {}",
-                    interior_weight_dtypes.iter().copied().collect::<Vec<_>>().join(", ")
+                    interior_weight_dtypes
+                        .iter()
+                        .copied()
+                        .collect::<Vec<_>>()
+                        .join(", ")
                 )
             },
             passed: interior_weight_dtypes.len() <= 1,

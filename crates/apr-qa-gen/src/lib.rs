@@ -28,6 +28,7 @@ pub mod bootstrapper;
 pub mod error;
 pub mod hf_parity;
 pub mod kernel_class;
+pub mod kernel_coverage;
 pub mod kernel_profile;
 pub mod models;
 pub mod oracle;
@@ -38,6 +39,10 @@ pub use bootstrapper::{BootstrapConfig, BootstrappedPlaybook, bootstrap_playbook
 pub use error::{Error, Result};
 pub use hf_parity::{GoldenOutput, HfParityOracle, TensorDiff, Tolerance, hash_prompt};
 pub use kernel_class::{KernelClass, models_in_class};
+pub use kernel_coverage::{
+    BindingVerification, BindingVerificationReport, ClassSummary, CoverageContext, CoverageReport,
+    ImplementationStatus, KernelBinding, KernelGap, ModelCoverage, ModelCoverageSummary,
+};
 pub use kernel_profile::{
     ArchConstraints, ArchSizeVariant, KernelOp, KernelProfile, PromptCategory,
     profile_from_constraints,

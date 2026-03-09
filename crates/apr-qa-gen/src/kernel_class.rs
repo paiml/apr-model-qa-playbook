@@ -14,7 +14,7 @@ use std::str::FromStr;
 /// Class A covers ~70% of all models (GQA+RMSNorm+SiLU+SwiGLU+RoPE).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum KernelClass {
-    /// GQA + RMSNorm + SiLU + SwiGLU + RoPE (LLaMA 3, Qwen2, Mistral, Yi, DeepSeek, InternLM2, Gemma, Falcon-H1)
+    /// GQA + RMSNorm + SiLU + SwiGLU + RoPE (LLaMA 3, Qwen2, Mistral, Yi, DeepSeek, InternLM2, Falcon-H1)
     A,
     /// MHA + LayerNorm + GELU (GPT-2, GPT-Neo, GPT-NeoX, GPT-J, OPT, GPT-BigCode, CodeGen, XGLM, Falcon 7B)
     B,
@@ -24,6 +24,8 @@ pub enum KernelClass {
     D,
     /// MoE + GQA + RMSNorm + SwiGLU (Mixtral, Qwen-MoE)
     E,
+    /// RMSNorm + GELU + GatedMlp + RoPE (Gemma, Gemma2, CodeGemma)
+    F,
 }
 
 impl KernelClass {
@@ -37,24 +39,31 @@ impl KernelClass {
             "llama" | "llama3" | "llama-3" | "llama3.2" | "codellama" | "tinyllama" | "qwen"
             | "qwen2" | "qwen2.5" | "qwen3" | "qwen-coder" | "mistral" | "yi" | "deepseek"
             | "deepseek-v2" | "deepseek-coder" | "deepseek-r1" | "internlm2" | "internlm"
-            | "gemma" | "gemma2" | "gemma3" | "codegemma" | "smollm" | "smollm2" | "olmo"
-            | "olmo2" | "granite" | "granite-code" | "starcoder2" | "nemotron" | "falcon-h1"
-            | "falcon_h1" => Some(Self::A),
+            | "smollm" | "smollm2" | "olmo" | "olmo2" | "granite" | "granite-code"
+            | "starcoder2" | "nemotron" | "falcon-h1" | "falcon_h1" | "deepseek2" | "deepseek-coder-v2"
+            | "openelm" | "qwen3_5" | "qwen3.5" => Some(Self::A),
 
             // Class B: MHA + LayerNorm + GELU
             "gpt2" | "gpt-2" | "gpt-neo" | "gpt_neo" | "gpt-neox" | "gptneox" | "gpt-j"
             | "gptj" | "opt" | "galactica" | "gpt-bigcode" | "gpt_bigcode" | "falcon-7b"
-            | "falcon7b" | "codegen" | "xglm" => Some(Self::B),
+            | "falcon7b" | "codegen" | "xglm" | "starcoder" | "bert" | "whisper" | "phi2"
+            | "phi-2" => {
+                Some(Self::B)
+            }
 
             // Class C: MQA + LayerNorm + GELU + ALiBi
-            "bloom" | "bloomz" | "falcon-40b" | "falcon40b" | "falcon" => Some(Self::C),
+            // NOTE: bare "falcon" removed — ambiguous (7B=Class B, 40B=Class C)
+            "bloom" | "bloomz" | "falcon-40b" | "falcon40b" => Some(Self::C),
 
             // Class D: GQA + LayerNorm + GELU/SiLU
             "phi" | "phi-3" | "phi3" | "phi3small" | "phi-3-small" | "phi4" | "stablelm"
             | "stable-lm" => Some(Self::D),
 
             // Class E: MoE + GQA + RMSNorm + SwiGLU
-            "mixtral" | "qwen-moe" | "qwenmoe" => Some(Self::E),
+            "mixtral" | "qwen-moe" | "qwenmoe" | "qwen3_moe" => Some(Self::E),
+
+            // Class F: RMSNorm + GELU + GatedMlp + RoPE
+            "gemma" | "gemma2" | "gemma3" | "codegemma" => Some(Self::F),
 
             _ => None,
         }
@@ -69,9 +78,10 @@ impl KernelClass {
         match self {
             Self::A => "Qwen/Qwen2.5-Coder-0.5B-Instruct",
             Self::B => "EleutherAI/gpt-neox-20b",
-            Self::C => "tiiuae/falcon-40b-instruct",
+            Self::C => "tiiuae/falcon-40b",
             Self::D => "microsoft/Phi-3-mini-4k-instruct",
             Self::E => "mistralai/Mixtral-8x7B-Instruct-v0.1",
+            Self::F => "google/gemma-2-2b-it",
         }
     }
 
@@ -84,13 +94,14 @@ impl KernelClass {
             Self::C => "MQA+LayerNorm+GELU+ALiBi",
             Self::D => "GQA+LayerNorm+GELU/SiLU",
             Self::E => "MoE+GQA+RMSNorm+SwiGLU",
+            Self::F => "RMSNorm+GELU+GatedMlp+RoPE",
         }
     }
 
     /// Return all kernel class variants.
     #[must_use]
     pub const fn all() -> &'static [Self] {
-        &[Self::A, Self::B, Self::C, Self::D, Self::E]
+        &[Self::A, Self::B, Self::C, Self::D, Self::E, Self::F]
     }
 }
 
@@ -104,7 +115,8 @@ impl FromStr for KernelClass {
             "C" => Ok(Self::C),
             "D" => Ok(Self::D),
             "E" => Ok(Self::E),
-            _ => Err(format!("Unknown kernel class: {s}. Use: A, B, C, D, E")),
+            "F" => Ok(Self::F),
+            _ => Err(format!("Unknown kernel class: {s}. Use: A, B, C, D, E, F")),
         }
     }
 }
@@ -117,6 +129,7 @@ impl std::fmt::Display for KernelClass {
             Self::C => write!(f, "C"),
             Self::D => write!(f, "D"),
             Self::E => write!(f, "E"),
+            Self::F => write!(f, "F"),
         }
     }
 }
@@ -146,7 +159,6 @@ mod tests {
         assert_eq!(KernelClass::from_family("mistral"), Some(KernelClass::A));
         assert_eq!(KernelClass::from_family("yi"), Some(KernelClass::A));
         assert_eq!(KernelClass::from_family("deepseek"), Some(KernelClass::A));
-        assert_eq!(KernelClass::from_family("gemma"), Some(KernelClass::A));
         assert_eq!(KernelClass::from_family("internlm2"), Some(KernelClass::A));
         assert_eq!(KernelClass::from_family("codellama"), Some(KernelClass::A));
         assert_eq!(KernelClass::from_family("tinyllama"), Some(KernelClass::A));
@@ -158,8 +170,6 @@ mod tests {
             KernelClass::from_family("deepseek-r1"),
             Some(KernelClass::A)
         );
-        assert_eq!(KernelClass::from_family("gemma3"), Some(KernelClass::A));
-        assert_eq!(KernelClass::from_family("codegemma"), Some(KernelClass::A));
         assert_eq!(KernelClass::from_family("smollm"), Some(KernelClass::A));
         assert_eq!(KernelClass::from_family("smollm2"), Some(KernelClass::A));
         assert_eq!(KernelClass::from_family("olmo"), Some(KernelClass::A));
@@ -204,7 +214,8 @@ mod tests {
         assert_eq!(KernelClass::from_family("bloom"), Some(KernelClass::C));
         assert_eq!(KernelClass::from_family("bloomz"), Some(KernelClass::C));
         assert_eq!(KernelClass::from_family("falcon-40b"), Some(KernelClass::C));
-        assert_eq!(KernelClass::from_family("falcon"), Some(KernelClass::C));
+        // Bare "falcon" is ambiguous (7B=B, 40B=C) — returns None
+        assert_eq!(KernelClass::from_family("falcon"), None);
     }
 
     #[test]
@@ -224,6 +235,23 @@ mod tests {
     fn test_from_family_class_e() {
         assert_eq!(KernelClass::from_family("mixtral"), Some(KernelClass::E));
         assert_eq!(KernelClass::from_family("qwen-moe"), Some(KernelClass::E));
+    }
+
+    #[test]
+    fn test_from_family_class_f() {
+        assert_eq!(KernelClass::from_family("gemma"), Some(KernelClass::F));
+        assert_eq!(KernelClass::from_family("gemma2"), Some(KernelClass::F));
+        assert_eq!(KernelClass::from_family("gemma3"), Some(KernelClass::F));
+        assert_eq!(KernelClass::from_family("codegemma"), Some(KernelClass::F));
+    }
+
+    /// Bare "falcon" must NOT resolve to any class — it's ambiguous.
+    /// Falcon-7B = Class B (MHA), Falcon-40B = Class C (MQA+ALiBi).
+    #[test]
+    fn test_bare_falcon_is_ambiguous() {
+        assert_eq!(KernelClass::from_family("falcon"), None);
+        assert_eq!(KernelClass::from_family("falcon-7b"), Some(KernelClass::B));
+        assert_eq!(KernelClass::from_family("falcon-40b"), Some(KernelClass::C));
     }
 
     #[test]
@@ -255,6 +283,7 @@ mod tests {
         assert!(KernelClass::C.label().contains("MQA"));
         assert!(KernelClass::D.label().contains("LayerNorm"));
         assert!(KernelClass::E.label().contains("MoE"));
+        assert!(KernelClass::F.label().contains("GatedMlp"));
     }
 
     #[test]
@@ -264,6 +293,7 @@ mod tests {
         assert_eq!("C".parse::<KernelClass>().unwrap(), KernelClass::C);
         assert_eq!("d".parse::<KernelClass>().unwrap(), KernelClass::D);
         assert_eq!("E".parse::<KernelClass>().unwrap(), KernelClass::E);
+        assert_eq!("F".parse::<KernelClass>().unwrap(), KernelClass::F);
         assert!("X".parse::<KernelClass>().is_err());
     }
 
@@ -306,9 +336,9 @@ mod tests {
     #[test]
     fn test_all_classes() {
         let all = KernelClass::all();
-        assert_eq!(all.len(), 5);
+        assert_eq!(all.len(), 6);
         assert_eq!(all[0], KernelClass::A);
-        assert_eq!(all[4], KernelClass::E);
+        assert_eq!(all[5], KernelClass::F);
     }
 
     #[test]

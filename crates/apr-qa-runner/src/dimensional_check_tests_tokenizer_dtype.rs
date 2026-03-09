@@ -93,8 +93,15 @@ fn test_tokenizer_exists_json() {
 
     let playbook = make_minimal_playbook("test/model");
     let result = run_dimensional_check(dir.path(), &playbook);
-    let check = result.checks.iter().find(|c| c.name == "tokenizer_exists").unwrap();
-    assert!(check.passed, "tokenizer.json should satisfy tokenizer_exists");
+    let check = result
+        .checks
+        .iter()
+        .find(|c| c.name == "tokenizer_exists")
+        .unwrap();
+    assert!(
+        check.passed,
+        "tokenizer.json should satisfy tokenizer_exists"
+    );
     assert!(check.actual.contains("tokenizer.json"));
 }
 
@@ -117,8 +124,15 @@ fn test_tokenizer_exists_model() {
 
     let playbook = make_minimal_playbook("test/model");
     let result = run_dimensional_check(dir.path(), &playbook);
-    let check = result.checks.iter().find(|c| c.name == "tokenizer_exists").unwrap();
-    assert!(check.passed, "tokenizer.model should satisfy tokenizer_exists");
+    let check = result
+        .checks
+        .iter()
+        .find(|c| c.name == "tokenizer_exists")
+        .unwrap();
+    assert!(
+        check.passed,
+        "tokenizer.model should satisfy tokenizer_exists"
+    );
     assert!(check.actual.contains("tokenizer.model"));
 }
 
@@ -140,7 +154,11 @@ fn test_tokenizer_missing() {
 
     let playbook = make_minimal_playbook("test/model");
     let result = run_dimensional_check(dir.path(), &playbook);
-    let check = result.checks.iter().find(|c| c.name == "tokenizer_exists").unwrap();
+    let check = result
+        .checks
+        .iter()
+        .find(|c| c.name == "tokenizer_exists")
+        .unwrap();
     assert!(!check.passed, "missing tokenizer should fail");
 }
 
@@ -164,7 +182,11 @@ fn test_tokenizer_config_valid() {
 
     let playbook = make_minimal_playbook("test/model");
     let result = run_dimensional_check(dir.path(), &playbook);
-    let check = result.checks.iter().find(|c| c.name == "tokenizer_config_valid").unwrap();
+    let check = result
+        .checks
+        .iter()
+        .find(|c| c.name == "tokenizer_config_valid")
+        .unwrap();
     assert!(check.passed, "valid JSON tokenizer_config should pass");
 }
 
@@ -184,8 +206,15 @@ fn test_tokenizer_config_invalid_json() {
 
     let playbook = make_minimal_playbook("test/model");
     let result = run_dimensional_check(dir.path(), &playbook);
-    let check = result.checks.iter().find(|c| c.name == "tokenizer_config_valid").unwrap();
-    assert!(!check.passed, "broken JSON should fail tokenizer_config_valid");
+    let check = result
+        .checks
+        .iter()
+        .find(|c| c.name == "tokenizer_config_valid")
+        .unwrap();
+    assert!(
+        !check.passed,
+        "broken JSON should fail tokenizer_config_valid"
+    );
 }
 
 #[test]
@@ -208,7 +237,11 @@ fn test_eos_token_string() {
 
     let playbook = make_minimal_playbook("test/model");
     let result = run_dimensional_check(dir.path(), &playbook);
-    let check = result.checks.iter().find(|c| c.name == "eos_token_valid").unwrap();
+    let check = result
+        .checks
+        .iter()
+        .find(|c| c.name == "eos_token_valid")
+        .unwrap();
     assert!(check.passed, "string eos_token should pass");
     assert!(check.actual.contains("<|endoftext|>"));
 }
@@ -233,7 +266,11 @@ fn test_eos_token_object() {
 
     let playbook = make_minimal_playbook("test/model");
     let result = run_dimensional_check(dir.path(), &playbook);
-    let check = result.checks.iter().find(|c| c.name == "eos_token_valid").unwrap();
+    let check = result
+        .checks
+        .iter()
+        .find(|c| c.name == "eos_token_valid")
+        .unwrap();
     assert!(check.passed, "object-format eos_token (Qwen) should pass");
 }
 
@@ -249,11 +286,19 @@ fn test_eos_token_missing() {
         &[("model.embed_tokens.weight", &[151_936, 896])],
     );
     write_file(dir.path(), "tokenizer.json", "{}");
-    write_file(dir.path(), "tokenizer_config.json", r#"{"bos_token":"<s>"}"#);
+    write_file(
+        dir.path(),
+        "tokenizer_config.json",
+        r#"{"bos_token":"<s>"}"#,
+    );
 
     let playbook = make_minimal_playbook("test/model");
     let result = run_dimensional_check(dir.path(), &playbook);
-    let check = result.checks.iter().find(|c| c.name == "eos_token_valid").unwrap();
+    let check = result
+        .checks
+        .iter()
+        .find(|c| c.name == "eos_token_valid")
+        .unwrap();
     assert!(!check.passed, "missing eos_token should fail");
 }
 
@@ -279,7 +324,10 @@ fn test_bos_token_absent_ok() {
     let result = run_dimensional_check(dir.path(), &playbook);
     // bos_token absent → no bos_token_valid check emitted
     let bos_check = result.checks.iter().find(|c| c.name == "bos_token_valid");
-    assert!(bos_check.is_none(), "absent bos_token should not emit check");
+    assert!(
+        bos_check.is_none(),
+        "absent bos_token should not emit check"
+    );
 }
 
 // ── Dtype checks ──────────────────────────────────────────────────
@@ -301,7 +349,11 @@ fn test_dtype_supported_f32() {
 
     let playbook = make_minimal_playbook("test/model");
     let result = run_dimensional_check(dir.path(), &playbook);
-    let check = result.checks.iter().find(|c| c.name == "dtype_supported").unwrap();
+    let check = result
+        .checks
+        .iter()
+        .find(|c| c.name == "dtype_supported")
+        .unwrap();
     assert!(check.passed, "F32 should be supported");
 }
 
@@ -322,7 +374,11 @@ fn test_dtype_supported_bf16() {
 
     let playbook = make_minimal_playbook("test/model");
     let result = run_dimensional_check(dir.path(), &playbook);
-    let check = result.checks.iter().find(|c| c.name == "dtype_supported").unwrap();
+    let check = result
+        .checks
+        .iter()
+        .find(|c| c.name == "dtype_supported")
+        .unwrap();
     assert!(check.passed, "BF16 should be supported");
 }
 
@@ -340,7 +396,11 @@ fn test_dtype_unsupported() {
 
     let playbook = make_minimal_playbook("test/model");
     let result = run_dimensional_check(dir.path(), &playbook);
-    let check = result.checks.iter().find(|c| c.name == "dtype_supported").unwrap();
+    let check = result
+        .checks
+        .iter()
+        .find(|c| c.name == "dtype_supported")
+        .unwrap();
     assert!(!check.passed, "Q4_0 is not a valid SafeTensors dtype");
     assert!(check.actual.contains("Q4_0"));
 }
@@ -357,7 +417,11 @@ fn test_dtype_consistent_all_same() {
         &[
             ("model.embed_tokens.weight", &[151_936, 896], "BF16"),
             ("lm_head.weight", &[151_936, 896], "BF16"),
-            ("model.layers.0.self_attn.q_proj.weight", &[896, 896], "BF16"),
+            (
+                "model.layers.0.self_attn.q_proj.weight",
+                &[896, 896],
+                "BF16",
+            ),
             // 1D bias — different dtype is OK (1D excluded from consistency check)
             ("model.layers.0.input_layernorm.weight", &[896], "F32"),
         ],
@@ -365,8 +429,15 @@ fn test_dtype_consistent_all_same() {
 
     let playbook = make_minimal_playbook("test/model");
     let result = run_dimensional_check(dir.path(), &playbook);
-    let check = result.checks.iter().find(|c| c.name == "dtype_consistent").unwrap();
-    assert!(check.passed, "all 2D tensors BF16 → consistent (1D F32 excluded)");
+    let check = result
+        .checks
+        .iter()
+        .find(|c| c.name == "dtype_consistent")
+        .unwrap();
+    assert!(
+        check.passed,
+        "all 2D tensors BF16 → consistent (1D F32 excluded)"
+    );
 }
 
 #[test]
@@ -381,14 +452,25 @@ fn test_dtype_consistent_mixed_interior() {
         dir.path(),
         &[
             ("model.layers.0.self_attn.q_proj.weight", &[896, 896], "F32"),
-            ("model.layers.0.self_attn.k_proj.weight", &[128, 896], "BF16"),
+            (
+                "model.layers.0.self_attn.k_proj.weight",
+                &[128, 896],
+                "BF16",
+            ),
         ],
     );
 
     let playbook = make_minimal_playbook("test/model");
     let result = run_dimensional_check(dir.path(), &playbook);
-    let check = result.checks.iter().find(|c| c.name == "dtype_consistent").unwrap();
-    assert!(!check.passed, "mixed F32+BF16 in interior weight tensors should fail");
+    let check = result
+        .checks
+        .iter()
+        .find(|c| c.name == "dtype_consistent")
+        .unwrap();
+    assert!(
+        !check.passed,
+        "mixed F32+BF16 in interior weight tensors should fail"
+    );
 }
 
 #[test]
@@ -409,7 +491,11 @@ fn test_dtype_config_match_bfloat16() {
 
     let playbook = make_minimal_playbook("test/model");
     let result = run_dimensional_check(dir.path(), &playbook);
-    let check = result.checks.iter().find(|c| c.name == "dtype_config_match").unwrap();
+    let check = result
+        .checks
+        .iter()
+        .find(|c| c.name == "dtype_config_match")
+        .unwrap();
     assert!(check.passed, "bfloat16 config + BF16 tensors should match");
 }
 
@@ -431,8 +517,15 @@ fn test_dtype_config_match_mismatch() {
 
     let playbook = make_minimal_playbook("test/model");
     let result = run_dimensional_check(dir.path(), &playbook);
-    let check = result.checks.iter().find(|c| c.name == "dtype_config_match").unwrap();
-    assert!(!check.passed, "float16 config + BF16 tensors should mismatch");
+    let check = result
+        .checks
+        .iter()
+        .find(|c| c.name == "dtype_config_match")
+        .unwrap();
+    assert!(
+        !check.passed,
+        "float16 config + BF16 tensors should mismatch"
+    );
 }
 
 #[test]
@@ -449,8 +542,14 @@ fn test_dtype_config_no_torch_dtype() {
 
     let playbook = make_minimal_playbook("test/model");
     let result = run_dimensional_check(dir.path(), &playbook);
-    let check = result.checks.iter().find(|c| c.name == "dtype_config_match");
-    assert!(check.is_none(), "no torch_dtype → no dtype_config_match check");
+    let check = result
+        .checks
+        .iter()
+        .find(|c| c.name == "dtype_config_match");
+    assert!(
+        check.is_none(),
+        "no torch_dtype → no dtype_config_match check"
+    );
 }
 
 // ── End-to-end integration ────────────────────────────────────────
@@ -471,7 +570,11 @@ fn test_full_dim_check_with_tokenizer_and_dtype() {
         dir.path(),
         &[
             ("model.embed_tokens.weight", &[151_936, 896], "BF16"),
-            ("model.layers.0.self_attn.q_proj.weight", &[896, 896], "BF16"),
+            (
+                "model.layers.0.self_attn.q_proj.weight",
+                &[896, 896],
+                "BF16",
+            ),
             ("lm_head.weight", &[151_936, 896], "BF16"),
         ],
     );
@@ -493,13 +596,34 @@ fn test_full_dim_check_with_tokenizer_and_dtype() {
 
     // Verify all new checks are present
     let check_names: Vec<&str> = result.checks.iter().map(|c| c.name.as_str()).collect();
-    assert!(check_names.contains(&"tokenizer_exists"), "missing tokenizer_exists");
-    assert!(check_names.contains(&"tokenizer_config_valid"), "missing tokenizer_config_valid");
-    assert!(check_names.contains(&"eos_token_valid"), "missing eos_token_valid");
-    assert!(check_names.contains(&"bos_token_valid"), "missing bos_token_valid");
-    assert!(check_names.contains(&"dtype_supported"), "missing dtype_supported");
-    assert!(check_names.contains(&"dtype_consistent"), "missing dtype_consistent");
-    assert!(check_names.contains(&"dtype_config_match"), "missing dtype_config_match");
+    assert!(
+        check_names.contains(&"tokenizer_exists"),
+        "missing tokenizer_exists"
+    );
+    assert!(
+        check_names.contains(&"tokenizer_config_valid"),
+        "missing tokenizer_config_valid"
+    );
+    assert!(
+        check_names.contains(&"eos_token_valid"),
+        "missing eos_token_valid"
+    );
+    assert!(
+        check_names.contains(&"bos_token_valid"),
+        "missing bos_token_valid"
+    );
+    assert!(
+        check_names.contains(&"dtype_supported"),
+        "missing dtype_supported"
+    );
+    assert!(
+        check_names.contains(&"dtype_consistent"),
+        "missing dtype_consistent"
+    );
+    assert!(
+        check_names.contains(&"dtype_config_match"),
+        "missing dtype_config_match"
+    );
 }
 
 // ── Audit fix B1: Corrupt tokenizer file content ──────────────────
@@ -520,8 +644,15 @@ fn test_tokenizer_json_corrupt() {
 
     let playbook = make_minimal_playbook("test/model");
     let result = run_dimensional_check(dir.path(), &playbook);
-    let check = result.checks.iter().find(|c| c.name == "tokenizer_exists").unwrap();
-    assert!(!check.passed, "corrupt tokenizer.json should fail (invalid JSON)");
+    let check = result
+        .checks
+        .iter()
+        .find(|c| c.name == "tokenizer_exists")
+        .unwrap();
+    assert!(
+        !check.passed,
+        "corrupt tokenizer.json should fail (invalid JSON)"
+    );
     assert!(check.actual.contains("invalid JSON"));
 }
 
@@ -541,7 +672,11 @@ fn test_tokenizer_model_empty() {
 
     let playbook = make_minimal_playbook("test/model");
     let result = run_dimensional_check(dir.path(), &playbook);
-    let check = result.checks.iter().find(|c| c.name == "tokenizer_exists").unwrap();
+    let check = result
+        .checks
+        .iter()
+        .find(|c| c.name == "tokenizer_exists")
+        .unwrap();
     assert!(!check.passed, "empty tokenizer.model should fail");
 }
 
@@ -562,12 +697,23 @@ fn test_eos_token_id_fallback_from_config() {
     );
     write_file(dir.path(), "tokenizer.json", "{}");
     // tokenizer_config.json has no eos_token
-    write_file(dir.path(), "tokenizer_config.json", r#"{"bos_token":"<s>"}"#);
+    write_file(
+        dir.path(),
+        "tokenizer_config.json",
+        r#"{"bos_token":"<s>"}"#,
+    );
 
     let playbook = make_minimal_playbook("test/model");
     let result = run_dimensional_check(dir.path(), &playbook);
-    let check = result.checks.iter().find(|c| c.name == "eos_token_valid").unwrap();
-    assert!(check.passed, "eos_token_id=50256 in config.json should satisfy fallback");
+    let check = result
+        .checks
+        .iter()
+        .find(|c| c.name == "eos_token_valid")
+        .unwrap();
+    assert!(
+        check.passed,
+        "eos_token_id=50256 in config.json should satisfy fallback"
+    );
     assert!(check.actual.contains("50256"));
 }
 
@@ -589,8 +735,15 @@ fn test_eos_token_id_fallback_no_tokenizer_config() {
 
     let playbook = make_minimal_playbook("test/model");
     let result = run_dimensional_check(dir.path(), &playbook);
-    let check = result.checks.iter().find(|c| c.name == "eos_token_valid").unwrap();
-    assert!(check.passed, "eos_token_id in config.json should work without tokenizer_config");
+    let check = result
+        .checks
+        .iter()
+        .find(|c| c.name == "eos_token_valid")
+        .unwrap();
+    assert!(
+        check.passed,
+        "eos_token_id in config.json should work without tokenizer_config"
+    );
 }
 
 #[test]
@@ -606,12 +759,23 @@ fn test_eos_token_id_fallback_missing_everywhere() {
         &[("model.embed_tokens.weight", &[151_936, 896])],
     );
     write_file(dir.path(), "tokenizer.json", "{}");
-    write_file(dir.path(), "tokenizer_config.json", r#"{"bos_token":"<s>"}"#);
+    write_file(
+        dir.path(),
+        "tokenizer_config.json",
+        r#"{"bos_token":"<s>"}"#,
+    );
 
     let playbook = make_minimal_playbook("test/model");
     let result = run_dimensional_check(dir.path(), &playbook);
-    let check = result.checks.iter().find(|c| c.name == "eos_token_valid").unwrap();
-    assert!(!check.passed, "no eos_token or eos_token_id anywhere should fail");
+    let check = result
+        .checks
+        .iter()
+        .find(|c| c.name == "eos_token_valid")
+        .unwrap();
+    assert!(
+        !check.passed,
+        "no eos_token or eos_token_id anywhere should fail"
+    );
 }
 
 // ── Audit fix A3: Embedding layers exempt from dtype consistency ──
@@ -629,15 +793,27 @@ fn test_dtype_consistent_embed_f32_weights_bf16() {
         &[
             ("model.embed_tokens.weight", &[151_936, 896], "F32"),
             ("lm_head.weight", &[151_936, 896], "F32"),
-            ("model.layers.0.self_attn.q_proj.weight", &[896, 896], "BF16"),
-            ("model.layers.0.self_attn.k_proj.weight", &[128, 896], "BF16"),
+            (
+                "model.layers.0.self_attn.q_proj.weight",
+                &[896, 896],
+                "BF16",
+            ),
+            (
+                "model.layers.0.self_attn.k_proj.weight",
+                &[128, 896],
+                "BF16",
+            ),
             ("model.layers.0.mlp.gate_proj.weight", &[4864, 896], "BF16"),
         ],
     );
 
     let playbook = make_minimal_playbook("test/model");
     let result = run_dimensional_check(dir.path(), &playbook);
-    let check = result.checks.iter().find(|c| c.name == "dtype_consistent").unwrap();
+    let check = result
+        .checks
+        .iter()
+        .find(|c| c.name == "dtype_consistent")
+        .unwrap();
     assert!(
         check.passed,
         "F32 embed + BF16 interior weights should pass (embed layers excluded): {}",
@@ -664,5 +840,8 @@ fn test_dtype_consistent_only_embed_tensors() {
     let playbook = make_minimal_playbook("test/model");
     let result = run_dimensional_check(dir.path(), &playbook);
     let check = result.checks.iter().find(|c| c.name == "dtype_consistent");
-    assert!(check.is_none(), "no interior weights → no consistency check emitted");
+    assert!(
+        check.is_none(),
+        "no interior weights → no consistency check emitted"
+    );
 }

@@ -817,7 +817,7 @@ fn test_check_serve_response_schema_pass() {
 #[test]
 fn test_check_serve_response_schema_invalid_json() {
     let mock_runner = MockCommandRunner::new()
-        .with_http_post_response(r#"not json"#);
+        .with_http_post_response(r"not json");
     let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(mock_runner));
     let scenario = serve_scenario();
     let start = Instant::now();
@@ -862,6 +862,6 @@ fn test_extract_chat_text_probar_format() {
 #[test]
 fn test_extract_chat_text_fallback() {
     // Non-ChatResponse → returns raw
-    let raw = r#"just plain text"#;
+    let raw = r"just plain text";
     assert_eq!(Executor::extract_chat_text(raw), "just plain text");
 }
