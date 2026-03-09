@@ -16,7 +16,6 @@ fn build_dimensional_smoke_config(model_cache_path: Option<String>) -> Execution
         run_conversion_tests: false,
         run_differential_tests: false,
         run_profile_ci: false,
-        run_trace_payload: false,
         run_golden_rule_test: false,
         golden_reference_path: None,
         lock_file_path: None,

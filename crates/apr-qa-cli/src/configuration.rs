@@ -68,7 +68,6 @@ fn main() {
             run_tool_tests,
             profile_ci,
             no_differential,
-            no_trace_payload,
             hf_parity,
             hf_corpus_path,
             hf_model_family,
@@ -94,7 +93,6 @@ fn main() {
                 run_tool_tests,
                 profile_ci,
                 no_differential,
-                no_trace_payload,
                 hf_parity,
                 &hf_corpus_path,
                 hf_model_family,
@@ -348,7 +346,6 @@ fn run_playbook(
     run_tool_tests_flag: bool,
     profile_ci: bool,
     no_differential: bool,
-    no_trace_payload: bool,
     hf_parity: bool,
     hf_corpus_path: &str,
     hf_model_family: Option<String>,
@@ -417,7 +414,6 @@ fn run_playbook(
         run_tool_tests: run_tool_tests_flag,
         run_differential_tests: !no_differential,
         run_profile_ci: profile_ci,
-        run_trace_payload: !no_trace_payload,
         run_hf_parity: hf_parity,
         hf_parity_corpus_path: if hf_parity {
             Some(hf_corpus_path.to_string())

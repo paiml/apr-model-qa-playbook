@@ -153,10 +153,6 @@ enum Commands {
         #[arg(long)]
         no_differential: bool,
 
-        /// Skip trace payload tests (forward pass, garbage detection)
-        #[arg(long)]
-        no_trace_payload: bool,
-
         /// Enable HF parity verification against golden corpus
         #[arg(long)]
         hf_parity: bool,

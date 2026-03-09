@@ -104,7 +104,6 @@ fn test_execution_config_all_fields() {
         run_conversion_tests: false,
         run_differential_tests: false,
         run_profile_ci: true,
-        run_trace_payload: false,
         run_golden_rule_test: false,
         golden_reference_path: Some("/path/to/ref.json".to_string()),
         lock_file_path: None,

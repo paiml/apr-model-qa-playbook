@@ -99,8 +99,6 @@ pub struct ExecutionConfig {
     pub run_differential_tests: bool,
     /// Run profile CI assertions
     pub run_profile_ci: bool,
-    /// Run trace payload tests
-    pub run_trace_payload: bool,
     /// Run Golden Rule Test (convert → inference → diff)
     /// This is the single most important invariant: converted models
     /// MUST produce the same output as the original. (Five Whys: GH-190)
@@ -145,7 +143,6 @@ impl Default for ExecutionConfig {
             run_conversion_tests: true, // P0 CRITICAL: Always run by default
             run_differential_tests: true, // v1.3.0: Differential testing enabled by default
             run_profile_ci: false,      // Only enable for CI pipelines
-            run_trace_payload: true,    // v1.3.0: Trace payload enabled by default
             run_golden_rule_test: true, // v1.3.1: Golden Rule (Five Whys GH-190)
             golden_reference_path: None,
             lock_file_path: None,

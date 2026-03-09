@@ -437,7 +437,6 @@ fn test_execution_config_differential_defaults() {
     let config = ExecutionConfig::default();
     // v1.3.0: Differential testing enabled by default
     assert!(config.run_differential_tests);
-    assert!(config.run_trace_payload);
     // Profile CI disabled by default (only for CI pipelines)
     assert!(!config.run_profile_ci);
 }

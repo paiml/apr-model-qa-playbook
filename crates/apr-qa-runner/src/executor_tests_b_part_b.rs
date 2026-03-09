@@ -179,7 +179,6 @@ fn test_executor_execute_playbook_with_subprocess_mode() {
         run_conversion_tests: false,
         run_differential_tests: false,
         run_golden_rule_test: false,
-        run_trace_payload: false,
         run_profile_ci: false,
         run_contract_tests: false,
         ..Default::default()

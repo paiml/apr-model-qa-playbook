@@ -180,7 +180,6 @@ fn test_playbook_run_config_with_all_options() {
         run_tool_tests: true,
         run_differential_tests: true,
         run_profile_ci: true,
-        run_trace_payload: false,
         run_hf_parity: false,
         hf_parity_corpus_path: None,
         hf_parity_model_family: None,
@@ -197,13 +196,11 @@ fn test_build_execution_config_with_differential() {
     let config = PlaybookRunConfig {
         run_differential_tests: true,
         run_profile_ci: true,
-        run_trace_payload: false,
         ..Default::default()
     };
     let exec = build_execution_config(&config).unwrap();
     assert!(exec.run_differential_tests);
     assert!(exec.run_profile_ci);
-    assert!(!exec.run_trace_payload);
 }
 
 #[test]

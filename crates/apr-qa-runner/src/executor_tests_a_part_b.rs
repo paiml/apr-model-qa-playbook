@@ -1,15 +1,13 @@
-/// Verify ExecutionConfig supports custom differential/profile/trace flags
+/// Verify ExecutionConfig supports custom differential/profile flags
 #[test]
 fn test_execution_config_differential_custom() {
     let config = ExecutionConfig {
         run_differential_tests: false,
         run_profile_ci: true,
-        run_trace_payload: false,
         ..Default::default()
     };
     assert!(!config.run_differential_tests);
     assert!(config.run_profile_ci);
-    assert!(!config.run_trace_payload);
 }
 
 /// Verify parse_tps_from_output extracts float from "tok/s: 12.34"
