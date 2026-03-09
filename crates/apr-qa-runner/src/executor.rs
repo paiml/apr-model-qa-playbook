@@ -109,6 +109,8 @@ pub struct ExecutionConfig {
     pub golden_reference_path: Option<String>,
     /// Path to playbook lock file for integrity checks (§3.1)
     pub lock_file_path: Option<String>,
+    /// Path to the playbook YAML file (for integrity hash verification)
+    pub playbook_file_path: Option<String>,
     /// Check playbook integrity against lock file (§3.1)
     pub check_integrity: bool,
     /// Warn about implicit format/backend skips (§3.3)
@@ -147,6 +149,7 @@ impl Default for ExecutionConfig {
             run_golden_rule_test: true, // v1.3.1: Golden Rule (Five Whys GH-190)
             golden_reference_path: None,
             lock_file_path: None,
+            playbook_file_path: None,
             check_integrity: false,
             warn_implicit_skips: false,
             run_hf_parity: false,

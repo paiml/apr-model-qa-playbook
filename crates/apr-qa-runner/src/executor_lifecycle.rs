@@ -213,8 +213,14 @@ impl Executor {
             if let Some(ref lock_path) = self.config.lock_file_path {
                 match crate::playbook::load_lock_file(lock_path) {
                     Ok(lock_file) => {
+                        // Use playbook_file_path for hash verification (not the lock path)
+                        let pb_path = self
+                            .config
+                            .playbook_file_path
+                            .as_deref()
+                            .unwrap_or(lock_path);
                         if let Err(e) = crate::playbook::verify_playbook_integrity(
-                            lock_path,
+                            pb_path,
                             &lock_file,
                             &playbook.name,
                         ) {

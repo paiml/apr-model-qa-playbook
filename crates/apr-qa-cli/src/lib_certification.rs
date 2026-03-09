@@ -20,6 +20,7 @@ fn build_dimensional_smoke_config(model_cache_path: Option<String>) -> Execution
         run_golden_rule_test: false,
         golden_reference_path: None,
         lock_file_path: None,
+        playbook_file_path: None,
         check_integrity: false,
         warn_implicit_skips: false,
         run_hf_parity: false,
