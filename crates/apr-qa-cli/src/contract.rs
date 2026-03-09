@@ -61,6 +61,23 @@ fn export_evidence(
         std::process::exit(1);
     }
 
+    // Count outcomes from the evidence array when no execution metadata is available
+    // (plain array format from certifications/*/evidence.json).
+    let (ev_passed, ev_failed, ev_skipped, ev_duration_ms) =
+        evidence_array.iter().fold((0usize, 0usize, 0usize, 0u64), |(p, f, s, d), ev| {
+            let outcome = ev.get("outcome").and_then(|o| o.as_str()).unwrap_or("");
+            let dur = ev
+                .get("duration_ms")
+                .and_then(serde_json::Value::as_u64)
+                .unwrap_or(0);
+            match outcome {
+                "Corroborated" => (p + 1, f, s, d + dur),
+                "Falsified" | "Timeout" | "Crashed" => (p, f + 1, s, d + dur),
+                "Skipped" => (p, f, s + 1, d + dur),
+                _ => (p, f, s, d + dur),
+            }
+        });
+
     #[allow(clippy::cast_possible_truncation)]
     let total_scenarios = meta
         .and_then(|v| v.get("total_scenarios"))
@@ -70,21 +87,21 @@ fn export_evidence(
     let passed = meta
         .and_then(|v| v.get("passed"))
         .and_then(serde_json::Value::as_u64)
-        .unwrap_or(0) as usize;
+        .map_or(ev_passed, |v| v as usize);
     #[allow(clippy::cast_possible_truncation)]
     let failed = meta
         .and_then(|v| v.get("failed"))
         .and_then(serde_json::Value::as_u64)
-        .unwrap_or(0) as usize;
+        .map_or(ev_failed, |v| v as usize);
     #[allow(clippy::cast_possible_truncation)]
     let skipped = meta
         .and_then(|v| v.get("skipped"))
         .and_then(serde_json::Value::as_u64)
-        .unwrap_or(0) as usize;
+        .map_or(ev_skipped, |v| v as usize);
     let duration_ms = meta
         .and_then(|v| v.get("duration_ms"))
         .and_then(serde_json::Value::as_u64)
-        .unwrap_or(0);
+        .unwrap_or(ev_duration_ms);
 
     #[allow(clippy::cast_precision_loss)]
     let pass_rate = if total_scenarios > 0 {
@@ -93,12 +110,23 @@ fn export_evidence(
         0.0
     };
 
-    // Calculate MQS from pass rate (simplified — canonical MQS uses category scoring)
-    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-    let mqs_score = (pass_rate * 1000.0) as u32;
-    let grade = apr_qa_certify::grade_from_score(mqs_score);
+    // Use canonical MQS calculator — consistent with `score` and `report` commands.
+    let evidence_json = serde_json::to_string(&serde_json::Value::Array(evidence_array.clone()))
+        .unwrap_or_default();
+    let (mqs_score, gateway_passed, grade) =
+        match crate::parse_evidence(&evidence_json).and_then(|ev| {
+            let collector = crate::collect_evidence(ev);
+            crate::calculate_mqs_score(model, &collector)
+        }) {
+            Ok(mqs) => {
+                let grade = mqs.grade.clone();
+                let gw = mqs.gateways_passed;
+                (mqs.raw_score, gw, grade)
+            }
+            Err(_) => (0, false, "F".to_string()),
+        };
 
-    // Extract gateway results from evidence (pessimistic: failure wins)
+    // Extract gateway gate-level results from evidence (pessimistic: failure wins)
     let mut gates: HashMap<String, GateResult> = HashMap::new();
     for ev in &evidence_array {
         if let Some(gate_id) = ev.get("gate_id").and_then(|g| g.as_str()) {
@@ -126,16 +154,6 @@ fn export_evidence(
         }
     }
 
-    // Check if all gateways passed (Popperian: untested gateway = NOT passed)
-    let gateway_passed = ["G0", "G1", "G2", "G3", "G4"].iter().all(|g| {
-        let matching: Vec<_> = gates
-            .iter()
-            .filter(|(k, _)| k.starts_with(g))
-            .collect();
-        // Empty iterator means gateway was never tested — cannot be declared passed
-        !matching.is_empty() && matching.iter().all(|(_, v)| v.passed)
-    });
-
     // Build export structure
     let export = EvidenceExport {
         schema: "https://paiml.com/schemas/apr-qa-evidence.schema.json".to_string(),
@@ -162,7 +180,7 @@ fn export_evidence(
         },
         mqs: MqsExport {
             score: mqs_score,
-            grade: grade.to_string(),
+            grade: grade.clone(),
             gateway_passed,
             category_scores: HashMap::new(),
         },

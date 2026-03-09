@@ -330,6 +330,19 @@ fn calculate_mqs_or_exit(model_id: &str, collector: &EvidenceCollector) -> MqsSc
 
 /// Create directory tree or exit with an error message
 fn create_dir_or_exit(dir: &PathBuf) {
+    // Detect broken symlinks early — create_dir_all returns EEXIST on broken symlinks
+    // without a useful message (rust-lang/rust#86442 wontfix).
+    if let Ok(target) = std::fs::read_link(dir) {
+        if !target.exists() {
+            eprintln!(
+                "Error: output path '{}' is a broken symlink → '{}'",
+                dir.display(),
+                target.display()
+            );
+            eprintln!("  Fix: remove the symlink or point it to an existing directory.");
+            std::process::exit(1);
+        }
+    }
     if let Err(e) = std::fs::create_dir_all(dir) {
         eprintln!("Error creating output directory: {e}");
         std::process::exit(1);
