@@ -201,7 +201,8 @@ impl Oracle for ArithmeticOracle {
         // Check if output contains the expected value as a word boundary
         // (not just substring — "4" matching "42" is a false positive)
         let expected_str = expected.to_string();
-        let found = output.split(|c: char| !c.is_ascii_digit() && c != '-')
+        let found = output
+            .split(|c: char| !c.is_ascii_digit() && c != '-')
             .any(|word| word == expected_str);
         if found {
             OracleResult::Corroborated {
@@ -492,14 +493,29 @@ fn is_code_prompt(prompt: &str) -> bool {
 /// Avoids false positives on common words like "information", "Infinity",
 /// "Infrastructure", etc. Matches: "NaN", "nan", "Inf", "inf", "-Inf", "-inf".
 fn has_nan_or_inf(output: &str) -> bool {
-    let tokens = ["NaN", "nan", "NAN", "Inf", "inf", "-Inf", "-inf", "+Inf", "+inf"];
+    let tokens = [
+        "NaN", "nan", "NAN", "Inf", "inf", "-Inf", "-inf", "+Inf", "+inf",
+    ];
     output
         .split(|c: char| {
             c.is_whitespace()
                 || matches!(
                     c,
-                    ',' | ';' | ':' | '[' | ']' | '(' | ')' | '{' | '}' | '=' | '"' | '\''
-                        | '<' | '>' | '|' | '/'
+                    ',' | ';'
+                        | ':'
+                        | '['
+                        | ']'
+                        | '('
+                        | ')'
+                        | '{'
+                        | '}'
+                        | '='
+                        | '"'
+                        | '\''
+                        | '<'
+                        | '>'
+                        | '|'
+                        | '/'
                 )
         })
         .any(|word| tokens.contains(&word))

@@ -436,11 +436,7 @@ pub fn write_models_csv<P: AsRef<Path>>(rows: &[CertificationRow], path: P) -> R
         let format_optional_f64 =
             |opt: Option<f64>| -> String { opt.map_or_else(String::new, |v| format!("{v:.1}")) };
 
-        let kernel_proof = row
-            .kernel_proof_ref
-            .as_deref()
-            .unwrap_or("")
-            .to_string();
+        let kernel_proof = row.kernel_proof_ref.as_deref().unwrap_or("").to_string();
 
         writer
             .write_record([

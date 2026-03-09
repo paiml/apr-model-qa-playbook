@@ -350,24 +350,34 @@ fn test_popperian_with_timeout() {
 #[test]
 fn test_gate_to_hypothesis_gateways() {
     let g0 = PopperianCalculator::gate_to_hypothesis("G0-DIM-CONFIG");
-    assert!(g0.contains("consistent") || g0.contains("metadata") || g0.contains("layout"),
-        "G0 hypothesis should mention metadata/layout consistency, got: {g0}");
+    assert!(
+        g0.contains("consistent") || g0.contains("metadata") || g0.contains("layout"),
+        "G0 hypothesis should mention metadata/layout consistency, got: {g0}"
+    );
 
     let g1 = PopperianCalculator::gate_to_hypothesis("G1-LOAD");
-    assert!(g1.contains("load") || g1.contains("timeout"),
-        "G1 hypothesis should mention loading, got: {g1}");
+    assert!(
+        g1.contains("load") || g1.contains("timeout"),
+        "G1 hypothesis should mention loading, got: {g1}"
+    );
 
     let g2 = PopperianCalculator::gate_to_hypothesis("G2-BASIC");
-    assert!(g2.contains("inference") || g2.contains("output"),
-        "G2 hypothesis should mention inference, got: {g2}");
+    assert!(
+        g2.contains("inference") || g2.contains("output"),
+        "G2 hypothesis should mention inference, got: {g2}"
+    );
 
     let g3 = PopperianCalculator::gate_to_hypothesis("G3-STABLE");
-    assert!(g3.contains("crash") || g3.contains("panic"),
-        "G3 hypothesis should mention crashes/panics, got: {g3}");
+    assert!(
+        g3.contains("crash") || g3.contains("panic"),
+        "G3 hypothesis should mention crashes/panics, got: {g3}"
+    );
 
     let g4 = PopperianCalculator::gate_to_hypothesis("G4-VALID");
-    assert!(g4.contains("garbage") || g4.contains("output"),
-        "G4 hypothesis should mention garbage detection, got: {g4}");
+    assert!(
+        g4.contains("garbage") || g4.contains("output"),
+        "G4 hypothesis should mention garbage detection, got: {g4}"
+    );
 }
 
 /// Verify G0 sub-gates (G0-DIM-*) also get the gateway hypothesis
@@ -376,7 +386,12 @@ fn test_gate_to_hypothesis_g0_dim_variants() {
     let tokenizer = PopperianCalculator::gate_to_hypothesis("G0-DIM-TOKENIZER_EXISTS");
     let eos = PopperianCalculator::gate_to_hypothesis("G0-DIM-EOS_TOKEN_VALID");
     // Both G0-DIM-* sub-gates should get the G0 hypothesis (StartsWith "G0-")
-    assert_eq!(tokenizer, eos, "All G0- sub-gates should share the same hypothesis");
-    assert!(!tokenizer.contains("G0-DIM"),
-        "G0 hypothesis should not fall back to generic 'Hypothesis for ...' form");
+    assert_eq!(
+        tokenizer, eos,
+        "All G0- sub-gates should share the same hypothesis"
+    );
+    assert!(
+        !tokenizer.contains("G0-DIM"),
+        "G0 hypothesis should not fall back to generic 'Hypothesis for ...' form"
+    );
 }

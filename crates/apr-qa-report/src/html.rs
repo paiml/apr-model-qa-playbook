@@ -277,7 +277,10 @@ impl HtmlDashboard {
                     <div class="gateway-icon {}">{}</div>
                     <span>{}: {}</span>
                 </div>"#,
-                icon_class, icon, Self::escape_html(&gateway.id), Self::escape_html(&gateway.description)
+                icon_class,
+                icon,
+                Self::escape_html(&gateway.id),
+                Self::escape_html(&gateway.description)
             ));
         }
         if html.is_empty() {

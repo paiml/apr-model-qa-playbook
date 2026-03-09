@@ -275,9 +275,9 @@ fn test_extract_category() {
     assert_eq!(extract_category("F-A5-COMP-001"), "COMP"); // completions endpoint → API compatibility
     assert_eq!(extract_category("F-A5-CHAT-001"), "COMP"); // chat completions → API compatibility
     assert_eq!(extract_category("F-A5-STREAM-001"), "COMP"); // streaming → API compatibility
-    assert_eq!(extract_category("F-A5-ERR-001"), "STAB");   // error handling → stability
+    assert_eq!(extract_category("F-A5-ERR-001"), "STAB"); // error handling → stability
     assert_eq!(extract_category("F-A5-METRICS-001"), "PERF"); // metrics → performance
-    assert_eq!(extract_category("F-A5-CHARS-001"), "EDGE");   // character edge cases → edge
+    assert_eq!(extract_category("F-A5-CHARS-001"), "EDGE"); // character edge cases → edge
     // Unknown/malformed gate IDs default to QUAL
     assert_eq!(extract_category("UNKNOWN"), "QUAL");
 }

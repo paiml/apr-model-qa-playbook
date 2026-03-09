@@ -844,7 +844,10 @@ fn test_dtype_consistent_only_embed_tensors() {
         .iter()
         .find(|c| c.name == "dtype_consistent")
         .expect("dtype_consistent check should always be emitted");
-    assert!(check.passed, "no interior weights → passes (all embeddings)");
+    assert!(
+        check.passed,
+        "no interior weights → passes (all embeddings)"
+    );
     assert!(
         check.actual.contains("no interior weight tensors"),
         "actual should note absence: {}",

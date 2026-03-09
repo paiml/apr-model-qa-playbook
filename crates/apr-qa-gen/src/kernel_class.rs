@@ -40,16 +40,14 @@ impl KernelClass {
             | "qwen2" | "qwen2.5" | "qwen3" | "qwen-coder" | "mistral" | "yi" | "deepseek"
             | "deepseek-v2" | "deepseek-coder" | "deepseek-r1" | "internlm2" | "internlm"
             | "smollm" | "smollm2" | "olmo" | "olmo2" | "granite" | "granite-code"
-            | "starcoder2" | "nemotron" | "falcon-h1" | "falcon_h1" | "deepseek2" | "deepseek-coder-v2"
-            | "openelm" | "qwen3_5" | "qwen3.5" => Some(Self::A),
+            | "starcoder2" | "nemotron" | "falcon-h1" | "falcon_h1" | "deepseek2"
+            | "deepseek-coder-v2" | "openelm" | "qwen3_5" | "qwen3.5" => Some(Self::A),
 
             // Class B: MHA + LayerNorm + GELU
             "gpt2" | "gpt-2" | "gpt-neo" | "gpt_neo" | "gpt-neox" | "gptneox" | "gpt-j"
             | "gptj" | "opt" | "galactica" | "gpt-bigcode" | "gpt_bigcode" | "falcon-7b"
             | "falcon7b" | "codegen" | "xglm" | "starcoder" | "bert" | "whisper" | "phi2"
-            | "phi-2" => {
-                Some(Self::B)
-            }
+            | "phi-2" => Some(Self::B),
 
             // Class C: MQA + LayerNorm + GELU + ALiBi
             // NOTE: bare "falcon" removed — ambiguous (7B=Class B, 40B=Class C)

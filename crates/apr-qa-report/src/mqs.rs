@@ -347,10 +347,9 @@ impl MqsCalculator {
 
         // Calculate raw score with penalties + proof bonus (capped at MAX_PROOF_BONUS)
         // Cap at max_possible to prevent overflow from corrupted evidence
-        let bonus_points = self
-            .proof_bonus
-            .as_ref()
-            .map_or(0, |b| b.bonus_points.min(crate::proof_status::MAX_PROOF_BONUS));
+        let bonus_points = self.proof_bonus.as_ref().map_or(0, |b| {
+            b.bonus_points.min(crate::proof_status::MAX_PROOF_BONUS)
+        });
         let raw_score = categories
             .total()
             .saturating_sub(total_penalty)

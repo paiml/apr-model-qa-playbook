@@ -229,9 +229,19 @@ impl ModelCertification {
 ///
 /// Required CSV columns — must all be present in the header.
 const REQUIRED_CSV_COLUMNS: &[&str] = &[
-    "model_id", "family", "parameters", "size_category", "status",
-    "mqs_score", "grade", "certified_tier", "last_certified",
-    "g1", "g2", "g3", "g4",
+    "model_id",
+    "family",
+    "parameters",
+    "size_category",
+    "status",
+    "mqs_score",
+    "grade",
+    "certified_tier",
+    "last_certified",
+    "g1",
+    "g2",
+    "g3",
+    "g4",
 ];
 
 /// Parse a CSV certification table into a list of `ModelCertification` records.
@@ -305,10 +315,12 @@ pub fn parse_csv(content: &str) -> Result<Vec<ModelCertification>> {
                     message: format!("invalid status: '{}'", get("status")),
                 }
             })?,
-            mqs_score: get("mqs_score").parse().map_err(|_| CertifyError::CsvParse {
-                line: line_num + 1,
-                message: format!("invalid mqs_score: '{}'", get("mqs_score")),
-            })?,
+            mqs_score: get("mqs_score")
+                .parse()
+                .map_err(|_| CertifyError::CsvParse {
+                    line: line_num + 1,
+                    message: format!("invalid mqs_score: '{}'", get("mqs_score")),
+                })?,
             grade: get("grade").to_owned(),
             certified_tier: get("certified_tier").to_owned(),
             last_certified,

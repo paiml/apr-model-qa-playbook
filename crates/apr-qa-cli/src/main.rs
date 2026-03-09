@@ -117,7 +117,8 @@ enum Commands {
         #[arg(long)]
         fail_fast: bool,
 
-        /// Dry run (don't execute, just show what would be done)
+        /// Dry run: execute playbook but skip evidence persistence and Jidoka non-zero exit.
+        /// Useful for inspecting results without producing artifacts.
         #[arg(long)]
         dry_run: bool,
 

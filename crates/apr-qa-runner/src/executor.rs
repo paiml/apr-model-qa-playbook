@@ -12,7 +12,9 @@ use crate::evidence::{Evidence, EvidenceCollector, Outcome, PerformanceMetrics};
 use crate::integrity;
 use crate::layout_contract::{DEFAULT_CONTRACT_PATH, load_contract_from, validate_model};
 use crate::playbook::{OllamaParityConfig, Playbook};
-use apr_qa_gen::{Backend, Format, HfParityOracle, Modality, ModelId, Oracle, QaScenario, Tolerance};
+use apr_qa_gen::{
+    Backend, Format, HfParityOracle, Modality, ModelId, Oracle, QaScenario, Tolerance,
+};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Instant;

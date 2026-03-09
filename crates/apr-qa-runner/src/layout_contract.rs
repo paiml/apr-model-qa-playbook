@@ -354,10 +354,7 @@ fn check_model_path_preconditions(model_path: &Path) -> Option<ModelValidationRe
                 tensor_name: "N/A".to_string(),
                 rule_id: "FILE-FORMAT".to_string(),
                 passed: false,
-                details: format!(
-                    "No SafeTensors files found in: {}",
-                    model_path.display()
-                ),
+                details: format!("No SafeTensors files found in: {}", model_path.display()),
                 expected: Some("At least one .safetensors file".to_string()),
                 actual: Some("No SafeTensors files".to_string()),
             }],

@@ -528,7 +528,10 @@ test_matrix:
         result.checks
     );
     // Popperian: no tensor_embed_tokens check should exist — no dims to validate
-    let tensor_check = result.checks.iter().find(|c| c.name == "tensor_embed_tokens");
+    let tensor_check = result
+        .checks
+        .iter()
+        .find(|c| c.name == "tensor_embed_tokens");
     assert!(
         tensor_check.is_none(),
         "no tensor check should be emitted when config has no vocab/hidden dims"

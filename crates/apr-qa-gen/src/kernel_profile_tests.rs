@@ -401,9 +401,7 @@ fn test_ssm_no_attention_kernel() {
         "SSM must not have GQA"
     );
     assert!(
-        !profile
-            .kernel_ops
-            .contains(&KernelOp::MultiQueryAttention),
+        !profile.kernel_ops.contains(&KernelOp::MultiQueryAttention),
         "SSM must not have MQA"
     );
 }
