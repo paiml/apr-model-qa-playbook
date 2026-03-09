@@ -37,3 +37,12 @@ book/book/
 .pmat/workspace.idx/
 .pmat/deps-cache.json
 dhat-heap.json
+
+# Forjar runtime state (machine state, lock files, run history)
+state/
+
+# PMAT working directories
+.pmat-work/
+
+# PMAT coverage cache (regenerated on demand)
+.pmat/coverage-cache.json

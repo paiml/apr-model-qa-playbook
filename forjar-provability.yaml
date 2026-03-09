@@ -1,0 +1,153 @@
+version: "1.0"
+name: apr-qa-provability
+description: >
+  Provability-focused qualification pipeline. Validates contracts via pv lint,
+  runs invariant tests (I-1..I-5), checks gateway contracts (G0-G4), and
+  scores MQS computation correctness. Uses forjar build resource for
+  cross-compile and proof_obligation annotations for convergence guarantees.
+
+params:
+  qa_repo: /home/noah/src/apr-model-qa-playbook
+  pv_repo: /home/noah/src/provable-contracts
+  contracts_dir: contracts
+  binding: contracts/binding.yaml
+  min_score: "0.40"
+
+machines:
+  local:
+    hostname: localhost
+    addr: localhost
+    user: noah
+    arch: x86_64
+
+resources:
+  # ── Phase 0: Build toolchain ─────────────────────────────────
+  # proof_obligation: convergent — always produces same binary
+  # NOTE: uses task type (build resource type requires forjar >= FJ-33)
+  build-pv:
+    type: task
+    machine: local
+    working_dir: "{{params.pv_repo}}"
+    completion_check: "pv --version 2>/dev/null | grep -q '^pv'"
+    command: "cargo install --path . --bin pv --force 2>&1 | tail -3"
+    timeout: 300
+
+  build-apr-qa:
+    type: task
+    machine: local
+    working_dir: "{{params.qa_repo}}"
+    completion_check: "test -x target/release/apr-qa"
+    command: "cargo build --release --bin apr-qa 2>&1 | tail -3"
+    timeout: 300
+
+  # ── Phase 1: Contract lint (static provability) ──────────────
+  # proof_obligation: idempotent — lint is pure read-only analysis
+  contract-lint:
+    type: task
+    machine: local
+    depends_on: [build-pv]
+    working_dir: "{{params.qa_repo}}"
+    completion_check: "test -f .pv/trend/latest.json 2>/dev/null && find .pv/trend/latest.json -mmin -60 | grep -q ."
+    command: |
+      echo "=== Contract Lint: validate + audit + score ==="
+      pv lint {{params.contracts_dir}}/ \
+        --min-score {{params.min_score}} \
+        --binding {{params.binding}}
+      echo "PASS: all contracts validated"
+    timeout: 30
+
+  # ── Phase 2: Rust quality gates ──────────────────────────────
+  # proof_obligation: idempotent — fmt/clippy/test are pure checks
+  fmt-check:
+    type: task
+    machine: local
+    depends_on: [build-apr-qa]
+    working_dir: "{{params.qa_repo}}"
+    completion_check: "cargo fmt --all -- --check 2>/dev/null"
+    command: "cargo fmt --all -- --check"
+    timeout: 60
+
+  clippy:
+    type: task
+    machine: local
+    depends_on: [build-apr-qa]
+    working_dir: "{{params.qa_repo}}"
+    completion_check: "cargo clippy --workspace --all-targets -- -D warnings 2>/dev/null"
+    command: "cargo clippy --workspace --all-targets -- -D warnings"
+    timeout: 120
+
+  unit-tests:
+    type: task
+    machine: local
+    depends_on: [fmt-check, clippy]
+    working_dir: "{{params.qa_repo}}"
+    command: "PROPTEST_CASES=256 cargo test --workspace 2>&1 | tail -20"
+    timeout: 600
+
+  # ── Phase 3: Contract invariant tests (runtime provability) ──
+  # proof_obligation: convergent — tests are safe to re-run
+  invariant-tests:
+    type: task
+    machine: local
+    depends_on: [unit-tests]
+    working_dir: "{{params.qa_repo}}"
+    command: |
+      echo "=== Invariant Contract Tests (I-1..I-5) ==="
+      cargo test --package apr-qa-runner -- contract 2>&1 | tail -30
+      echo "=== Gateway Contract Tests (G0-G4) ==="
+      cargo test --package apr-qa-report -- gateway 2>&1 | tail -15
+      echo "=== MQS Scoring Contract Tests ==="
+      cargo test --package apr-qa-report -- mqs 2>&1 | tail -15
+      echo "=== GarbageOracle Contract Tests ==="
+      cargo test --package apr-qa-gen -- garbage 2>&1 | tail -15
+    timeout: 300
+
+  # ── Phase 4: Docs consistency ────────────────────────────────
+  # proof_obligation: idempotent — read-only check
+  docs-check:
+    type: task
+    machine: local
+    depends_on: [build-apr-qa]
+    working_dir: "{{params.qa_repo}}"
+    completion_check: "./scripts/check-docs-consistency.sh 2>/dev/null"
+    command: "./scripts/check-docs-consistency.sh"
+    timeout: 30
+
+  # ── Phase 5: Coverage (library only, 95% threshold) ──────────
+  # proof_obligation: idempotent — measurement only
+  coverage-check:
+    type: task
+    machine: local
+    depends_on: [unit-tests]
+    working_dir: "{{params.qa_repo}}"
+    command: "./scripts/coverage-check.sh"
+    timeout: 600
+
+  # ── Phase 6: Dim-smoke qualification (metadata provability) ──
+  # proof_obligation: convergent — always reaches same certification state
+  dim-smoke-probe:
+    type: task
+    machine: local
+    depends_on: [invariant-tests]
+    working_dir: "{{params.qa_repo}}"
+    completion_check: "test -d certifications/smollm2-135m"
+    pre_apply: |
+      test -f "playbooks/models/smollm2-135m-dim-smoke.playbook.yaml" || exit 1
+    command: |
+      echo "=== Dim-smoke probe: smollm2-135m (metadata-only) ==="
+      rm -rf output
+      cargo run --release --bin apr-qa -- run \
+        "playbooks/models/smollm2-135m-dim-smoke.playbook.yaml" \
+        --no-gpu \
+        --failure-policy fail-fast \
+        --workers 1 \
+        --timeout 30000 \
+        --metadata-only
+    post_apply: "scripts/post-dim-smoke.sh smollm2-135m {{params.qa_repo}}"
+    timeout: 120
+
+policy:
+  failure: stop_on_first
+  parallel_machines: false
+  tripwire: true
+  lock_file: true

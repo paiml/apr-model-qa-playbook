@@ -1,0 +1,75 @@
+version: "1.0"
+name: apr-qa-contract-verify
+description: >
+  Contract verification playbook (Spec §19). Zero-inference pipeline that
+  validates provable contracts against Rust source code. Detects binding
+  drift, spot-checks contract claims, and runs contract-specific unit tests.
+  No model download, no GPU, no inference — pure code-vs-contract verification.
+
+params:
+  qa_repo: /home/noah/src/apr-model-qa-playbook
+  pv_repo: /home/noah/src/provable-contracts
+  contracts_dir: contracts
+  binding: contracts/binding.yaml
+  min_score: "0.40"
+
+machines:
+  local:
+    hostname: localhost
+    addr: localhost
+    user: noah
+    arch: x86_64
+
+resources:
+  # ── Phase 0: pv lint (YAML validation) ─────────────────────────
+  # proof_obligation: idempotent — pure read-only analysis on YAML
+  pv-lint:
+    type: task
+    machine: local
+    working_dir: "{{params.qa_repo}}"
+    completion_check: "pv --version 2>/dev/null | grep -q '^pv'"
+    command: |
+      echo "=== Phase 0: Contract YAML Validation ==="
+      pv lint {{params.contracts_dir}}/ \
+        --min-score {{params.min_score}} \
+        --binding {{params.binding}}
+    timeout: 30
+
+  # ── Phase 1: Binding drift detection ───────────────────────────
+  # proof_obligation: idempotent — greps source, no mutations
+  binding-verify:
+    type: task
+    machine: local
+    working_dir: "{{params.qa_repo}}"
+    command: |
+      echo "=== Phase 1-2: Binding & Claim Verification ==="
+      ./scripts/verify-contract-bindings.sh
+    timeout: 30
+
+  # ── Phase 3: Contract-specific unit tests ──────────────────────
+  # proof_obligation: convergent — tests are deterministic
+  contract-tests:
+    type: task
+    machine: local
+    depends_on: [pv-lint, binding-verify]
+    working_dir: "{{params.qa_repo}}"
+    command: |
+      echo "=== Phase 3: Contract-Specific Unit Tests ==="
+      echo "--- Invariant contract tests (I-1..I-5) ---"
+      cargo test --package apr-qa-runner -- contract 2>&1 | tail -20
+      echo ""
+      echo "--- Gateway contract tests (G0-G4) ---"
+      cargo test --package apr-qa-report -- gateway 2>&1 | tail -10
+      echo ""
+      echo "--- MQS scoring contract tests ---"
+      cargo test --package apr-qa-report -- mqs 2>&1 | tail -10
+      echo ""
+      echo "--- GarbageOracle contract tests ---"
+      cargo test --package apr-qa-gen -- garbage 2>&1 | tail -10
+    timeout: 300
+
+policy:
+  failure: stop_on_first
+  parallel_machines: false
+  tripwire: true
+  lock_file: true
