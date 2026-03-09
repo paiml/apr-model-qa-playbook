@@ -160,7 +160,9 @@ impl MqsCalculator {
     ///
     /// Maps gate IDs to the 6 MQS categories via prefix lookup table,
     /// then falls back to parsing `F-{CATEGORY}-xxx` patterns.
-    fn extract_category(gate_id: &str) -> String {
+    /// Public so markdown report can reuse (DRY — single source of truth).
+    #[must_use]
+    pub fn extract_category(gate_id: &str) -> String {
         // Prefix -> category mapping (order matters: longer prefixes first)
         const PREFIX_MAP: &[(&str, &str)] = &[
             ("F-CONV-RT", "REGR"),

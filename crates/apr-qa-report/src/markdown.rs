@@ -299,36 +299,9 @@ fn qualification_status(mqs: &MqsScore) -> &'static str {
         .map_or("REJECTED", |&(_, label)| label)
 }
 
-/// Extract MQS category from gate ID.
-///
-/// Must stay in sync with `MqsCalculator::extract_category` in `mqs_gateways.rs`.
-/// Maps gate IDs to the 6 MQS categories via prefix lookup, then falls back
-/// to parsing `F-{CATEGORY}-xxx` patterns.
+/// Extract MQS category from gate ID (delegates to canonical implementation).
 fn extract_category(gate_id: &str) -> String {
-    const PREFIX_MAP: &[(&str, &str)] = &[
-        ("F-CONV-RT", "REGR"),
-        ("F-CONV-IDEM", "REGR"),
-        ("F-CONV-COM", "REGR"),
-        ("F-CONV", "COMP"),
-        ("F-CONTRACT", "COMP"),
-        ("G0-", "STAB"),
-        ("T1-QUANT", "COMP"),
-        ("T2-IMPORT", "COMP"),
-        ("T3-PRUNE", "QUAL"),
-        ("T4-DISTILL", "QUAL"),
-    ];
-    for &(prefix, cat) in PREFIX_MAP {
-        if gate_id.starts_with(prefix) {
-            return cat.to_string();
-        }
-    }
-    const CATEGORIES: [&str; 6] = ["QUAL", "PERF", "STAB", "COMP", "EDGE", "REGR"];
-    gate_id
-        .split('-')
-        .nth(1)
-        .map(str::to_uppercase)
-        .filter(|s| CATEGORIES.contains(&s.as_str()))
-        .unwrap_or_else(|| "QUAL".to_string())
+    crate::MqsCalculator::extract_category(gate_id)
 }
 
 /// Generate evidence detail markdown for a single test
