@@ -567,12 +567,14 @@ impl Executor {
         let mut failed = 0;
 
         for prompt in &config.prompts {
+            let start = std::time::Instant::now();
             let apr_output = self
                 .command_runner
                 .run_inference(model_path, prompt, 32, false, &[]);
             let ollama_output =
                 self.command_runner
                     .run_ollama_inference(model_tag, prompt, config.temperature);
+            let duration = start.elapsed().as_millis() as u64;
 
             let scenario = QaScenario::new(
                 model_id.clone(),
@@ -589,8 +591,13 @@ impl Executor {
                 } else {
                     format!("APR inference failed: {}", apr_output.stderr)
                 };
-                let ev =
-                    Evidence::falsified("F-OLLAMA-001", scenario, &reason, &apr_output.stdout, 0);
+                let ev = Evidence::falsified(
+                    "F-OLLAMA-001",
+                    scenario,
+                    &reason,
+                    &apr_output.stdout,
+                    duration,
+                );
                 self.collector.add(ev);
                 failed += 1;
                 continue;
@@ -605,7 +612,7 @@ impl Executor {
                     scenario.clone(),
                     "Ollama parity vacuous: both outputs empty",
                     "N/A",
-                    0,
+                    duration,
                 );
                 self.collector.add(ev);
                 failed += 1;
@@ -617,7 +624,7 @@ impl Executor {
                         "Ollama parity PASS: identical output ({} chars) for prompt: {prompt}",
                         apr_text.len()
                     ),
-                    0,
+                    duration,
                 );
                 self.collector.add(ev);
                 passed += 1;
@@ -638,7 +645,7 @@ impl Executor {
                         Self::truncate_str(&ollama_text, 80),
                     ),
                     &format!("APR: {apr_text}\nOllama: {ollama_text}"),
-                    0,
+                    duration,
                 );
                 self.collector.add(ev);
                 failed += 1;
