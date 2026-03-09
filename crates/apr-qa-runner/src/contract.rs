@@ -318,6 +318,13 @@ pub fn run_contract_tests(
 
     for label in &config.invariants {
         let Some(inv_id) = InvariantId::from_label(label) else {
+            evidence.push(Evidence::falsified(
+                "F-CONTRACT-INVALID-001",
+                contract_scenario(model_id),
+                format!("Unknown invariant ID '{label}' — valid: I-1 through I-5"),
+                "N/A",
+                0,
+            ));
             continue;
         };
 
@@ -394,6 +401,21 @@ fn run_i2_tensor_bijection(
 
     let st_names = parse_tensor_names(&st_inspect.stdout);
     let apr_names = parse_tensor_names(&apr_inspect.stdout);
+
+    // Popper: empty tensor sets → vacuous bijection. Both must be non-empty.
+    if st_names.is_empty() || apr_names.is_empty() {
+        return Evidence::falsified(
+            gate_id,
+            contract_scenario(model_id),
+            format!(
+                "I-2 Tensor Name Bijection: cannot validate — parsed 0 tensors (source={}, apr={})",
+                st_names.len(),
+                apr_names.len()
+            ),
+            &format!("st_stdout: {}, apr_stdout: {}", st_inspect.stdout, apr_inspect.stdout),
+            0,
+        );
+    }
 
     // Every source tensor must appear in the APR output
     let missing: Vec<&str> = st_names

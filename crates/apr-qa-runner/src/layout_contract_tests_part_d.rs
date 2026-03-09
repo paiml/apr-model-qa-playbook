@@ -228,11 +228,13 @@ fn test_validate_model_no_config_json() {
         &[("lm_head.weight", &[32000, 4096])],
     );
 
-    // No config.json => LayoutModelConfig::default() => lm_head passes (no expected dims)
+    // No config.json => LayoutModelConfig::default() => lm_head UNVALIDATED (Popper)
     let contract = make_contract();
     let result = validate_model(dir.path(), &contract).unwrap();
 
-    assert!(result.passed);
+    // Popper: missing config.json means lm_head cannot be validated → fail
+    assert!(!result.passed);
+    assert!(result.rules_failed > 0);
 }
 
 // ========================================================================

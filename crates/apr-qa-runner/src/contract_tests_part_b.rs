@@ -189,9 +189,9 @@ fn test_i2_missing_tensors_falsified() {
     assert!(evidence[0].reason.contains("I-2 Tensor Name Bijection"));
 }
 
-/// I-2 with empty tensor names → corroborated (no tensors to miss)
+/// I-2 with empty tensor names → falsified (Popper: vacuous bijection)
 #[test]
-fn test_i2_empty_tensor_names_corroborated() {
+fn test_i2_empty_tensor_names_falsified() {
     use crate::command::MockCommandRunner;
     let runner: Arc<dyn CommandRunner> =
         Arc::new(MockCommandRunner::new().with_tensor_names(vec![]));
@@ -207,10 +207,11 @@ fn test_i2_empty_tensor_names_corroborated() {
     );
     assert_eq!(evidence.len(), 1);
     assert!(
-        evidence[0].outcome.is_pass(),
-        "Empty tensor names → no missing tensors → pass: {}",
+        evidence[0].outcome.is_fail(),
+        "Empty tensor names → vacuous bijection → fail: {}",
         evidence[0].reason
     );
+    assert!(evidence[0].reason.contains("parsed 0 tensors"));
 }
 
 /// I-3 check failure → falsified evidence

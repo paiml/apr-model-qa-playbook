@@ -300,11 +300,12 @@ fn validate_lm_head_shape(
     let (expected_vocab, expected_hidden) = (config.vocab_size, config.hidden_size);
 
     // Check if shape matches [vocab, hidden]
+    // Popper: (None, None) → false. Untested dimensions ≠ validated dimensions.
     let shape_valid = match (expected_vocab, expected_hidden) {
         (Some(vocab), Some(hidden)) => actual_shape[0] == vocab && actual_shape[1] == hidden,
         (Some(vocab), None) => actual_shape[0] == vocab,
         (None, Some(hidden)) => actual_shape[1] == hidden,
-        (None, None) => true, // Can't validate without config
+        (None, None) => false,
     };
 
     if shape_valid {
@@ -314,6 +315,18 @@ fn validate_lm_head_shape(
             passed: true,
             details: format!("lm_head.weight shape correct: {:?}", actual_shape),
             expected: Some(format!("[{:?}, {:?}]", expected_vocab, expected_hidden)),
+            actual: Some(format!("{actual_shape:?}")),
+        }
+    } else if expected_vocab.is_none() && expected_hidden.is_none() {
+        TensorValidationResult {
+            tensor_name: "lm_head.weight".to_string(),
+            rule_id: "F-LAYOUT-CONTRACT-002".to_string(),
+            passed: false,
+            details: format!(
+                "lm_head.weight UNVALIDATED: config.json missing vocab_size and hidden_size, got {:?}",
+                actual_shape
+            ),
+            expected: Some("[vocab_size, hidden_size]".to_string()),
             actual: Some(format!("{actual_shape:?}")),
         }
     } else {
@@ -350,22 +363,33 @@ fn validate_2d_tensor_shape(
     }
 
     // Parse expected shape from contract
+    // Popper: None → false. Cannot earn credit for dimensions never subjected to falsification.
     let expected = parse_expected_shape(&spec.apr_shape, config);
 
-    let shape_valid = match expected {
-        Some((dim0, dim1)) => actual_shape[0] == dim0 && actual_shape[1] == dim1,
-        None => true, // Can't fully validate without all dimensions
+    let (shape_valid, detail_msg) = match expected {
+        Some((dim0, dim1)) => {
+            let valid = actual_shape[0] == dim0 && actual_shape[1] == dim1;
+            let msg = if valid {
+                format!("{name} shape correct: {actual_shape:?}")
+            } else {
+                format!("{name} shape mismatch: expected [{dim0}, {dim1}], got {actual_shape:?}")
+            };
+            (valid, msg)
+        }
+        None => (
+            false,
+            format!(
+                "{name} UNVALIDATED: cannot resolve expected shape '{}' from config",
+                spec.apr_shape
+            ),
+        ),
     };
 
     TensorValidationResult {
         tensor_name: spec.apr_name.clone(),
         rule_id: "F-LAYOUT-CONTRACT-001".to_string(),
         passed: shape_valid,
-        details: if shape_valid {
-            format!("{name} shape correct: {actual_shape:?}")
-        } else {
-            format!("{name} shape mismatch")
-        },
+        details: detail_msg,
         expected: Some(spec.apr_shape.clone()),
         actual: Some(format!("{actual_shape:?}")),
     }
@@ -379,7 +403,20 @@ fn validate_layer_tensors(
     spec: &TensorSpec,
     results: &mut Vec<TensorValidationResult>,
 ) {
-    let num_layers = config.num_hidden_layers.unwrap_or(0);
+    let Some(num_layers) = config.num_hidden_layers else {
+        // Popper: unknown layer count → cannot validate layer tensors
+        results.push(TensorValidationResult {
+            tensor_name: pattern.to_string(),
+            rule_id: "F-LAYOUT-CONTRACT-001".to_string(),
+            passed: false,
+            details: format!(
+                "{pattern} UNVALIDATED: num_hidden_layers missing from config.json"
+            ),
+            expected: Some(spec.apr_shape.clone()),
+            actual: None,
+        });
+        return;
+    };
     for layer_idx in 0..num_layers {
         let tensor_name = pattern.replace("{n}", &layer_idx.to_string());
         if let Some(actual_shape) = all_tensors.get(&tensor_name) {
@@ -397,7 +434,20 @@ fn validate_1d_layer_tensors(
     spec: &TensorSpec,
     results: &mut Vec<TensorValidationResult>,
 ) {
-    let num_layers = config.num_hidden_layers.unwrap_or(0);
+    let Some(num_layers) = config.num_hidden_layers else {
+        // Popper: unknown layer count → cannot validate 1D layer tensors
+        results.push(TensorValidationResult {
+            tensor_name: pattern.to_string(),
+            rule_id: "F-LAYOUT-CONTRACT-003".to_string(),
+            passed: false,
+            details: format!(
+                "{pattern} UNVALIDATED: num_hidden_layers missing from config.json"
+            ),
+            expected: Some(spec.apr_shape.clone()),
+            actual: None,
+        });
+        return;
+    };
     for layer_idx in 0..num_layers {
         let tensor_name = pattern.replace("{n}", &layer_idx.to_string());
         if let Some(actual_shape) = all_tensors.get(&tensor_name) {
@@ -426,20 +476,29 @@ fn validate_1d_tensor_shape(
     }
 
     // 1D tensors should match hidden_size
-    let shape_valid = config.hidden_size.is_none_or(|h| actual_shape[0] == h);
+    // Popper: None → false. Untested dimension ≠ validated dimension.
+    #[allow(clippy::option_if_let_else)]
+    let (shape_valid, detail_msg) = match config.hidden_size {
+        Some(h) => {
+            let valid = actual_shape[0] == h;
+            let msg = if valid {
+                format!("{name} shape correct: {actual_shape:?}")
+            } else {
+                format!("{name} shape mismatch: expected [{h}], got {actual_shape:?}")
+            };
+            (valid, msg)
+        }
+        None => (
+            false,
+            format!("{name} UNVALIDATED: hidden_size missing from config.json"),
+        ),
+    };
 
     TensorValidationResult {
         tensor_name: name.to_string(),
         rule_id: "F-LAYOUT-CONTRACT-003".to_string(),
         passed: shape_valid,
-        details: if shape_valid {
-            format!("{name} shape correct: {actual_shape:?}")
-        } else {
-            format!(
-                "{name} shape mismatch: expected [{}], got {actual_shape:?}",
-                config.hidden_size.unwrap_or(0)
-            )
-        },
+        details: detail_msg,
         expected: Some(spec.apr_shape.clone()),
         actual: Some(format!("{actual_shape:?}")),
     }

@@ -2,9 +2,10 @@
 fn test_validate_lm_head_shape_no_config() {
     let config = LayoutModelConfig::default();
     let contract = make_contract();
-    // No config => can't validate => passes
+    // Popper: no config dimensions → UNVALIDATED → fails
     let result = validate_lm_head_shape(&[100, 200], &config, &contract);
-    assert!(result.passed);
+    assert!(!result.passed);
+    assert!(result.details.contains("UNVALIDATED"));
 }
 
 // ========================================================================
@@ -42,11 +43,12 @@ fn test_validate_2d_tensor_shape_invalid() {
 
 #[test]
 fn test_validate_2d_tensor_shape_unresolvable() {
-    // When shape dims can't be resolved, validation passes by default
+    // Popper: unresolvable shape dims → UNVALIDATED → fails
     let spec = make_spec("test.weight", "[unknown1, unknown2]", true);
     let config = LayoutModelConfig::default();
     let result = validate_2d_tensor_shape("test", &[100, 200], &spec, &config);
-    assert!(result.passed);
+    assert!(!result.passed);
+    assert!(result.details.contains("UNVALIDATED"));
 }
 
 // ========================================================================
@@ -85,9 +87,10 @@ fn test_validate_1d_tensor_shape_invalid() {
 fn test_validate_1d_tensor_shape_no_config() {
     let spec = make_spec("test.bias", "[hidden]", false);
     let config = LayoutModelConfig::default();
-    // No hidden_size => passes by default
+    // Popper: no hidden_size → UNVALIDATED → fails
     let result = validate_1d_tensor_shape("test.bias", &[9999], &spec, &config);
-    assert!(result.passed);
+    assert!(!result.passed);
+    assert!(result.details.contains("UNVALIDATED"));
 }
 
 // ========================================================================
@@ -402,7 +405,7 @@ fn test_validate_layer_tensors_missing_layer() {
 
 #[test]
 fn test_validate_layer_tensors_zero_layers() {
-    let config = LayoutModelConfig::default(); // num_hidden_layers = None => 0
+    let config = LayoutModelConfig::default(); // num_hidden_layers = None
     let spec = make_spec("model.layers.{n}.weight", "[vocab, hidden]", true);
     let all_tensors = HashMap::new();
     let mut results = Vec::new();
@@ -415,7 +418,11 @@ fn test_validate_layer_tensors_zero_layers() {
         &mut results,
     );
 
-    assert!(results.is_empty());
+    // Popper: missing num_hidden_layers → UNVALIDATED failure
+    assert_eq!(results.len(), 1);
+    assert!(!results[0].passed);
+    assert!(results[0].details.contains("UNVALIDATED"));
+    assert!(results[0].details.contains("num_hidden_layers"));
 }
 
 // ========================================================================

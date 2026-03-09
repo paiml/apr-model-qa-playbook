@@ -398,9 +398,9 @@ fn test_contract_skips_i1() {
     assert_eq!(evidence[0].gate_id, "F-CONTRACT-I2-001");
 }
 
-/// Verify unknown invariant labels are silently skipped
+/// Verify unknown invariant labels produce falsified evidence (not silently skipped)
 #[test]
-fn test_contract_unknown_invariant_skipped() {
+fn test_contract_unknown_invariant_rejected() {
     use crate::command::MockCommandRunner;
     let runner: Arc<dyn CommandRunner> = Arc::new(MockCommandRunner::new());
     let model_id = ModelId::new("test", "model");
@@ -408,7 +408,10 @@ fn test_contract_unknown_invariant_skipped() {
     let evidence = run_contract_tests(
         &runner, Path::new("/test/workspace/org/model"), &model_id, &config,
     );
-    assert!(evidence.is_empty());
+    assert_eq!(evidence.len(), 1);
+    assert!(evidence[0].outcome.is_fail());
+    assert_eq!(evidence[0].gate_id, "F-CONTRACT-INVALID-001");
+    assert!(evidence[0].reason.contains("I-99"));
 }
 
 /// Verify path resolution avoids dot-in-name regression for model directories
