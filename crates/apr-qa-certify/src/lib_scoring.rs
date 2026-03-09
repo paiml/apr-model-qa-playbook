@@ -23,11 +23,14 @@ pub const FULL_PASS_THRESHOLD: f64 = 0.95;
 pub const FULL_PASS_SCORE: u32 = 950;
 
 /// Calculate certification status from MQS score.
+///
+/// Threshold: `MVP_PASS_SCORE` (800) for Certified, 700 for Provisional.
+/// Must stay aligned with `CertificationRow::derive_status()`.
 #[must_use]
 pub const fn status_from_score(mqs_score: u32, has_p0_failure: bool) -> CertificationStatus {
     if has_p0_failure {
         CertificationStatus::Blocked
-    } else if mqs_score >= 850 {
+    } else if mqs_score >= MVP_PASS_SCORE {
         CertificationStatus::Certified
     } else if mqs_score >= 700 {
         CertificationStatus::Provisional

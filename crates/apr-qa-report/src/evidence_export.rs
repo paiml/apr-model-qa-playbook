@@ -286,10 +286,13 @@ impl EvidenceExport {
     }
 
     /// Check if all mandatory gateways passed.
+    ///
+    /// All 5 gateways (G0-G4) are mandatory. Any single failure zeros MQS
+    /// per the gateway zeroing invariant.
     #[must_use]
     pub fn all_gateways_passed(&self) -> bool {
-        // G1-G4 are mandatory gateways
         let mandatory = [
+            "G0-INTEGRITY",
             "G1-MODEL-LOADS",
             "G2-BASIC-INFERENCE",
             "G3-NO-CRASHES",

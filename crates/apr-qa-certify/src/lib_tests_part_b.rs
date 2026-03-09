@@ -61,12 +61,18 @@ fn test_status_from_score_certified() {
         status_from_score(850_u32, false),
         CertificationStatus::Certified
     ));
+    // MVP_PASS_SCORE (800) is the certified threshold
+    assert!(matches!(
+        status_from_score(800_u32, false),
+        CertificationStatus::Certified
+    ));
 }
 
 #[test]
 fn test_status_from_score_provisional() {
+    // 700-799: provisional range
     assert!(matches!(
-        status_from_score(800_u32, false),
+        status_from_score(799_u32, false),
         CertificationStatus::Provisional
     ));
     assert!(matches!(

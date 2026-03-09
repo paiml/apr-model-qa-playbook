@@ -127,6 +127,7 @@ fn test_calculate_pass_rate_empty() {
 #[test]
 fn test_all_gateways_passed() {
     let export = EvidenceExport::builder()
+        .gate("G0-INTEGRITY", true, "OK")
         .gate("G1-MODEL-LOADS", true, "OK")
         .gate("G2-BASIC-INFERENCE", true, "OK")
         .gate("G3-NO-CRASHES", true, "OK")
@@ -134,6 +135,19 @@ fn test_all_gateways_passed() {
         .build();
 
     assert!(export.all_gateways_passed());
+}
+
+#[test]
+fn test_all_gateways_g0_failed() {
+    let export = EvidenceExport::builder()
+        .gate("G0-INTEGRITY", false, "Config mismatch")
+        .gate("G1-MODEL-LOADS", true, "OK")
+        .gate("G2-BASIC-INFERENCE", true, "OK")
+        .gate("G3-NO-CRASHES", true, "OK")
+        .gate("G4-OUTPUT-QUALITY", true, "OK")
+        .build();
+
+    assert!(!export.all_gateways_passed());
 }
 
 #[test]

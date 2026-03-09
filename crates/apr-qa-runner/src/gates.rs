@@ -199,12 +199,11 @@ impl Executor {
         ) {
             (cp.clone(), mf.clone())
         } else {
-            // Missing configuration - skip with warning
-            let ev = Evidence::corroborated(
+            // Missing configuration - skip (not evidence of corroboration)
+            let ev = Evidence::skipped(
                 "F-HF-PARITY-SKIP",
                 Self::hf_parity_scenario(model_id, "config"),
                 "HF parity skipped: corpus_path or model_family not configured",
-                0,
             );
             self.collector.add(ev);
             return (0, 0);
@@ -265,11 +264,10 @@ impl Executor {
         };
 
         if manifest.prompts.is_empty() {
-            let ev = Evidence::corroborated(
+            let ev = Evidence::skipped(
                 "F-HF-PARITY-SKIP",
                 Self::hf_parity_scenario(model_id, "manifest"),
                 "HF parity skipped: no prompts in manifest",
-                0,
             );
             self.collector.add(ev);
             return (0, 0);
@@ -310,8 +308,8 @@ impl Executor {
                 }
             };
 
-            // Load golden logits
-            let golden = match oracle.load_golden(&prompt) {
+            // Validate golden file exists before running inference (fail fast)
+            let _golden = match oracle.load_golden(&prompt) {
                 Ok(g) => g,
                 Err(e) => {
                     let ev = Evidence::falsified(
@@ -327,33 +325,57 @@ impl Executor {
                 }
             };
 
-            // Run inference to get actual logits
-            // For now, we do a self-consistency check (golden vs golden)
-            // In production, this would call the actual model inference
-            let result = oracle.tensors_close(&golden.logits, &golden.logits);
+            // Run actual inference and compare against golden using oracle
+            let Some(model_path_str) = self.config.model_path.clone() else {
+                let ev = Evidence::skipped(
+                    "F-HF-PARITY-001",
+                    Self::hf_parity_scenario(model_id, &prompt),
+                    "HF parity skipped: no model path configured for inference",
+                );
+                self.collector.add(ev);
+                continue;
+            };
 
-            match result {
-                Ok(()) => {
+            let inference_output = self.command_runner.run_inference(
+                Path::new(&model_path_str),
+                &prompt,
+                32,
+                false,
+                &[],
+            );
+
+            if !inference_output.success {
+                let ev = Evidence::falsified(
+                    "F-HF-PARITY-001",
+                    Self::hf_parity_scenario(model_id, &prompt),
+                    format!("HF parity: inference failed: {}", inference_output.stderr),
+                    &inference_output.stdout,
+                    0,
+                );
+                self.collector.add(ev);
+                failed += 1;
+                continue;
+            }
+
+            // Compare actual output against golden using oracle
+            let oracle_result = oracle.evaluate(&prompt, &inference_output.stdout);
+            match oracle_result {
+                apr_qa_gen::OracleResult::Corroborated { evidence: ev_text } => {
                     let ev = Evidence::corroborated(
                         "F-HF-PARITY-001",
                         Self::hf_parity_scenario(model_id, &prompt),
-                        &format!(
-                            "HF parity PASS: {} elements within tolerance (atol={}, rtol={})",
-                            golden.logits.len(),
-                            oracle.tolerance().atol_fp32,
-                            oracle.tolerance().rtol_fp32
-                        ),
+                        &format!("HF parity PASS: {ev_text}"),
                         0,
                     );
                     self.collector.add(ev);
                     passed += 1;
                 }
-                Err(diff) => {
+                apr_qa_gen::OracleResult::Falsified { reason, evidence: ev_text } => {
                     let ev = Evidence::falsified(
                         "F-HF-PARITY-001",
                         Self::hf_parity_scenario(model_id, &prompt),
-                        format!("HF parity FAIL: {diff}"),
-                        "N/A",
+                        format!("HF parity FAIL: {reason}"),
+                        &ev_text,
                         0,
                     );
                     self.collector.add(ev);
