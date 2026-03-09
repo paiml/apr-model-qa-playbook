@@ -48,7 +48,9 @@ fn process_certification_result(
             );
 
             let model_output = output_dir.join(short.to_lowercase().replace('.', "-"));
-            save_evidence(&model_output, &result);
+            if !save_evidence(&model_output, &result) {
+                eprintln!("  [WARN] Evidence save failed — results may be lost");
+            }
 
             if oracle_enhance && result.failed > 0 {
                 run_oracle_enhancement(model_id, &result, &model_output);
@@ -348,18 +350,29 @@ fn update_certification_record(
     cert.tps_st_gpu = profile.tps_st_gpu;
 }
 
-/// Persist execution evidence as JSON to the model output directory
-fn save_evidence(model_output: &std::path::Path, result: &apr_qa_runner::ExecutionResult) {
+/// Persist execution evidence as JSON to the model output directory.
+/// Returns false on any I/O or serialization error.
+fn save_evidence(model_output: &std::path::Path, result: &apr_qa_runner::ExecutionResult) -> bool {
     if let Err(e) = std::fs::create_dir_all(model_output) {
         eprintln!("  Error creating model output dir: {e}");
+        return false;
     }
     let evidence_path = model_output.join("evidence.json");
     match result.evidence.to_json() {
         Ok(json) => match std::fs::write(&evidence_path, json) {
-            Ok(()) => println!("  Evidence: {}", evidence_path.display()),
-            Err(e) => eprintln!("  Error writing evidence: {e}"),
+            Ok(()) => {
+                println!("  Evidence: {}", evidence_path.display());
+                true
+            }
+            Err(e) => {
+                eprintln!("  Error writing evidence: {e}");
+                false
+            }
         },
-        Err(e) => eprintln!("  Error serializing evidence: {e}"),
+        Err(e) => {
+            eprintln!("  Error serializing evidence: {e}");
+            false
+        }
     }
 }
 
@@ -370,9 +383,6 @@ fn run_oracle_enhancement(
     model_output: &std::path::Path,
 ) {
     use apr_qa_runner::{OracleEnhancer, generate_checklist_markdown};
-
-    /// MQS score → letter grade thresholds (descending). First match wins.
-    const GRADE_THRESHOLDS: &[(u32, &str)] = &[(800, "A"), (600, "B"), (400, "C")];
 
     let enhancer = OracleEnhancer::new();
     let failed_evidence = result.evidence.failures();
@@ -392,10 +402,7 @@ fn run_oracle_enhancement(
     };
     #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
     let mqs = pass_rate as u32;
-    let grade = GRADE_THRESHOLDS
-        .iter()
-        .find(|&&(min, _)| mqs >= min)
-        .map_or("F", |&(_, g)| g);
+    let grade = apr_qa_certify::grade_from_score(mqs);
 
     let checklist_md =
         generate_checklist_markdown(model_id, mqs, grade, total, result.failed, &context);
