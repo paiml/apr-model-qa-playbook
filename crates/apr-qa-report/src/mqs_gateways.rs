@@ -158,8 +158,11 @@ impl MqsCalculator {
 
     /// Extract MQS category from gate ID.
     ///
-    /// Maps gate IDs to the 6 MQS categories via prefix lookup table,
-    /// then falls back to parsing `F-{CATEGORY}-xxx` patterns.
+    /// Maps gate IDs to the 6 MQS categories via:
+    /// 1. Prefix lookup table (longest prefix first)
+    /// 2. Serve battery suffix mapping (`F-A{1-6}-SUFFIX-001`)
+    /// 3. Fallback: `F-{CATEGORY}-xxx` pattern
+    ///
     /// Public so markdown report can reuse (DRY — single source of truth).
     #[must_use]
     pub fn extract_category(gate_id: &str) -> String {
@@ -174,7 +177,9 @@ impl MqsCalculator {
             ("F-OLLAMA-004", "COMP"),  // API endpoint parity → compatibility
             ("F-OLLAMA-005", "COMP"),  // GGUF loadability → compatibility
             ("F-OLLAMA-PULL", "COMP"), // Ollama pull → compatibility
-            ("F-OLLAMA", "QUAL"),      // Output match → quality (must be after specific prefixes)
+            ("F-OLLAMA", "QUAL"),      // Output match → quality (after specific prefixes)
+            ("F-HF-PARITY", "QUAL"),   // HF parity checks → quality
+            ("F-LAYOUT", "STAB"),      // Layout contract → stability
             ("G0-", "STAB"),
             ("T1-QUANT", "COMP"),   // Quantize → compatibility
             ("T2-IMPORT", "COMP"),  // Import → compatibility
@@ -188,6 +193,20 @@ impl MqsCalculator {
             }
         }
 
+        // Serve battery: F-A{1-6}-SUFFIX-001 → map suffix to category.
+        // Suffixes: STREAM/CSTREAM→COMP, ERR→STAB, METRICS/PERF→PERF,
+        // INFO/MODELS/TMPL→COMP, CHARS→EDGE, rest→QUAL.
+        if let Some(suffix) = Self::extract_serve_suffix(gate_id) {
+            return match suffix {
+                "STREAM" | "CSTREAM" | "INFO" | "MODELS" | "TMPL" => "COMP",
+                "ERR" => "STAB",
+                "METRICS" | "PERF" => "PERF",
+                "CHARS" => "EDGE",
+                _ => "QUAL", // 001, COMP, CHAT, STOP, EOS, DETERM, MULTI, TOK, MAXTOK
+            }
+            .to_string();
+        }
+
         // Parse F-{CATEGORY}-xxx pattern
         const CATEGORIES: [&str; 6] = ["QUAL", "PERF", "STAB", "COMP", "EDGE", "REGR"];
         gate_id
@@ -196,6 +215,25 @@ impl MqsCalculator {
             .map(str::to_uppercase)
             .filter(|s| CATEGORIES.contains(&s.as_str()))
             .unwrap_or_else(|| "QUAL".to_string())
+    }
+
+    /// Extract the suffix from a serve battery gate ID.
+    ///
+    /// Pattern: `F-A{1-6}-SUFFIX-001` → returns SUFFIX.
+    /// For `F-A{1-6}-001` (no suffix), returns `"001"`.
+    /// Returns None if gate_id doesn't match this pattern.
+    fn extract_serve_suffix(gate_id: &str) -> Option<&str> {
+        let parts: Vec<&str> = gate_id.split('-').collect();
+        // F-A5-STREAM-001 → ["F", "A5", "STREAM", "001"] (4 parts, suffix = parts[2])
+        // F-A5-001 → ["F", "A5", "001"] (3 parts, suffix = parts[2] = "001")
+        if parts.len() < 3 {
+            return None;
+        }
+        let modality = parts[1];
+        if !matches!(modality, "A1" | "A2" | "A3" | "A4" | "A5" | "A6") {
+            return None;
+        }
+        Some(parts[2])
     }
 
     /// Calculate proportional score. Untested categories score zero.

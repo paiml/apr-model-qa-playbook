@@ -184,3 +184,36 @@ fn test_calculate_with_proof_bonus_full() {
     // Normalized with expanded denominator (1050/1050)
     assert!(score.normalized_score > 99.0);
 }
+
+/// Verify serve battery gate IDs map to correct MQS categories
+#[test]
+fn test_extract_category_serve_battery() {
+    // Basic inference → QUAL
+    assert_eq!(MqsCalculator::extract_category("F-A5-001"), "QUAL");
+    assert_eq!(MqsCalculator::extract_category("F-A6-001"), "QUAL");
+    // Streaming → COMP
+    assert_eq!(MqsCalculator::extract_category("F-A5-STREAM-001"), "COMP");
+    assert_eq!(MqsCalculator::extract_category("F-A6-CSTREAM-001"), "COMP");
+    // Error handling → STAB
+    assert_eq!(MqsCalculator::extract_category("F-A5-ERR-001"), "STAB");
+    assert_eq!(MqsCalculator::extract_category("F-A1-ERR-001"), "STAB");
+    // Performance → PERF
+    assert_eq!(MqsCalculator::extract_category("F-A5-METRICS-001"), "PERF");
+    assert_eq!(MqsCalculator::extract_category("F-A5-PERF-001"), "PERF");
+    // API endpoints → COMP
+    assert_eq!(MqsCalculator::extract_category("F-A5-INFO-001"), "COMP");
+    assert_eq!(MqsCalculator::extract_category("F-A5-MODELS-001"), "COMP");
+    assert_eq!(MqsCalculator::extract_category("F-A5-TMPL-001"), "COMP");
+    // Character edge cases → EDGE
+    assert_eq!(MqsCalculator::extract_category("F-A5-CHARS-001"), "EDGE");
+    // Non-serve battery should not match
+    assert_eq!(MqsCalculator::extract_category("F-A7-ERR-001"), "QUAL");
+}
+
+/// Verify HF parity and layout gate IDs map correctly
+#[test]
+fn test_extract_category_hf_parity_and_layout() {
+    assert_eq!(MqsCalculator::extract_category("F-HF-PARITY-001"), "QUAL");
+    assert_eq!(MqsCalculator::extract_category("F-HF-PARITY-004"), "QUAL");
+    assert_eq!(MqsCalculator::extract_category("F-LAYOUT-002"), "STAB");
+}
