@@ -33,6 +33,12 @@ fn generate_tickets(
     let tickets =
         generate_tickets_from_evidence(&evidence, repo, black_swans_only, min_occurrences);
 
+    if tickets.is_empty() {
+        eprintln!("No tickets generated from evidence — nothing to file");
+        eprintln!("  Popperian: ticket generation that produces nothing is vacuous");
+        std::process::exit(1);
+    }
+
     if is_draft {
         // F-TICKET-004: Draft mode - only print, don't create files
         println!("=== Ticket Drafts ({}) ===", tickets.len());
