@@ -377,11 +377,12 @@ fn is_arithmetic_prompt(prompt: &str) -> bool {
 
 /// Check if prompt is a code completion request
 fn is_code_prompt(prompt: &str) -> bool {
-    prompt.starts_with("def ")
-        || prompt.starts_with("fn ")
-        || prompt.starts_with("function ")
-        || prompt.starts_with("class ")
-        || prompt.starts_with("async ")
+    let lower = prompt.to_lowercase();
+    lower.starts_with("def ")
+        || lower.starts_with("fn ")
+        || lower.starts_with("function ")
+        || lower.starts_with("class ")
+        || lower.starts_with("async ")
         || prompt.contains("```")
 }
 

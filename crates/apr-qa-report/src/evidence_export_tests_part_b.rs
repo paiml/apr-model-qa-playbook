@@ -4,14 +4,14 @@ fn test_falsify_oracle_002_grade_contract() {
     use crate::certification_data::CertificationRow;
 
     let grade_cases = [
-        (950, "A"),
+        (950, "A+"),
         (900, "A"),
-        (850, "B"),
+        (850, "B+"),
         (800, "B"),
         (700, "C"),
-        (600, "C"),
-        (500, "D"),
-        (400, "D"),
+        (600, "F"),
+        (500, "F"),
+        (400, "F"),
         (300, "F"),
         (0, "F"),
     ];

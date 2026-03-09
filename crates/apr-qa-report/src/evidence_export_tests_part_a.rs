@@ -5,7 +5,7 @@ fn test_falsify_evidence_001_roundtrip_integrity() {
         .format("safetensors")
         .playbook("qwen2.5-coder-0.5b-mvp", "1.0.0", "mvp")
         .summary(47, 27, 20, 0, 1_134_808)
-        .mqs(574, "C", true)
+        .mqs(574, "F", true)
         .category_score("inference", 600)
         .category_score("conversion", 400)
         .gate("G1-MODEL-LOADS", true, "Model loaded")
@@ -180,7 +180,7 @@ fn test_derive_status_certified() {
 
 #[test]
 fn test_derive_status_blocked_low_score() {
-    let export = EvidenceExport::builder().mqs(500, "D", true).build();
+    let export = EvidenceExport::builder().mqs(500, "F", true).build();
 
     assert_eq!(export.derive_status(), "BLOCKED");
 }
@@ -349,7 +349,7 @@ fn test_from_mqs_score_category_breakdown() {
         model_id: "test".to_string(),
         raw_score: 500,
         normalized_score: 50.0,
-        grade: "D".to_string(),
+        grade: "F".to_string(),
         gateways: vec![MqsGateway::passed("G1", "OK")],
         gateways_passed: true,
         categories: CategoryScores {
@@ -458,7 +458,7 @@ fn test_falsify_oracle_001_status_contract() {
     assert_eq!(cert_row.derive_status(), ModelStatus::Certified);
 
     // Test case 2: BLOCKED (MQS < 800)
-    let export_blocked = EvidenceExport::builder().mqs(500, "D", true).build();
+    let export_blocked = EvidenceExport::builder().mqs(500, "F", true).build();
 
     let cert_row_blocked = CertificationRow {
         mqs_score: 500,

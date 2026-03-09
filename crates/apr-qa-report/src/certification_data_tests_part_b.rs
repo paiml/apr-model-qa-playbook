@@ -158,12 +158,13 @@ test/model,family,0.5B,tiny,BLOCKED,246,F,quick,2026-02-04T13:28:18.663+00:00,1,
 // Prediction: grade is deterministically derived from mqs_score using fixed thresholds.
 // Per Popper (1959), this test attempts to falsify the grade derivation algorithm.
 //
-// Grade thresholds (from derive_grade):
-// A: 900-1000
-// B: 800-899
-// C: 600-799
-// D: 400-599
-// F: 0-399
+// Grade thresholds (from derive_grade, aligned with apr-qa-certify::grade_from_score):
+// A+: 950-1000
+// A: 900-949
+// B+: 850-899
+// B: 800-849  (CERTIFIED threshold)
+// C: 700-799
+// F: 0-699
 
 /// Verify grade derivation from MQS score matches fixed threshold boundaries
 #[test]
@@ -177,28 +178,28 @@ fn test_falsify_cert_003_grade_derivation() {
         .derive_grade()
     };
 
-    // A grade: 900-1000
-    assert_eq!(grade_for(1000), "A", "1000 should be A");
-    assert_eq!(grade_for(950), "A", "950 should be A");
+    // A+ grade: 950-1000
+    assert_eq!(grade_for(1000), "A+", "1000 should be A+");
+    assert_eq!(grade_for(950), "A+", "950 (lower bound of A+) should be A+");
+
+    // A grade: 900-949
+    assert_eq!(grade_for(949), "A", "949 (upper bound of A) should be A");
     assert_eq!(grade_for(900), "A", "900 (lower bound) should be A");
 
-    // B grade: 800-899
-    assert_eq!(grade_for(899), "B", "899 (upper bound of B) should be B");
-    assert_eq!(grade_for(850), "B", "850 should be B");
+    // B+ grade: 850-899
+    assert_eq!(grade_for(899), "B+", "899 (upper bound of B+) should be B+");
+    assert_eq!(grade_for(850), "B+", "850 (lower bound) should be B+");
+
+    // B grade: 800-849
+    assert_eq!(grade_for(849), "B", "849 (upper bound of B) should be B");
     assert_eq!(grade_for(800), "B", "800 (lower bound) should be B");
 
-    // C grade: 600-799
+    // C grade: 700-799
     assert_eq!(grade_for(799), "C", "799 (upper bound of C) should be C");
-    assert_eq!(grade_for(700), "C", "700 should be C");
-    assert_eq!(grade_for(600), "C", "600 (lower bound) should be C");
+    assert_eq!(grade_for(700), "C", "700 (lower bound) should be C");
 
-    // D grade: 400-599
-    assert_eq!(grade_for(599), "D", "599 (upper bound of D) should be D");
-    assert_eq!(grade_for(500), "D", "500 should be D");
-    assert_eq!(grade_for(400), "D", "400 (lower bound) should be D");
-
-    // F grade: 0-399
-    assert_eq!(grade_for(399), "F", "399 (upper bound of F) should be F");
-    assert_eq!(grade_for(200), "F", "200 should be F");
+    // F grade: 0-699
+    assert_eq!(grade_for(699), "F", "699 (upper bound of F) should be F");
+    assert_eq!(grade_for(500), "F", "500 should be F");
     assert_eq!(grade_for(0), "F", "0 should be F");
 }

@@ -261,19 +261,21 @@ impl CertificationRow {
 
     /// Derive grade from MQS score.
     ///
-    /// Grade thresholds:
-    /// - A: 900-1000
-    /// - B: 800-899
-    /// - C: 600-799
-    /// - D: 400-599
-    /// - F: 0-399
+    /// Grade thresholds (canonical — aligned with apr-qa-certify::grade_from_score):
+    /// - A+: 950-1000
+    /// - A: 900-949
+    /// - B+: 850-899
+    /// - B: 800-849  (CERTIFIED threshold)
+    /// - C: 700-799
+    /// - F: 0-699
     #[must_use]
     pub fn derive_grade(&self) -> String {
         match self.mqs_score {
-            900.. => "A".to_string(),
-            800..=899 => "B".to_string(),
-            600..=799 => "C".to_string(),
-            400..=599 => "D".to_string(),
+            950.. => "A+".to_string(),
+            900..=949 => "A".to_string(),
+            850..=899 => "B+".to_string(),
+            800..=849 => "B".to_string(),
+            700..=799 => "C".to_string(),
             _ => "F".to_string(),
         }
     }

@@ -213,10 +213,22 @@ fn test_derive_grade() {
         mqs_score: 950,
         ..Default::default()
     };
-    assert_eq!(row_a.derive_grade(), "A");
+    assert_eq!(row_a.derive_grade(), "A+");
+
+    let row_a2 = CertificationRow {
+        mqs_score: 920,
+        ..Default::default()
+    };
+    assert_eq!(row_a2.derive_grade(), "A");
+
+    let row_bp = CertificationRow {
+        mqs_score: 850,
+        ..Default::default()
+    };
+    assert_eq!(row_bp.derive_grade(), "B+");
 
     let row_b = CertificationRow {
-        mqs_score: 850,
+        mqs_score: 820,
         ..Default::default()
     };
     assert_eq!(row_b.derive_grade(), "B");
@@ -226,12 +238,6 @@ fn test_derive_grade() {
         ..Default::default()
     };
     assert_eq!(row_c.derive_grade(), "C");
-
-    let row_d = CertificationRow {
-        mqs_score: 500,
-        ..Default::default()
-    };
-    assert_eq!(row_d.derive_grade(), "D");
 
     let row_f = CertificationRow {
         mqs_score: 200,
@@ -330,7 +336,7 @@ fn test_write_models_csv_creates_file() {
         size_category: SizeCategory::Small,
         status: ModelStatus::Blocked,
         mqs_score: 500,
-        grade: "D".to_string(),
+        grade: "F".to_string(),
         certified_tier: "mvp".to_string(),
         g1: true,
         g2: true,
