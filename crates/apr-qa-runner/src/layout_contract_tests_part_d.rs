@@ -144,9 +144,10 @@ fn test_check_model_path_preconditions_no_safetensors() {
     let result = check_model_path_preconditions(dir.path());
     assert!(result.is_some());
     let result = result.unwrap();
-    // Empty dir -> passed=true (no safetensors to validate is OK)
-    assert!(result.passed);
-    assert_eq!(result.rules_checked, 0);
+    // No safetensors -> fail (Popper: untested ≠ validated)
+    assert!(!result.passed);
+    assert_eq!(result.rules_failed, 1);
+    assert!(!result.critical_failures.is_empty());
 }
 
 #[test]

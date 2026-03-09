@@ -19,8 +19,8 @@ equations:
     invariants:
       - "Category weights: QUAL=200, PERF=150, STAB=200, COMP=150, EDGE=150, REGR=150"
       - "MAX_TOTAL = 1000 (sum of category maxima)"
-      - "MAX_PROOF_BONUS = 50 (proof status bonus points)"
-      - "raw_score in [0, 1050] (1000 + 50 proof bonus)"
+      - "MAX_PROOF_BONUS = 50 (proof status bonus points, capped at calculate time)"
+      - "raw_score in [0, 1050] (1000 + 50 proof bonus, capped)"
       - "normalized_score in [0.0, 100.0] (clamped)"
       - "Untested categories (0 evidence) score 0 points (Popper: untested ≠ qualified)"
       - "Deterministic: same evidence -> same score"

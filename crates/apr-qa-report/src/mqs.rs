@@ -211,8 +211,6 @@ pub struct Penalty {
 /// MQS Calculator
 #[derive(Debug)]
 pub struct MqsCalculator {
-    /// Penalty multiplier for repeated failures
-    failure_multiplier: f64,
     /// Minimum tests required per category
     #[allow(dead_code)]
     min_tests_per_category: usize,
@@ -231,17 +229,9 @@ impl MqsCalculator {
     #[must_use]
     pub fn new() -> Self {
         Self {
-            failure_multiplier: 1.5,
             min_tests_per_category: 10,
             proof_bonus: None,
         }
-    }
-
-    /// Set failure multiplier
-    #[must_use]
-    pub fn with_failure_multiplier(mut self, multiplier: f64) -> Self {
-        self.failure_multiplier = multiplier;
-        self
     }
 
     /// Set proof bonus from provable-contracts integration.
@@ -262,6 +252,29 @@ impl MqsCalculator {
     /// Returns an error if score calculation fails.
     pub fn calculate(&self, model_id: &str, evidence: &EvidenceCollector) -> Result<MqsScore> {
         let all_evidence = evidence.all();
+
+        // No evidence means no qualification — cannot certify what was never tested
+        if all_evidence.is_empty() {
+            return Ok(MqsScore {
+                model_id: model_id.to_string(),
+                raw_score: 0,
+                normalized_score: 0.0,
+                grade: "F".to_string(),
+                gateways: vec![],
+                gateways_passed: false,
+                categories: CategoryScores::default(),
+                total_tests: 0,
+                tests_passed: 0,
+                tests_failed: 0,
+                penalties: vec![Penalty {
+                    code: "NO_EVIDENCE".to_string(),
+                    description: "No test evidence — cannot qualify untested model".to_string(),
+                    points: 1000,
+                }],
+                total_penalty: 1000,
+                proof_bonus: self.proof_bonus.clone(),
+            });
+        }
 
         // Run gateway checks
         let gateways = self.check_gateways(all_evidence);
@@ -324,8 +337,11 @@ impl MqsCalculator {
             total_penalty += penalty;
         }
 
-        // Calculate raw score with penalties + proof bonus
-        let bonus_points = self.proof_bonus.as_ref().map_or(0, |b| b.bonus_points);
+        // Calculate raw score with penalties + proof bonus (capped at MAX_PROOF_BONUS)
+        let bonus_points = self
+            .proof_bonus
+            .as_ref()
+            .map_or(0, |b| b.bonus_points.min(crate::proof_status::MAX_PROOF_BONUS));
         let raw_score = categories
             .total()
             .saturating_sub(total_penalty)

@@ -141,7 +141,7 @@ impl JunitReport {
                     r#"    <failure message="{}" type="AssertionError">"#,
                     Self::escape_xml(&evidence.reason)
                 )?;
-                writeln!(writer, "Gate: {}", evidence.gate_id)?;
+                writeln!(writer, "Gate: {}", Self::escape_xml(&evidence.gate_id))?;
                 writeln!(writer, "Output: {}", Self::escape_xml(&evidence.output))?;
                 writeln!(writer, "    </failure>")?;
             }

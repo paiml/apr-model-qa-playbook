@@ -346,12 +346,22 @@ fn check_model_path_preconditions(model_path: &Path) -> Option<ModelValidationRe
     if safetensors_files.is_empty() {
         return Some(ModelValidationResult {
             model_path: model_path.to_path_buf(),
-            passed: true,
+            passed: false,
             rules_checked: 0,
             rules_passed: 0,
-            rules_failed: 0,
-            tensor_results: vec![],
-            critical_failures: vec![],
+            rules_failed: 1,
+            tensor_results: vec![TensorValidationResult {
+                tensor_name: "N/A".to_string(),
+                rule_id: "FILE-FORMAT".to_string(),
+                passed: false,
+                details: format!(
+                    "No SafeTensors files found in: {}",
+                    model_path.display()
+                ),
+                expected: Some("At least one .safetensors file".to_string()),
+                actual: Some("No SafeTensors files".to_string()),
+            }],
+            critical_failures: vec!["No SafeTensors files found".to_string()],
         });
     }
 

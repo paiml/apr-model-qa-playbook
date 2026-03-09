@@ -222,8 +222,8 @@ impl HtmlDashboard {
     </div>
 </body>
 </html>"##,
-            title = self.title,
-            model_id = mqs.model_id,
+            title = Self::escape_html(&self.title),
+            model_id = Self::escape_html(&mqs.model_id),
             grade_color = grade_color,
             normalized_score = mqs.normalized_score,
             raw_score = mqs.raw_score,
@@ -277,7 +277,7 @@ impl HtmlDashboard {
                     <div class="gateway-icon {}">{}</div>
                     <span>{}: {}</span>
                 </div>"#,
-                icon_class, icon, gateway.id, gateway.description
+                icon_class, icon, Self::escape_html(&gateway.id), Self::escape_html(&gateway.description)
             ));
         }
         if html.is_empty() {
@@ -338,8 +338,8 @@ impl HtmlDashboard {
                     {}
                 </div>"#,
                 class,
-                f.gate_id,
-                f.hypothesis,
+                Self::escape_html(&f.gate_id),
+                Self::escape_html(&f.hypothesis),
                 Self::escape_html(&f.evidence),
                 if f.is_black_swan {
                     " <strong>(Black Swan)</strong>"

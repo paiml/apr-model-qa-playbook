@@ -327,10 +327,10 @@ fn test_validate_model_empty_dir() {
     let contract = make_contract();
 
     let result = validate_model(dir.path(), &contract).unwrap();
-    // Empty dir -> passed=true, no rules checked
-    assert!(result.passed);
-    assert_eq!(result.rules_checked, 0);
-    assert!(result.critical_failures.is_empty());
+    // No safetensors -> fail (Popper: untested ≠ validated)
+    assert!(!result.passed);
+    assert_eq!(result.rules_failed, 1);
+    assert!(!result.critical_failures.is_empty());
 }
 
 // ========================================================================

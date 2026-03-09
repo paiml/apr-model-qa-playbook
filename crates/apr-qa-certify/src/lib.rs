@@ -249,7 +249,7 @@ pub fn parse_csv(content: &str) -> Result<Vec<ModelCertification>> {
             continue;
         }
 
-        let fields: Vec<&str> = line.split(',').collect();
+        let fields = csv_split(line);
         if fields.len() < 13 {
             return Err(CertifyError::CsvParse {
                 line: line_num + 1,
@@ -257,7 +257,7 @@ pub fn parse_csv(content: &str) -> Result<Vec<ModelCertification>> {
             });
         }
 
-        let last_certified = DateTime::parse_from_rfc3339(fields[8])
+        let last_certified = DateTime::parse_from_rfc3339(&fields[8])
             .ok()
             .map(|dt| dt.with_timezone(&Utc));
 
@@ -272,14 +272,14 @@ pub fn parse_csv(content: &str) -> Result<Vec<ModelCertification>> {
         let kernel_proof_ref = fields
             .get(20)
             .filter(|s| !s.is_empty())
-            .map(|s| (*s).to_string());
+            .map(|s| s.to_string());
 
         models.push(ModelCertification {
             model_id: fields[0].to_string(),
             family: fields[1].to_string(),
             parameters: fields[2].to_string(),
-            size_category: SizeCategory::parse(fields[3]),
-            status: CertificationStatus::parse(fields[4]),
+            size_category: SizeCategory::parse(&fields[3]),
+            status: CertificationStatus::parse(&fields[4]),
             mqs_score: fields[5].parse().unwrap_or(0),
             grade: fields[6].to_string(),
             certified_tier: fields[7].to_string(),
@@ -441,14 +441,14 @@ pub fn write_csv(models: &[ModelCertification]) -> String {
 
         lines.push(format!(
             "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}",
-            m.model_id,
-            m.family,
-            m.parameters,
+            csv_quote(&m.model_id),
+            csv_quote(&m.family),
+            csv_quote(&m.parameters),
             size_cat,
             m.status,
             m.mqs_score,
-            m.grade,
-            m.certified_tier,
+            csv_quote(&m.grade),
+            csv_quote(&m.certified_tier),
             last_cert,
             m.g1,
             m.g2,
@@ -461,11 +461,56 @@ pub fn write_csv(models: &[ModelCertification]) -> String {
             fmt(m.tps_st_cpu),
             fmt(m.tps_st_gpu),
             m.provenance_verified,
-            m.kernel_proof_ref.as_deref().unwrap_or(""),
+            csv_quote(m.kernel_proof_ref.as_deref().unwrap_or("")),
         ));
     }
 
     lines.join("\n") + "\n"
+}
+
+/// RFC 4180 CSV quoting: wrap in double-quotes if the field contains
+/// a comma, double-quote, or newline. Internal double-quotes are escaped
+/// by doubling them.
+fn csv_quote(field: &str) -> String {
+    if field.contains(',') || field.contains('"') || field.contains('\n') {
+        format!("\"{}\"", field.replace('"', "\"\""))
+    } else {
+        field.to_string()
+    }
+}
+
+/// RFC 4180 CSV field splitting: handles double-quoted fields containing
+/// commas and escaped double-quotes (doubled `""`).
+fn csv_split(line: &str) -> Vec<String> {
+    let mut fields = Vec::new();
+    let mut current = String::new();
+    let mut in_quotes = false;
+    let mut chars = line.chars().peekable();
+
+    while let Some(ch) = chars.next() {
+        match ch {
+            '"' if in_quotes => {
+                if chars.peek() == Some(&'"') {
+                    // Escaped double-quote
+                    current.push('"');
+                    chars.next();
+                } else {
+                    in_quotes = false;
+                }
+            }
+            '"' if !in_quotes && current.is_empty() => {
+                in_quotes = true;
+            }
+            ',' if !in_quotes => {
+                fields.push(std::mem::take(&mut current));
+            }
+            _ => {
+                current.push(ch);
+            }
+        }
+    }
+    fields.push(current);
+    fields
 }
 
 // Certification tier scoring logic
