@@ -304,11 +304,14 @@ impl EvidenceExport {
     }
 
     /// Derive certification status from MQS and gateways.
+    ///
+    /// UNTESTED requires both zero score AND no evidence collected.
+    /// A model with evidence but score 0 was tested and failed (BLOCKED).
     #[must_use]
     pub fn derive_status(&self) -> &'static str {
         if self.mqs.score >= 800 && self.mqs.gateway_passed {
             "CERTIFIED"
-        } else if self.mqs.score == 0 {
+        } else if self.mqs.score == 0 && self.evidence.is_empty() {
             "UNTESTED"
         } else {
             "BLOCKED"

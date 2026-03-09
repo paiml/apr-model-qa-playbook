@@ -79,11 +79,15 @@ impl ParallelExecutor {
 
         let evidence: Vec<Evidence> = scenarios
             .par_iter()
-            .filter_map(|scenario| {
-                // Check if we should stop
+            .map(|scenario| {
+                // Check if we should stop — emit Skipped evidence (Popperian audit trail)
                 if self.config.stop_on_failure && stop_flag.load(Ordering::Relaxed) {
                     skipped.fetch_add(1, Ordering::Relaxed);
-                    return None;
+                    return Evidence::skipped(
+                        format!("F-{}-001", scenario.mqs_category()),
+                        scenario.clone(),
+                        "Skipped: execution stopped early per stop_on_failure policy",
+                    );
                 }
 
                 let result = self.execute_single(scenario);
@@ -97,7 +101,7 @@ impl ParallelExecutor {
                     }
                 }
 
-                Some(result)
+                result
             })
             .collect();
 

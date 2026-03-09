@@ -200,15 +200,15 @@ fn check_key_tensor(
         }
     }
 
-    let expected_str = if expected_parts.is_empty() {
-        "2D tensor".to_string()
-    } else {
-        expected_parts.join(", ")
-    };
+    // Popperian: if no dimensions to validate, emit no evidence.
+    // Untested hypotheses must not be marked as corroborated.
+    if expected_parts.is_empty() {
+        return;
+    }
 
     checks.push(DimensionalCheck {
         name: format!("tensor_{short_name}"),
-        expected: expected_str,
+        expected: expected_parts.join(", "),
         actual: format!("{shape:?}"),
         passed,
     });

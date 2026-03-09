@@ -493,7 +493,8 @@ fn test_check_hidden_dim1_mismatch() {
     assert!(!tensor_check.passed);
 }
 
-/// Verify tensor check passes when no vocab/hidden expectations are set
+/// Verify tensor check emits NO evidence when no vocab/hidden expectations are set.
+/// Popperian: untested hypotheses must not be marked as corroborated.
 #[test]
 fn test_check_tensor_no_expected_dims() {
     let dir = TempDir::new().unwrap();
@@ -520,11 +521,17 @@ test_matrix:
     let playbook = Playbook::from_yaml(yaml).expect("valid test playbook");
     let result = run_dimensional_check(dir.path(), &playbook);
 
-    // Should pass — tensor is 2D, and no specific dims are expected
+    // Should pass — no hypothesis to test
     assert!(
         result.passed,
         "should pass with no expected dims: {:#?}",
         result.checks
+    );
+    // Popperian: no tensor_embed_tokens check should exist — no dims to validate
+    let tensor_check = result.checks.iter().find(|c| c.name == "tensor_embed_tokens");
+    assert!(
+        tensor_check.is_none(),
+        "no tensor check should be emitted when config has no vocab/hidden dims"
     );
 }
 

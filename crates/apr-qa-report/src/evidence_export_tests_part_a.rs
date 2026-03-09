@@ -198,6 +198,24 @@ fn test_derive_status_untested() {
     assert_eq!(export.derive_status(), "UNTESTED");
 }
 
+/// Bug #58: Score 0 with evidence present must be BLOCKED, not UNTESTED.
+/// A model that was tested and failed gateways has evidence but MQS=0.
+#[test]
+fn test_derive_status_blocked_score_zero_with_evidence() {
+    let mut export = EvidenceExport::builder().mqs(0, "F", false).build();
+    // Add some evidence to simulate a tested-but-failed model
+    export.evidence.push(serde_json::json!({
+        "gate_id": "G1-MODEL-LOADS",
+        "outcome": "Falsified",
+        "output": "failed to load"
+    }));
+    assert_eq!(
+        export.derive_status(),
+        "BLOCKED",
+        "Score 0 with evidence should be BLOCKED, not UNTESTED"
+    );
+}
+
 #[test]
 fn test_to_json_contains_schema() {
     let export = EvidenceExport::default();
