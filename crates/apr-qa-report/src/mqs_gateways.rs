@@ -102,9 +102,14 @@ impl MqsCalculator {
                 "QUAL" | "PERF" | "STAB" | "COMP" | "EDGE" | "REGR" => cat,
                 _ => "QUAL".to_string(), // Default unknown to QUAL
             };
+            // Skipped/Timeout tests don't count toward category scoring
+            // (Popper: only Corroborated/Falsified outcomes are evidence)
+            if matches!(e.outcome, Outcome::Skipped | Outcome::Timeout) {
+                continue;
+            }
             let entry = tallies.entry(key).or_insert((0, 0));
             entry.1 += 1;
-            if e.outcome.is_pass() {
+            if e.outcome == Outcome::Corroborated {
                 entry.0 += 1;
             }
         }

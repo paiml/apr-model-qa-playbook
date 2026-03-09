@@ -438,12 +438,14 @@ fn is_repetitive(output: &str) -> bool {
     all_words_identical(&words) || has_two_word_repetition(&words)
 }
 
-/// Truncate string for display
+/// Truncate string for display (UTF-8 safe)
 fn truncate(s: &str, max_len: usize) -> String {
     if s.len() <= max_len {
         s.to_string()
     } else {
-        format!("{}...", &s[..max_len])
+        // Find last valid char boundary at or before max_len
+        let end = s.floor_char_boundary(max_len);
+        format!("{}...", &s[..end])
     }
 }
 
