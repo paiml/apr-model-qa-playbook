@@ -170,9 +170,15 @@ fn log_environment() {
 
 /// Generate QA scenarios for a model and print them in the requested format
 fn generate_scenarios(model_id: &str, count: usize, format: &str) {
+    // Validate format before expensive generation
+    if !matches!(format, "yaml" | "json") {
+        eprintln!("Unknown format: {format}");
+        std::process::exit(1);
+    }
+
     let scenarios = generate_model_scenarios(model_id, count);
 
-    println!("Generated {} scenarios for {model_id}", scenarios.len());
+    eprintln!("Generated {} scenarios for {model_id}", scenarios.len());
 
     match format {
         "yaml" => match scenarios_to_yaml(&scenarios) {
@@ -183,10 +189,7 @@ fn generate_scenarios(model_id: &str, count: usize, format: &str) {
             Ok(json) => println!("{json}"),
             Err(e) => eprintln!("{e}"),
         },
-        _ => {
-            eprintln!("Unknown format: {format}");
-            std::process::exit(1);
-        }
+        _ => unreachable!(),
     }
 }
 
@@ -382,12 +385,20 @@ fn list_models(size_filter: Option<&str>) {
     println!("=== Available Models ===\n");
 
     let filtered_models = if let Some(filter) = size_filter {
-        filter_models_by_size(&models, filter)
+        let filtered = filter_models_by_size(&models, filter);
+        if filtered.is_empty() {
+            eprintln!("Error: No models matched size filter '{filter}'.");
+            eprintln!("  Valid sizes: tiny, small, medium, large, xlarge, huge");
+            std::process::exit(1);
+        }
+        filtered
     } else {
         models
     };
 
-    for model in filtered_models {
+    for model in &filtered_models {
         println!("  {} ({:?})", model.id.hf_repo(), model.size);
     }
+
+    println!("\n  Total: {} models", filtered_models.len());
 }

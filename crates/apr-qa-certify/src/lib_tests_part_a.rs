@@ -45,30 +45,28 @@ fn test_parse_csv_invalid_fields() {
 /// Verify CertificationStatus::parse handles all variants case-insensitively
 #[test]
 fn test_certification_status_parse() {
-    assert!(matches!(
+    assert_eq!(
         CertificationStatus::parse("CERTIFIED"),
-        CertificationStatus::Certified
-    ));
-    assert!(matches!(
+        Some(CertificationStatus::Certified)
+    );
+    assert_eq!(
         CertificationStatus::parse("certified"),
-        CertificationStatus::Certified
-    ));
-    assert!(matches!(
+        Some(CertificationStatus::Certified)
+    );
+    assert_eq!(
         CertificationStatus::parse("PROVISIONAL"),
-        CertificationStatus::Provisional
-    ));
-    assert!(matches!(
+        Some(CertificationStatus::Provisional)
+    );
+    assert_eq!(
         CertificationStatus::parse("BLOCKED"),
-        CertificationStatus::Blocked
-    ));
-    assert!(matches!(
+        Some(CertificationStatus::Blocked)
+    );
+    assert_eq!(
         CertificationStatus::parse("PENDING"),
-        CertificationStatus::Pending
-    ));
-    assert!(matches!(
-        CertificationStatus::parse("unknown"),
-        CertificationStatus::Pending
-    ));
+        Some(CertificationStatus::Pending)
+    );
+    // Unknown values return None (Jidoka: fail loud)
+    assert_eq!(CertificationStatus::parse("unknown"), None);
 }
 
 /// Verify badge() returns correct color for each certification status
@@ -288,24 +286,16 @@ fn test_update_readme_missing_end_marker() {
     assert!(matches!(result, Err(CertifyError::MarkerNotFound(_))));
 }
 
-/// Verify SizeCategory::parse handles all variants and defaults unknown to Small
+/// Verify SizeCategory::parse handles all variants and rejects unknown
 #[test]
 fn test_size_category_parse() {
-    assert!(matches!(SizeCategory::parse("tiny"), SizeCategory::Tiny));
-    assert!(matches!(SizeCategory::parse("SMALL"), SizeCategory::Small));
-    assert!(matches!(
-        SizeCategory::parse("Medium"),
-        SizeCategory::Medium
-    ));
-    assert!(matches!(SizeCategory::parse("large"), SizeCategory::Large));
-    assert!(matches!(
-        SizeCategory::parse("xlarge"),
-        SizeCategory::XLarge
-    ));
-    assert!(matches!(
-        SizeCategory::parse("unknown"),
-        SizeCategory::Small
-    ));
+    assert_eq!(SizeCategory::parse("tiny"), Some(SizeCategory::Tiny));
+    assert_eq!(SizeCategory::parse("SMALL"), Some(SizeCategory::Small));
+    assert_eq!(SizeCategory::parse("Medium"), Some(SizeCategory::Medium));
+    assert_eq!(SizeCategory::parse("large"), Some(SizeCategory::Large));
+    assert_eq!(SizeCategory::parse("xlarge"), Some(SizeCategory::XLarge));
+    // Unknown values return None (Jidoka: fail loud)
+    assert_eq!(SizeCategory::parse("unknown"), None);
 }
 
 /// Verify CertificationStatus Display outputs uppercase label

@@ -230,6 +230,33 @@ fn main() {
                 critical_only,
             );
         }
+        Commands::KernelCoverage {
+            architecture,
+            all,
+            models,
+            verify,
+            file_tickets,
+            output_dir,
+            trueno_path,
+            realizar_path,
+            format,
+            contracts_path,
+            bindings_path,
+        } => {
+            kernel_coverage_command(
+                architecture.as_deref(),
+                all,
+                models,
+                verify,
+                file_tickets,
+                &output_dir,
+                &trueno_path,
+                &realizar_path,
+                &format,
+                &contracts_path,
+                &bindings_path,
+            );
+        }
     }
 }
 
@@ -405,8 +432,8 @@ fn run_playbook(
         }
     };
 
-    // Run tool tests if enabled
-    if run_tool_tests_flag {
+    // Run tool tests if enabled (skip during dry-run)
+    if run_tool_tests_flag && !dry_run {
         if let Some(ref mp) = model_path {
             println!("\n{}", "=== Running APR Tool Tests ===".bold().cyan());
             let tool_executor = ToolExecutor::new(mp.clone(), no_gpu, timeout);

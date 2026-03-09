@@ -60,13 +60,15 @@ pub enum CertificationStatus {
 
 impl CertificationStatus {
     /// Parse status from string representation.
+    /// Returns `None` for unrecognized values (Jidoka: fail loud on bad data).
     #[must_use]
-    pub fn parse(s: &str) -> Self {
+    pub fn parse(s: &str) -> Option<Self> {
         match s.to_uppercase().as_str() {
-            "CERTIFIED" => Self::Certified,
-            "PROVISIONAL" => Self::Provisional,
-            "BLOCKED" => Self::Blocked,
-            _ => Self::Pending,
+            "CERTIFIED" => Some(Self::Certified),
+            "PROVISIONAL" => Some(Self::Provisional),
+            "BLOCKED" => Some(Self::Blocked),
+            "PENDING" => Some(Self::Pending),
+            _ => None,
         }
     }
 
@@ -111,15 +113,16 @@ pub enum SizeCategory {
 
 impl SizeCategory {
     /// Parse size category from string representation.
+    /// Returns `None` for unrecognized values (Jidoka: fail loud on bad data).
     #[must_use]
-    pub fn parse(s: &str) -> Self {
+    pub fn parse(s: &str) -> Option<Self> {
         match s.to_lowercase().as_str() {
-            "tiny" => Self::Tiny,
-            "medium" => Self::Medium,
-            "large" => Self::Large,
-            "xlarge" => Self::XLarge,
-            // "small" and unknown values default to Small
-            _ => Self::Small,
+            "tiny" => Some(Self::Tiny),
+            "small" => Some(Self::Small),
+            "medium" => Some(Self::Medium),
+            "large" => Some(Self::Large),
+            "xlarge" => Some(Self::XLarge),
+            _ => None,
         }
     }
 }
@@ -272,17 +275,30 @@ pub fn parse_csv(content: &str) -> Result<Vec<ModelCertification>> {
         let kernel_proof_ref = fields
             .get(20)
             .filter(|s| !s.is_empty())
-            .map(|s| s.to_string());
+            .cloned();
 
         models.push(ModelCertification {
-            model_id: fields[0].to_string(),
-            family: fields[1].to_string(),
-            parameters: fields[2].to_string(),
-            size_category: SizeCategory::parse(&fields[3]),
-            status: CertificationStatus::parse(&fields[4]),
-            mqs_score: fields[5].parse().unwrap_or(0),
-            grade: fields[6].to_string(),
-            certified_tier: fields[7].to_string(),
+            model_id: fields[0].clone(),
+            family: fields[1].clone(),
+            parameters: fields[2].clone(),
+            size_category: SizeCategory::parse(&fields[3]).ok_or_else(|| {
+                CertifyError::CsvParse {
+                    line: line_num + 1,
+                    message: format!("invalid size_category: '{}'", fields[3]),
+                }
+            })?,
+            status: CertificationStatus::parse(&fields[4]).ok_or_else(|| {
+                CertifyError::CsvParse {
+                    line: line_num + 1,
+                    message: format!("invalid status: '{}'", fields[4]),
+                }
+            })?,
+            mqs_score: fields[5].parse().map_err(|_| CertifyError::CsvParse {
+                line: line_num + 1,
+                message: format!("invalid mqs_score: '{}'", fields[5]),
+            })?,
+            grade: fields[6].clone(),
+            certified_tier: fields[7].clone(),
             last_certified,
             g1: fields[9].to_lowercase() == "true",
             g2: fields[10].to_lowercase() == "true",
