@@ -376,6 +376,7 @@ impl HtmlDashboard {
             .replace('<', "&lt;")
             .replace('>', "&gt;")
             .replace('"', "&quot;")
+            .replace('\'', "&#x27;")
     }
 }
 

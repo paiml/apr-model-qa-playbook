@@ -184,13 +184,20 @@ fn read_golden_prompt(path: &std::path::Path) -> Option<(String, String)> {
     Some((hash, prompt))
 }
 
-/// Truncate a string to max_len characters, appending "..." if truncated
+/// Truncate a string to max_len bytes, appending "..." if truncated.
+/// UTF-8 safe: finds the last valid char boundary at or before max_len.
 fn truncate_str(s: &str, max_len: usize) -> String {
-    if s.len() > max_len {
-        format!("{}...", &s[..max_len])
-    } else {
-        s.to_string()
+    if s.len() <= max_len {
+        return s.to_string();
     }
+    // Find last char boundary at or before max_len
+    let end = s
+        .char_indices()
+        .map(|(i, _)| i)
+        .take_while(|&i| i <= max_len)
+        .last()
+        .unwrap_or(0);
+    format!("{}...", &s[..end])
 }
 
 /// Self-check mode: verify golden outputs match themselves

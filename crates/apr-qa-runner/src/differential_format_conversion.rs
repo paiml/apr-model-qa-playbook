@@ -74,7 +74,9 @@ pub fn convert_format_cached(
 
     if output.status.success() {
         // Write hash for cache validation
-        let _ = std::fs::write(cache_hash_path, &current_hash);
+        if let Err(e) = std::fs::write(cache_hash_path, &current_hash) {
+            eprintln!("[JIDOKA] Failed to write cache hash: {e}");
+        }
 
         Ok(FormatConversionResult {
             source_format,
@@ -340,6 +342,34 @@ impl SixColumnProfile {
             if !passed {
                 self.failed_assertions.push(ProfileAssertion {
                     format: "apr".to_string(),
+                    backend: "gpu".to_string(),
+                    actual_tps: tps,
+                    min_threshold: min_gpu,
+                    passed,
+                });
+            }
+        }
+
+        // Check SafeTensors CPU (if measured)
+        if let Some(tps) = self.tps_st_cpu {
+            let passed = tps >= min_cpu;
+            if !passed {
+                self.failed_assertions.push(ProfileAssertion {
+                    format: "safetensors".to_string(),
+                    backend: "cpu".to_string(),
+                    actual_tps: tps,
+                    min_threshold: min_cpu,
+                    passed,
+                });
+            }
+        }
+
+        // Check SafeTensors GPU (if measured)
+        if let Some(tps) = self.tps_st_gpu {
+            let passed = tps >= min_gpu;
+            if !passed {
+                self.failed_assertions.push(ProfileAssertion {
+                    format: "safetensors".to_string(),
                     backend: "gpu".to_string(),
                     actual_tps: tps,
                     min_threshold: min_gpu,

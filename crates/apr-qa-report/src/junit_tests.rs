@@ -159,8 +159,9 @@ fn test_junit_with_timeout() {
         .generate(&collector, &test_score())
         .expect("Failed to generate");
 
-    // Timeout is counted as failure (not error), but renders as error element
-    assert!(xml.contains("failures=\"1\""));
+    // Timeout renders as <error> element, not <failure> — so failures=0, errors=1
+    assert!(xml.contains("failures=\"0\""));
+    assert!(xml.contains("errors=\"1\""));
     assert!(xml.contains("TimeoutError"));
 }
 

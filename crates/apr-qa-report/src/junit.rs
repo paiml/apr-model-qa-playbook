@@ -56,10 +56,15 @@ impl JunitReport {
     ) -> Result<()> {
         let all_evidence = evidence.all();
         let tests = all_evidence.len();
-        let failures = evidence.fail_count();
+        // JUnit spec: failures = assertion failures, errors = crashes/timeouts
+        // Timeout and Crashed render as <error>, Falsified renders as <failure>
+        let failures = all_evidence
+            .iter()
+            .filter(|e| e.outcome == Outcome::Falsified)
+            .count();
         let errors = all_evidence
             .iter()
-            .filter(|e| e.outcome == Outcome::Crashed)
+            .filter(|e| matches!(e.outcome, Outcome::Crashed | Outcome::Timeout))
             .count();
         let skipped = all_evidence
             .iter()
@@ -76,7 +81,7 @@ impl JunitReport {
             r#"<testsuite name="{}" tests="{}" failures="{}" errors="{}" skipped="{}" time="{:.3}">"#,
             Self::escape_xml(&self.suite_name),
             tests,
-            failures.saturating_sub(errors),
+            failures,
             errors,
             skipped,
             time
