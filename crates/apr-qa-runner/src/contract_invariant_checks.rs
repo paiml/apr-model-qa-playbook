@@ -1,24 +1,14 @@
 /// Parse tensor names from `apr rosetta inspect --json` output.
 fn parse_tensor_names(json_output: &str) -> HashSet<String> {
-    // Extract tensor_names array from JSON
-    if let Some(start) = json_output.find("\"tensor_names\":[") {
-        let after = &json_output[start + 16..];
-        if let Some(end) = after.find(']') {
-            let array_str = &after[..end];
-            return array_str
-                .split(',')
-                .filter_map(|s| {
-                    let trimmed = s.trim().trim_matches('"');
-                    if trimmed.is_empty() {
-                        None
-                    } else {
-                        Some(trimmed.to_string())
-                    }
-                })
-                .collect();
-        }
-    }
-    HashSet::new()
+    let Ok(val) = serde_json::from_str::<serde_json::Value>(json_output) else {
+        return HashSet::new();
+    };
+    let Some(arr) = val.get("tensor_names").and_then(|v| v.as_array()) else {
+        return HashSet::new();
+    };
+    arr.iter()
+        .filter_map(|v| v.as_str().map(String::from))
+        .collect()
 }
 
 /// I-3: No Silent Fallbacks — unknown dtype → error, never default to F32.

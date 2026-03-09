@@ -550,12 +550,12 @@ fn test_serve_battery_perf_floor_fail() {
 
 #[test]
 fn test_serve_battery_perf_floor_no_tps() {
-    // No TPS reported → pass (not all backends emit tok/s)
+    // No TPS reported → skipped (Popper: untested ≠ corroborated)
     let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(MockCommandRunner::new()));
     let scenario = serve_scenario();
     let start = Instant::now();
     let ev = executor.check_serve_perf_floor(None, &scenario, &start);
-    assert!(ev.outcome.is_pass(), "Missing TPS should pass (skip)");
+    assert_eq!(ev.outcome, Outcome::Skipped, "Missing TPS should be Skipped, not Corroborated");
     assert_eq!(ev.gate_id, "F-A5-PERF-001");
 }
 
@@ -696,13 +696,13 @@ fn test_check_serve_multi_turn_context_lost() {
 
 #[test]
 fn test_check_serve_tokenize_optional() {
-    // /tokenize not available → pass (optional endpoint)
+    // /tokenize not available → skipped (Popper: untested ≠ corroborated)
     let mock_runner = MockCommandRunner::new().with_http_post_failure();
     let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(mock_runner));
     let scenario = serve_scenario();
     let start = Instant::now();
     let ev = executor.check_serve_tokenize(8080, &scenario, &start);
-    assert!(ev.outcome.is_pass(), "Missing /tokenize should pass (optional)");
+    assert_eq!(ev.outcome, Outcome::Skipped, "Missing /tokenize should be Skipped, not Corroborated");
     assert_eq!(ev.gate_id, "F-A5-TOK-001");
 }
 

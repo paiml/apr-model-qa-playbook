@@ -487,12 +487,11 @@ impl Executor {
 
         let Some(tps) = primary_tps else {
             // No TPS reported — server didn't emit tok/s metric.
-            // Pass rather than fail: not all backends report TPS.
-            return Evidence::corroborated(
+            // Popper: untested hypothesis ≠ corroborated. Skip, don't pass.
+            return Evidence::skipped(
                 &gate_id,
                 scenario.clone(),
-                "no tok/s metric reported (skipped)",
-                duration,
+                "no tok/s metric reported — cannot verify performance floor",
             );
         };
 
@@ -743,12 +742,12 @@ impl Executor {
         let duration = start.elapsed().as_millis() as u64;
 
         if !output.success {
-            // /tokenize is optional — not all servers expose it
-            return Evidence::corroborated(
+            // /tokenize is optional — not all servers expose it.
+            // Popper: untested hypothesis ≠ corroborated. Skip, don't pass.
+            return Evidence::skipped(
                 &gate_id,
                 scenario.clone(),
-                "POST /tokenize not available (skipped)",
-                duration,
+                "POST /tokenize not available — endpoint absent or failed",
             );
         }
 

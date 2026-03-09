@@ -98,23 +98,39 @@ impl Executor {
         }
 
         // Parse tensor names from JSON output
-        let actual_tensors: Vec<String> =
-            serde_json::from_str::<serde_json::Value>(&inspect_output.stdout)
-                .ok()
-                .and_then(|v| v.get("tensor_names").cloned())
+        let actual_tensors: Vec<String> = match serde_json::from_str::<serde_json::Value>(
+            &inspect_output.stdout,
+        ) {
+            Ok(val) => val
+                .get("tensor_names")
+                .cloned()
                 .and_then(|v| serde_json::from_value(v).ok())
-                .unwrap_or_default();
+                .unwrap_or_default(),
+            Err(e) => {
+                // Inspect succeeded but returned malformed JSON — falsify
+                let ev = Evidence::falsified(
+                    "G0-TENSOR-001",
+                    Self::validate_scenario(model_id),
+                    &format!("G0 FAIL: Inspect returned invalid JSON: {e}"),
+                    &inspect_output.stdout,
+                    duration,
+                );
+                self.collector.add(ev);
+                return (0, 1);
+            }
+        };
 
         if actual_tensors.is_empty() {
-            // Inspect didn't return tensor names - skip check
-            let ev = Evidence::corroborated(
+            // Inspect returned valid JSON but no tensor_names field — falsify
+            let ev = Evidence::falsified(
                 "G0-TENSOR-001",
                 Self::validate_scenario(model_id),
-                "G0 SKIP: Model inspect did not return tensor names",
+                "G0 FAIL: Model inspect returned no tensor names (missing or empty tensor_names field)",
+                &inspect_output.stdout,
                 duration,
             );
             self.collector.add(ev);
-            return (0, 0);
+            return (0, 1);
         }
 
         // Check for missing expected tensors

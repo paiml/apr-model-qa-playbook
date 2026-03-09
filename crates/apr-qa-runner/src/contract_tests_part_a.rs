@@ -263,6 +263,34 @@ fn test_parse_tensor_names_malformed() {
     assert!(names.is_empty());
 }
 
+/// Bug #55: Old hand-rolled parser only matched `"tensor_names":[` (no space).
+/// Pretty-printed JSON with `"tensor_names": [` was silently returning empty set.
+#[test]
+fn test_parse_tensor_names_with_spaces() {
+    let json = r#"{ "tensor_names": ["a.weight", "b.weight"] }"#;
+    let names = parse_tensor_names(json);
+    assert_eq!(names.len(), 2);
+    assert!(names.contains("a.weight"));
+    assert!(names.contains("b.weight"));
+}
+
+/// Verify parse_tensor_names handles pretty-printed multi-line JSON
+#[test]
+fn test_parse_tensor_names_pretty_printed() {
+    let json = r#"{
+  "format": "SafeTensors",
+  "tensor_count": 2,
+  "tensor_names": [
+    "embed.weight",
+    "lm_head.weight"
+  ]
+}"#;
+    let names = parse_tensor_names(json);
+    assert_eq!(names.len(), 2);
+    assert!(names.contains("embed.weight"));
+    assert!(names.contains("lm_head.weight"));
+}
+
 /// Verify tied embedding allowed extras include lm_head tensors
 #[test]
 fn test_i2_tied_embedding_allowed_extras() {
