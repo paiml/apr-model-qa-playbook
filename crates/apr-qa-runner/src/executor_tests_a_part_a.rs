@@ -431,12 +431,10 @@ fn test_executor_config_method() {
     assert_eq!(config.failure_policy, FailurePolicy::StopOnP0);
 }
 
-/// Verify differential testing defaults are enabled except profile_ci
+/// Verify profile_ci default is disabled
 #[test]
-fn test_execution_config_differential_defaults() {
+fn test_execution_config_profile_ci_default() {
     let config = ExecutionConfig::default();
-    // v1.3.0: Differential testing enabled by default
-    assert!(config.run_differential_tests);
     // Profile CI disabled by default (only for CI pipelines)
     assert!(!config.run_profile_ci);
 }

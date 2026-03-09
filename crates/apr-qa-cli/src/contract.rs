@@ -207,25 +207,31 @@ fn validate_contract_command(
 ) {
     use apr_qa_runner::{get_critical_tensors, get_validation_rules, validate_model};
 
-    println!("Validating model against tensor layout contract...");
-    println!("  Model: {}", model_path.display());
-
-    let contract = load_layout_contract(contract_path);
-    println!("  Contract version: {}", contract.metadata.version);
-
-    print_validation_rules(get_validation_rules(&contract));
-
-    if critical_only {
-        print_critical_tensors(get_critical_tensors(&contract));
-    }
-
+    // Validate format first — before any output (Bug #85: JSON output was polluted)
     if !matches!(format, "text" | "json") {
         eprintln!("Error: Unknown format: {format}");
         eprintln!("  Valid formats: text, json");
         std::process::exit(1);
     }
 
-    println!("\n=== Running Validation ===");
+    let text_mode = format != "json";
+
+    if text_mode {
+        println!("Validating model against tensor layout contract...");
+        println!("  Model: {}", model_path.display());
+    }
+
+    let contract = load_layout_contract_with_format(contract_path, text_mode);
+
+    if text_mode {
+        println!("  Contract version: {}", contract.metadata.version);
+        print_validation_rules(get_validation_rules(&contract));
+        if critical_only {
+            print_critical_tensors(get_critical_tensors(&contract));
+        }
+        println!("\n=== Running Validation ===");
+    }
+
     let result = match validate_model(model_path, &contract) {
         Ok(r) => r,
         Err(e) => {
@@ -239,19 +245,27 @@ fn validate_contract_command(
 }
 
 /// Load the tensor layout contract, exiting on failure.
-fn load_layout_contract(contract_path: Option<&Path>) -> apr_qa_runner::TensorLayoutContract {
+/// `text_mode`: when false (JSON mode), suppress human-readable path prints.
+fn load_layout_contract_with_format(
+    contract_path: Option<&Path>,
+    text_mode: bool,
+) -> apr_qa_runner::TensorLayoutContract {
     use apr_qa_runner::{load_contract, load_contract_from};
 
     let contract = contract_path.map_or_else(
         || {
-            println!(
-                "  Contract: {} (default)",
-                apr_qa_runner::layout_contract::DEFAULT_CONTRACT_PATH
-            );
+            if text_mode {
+                println!(
+                    "  Contract: {} (default)",
+                    apr_qa_runner::layout_contract::DEFAULT_CONTRACT_PATH
+                );
+            }
             load_contract()
         },
         |path| {
-            println!("  Contract: {}", path.display());
+            if text_mode {
+                println!("  Contract: {}", path.display());
+            }
             load_contract_from(path)
         },
     );
@@ -361,7 +375,7 @@ fn exit_with_validation_status(passed: bool) -> ! {
 /// Checks which kernel operations each model architecture requires, verifies
 /// implementation status in the sovereign stack (trueno/realizar), and
 /// optionally generates upstream tickets for gaps.
-#[allow(clippy::fn_params_excessive_bools)]
+#[allow(clippy::fn_params_excessive_bools, clippy::too_many_lines)]
 fn kernel_coverage_command(
     architecture: Option<&str>,
     all: bool,
@@ -380,6 +394,19 @@ fn kernel_coverage_command(
     if !matches!(format, "json" | "text") {
         eprintln!("Error: Unknown format: {format}");
         eprintln!("  Valid formats: json, text");
+        std::process::exit(1);
+    }
+
+    // Jidoka: reject mutually exclusive flag combinations (Bug #86)
+    let mode_count = [verify, models, all, architecture.is_some()]
+        .iter()
+        .filter(|&&b| b)
+        .count();
+    if mode_count > 1 {
+        eprintln!(
+            "Error: --verify, --models, --all, and --architecture are mutually exclusive"
+        );
+        eprintln!("  Specify exactly one mode at a time.");
         std::process::exit(1);
     }
 

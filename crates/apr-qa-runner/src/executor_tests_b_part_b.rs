@@ -177,7 +177,6 @@ fn test_executor_execute_playbook_with_subprocess_mode() {
     let config = ExecutionConfig {
         model_path: Some("/test/model.gguf".to_string()),
         run_conversion_tests: false,
-        run_differential_tests: false,
         run_golden_rule_test: false,
         run_profile_ci: false,
         run_contract_tests: false,

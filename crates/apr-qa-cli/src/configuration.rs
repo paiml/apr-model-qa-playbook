@@ -67,7 +67,6 @@ fn main() {
             skip_conversion_tests,
             run_tool_tests,
             profile_ci,
-            no_differential,
             hf_parity,
             hf_corpus_path,
             hf_model_family,
@@ -92,7 +91,6 @@ fn main() {
                 skip_conversion_tests,
                 run_tool_tests,
                 profile_ci,
-                no_differential,
                 hf_parity,
                 &hf_corpus_path,
                 hf_model_family,
@@ -345,7 +343,6 @@ fn run_playbook(
     skip_conversion_tests: bool,
     run_tool_tests_flag: bool,
     profile_ci: bool,
-    no_differential: bool,
     hf_parity: bool,
     hf_corpus_path: &str,
     hf_model_family: Option<String>,
@@ -412,7 +409,6 @@ fn run_playbook(
         no_gpu,
         skip_conversion_tests,
         run_tool_tests: run_tool_tests_flag,
-        run_differential_tests: !no_differential,
         run_profile_ci: profile_ci,
         run_hf_parity: hf_parity,
         hf_parity_corpus_path: if hf_parity {
@@ -434,25 +430,27 @@ fn run_playbook(
 
     // Run tool tests if enabled (skip during dry-run)
     if run_tool_tests_flag && !dry_run {
-        if let Some(ref mp) = model_path {
-            println!("\n{}", "=== Running APR Tool Tests ===".bold().cyan());
-            let tool_executor = ToolExecutor::new(mp.clone(), no_gpu, timeout);
-            let tool_results = tool_executor.execute_all();
-            let tool_passed = tool_results.iter().filter(|r| r.passed).count();
-            let tool_failed = tool_results.len() - tool_passed;
-            println!(
-                "  Tool tests: {} passed, {} failed",
-                tool_passed.to_string().green(),
-                if tool_failed > 0 {
-                    tool_failed.to_string().red()
-                } else {
-                    tool_failed.to_string().dimmed()
-                }
-            );
+        let Some(ref mp) = model_path else {
+            eprintln!("Error: --run-tool-tests requires --model-path to be set");
+            std::process::exit(1);
+        };
+        println!("\n{}", "=== Running APR Tool Tests ===".bold().cyan());
+        let tool_executor = ToolExecutor::new(mp.clone(), no_gpu, timeout);
+        let tool_results = tool_executor.execute_all();
+        let tool_passed = tool_results.iter().filter(|r| r.passed).count();
+        let tool_failed = tool_results.len() - tool_passed;
+        println!(
+            "  Tool tests: {} passed, {} failed",
+            tool_passed.to_string().green(),
             if tool_failed > 0 {
-                eprintln!("Aborting: {tool_failed} tool test(s) failed (Jidoka: stop the line)");
-                std::process::exit(1);
+                tool_failed.to_string().red()
+            } else {
+                tool_failed.to_string().dimmed()
             }
+        );
+        if tool_failed > 0 {
+            eprintln!("Aborting: {tool_failed} tool test(s) failed (Jidoka: stop the line)");
+            std::process::exit(1);
         }
     }
 

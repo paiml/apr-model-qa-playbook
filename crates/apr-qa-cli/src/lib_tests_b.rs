@@ -178,7 +178,6 @@ fn test_playbook_run_config_with_all_options() {
         no_gpu: true,
         skip_conversion_tests: true,
         run_tool_tests: true,
-        run_differential_tests: true,
         run_profile_ci: true,
         run_hf_parity: false,
         hf_parity_corpus_path: None,
@@ -192,14 +191,12 @@ fn test_playbook_run_config_with_all_options() {
 }
 
 #[test]
-fn test_build_execution_config_with_differential() {
+fn test_build_execution_config_with_profile_ci() {
     let config = PlaybookRunConfig {
-        run_differential_tests: true,
         run_profile_ci: true,
         ..Default::default()
     };
     let exec = build_execution_config(&config).unwrap();
-    assert!(exec.run_differential_tests);
     assert!(exec.run_profile_ci);
 }
 

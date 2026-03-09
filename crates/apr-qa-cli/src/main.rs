@@ -149,10 +149,6 @@ enum Commands {
         #[arg(long)]
         profile_ci: bool,
 
-        /// Skip differential tests (tensor_diff, inference_compare)
-        #[arg(long)]
-        no_differential: bool,
-
         /// Enable HF parity verification against golden corpus
         #[arg(long)]
         hf_parity: bool,

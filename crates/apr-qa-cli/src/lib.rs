@@ -69,8 +69,6 @@ pub struct PlaybookRunConfig {
     pub skip_conversion_tests: bool,
     /// Run APR tool coverage tests
     pub run_tool_tests: bool,
-    /// Run differential tests (tensor_diff, inference_compare)
-    pub run_differential_tests: bool,
     /// Run profile CI assertions (throughput, latency)
     pub run_profile_ci: bool,
     /// Run HF parity verification against golden corpus
@@ -94,7 +92,6 @@ impl Default for PlaybookRunConfig {
             no_gpu: false,
             skip_conversion_tests: false,
             run_tool_tests: false,
-            run_differential_tests: true,
             run_profile_ci: false,
             run_hf_parity: false,
             hf_parity_corpus_path: None,
@@ -282,7 +279,6 @@ pub fn build_execution_config(config: &PlaybookRunConfig) -> Result<ExecutionCon
         default_timeout_ms: config.timeout,
         no_gpu: config.no_gpu,
         run_conversion_tests: !config.skip_conversion_tests,
-        run_differential_tests: config.run_differential_tests,
         run_profile_ci: config.run_profile_ci,
         run_golden_rule_test: true,
         golden_reference_path: None,
@@ -440,7 +436,6 @@ pub fn build_certification_config_with_policy(
         default_timeout_ms: 60000,
         no_gpu: false,
         run_conversion_tests: true,
-        run_differential_tests: false,
         run_profile_ci: matches!(tier, CertTier::Mvp | CertTier::Standard | CertTier::Deep),
         run_golden_rule_test: true,
         golden_reference_path: None,

@@ -14,7 +14,6 @@ fn build_dimensional_smoke_config(model_cache_path: Option<String>) -> Execution
         default_timeout_ms: 30_000,
         no_gpu: true,
         run_conversion_tests: false,
-        run_differential_tests: false,
         run_profile_ci: false,
         run_golden_rule_test: false,
         golden_reference_path: None,

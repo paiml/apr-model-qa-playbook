@@ -319,7 +319,6 @@ fn test_build_dimensional_smoke_config_values() {
     assert!(!config.run_profile_ci);
     assert!(!config.run_hf_parity);
     assert!(!config.run_ollama_parity);
-    assert!(!config.run_differential_tests);
     assert!(config.metadata_only);
 }
 

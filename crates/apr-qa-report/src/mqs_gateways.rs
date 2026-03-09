@@ -126,7 +126,10 @@ impl MqsCalculator {
             let cat = Self::extract_category(&e.gate_id);
             let key = match cat.as_str() {
                 "QUAL" | "PERF" | "STAB" | "COMP" | "EDGE" | "REGR" => cat,
-                _ => "QUAL".to_string(), // Default unknown to QUAL
+                other => {
+                    eprintln!("[WARN] calculate_categories: extract_category returned unknown '{other}' for gate_id '{}', defaulting to QUAL", e.gate_id);
+                    "QUAL".to_string()
+                }
             };
             // Skipped/Timeout tests don't count toward category scoring
             // (Popper: only Corroborated/Falsified outcomes are evidence)
@@ -185,7 +188,9 @@ impl MqsCalculator {
             ("F-OLLAMA", "QUAL"),      // Output match → quality (after specific prefixes)
             ("F-HF-PARITY", "QUAL"),   // HF parity checks → quality
             ("F-LAYOUT", "STAB"),      // Layout contract → stability
+            ("F-PERF-", "PERF"),       // Performance CI gates (F-PERF-001..F-PERF-006)
             ("G0-", "STAB"),
+            ("G3-", "STAB"),           // G3 crash/panic evidence → stability
             ("T1-QUANT", "COMP"),   // Quantize → compatibility
             ("T2-IMPORT", "COMP"),  // Import → compatibility
             ("T3-PRUNE", "QUAL"),   // Prune → quality
@@ -219,7 +224,10 @@ impl MqsCalculator {
             .nth(1)
             .map(str::to_uppercase)
             .filter(|s| CATEGORIES.contains(&s.as_str()))
-            .unwrap_or_else(|| "QUAL".to_string())
+            .unwrap_or_else(|| {
+                eprintln!("[WARN] extract_category: unrecognised gate_id '{gate_id}', defaulting to QUAL");
+                "QUAL".to_string()
+            })
     }
 
     /// Extract the suffix from a serve battery gate ID.

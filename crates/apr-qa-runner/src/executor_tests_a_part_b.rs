@@ -1,12 +1,10 @@
-/// Verify ExecutionConfig supports custom differential/profile flags
+/// Verify ExecutionConfig supports custom profile_ci flag
 #[test]
-fn test_execution_config_differential_custom() {
+fn test_execution_config_profile_ci_custom() {
     let config = ExecutionConfig {
-        run_differential_tests: false,
         run_profile_ci: true,
         ..Default::default()
     };
-    assert!(!config.run_differential_tests);
     assert!(config.run_profile_ci);
 }
 

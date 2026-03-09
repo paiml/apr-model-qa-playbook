@@ -102,7 +102,6 @@ fn test_execution_config_all_fields() {
         model_path: Some("/path/to/model.gguf".to_string()),
         no_gpu: true,
         run_conversion_tests: false,
-        run_differential_tests: false,
         run_profile_ci: true,
         run_golden_rule_test: false,
         golden_reference_path: Some("/path/to/ref.json".to_string()),
@@ -122,7 +121,6 @@ fn test_execution_config_all_fields() {
     assert!(config.dry_run);
     assert!(config.no_gpu);
     assert!(!config.run_conversion_tests);
-    assert!(!config.run_differential_tests);
     assert!(config.run_profile_ci);
     assert!(!config.run_contract_tests);
 }

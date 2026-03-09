@@ -95,8 +95,6 @@ pub struct ExecutionConfig {
     pub no_gpu: bool,
     /// Run P0 format conversion tests (CRITICAL - should be true by default)
     pub run_conversion_tests: bool,
-    /// Run differential tests (tensor diff, inference compare)
-    pub run_differential_tests: bool,
     /// Run profile CI assertions
     pub run_profile_ci: bool,
     /// Run Golden Rule Test (convert → inference → diff)
@@ -141,7 +139,6 @@ impl Default for ExecutionConfig {
             model_path: None,
             no_gpu: false,
             run_conversion_tests: true, // P0 CRITICAL: Always run by default
-            run_differential_tests: true, // v1.3.0: Differential testing enabled by default
             run_profile_ci: false,      // Only enable for CI pipelines
             run_golden_rule_test: true, // v1.3.1: Golden Rule (Five Whys GH-190)
             golden_reference_path: None,

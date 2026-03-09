@@ -187,7 +187,13 @@ impl Executor {
     /// Run P0 format conversion tests
     fn run_conversion_tests(&mut self, model_path: &Path, model_id: &ModelId) -> (usize, usize) {
         if model_path.is_file() {
-            return (0, 0); // not applicable for single-file models
+            let ev = Evidence::skipped(
+                "F-CONV-SKIP-002",
+                Self::golden_scenario(model_id),
+                "Conversion testing not applicable for single-file model (requires SafeTensors directory)",
+            );
+            self.collector.add(ev);
+            return (0, 0);
         }
 
         let config = if self.config.no_gpu {
@@ -244,6 +250,12 @@ impl Executor {
     fn run_golden_rule_test(&mut self, model_path: &Path, model_id: &ModelId) -> (usize, usize) {
         // Skip for actual single-file models (not applicable - no conversion to test)
         if model_path.is_file() {
+            let ev = Evidence::skipped(
+                "F-GOLDEN-RULE-SKIP-002",
+                Self::golden_scenario(model_id),
+                "Golden rule test not applicable for single-file model (requires SafeTensors directory)",
+            );
+            self.collector.add(ev);
             return (0, 0);
         }
 
@@ -460,6 +472,12 @@ impl Executor {
     ) -> (usize, usize) {
         // Skip for single-file models (not applicable)
         if model_path.is_file() {
+            let ev = Evidence::skipped(
+                "F-CONTRACT-SKIP-002",
+                Self::golden_scenario(model_id),
+                "Contract invariant testing not applicable for single-file model (requires SafeTensors directory)",
+            );
+            self.collector.add(ev);
             return (0, 0);
         }
 
