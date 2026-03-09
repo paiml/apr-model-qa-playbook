@@ -227,25 +227,44 @@ impl ModelCertification {
 ///
 /// # Errors
 ///
-/// Returns `CertifyError::CsvParse` if the CSV is malformed.
+/// Required CSV columns — must all be present in the header.
+const REQUIRED_CSV_COLUMNS: &[&str] = &[
+    "model_id", "family", "parameters", "size_category", "status",
+    "mqs_score", "grade", "certified_tier", "last_certified",
+    "g1", "g2", "g3", "g4",
+];
+
+/// Parse a CSV certification table into a list of `ModelCertification` records.
+///
+/// # Errors
+///
+/// Returns `CertifyError::CsvParse` if the CSV header is missing required columns
+/// or if any data row contains malformed field values.
 #[allow(clippy::similar_names)]
 pub fn parse_csv(content: &str) -> Result<Vec<ModelCertification>> {
     let mut models = Vec::new();
     let mut lines = content.lines().enumerate();
 
-    // Skip header
+    // Parse header to build name→index map (prevents fragility from column reordering)
     let Some((_, header)) = lines.next() else {
         return Ok(models);
     };
 
-    // Validate header (minimum 13 fields for backwards compatibility, 16 with tps)
-    // Use csv_split for RFC 4180 compliance (handles quoted fields with commas)
     let header_fields = csv_split(header);
-    if header_fields.len() < 13 {
-        return Err(CertifyError::CsvParse {
-            line: 1,
-            message: format!("expected at least 13 fields, got {}", header_fields.len()),
-        });
+    let col: std::collections::HashMap<&str, usize> = header_fields
+        .iter()
+        .enumerate()
+        .map(|(i, name)| (name.as_str(), i))
+        .collect();
+
+    // Fail fast if any required columns are missing
+    for &name in REQUIRED_CSV_COLUMNS {
+        if !col.contains_key(name) {
+            return Err(CertifyError::CsvParse {
+                line: 1,
+                message: format!("missing required column '{name}'"),
+            });
+        }
     }
 
     for (line_num, line) in lines {
@@ -254,65 +273,58 @@ pub fn parse_csv(content: &str) -> Result<Vec<ModelCertification>> {
         }
 
         let fields = csv_split(line);
-        if fields.len() < 13 {
-            return Err(CertifyError::CsvParse {
-                line: line_num + 1,
-                message: format!("expected at least 13 fields, got {}", fields.len()),
-            });
-        }
+        let get = |name: &str| -> &str {
+            col.get(name)
+                .and_then(|&i| fields.get(i).map(String::as_str))
+                .unwrap_or("")
+        };
+        let get_opt = |name: &str| -> Option<String> {
+            col.get(name)
+                .and_then(|&i| fields.get(i))
+                .filter(|s| !s.is_empty())
+                .cloned()
+        };
 
-        let last_certified = DateTime::parse_from_rfc3339(&fields[8])
+        let last_certified = DateTime::parse_from_rfc3339(get("last_certified"))
             .ok()
             .map(|dt| dt.with_timezone(&Utc));
 
-        // Parse optional tps fields (backwards compatible) - 6 columns for format × backend
-        let tps_gguf_cpu = fields.get(13).and_then(|s| s.parse().ok());
-        let tps_gguf_gpu = fields.get(14).and_then(|s| s.parse().ok());
-        let tps_apr_cpu = fields.get(15).and_then(|s| s.parse().ok());
-        let tps_apr_gpu = fields.get(16).and_then(|s| s.parse().ok());
-        let tps_st_cpu = fields.get(17).and_then(|s| s.parse().ok());
-        let tps_st_gpu = fields.get(18).and_then(|s| s.parse().ok());
-        let provenance_verified = fields.get(19).is_some_and(|s| s.to_lowercase() == "true");
-        let kernel_proof_ref = fields
-            .get(20)
-            .filter(|s| !s.is_empty())
-            .cloned();
-
         models.push(ModelCertification {
-            model_id: fields[0].clone(),
-            family: fields[1].clone(),
-            parameters: fields[2].clone(),
-            size_category: SizeCategory::parse(&fields[3]).ok_or_else(|| {
+            model_id: get("model_id").to_owned(),
+            family: get("family").to_owned(),
+            parameters: get("parameters").to_owned(),
+            size_category: SizeCategory::parse(get("size_category")).ok_or_else(|| {
                 CertifyError::CsvParse {
                     line: line_num + 1,
-                    message: format!("invalid size_category: '{}'", fields[3]),
+                    message: format!("invalid size_category: '{}'", get("size_category")),
                 }
             })?,
-            status: CertificationStatus::parse(&fields[4]).ok_or_else(|| {
+            status: CertificationStatus::parse(get("status")).ok_or_else(|| {
                 CertifyError::CsvParse {
                     line: line_num + 1,
-                    message: format!("invalid status: '{}'", fields[4]),
+                    message: format!("invalid status: '{}'", get("status")),
                 }
             })?,
-            mqs_score: fields[5].parse().map_err(|_| CertifyError::CsvParse {
+            mqs_score: get("mqs_score").parse().map_err(|_| CertifyError::CsvParse {
                 line: line_num + 1,
-                message: format!("invalid mqs_score: '{}'", fields[5]),
+                message: format!("invalid mqs_score: '{}'", get("mqs_score")),
             })?,
-            grade: fields[6].clone(),
-            certified_tier: fields[7].clone(),
+            grade: get("grade").to_owned(),
+            certified_tier: get("certified_tier").to_owned(),
             last_certified,
-            g1: fields[9].to_lowercase() == "true",
-            g2: fields[10].to_lowercase() == "true",
-            g3: fields[11].to_lowercase() == "true",
-            g4: fields[12].to_lowercase() == "true",
-            tps_gguf_cpu,
-            tps_gguf_gpu,
-            tps_apr_cpu,
-            tps_apr_gpu,
-            tps_st_cpu,
-            tps_st_gpu,
-            provenance_verified,
-            kernel_proof_ref,
+            g1: get("g1").to_lowercase() == "true",
+            g2: get("g2").to_lowercase() == "true",
+            g3: get("g3").to_lowercase() == "true",
+            g4: get("g4").to_lowercase() == "true",
+            tps_gguf_cpu: get_opt("tps_gguf_cpu").and_then(|s| s.parse().ok()),
+            tps_gguf_gpu: get_opt("tps_gguf_gpu").and_then(|s| s.parse().ok()),
+            tps_apr_cpu: get_opt("tps_apr_cpu").and_then(|s| s.parse().ok()),
+            tps_apr_gpu: get_opt("tps_apr_gpu").and_then(|s| s.parse().ok()),
+            tps_st_cpu: get_opt("tps_st_cpu").and_then(|s| s.parse().ok()),
+            tps_st_gpu: get_opt("tps_st_gpu").and_then(|s| s.parse().ok()),
+            provenance_verified: get_opt("provenance_verified")
+                .is_some_and(|s| s.to_lowercase() == "true"),
+            kernel_proof_ref: get_opt("kernel_proof_ref"),
         });
     }
 

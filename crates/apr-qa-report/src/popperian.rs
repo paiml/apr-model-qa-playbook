@@ -92,6 +92,28 @@ const SEVERITY_RULES: &[GateRule<u8>] = &[
 
 /// Hypothesis classification rules (checked in priority order).
 const HYPOTHESIS_RULES: &[GateRule<&str>] = &[
+    // Gateway checks (G0-G4) — checked before category keywords
+    GateRule {
+        matcher: GateMatcher::StartsWith("G0-"),
+        value: "Model metadata and tensor layout are internally consistent",
+    },
+    GateRule {
+        matcher: GateMatcher::StartsWith("G1-"),
+        value: "Model loads successfully within the timeout budget",
+    },
+    GateRule {
+        matcher: GateMatcher::StartsWith("G2-"),
+        value: "Basic inference produces output without error",
+    },
+    GateRule {
+        matcher: GateMatcher::StartsWith("G3-"),
+        value: "Model runs without crashes or panics",
+    },
+    GateRule {
+        matcher: GateMatcher::StartsWith("G4-"),
+        value: "Model output is not garbage (no layout or dtype corruption)",
+    },
+    // Category-level hypotheses
     GateRule {
         matcher: GateMatcher::Contains("QUAL"),
         value: "Model produces valid output",

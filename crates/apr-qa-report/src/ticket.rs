@@ -426,12 +426,20 @@ Max Tokens: {}
         if is_black_swan || evidence.outcome == Outcome::Crashed {
             return TicketPriority::P0;
         }
-        if evidence.gate_id.starts_with('G') {
+        // G0-G4 are the only gateway gates; use explicit prefix checks to avoid
+        // false positives from future gate IDs that start with 'G' (e.g. GOLDEN-*)
+        let gid = &evidence.gate_id;
+        if gid.starts_with("G0-")
+            || gid.starts_with("G1-")
+            || gid.starts_with("G2-")
+            || gid.starts_with("G3-")
+            || gid.starts_with("G4-")
+        {
             return TicketPriority::P0;
         }
         PRIORITY_RULES
             .iter()
-            .find(|&&(pattern, _)| evidence.gate_id.contains(pattern))
+            .find(|&&(pattern, _)| gid.contains(pattern))
             .map_or(TicketPriority::P3, |&(_, priority)| priority)
     }
 

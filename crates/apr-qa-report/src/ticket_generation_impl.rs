@@ -30,9 +30,16 @@ pub fn generate_structured_tickets<S: ::std::hash::BuildHasher>(
         let first = group[0];
         let is_black_swan = first.outcome == Outcome::Crashed;
 
+        let gid = &first.gate_id;
         let priority = if is_black_swan {
             TicketPriority::P0
-        } else if first.gate_id.contains("-P0-") || first.gate_id.starts_with('G') {
+        } else if gid.contains("-P0-")
+            || gid.starts_with("G0-")
+            || gid.starts_with("G1-")
+            || gid.starts_with("G2-")
+            || gid.starts_with("G3-")
+            || gid.starts_with("G4-")
+        {
             TicketPriority::P0
         } else {
             TicketPriority::P1

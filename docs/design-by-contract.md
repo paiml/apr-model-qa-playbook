@@ -33,14 +33,14 @@ rejection of obviously broken models before expensive GPU time is consumed.
 Beyond gateways, playbooks define **falsification gates** organized by category.
 These are Popperian: the goal is to falsify the model's fitness, not to confirm it.
 
-| Category      | Prefix    | Weight | Examples                                    |
-|---------------|-----------|--------|---------------------------------------------|
-| Quality       | F-QUAL    | 30%    | Arithmetic accuracy, code syntax validity   |
-| Performance   | F-PERF    | 25%    | Tokens/sec threshold, time to first token   |
-| Stability     | F-STAB    | 20%    | Deterministic output, no memory leaks       |
-| Compatibility | F-COMP    | 15%    | All formats work, all backends pass         |
-| Edge Cases    | F-EDGE    | 8%     | Empty prompt, unicode, max token limit      |
-| Regression    | F-REGR    | 2%     | Previously certified behaviour preserved    |
+| Category      | Prefix    | Max pts | Examples                                    |
+|---------------|-----------|---------|---------------------------------------------|
+| Quality       | F-QUAL    | 200     | Arithmetic accuracy, code syntax validity   |
+| Stability     | F-STAB    | 200     | Deterministic output, no memory leaks       |
+| Performance   | F-PERF    | 150     | Tokens/sec threshold, time to first token   |
+| Compatibility | F-COMP    | 150     | All formats work, all backends pass         |
+| Edge Cases    | F-EDGE    | 150     | Empty prompt, unicode, max token limit      |
+| Regression    | F-REGR    | 150     | Golden rule + conversion roundtrip          |
 
 Additional specialized gate families exist for format validation (F-APR-FORMAT),
 differential testing (F-ROSETTA), profiling (F-PROFILE-CI), and trace payload

@@ -1,0 +1,55 @@
+# Design by Contract Example Playbook
+#
+# Demonstrates the contract semantics of a model qualification playbook.
+# Each section establishes a precondition, postcondition, or invariant
+# that the model under test must satisfy.
+#
+# Contract: MQS >= 800/1000 for MVP tier, >= 950/1000 for Full, or model is rejected.
+
+# INVARIANT: name uniquely identifies this qualification run
+name: example-model-dbc-qualification
+version: "1.0.0"
+
+# PRECONDITION: model must exist on HuggingFace and support listed formats
+model:
+  hf_repo: "example-org/example-model-1b"
+  formats:
+    - gguf
+  quantizations:
+    - q4_k_m
+
+# CONTRACT: test_matrix defines the Cartesian product of conditions under
+# which all gates must hold. Every (modality x backend) pair is tested.
+test_matrix:
+  modalities:
+    - run
+  backends:
+    - cpu
+  scenario_count: 10
+  timeout_ms: 60000
+
+# POSTCONDITION: gateway checks zero the score on failure (P0 = blocker)
+falsification_gates:
+  - id: G1-LOAD
+    description: "Precondition: model loads within timeout"
+    condition: "load_time_ms < 60000 && !error"
+    severity: P0
+
+  # POSTCONDITION: output quality must exceed minimum threshold
+  - id: F-QUAL-001
+    description: "Output is contextually relevant to the prompt"
+    condition: "semantic_similarity(prompt, output) > 0.3"
+    severity: P1
+
+  # POSTCONDITION: throughput meets minimum contract for deployment
+  - id: F-PERF-001
+    description: "Inference throughput meets minimum threshold"
+    condition: "tokens_per_second >= 10.0"
+    severity: P1
+
+# INVARIANT: for all generated inputs, oracle predicate must hold
+property_tests:
+  - name: output_non_empty
+    generator: "any_prompt()"
+    oracle: "output.len() > 0"
+    count: 20

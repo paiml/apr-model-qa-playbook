@@ -104,26 +104,31 @@ properties:
         maximum: 600000
         default: 60000
 
-  gates:
-    type: object
-    description: "Gateway checks (must all pass)"
-    properties:
-      g1_model_loads:
-        type: boolean
-        description: "G1: Model loads successfully"
-        default: "true"
-      g2_basic_inference:
-        type: boolean
-        description: "G2: Basic inference works"
-        default: "true"
-      g3_no_crashes:
-        type: boolean
-        description: "G3: No panics or crashes"
-        default: "true"
-      g4_output_quality:
-        type: boolean
-        description: "G4: Output is not garbage"
-        default: "true"
+  falsification_gates:
+    type: array
+    description: "Falsification gates — each defines a condition the model must satisfy"
+    items:
+      type: object
+      required:
+        - id
+        - description
+        - condition
+      properties:
+        id:
+          type: string
+          description: "Gate ID (e.g., G1-LOAD, F-QUAL-001)"
+          pattern: "^[A-Z][A-Z0-9]*(-[A-Z0-9]+)+$"
+        description:
+          type: string
+          description: "Human-readable description of the gate condition"
+        condition:
+          type: string
+          description: "Condition expression that must hold for the gate to pass"
+        severity:
+          type: string
+          description: "Failure severity: P0 = blocker (zeros MQS), P1 = must-fix, P2 = nice-to-have"
+          enum: [P0, P1, P2]
+          default: P1
 
   oracles:
     type: array
