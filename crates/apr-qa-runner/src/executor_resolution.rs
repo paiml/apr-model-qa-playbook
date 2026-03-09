@@ -131,11 +131,7 @@ impl Executor {
             let filename = ep.file_name()?.to_str()?;
 
             // Skip test artifacts (conversion test outputs)
-            if filename.contains("converted")
-                || filename.contains(".idem")
-                || filename.contains(".com_")
-                || filename.contains(".rt_")
-            {
+            if Self::is_conversion_artifact(filename) {
                 continue;
             }
 
@@ -412,10 +408,13 @@ impl Executor {
         }
     }
 
-    /// Check if a filename is a conversion test artifact
+    /// Check if a filename is a conversion test artifact.
+    ///
+    /// Patterns: converted, byte_rt, rt_ (roundtrip), idem (idempotency), com_ (composition)
     fn is_conversion_artifact(name: &str) -> bool {
         name.contains("converted")
             || name.contains("byte_rt")
+            || name.contains(".rt_")
             || name.contains("idem")
             || name.contains("com_")
     }

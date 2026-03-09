@@ -102,7 +102,7 @@ fn run_certification(
     println!("\n{}", "=== Certification Summary ===".bold().cyan());
     println!(
         "{} {}",
-        "Certified:".dimmed(),
+        "Processed:".dimmed(),
         certified_count.to_string().bold().green()
     );
     println!(
