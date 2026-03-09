@@ -334,7 +334,7 @@ fn print_run_status(
 }
 
 /// Load, validate, and execute a playbook with the given configuration
-#[allow(clippy::fn_params_excessive_bools)]
+#[allow(clippy::fn_params_excessive_bools, clippy::too_many_lines)]
 fn run_playbook(
     playbook_path: &PathBuf,
     output_dir: &PathBuf,

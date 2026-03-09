@@ -116,7 +116,7 @@ pub fn classify_failure(stderr: &str, exit_code: i32) -> ConversionFailureType {
 fn is_missing_artifact(s: &str) -> bool {
     s.contains("not found")
         || s.contains("no such file")
-        || s.contains("config.json")
+        || (s.contains("config.json") && (s.contains("missing") || s.contains("error") || s.contains("fail")))
         || (s.contains("missing") && !s.contains("mismatch"))
         || (s.contains("tokenizer") && !s.contains("mismatch"))
 }

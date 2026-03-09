@@ -270,12 +270,11 @@ impl CertificationRow {
     #[must_use]
     pub fn derive_grade(&self) -> String {
         match self.mqs_score {
-            900..=1000 => "A".to_string(),
+            900.. => "A".to_string(),
             800..=899 => "B".to_string(),
             600..=799 => "C".to_string(),
             400..=599 => "D".to_string(),
-            0..=399 => "F".to_string(),
-            _ => "-".to_string(),
+            _ => "F".to_string(),
         }
     }
 }

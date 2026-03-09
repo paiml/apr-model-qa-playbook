@@ -254,9 +254,9 @@ fn write_metadata_section(md: &mut String, mqs: &MqsScore) {
 pub fn generate_index_entry(mqs: &MqsScore) -> String {
     format!(
         "| {} | {}/1000 | {} | {} | {} |\n",
-        mqs.model_id,
+        escape_md_table(&mqs.model_id),
         mqs.raw_score,
-        mqs.grade,
+        escape_md_table(&mqs.grade),
         qualification_status(mqs),
         if mqs.is_production_ready() {
             "Yes"

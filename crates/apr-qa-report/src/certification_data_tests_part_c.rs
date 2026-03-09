@@ -1,13 +1,19 @@
 // ── CERT-DATA: Additional edge cases for coverage ──────────────────────────
 
-/// Verify derive_grade returns "-" for scores above 1000 (unreachable in practice)
+/// Verify derive_grade returns "A" for scores above 1000 (proof bonus can push past 1000)
 #[test]
 fn test_derive_grade_above_max() {
     let row = CertificationRow {
         mqs_score: 1001,
         ..CertificationRow::default()
     };
-    assert_eq!(row.derive_grade(), "-");
+    assert_eq!(row.derive_grade(), "A");
+
+    let row_1050 = CertificationRow {
+        mqs_score: 1050,
+        ..CertificationRow::default()
+    };
+    assert_eq!(row_1050.derive_grade(), "A");
 }
 
 /// Verify SizeCategory Huge Display and FromStr roundtrip

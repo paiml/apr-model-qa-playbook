@@ -102,7 +102,7 @@ impl JunitReport {
         writeln!(
             writer,
             r#"    <property name="mqs.grade" value="{}"/>"#,
-            score.grade
+            Self::escape_xml(&score.grade)
         )?;
         writeln!(
             writer,
@@ -177,13 +177,26 @@ impl JunitReport {
         Ok(())
     }
 
-    /// Escape XML special characters
+    /// Escape XML special characters and strip control characters forbidden in XML 1.0.
+    ///
+    /// XML 1.0 §2.2 allows only: #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD].
+    /// All other control characters (0x00-0x08, 0x0B, 0x0C, 0x0E-0x1F) are stripped to
+    /// prevent CI parsers (Jenkins, GitHub Actions) from rejecting the entire report.
     fn escape_xml(s: &str) -> String {
-        s.replace('&', "&amp;")
-            .replace('<', "&lt;")
-            .replace('>', "&gt;")
-            .replace('"', "&quot;")
-            .replace('\'', "&apos;")
+        let mut result = String::with_capacity(s.len());
+        for c in s.chars() {
+            match c {
+                '&' => result.push_str("&amp;"),
+                '<' => result.push_str("&lt;"),
+                '>' => result.push_str("&gt;"),
+                '"' => result.push_str("&quot;"),
+                '\'' => result.push_str("&apos;"),
+                '\t' | '\n' | '\r' => result.push(c),
+                c if c < '\u{20}' => {} // strip forbidden control chars
+                _ => result.push(c),
+            }
+        }
+        result
     }
 }
 

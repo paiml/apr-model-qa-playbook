@@ -338,10 +338,10 @@ fn update_certification_record(
     cert.last_certified = Some(Utc::now());
 
     let gw = &mqs.gateways;
-    cert.g1 = gw.first().is_some_and(|g| g.passed);
-    cert.g2 = gw.get(1).is_some_and(|g| g.passed);
-    cert.g3 = gw.get(2).is_some_and(|g| g.passed);
-    cert.g4 = gw.get(3).is_some_and(|g| g.passed);
+    cert.g1 = gw.iter().any(|g| g.id == "G1" && g.passed);
+    cert.g2 = gw.iter().any(|g| g.id == "G2" && g.passed);
+    cert.g3 = gw.iter().any(|g| g.id == "G3" && g.passed);
+    cert.g4 = gw.iter().any(|g| g.id == "G4" && g.passed);
 
     cert.tps_gguf_cpu = profile.tps_gguf_cpu;
     cert.tps_gguf_gpu = profile.tps_gguf_gpu;
@@ -357,11 +357,12 @@ fn save_evidence(model_output: &std::path::Path, result: &apr_qa_runner::Executi
         eprintln!("  Error creating model output dir: {e}");
     }
     let evidence_path = model_output.join("evidence.json");
-    if let Ok(json) = result.evidence.to_json() {
-        match std::fs::write(&evidence_path, json) {
+    match result.evidence.to_json() {
+        Ok(json) => match std::fs::write(&evidence_path, json) {
             Ok(()) => println!("  Evidence: {}", evidence_path.display()),
             Err(e) => eprintln!("  Error writing evidence: {e}"),
-        }
+        },
+        Err(e) => eprintln!("  Error serializing evidence: {e}"),
     }
 }
 

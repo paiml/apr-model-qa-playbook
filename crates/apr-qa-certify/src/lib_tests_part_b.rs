@@ -328,3 +328,78 @@ fn test_write_csv_all_size_categories() {
     assert!(csv_output.contains(",xlarge,"));
 }
 
+#[test]
+fn test_csv_quote_carriage_return() {
+    // RFC 4180: fields containing CR must be quoted
+    let field = "line1\rline2";
+    let quoted = csv_quote(field);
+    assert_eq!(quoted, "\"line1\rline2\"");
+}
+
+#[test]
+fn test_csv_quote_crlf() {
+    // RFC 4180: fields containing CRLF must be quoted
+    let field = "line1\r\nline2";
+    let quoted = csv_quote(field);
+    assert_eq!(quoted, "\"line1\r\nline2\"");
+}
+
+#[test]
+fn test_csv_quote_plain() {
+    assert_eq!(csv_quote("hello"), "hello");
+}
+
+#[test]
+fn test_csv_quote_comma() {
+    assert_eq!(csv_quote("a,b"), "\"a,b\"");
+}
+
+#[test]
+fn test_csv_quote_double_quote() {
+    assert_eq!(csv_quote("say \"hi\""), "\"say \"\"hi\"\"\"");
+}
+
+#[test]
+fn test_csv_split_basic() {
+    let fields = csv_split("a,b,c");
+    assert_eq!(fields, vec!["a", "b", "c"]);
+}
+
+#[test]
+fn test_csv_split_quoted_comma() {
+    let fields = csv_split("\"a,b\",c");
+    assert_eq!(fields, vec!["a,b", "c"]);
+}
+
+#[test]
+fn test_csv_split_escaped_quote() {
+    let fields = csv_split("\"say \"\"hi\"\"\",done");
+    assert_eq!(fields, vec!["say \"hi\"", "done"]);
+}
+
+#[test]
+fn test_csv_quote_roundtrip_with_cr() {
+    // Round-trip: quote then split should preserve the field
+    let original = "has\rcarriage\rreturn";
+    let quoted_line = format!("{},{}", csv_quote(original), csv_quote("normal"));
+    let fields = csv_split(&quoted_line);
+    assert_eq!(fields[0], original);
+    assert_eq!(fields[1], "normal");
+}
+
+#[test]
+fn test_update_readme_duplicate_end_marker() {
+    // If END marker appears twice, only the first is used — content between
+    // START and first END gets replaced, second END stays in the "after" section
+    let readme = format!(
+        "before\n{}\nold table\n{}\nmiddle\n{}\nafter",
+        START_MARKER, END_MARKER, END_MARKER
+    );
+    let result = update_readme(&readme, "new table").expect("should succeed");
+    assert!(result.contains("new table"));
+    assert!(result.contains("middle"));
+    assert!(result.contains("after"));
+    // The old table should be gone
+    assert!(!result.contains("old table"));
+}
+

@@ -489,7 +489,7 @@ pub fn write_csv(models: &[ModelCertification]) -> String {
 /// a comma, double-quote, or newline. Internal double-quotes are escaped
 /// by doubling them.
 fn csv_quote(field: &str) -> String {
-    if field.contains(',') || field.contains('"') || field.contains('\n') {
+    if field.contains(',') || field.contains('"') || field.contains('\n') || field.contains('\r') {
         format!("\"{}\"", field.replace('"', "\"\""))
     } else {
         field.to_string()

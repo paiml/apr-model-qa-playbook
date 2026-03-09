@@ -371,6 +371,14 @@ fn run_diff_tensors(model_a: &Path, model_b: &Path, binary: &str) -> Result<Stri
         .output()
         .map_err(Error::Io)?;
 
+    if !output.status.success() {
+        return Err(Error::Execution(format!(
+            "diff-tensors failed (exit {}): {}",
+            output.status.code().unwrap_or(-1),
+            String::from_utf8_lossy(&output.stderr)
+        )));
+    }
+
     Ok(String::from_utf8_lossy(&output.stdout).to_string())
 }
 
