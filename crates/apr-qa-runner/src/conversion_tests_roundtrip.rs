@@ -623,3 +623,121 @@ fn test_check_tensor_name_gate_fails_via_executor() {
     let has_fail = name_evidence.iter().any(|e| e.outcome.is_fail());
     assert!(has_fail, "Expected tensor name divergence failure");
 }
+
+// =========================================================================
+// ByteLevelRoundTripTest::execute — coverage for conversion_strategies.rs
+// =========================================================================
+
+#[test]
+fn test_byte_level_round_trip_error_on_wrong_format() {
+    // resolve_model_path expects SafeTensors but model is .gguf → error path
+    let dir = tempfile::tempdir().unwrap();
+    let model_file = dir.path().join("model.gguf");
+    std::fs::write(&model_file, "fake").unwrap();
+
+    let mut brt = ByteLevelRoundTripTest::new(Backend::Cpu, ModelId::new("test", "model"));
+    brt.binary = "/nonexistent/apr".to_string();
+
+    let result = brt.execute(&model_file);
+    assert!(result.is_err(), "Expected Err for wrong format extension");
+}
+
+#[test]
+fn test_byte_level_round_trip_corroborated_via_mock() {
+    // Happy path: mock creates target files and diff-tensors returns pass JSON
+    let dir = tempfile::tempdir().unwrap();
+    let model_file = dir.path().join("model.safetensors");
+    std::fs::write(&model_file, "fake st").unwrap();
+
+    // Mock: rosetta convert <src> <dst> → touch dst; rosetta diff-tensors → {"passed":true}
+    let mock = create_mock_apr(
+        dir.path(),
+        r#"case "$2" in
+convert) touch "$4"; exit 0;;
+diff-tensors) echo '{"passed":true,"summary":"all tensors match"}'; exit 0;;
+esac
+exit 1"#,
+    );
+
+    let mut brt = ByteLevelRoundTripTest::new(Backend::Cpu, ModelId::new("test", "model"));
+    brt.binary = mock.to_string_lossy().to_string();
+
+    match brt.execute(&model_file) {
+        Ok(ConversionResult::Corroborated { source_format, target_format, max_diff, .. }) => {
+            assert_eq!(source_format, Format::SafeTensors);
+            assert_eq!(target_format, Format::Apr);
+            assert!((max_diff - 0.0).abs() < f64::EPSILON);
+        }
+        other => panic!("Expected Corroborated, got: {other:?}"),
+    }
+}
+
+#[test]
+fn test_byte_level_round_trip_falsified_via_mock() {
+    // Falsified path: diff-tensors returns JSON containing "passed":false
+    let dir = tempfile::tempdir().unwrap();
+    let model_file = dir.path().join("model.safetensors");
+    std::fs::write(&model_file, "fake st").unwrap();
+
+    let mock = create_mock_apr(
+        dir.path(),
+        r#"case "$2" in
+convert) touch "$4"; exit 0;;
+diff-tensors) echo '{"passed":false,"mismatched":["lm_head.weight"]}'; exit 0;;
+esac
+exit 1"#,
+    );
+
+    let mut brt = ByteLevelRoundTripTest::new(Backend::Cpu, ModelId::new("test", "model"));
+    brt.binary = mock.to_string_lossy().to_string();
+
+    match brt.execute(&model_file) {
+        Ok(ConversionResult::Falsified { gate_id, .. }) => {
+            assert_eq!(gate_id, "F-CONV-RT-BYTE-001");
+        }
+        other => panic!("Expected Falsified, got: {other:?}"),
+    }
+}
+
+#[test]
+fn test_byte_level_round_trip_falsified_mismatched_keyword() {
+    // Falsified via "mismatched" keyword (not "passed":false)
+    let dir = tempfile::tempdir().unwrap();
+    let model_file = dir.path().join("model.safetensors");
+    std::fs::write(&model_file, "fake st").unwrap();
+
+    let mock = create_mock_apr(
+        dir.path(),
+        r#"case "$2" in
+convert) touch "$4"; exit 0;;
+diff-tensors) echo '{"result":"mismatched tensors found"}'; exit 0;;
+esac
+exit 1"#,
+    );
+
+    let mut brt = ByteLevelRoundTripTest::new(Backend::Cpu, ModelId::new("test", "model"));
+    brt.binary = mock.to_string_lossy().to_string();
+
+    match brt.execute(&model_file) {
+        Ok(ConversionResult::Falsified { gate_id, .. }) => {
+            assert_eq!(gate_id, "F-CONV-RT-BYTE-001");
+        }
+        other => panic!("Expected Falsified, got: {other:?}"),
+    }
+}
+
+#[test]
+fn test_byte_level_round_trip_convert_failure() {
+    // convert failure → Err propagation
+    let dir = tempfile::tempdir().unwrap();
+    let model_file = dir.path().join("model.safetensors");
+    std::fs::write(&model_file, "fake st").unwrap();
+
+    let mock = create_mock_apr(dir.path(), "exit 1");
+
+    let mut brt = ByteLevelRoundTripTest::new(Backend::Cpu, ModelId::new("test", "model"));
+    brt.binary = mock.to_string_lossy().to_string();
+
+    let result = brt.execute(&model_file);
+    assert!(result.is_err(), "Expected Err when conversion fails");
+}
