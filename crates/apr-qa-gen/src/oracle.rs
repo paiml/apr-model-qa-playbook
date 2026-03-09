@@ -107,9 +107,21 @@ impl Oracle for ArithmeticOracle {
     fn evaluate(&self, prompt: &str, output: &str) -> OracleResult {
         // Try to extract arithmetic expression from prompt
         let Some(expected) = Self::eval_arithmetic(prompt) else {
-            // Not an arithmetic prompt, skip
+            // Distinguish two failure modes:
+            // 1. Raw expression that is mathematically unevaluable (e.g. "5/0=",
+            //    overflow) → Falsified. The hypothesis was never tested; Popperian:
+            //    absence of test ≠ pass.
+            // 2. Natural language with embedded arithmetic (e.g. "What is 2+2?")
+            //    → Corroborated (skip). This is a parser limitation, not a math
+            //    impossibility. The oracle can't extract the expression.
+            if is_raw_arithmetic_expr(prompt) {
+                return OracleResult::Falsified {
+                    reason: format!("Arithmetic prompt cannot be evaluated: {prompt}"),
+                    evidence: output.to_string(),
+                };
+            }
             return OracleResult::Corroborated {
-                evidence: "Non-arithmetic prompt, skipped".to_string(),
+                evidence: "Non-evaluable arithmetic prompt, skipped".to_string(),
             };
         };
 
@@ -373,6 +385,22 @@ fn is_arithmetic_prompt(prompt: &str) -> bool {
         || prompt_lower.contains('*')
         || prompt_lower.contains('/'))
         && prompt.chars().any(|c| c.is_ascii_digit())
+}
+
+/// Check if prompt is a raw arithmetic expression (digits, operators, whitespace, `=`, `?`).
+///
+/// Returns true for "5/0=", "2+2", "100*3?", "-5+3".
+/// Returns false for "What is 2+2?" (contains letters beyond the expression).
+fn is_raw_arithmetic_expr(prompt: &str) -> bool {
+    let trimmed = prompt.trim();
+    if trimmed.is_empty() {
+        return false;
+    }
+    trimmed
+        .chars()
+        .all(|c| c.is_ascii_digit() || "+-*/=? ".contains(c))
+        && trimmed.chars().any(|c| "+-*/".contains(c))
+        && trimmed.chars().any(|c| c.is_ascii_digit())
 }
 
 /// Check if prompt is a code completion request

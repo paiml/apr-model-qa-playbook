@@ -230,7 +230,7 @@ fn test_execute_scenario_with_stderr_corroborated() {
         Modality::Run,
         Backend::Cpu,
         Format::Gguf,
-        "What is 2+2?".to_string(),
+        "2+2=".to_string(),
         0,
     );
 

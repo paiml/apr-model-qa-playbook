@@ -234,12 +234,23 @@ fn test_arithmetic_eval_division() {
     assert!(result.is_corroborated());
 }
 
-/// Verify arithmetic oracle skips division by zero as non-arithmetic
+/// Verify arithmetic oracle falsifies division by zero (Popperian: unevaluable ≠ pass)
 #[test]
 fn test_arithmetic_division_by_zero() {
     let oracle = ArithmeticOracle::new();
-    // Division by zero should skip (non-arithmetic)
+    // Division by zero is arithmetic but unevaluable → Falsified
+    // (absence of test ≠ pass; Popperian falsification)
     let result = oracle.evaluate("5/0=", "undefined");
+    assert!(result.is_falsified());
+}
+
+/// Verify natural language arithmetic prompt skips (not Falsified) when unparseable
+#[test]
+fn test_arithmetic_natural_language_skips() {
+    let oracle = ArithmeticOracle::new();
+    // "What is 2+2?" has arithmetic but eval_arithmetic can't extract it
+    // → parser limitation, not math impossibility → Corroborated (skip)
+    let result = oracle.evaluate("What is 2+2?", "The answer is 4.");
     assert!(result.is_corroborated());
 }
 
@@ -249,6 +260,19 @@ fn test_is_arithmetic_prompt() {
     assert!(is_arithmetic_prompt("2+2="));
     assert!(is_arithmetic_prompt("What is 3*4?"));
     assert!(!is_arithmetic_prompt("Hello world"));
+}
+
+/// Verify is_raw_arithmetic_expr distinguishes raw expressions from natural language
+#[test]
+fn test_is_raw_arithmetic_expr() {
+    assert!(is_raw_arithmetic_expr("2+2="));
+    assert!(is_raw_arithmetic_expr("5/0="));
+    assert!(is_raw_arithmetic_expr("100*3?"));
+    assert!(is_raw_arithmetic_expr("-5+3"));
+    assert!(!is_raw_arithmetic_expr("What is 2+2?"));
+    assert!(!is_raw_arithmetic_expr("Calculate 5*3"));
+    assert!(!is_raw_arithmetic_expr("Hello world"));
+    assert!(!is_raw_arithmetic_expr(""));
 }
 
 /// Verify is_code_prompt detects code syntax patterns

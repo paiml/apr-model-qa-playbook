@@ -230,7 +230,7 @@ fn test_scenario_evaluate() {
         Modality::Run,
         Backend::Cpu,
         Format::Gguf,
-        "What is 2+2?".to_string(),
+        "2+2=".to_string(),
         0,
     );
 
