@@ -403,8 +403,8 @@ enum Commands {
     /// from aprender (tensor-layout-v1.yaml). This prevents GH-202 style bugs
     /// where wrong tensor shapes cause garbage output.
     ValidateContract {
-        /// Path to APR model file to validate
-        #[arg(value_name = "MODEL")]
+        /// Path to APR model file to validate (not a HuggingFace model ID)
+        #[arg(value_name = "MODEL_PATH")]
         model_path: PathBuf,
 
         /// Path to tensor layout contract YAML

@@ -41,12 +41,19 @@ fn export_evidence(
         }
     };
 
-    // Extract evidence array and summary from execution result
-    let evidence_array = json_value
-        .get("evidence")
-        .and_then(|e| e.as_array())
-        .cloned()
-        .unwrap_or_default();
+    // Extract evidence array — supports two source formats:
+    //   1. Plain array (certifications/*/evidence.json): [{...}, ...]
+    //   2. Execution result object (apr-qa run output): {"evidence": [...], ...}
+    let (evidence_array, meta) = if json_value.is_array() {
+        (json_value.as_array().cloned().unwrap_or_default(), None)
+    } else {
+        let arr = json_value
+            .get("evidence")
+            .and_then(|e| e.as_array())
+            .cloned()
+            .unwrap_or_default();
+        (arr, Some(&json_value))
+    };
 
     if evidence_array.is_empty() {
         eprintln!("Error: Source file contains no evidence entries");
@@ -55,27 +62,27 @@ fn export_evidence(
     }
 
     #[allow(clippy::cast_possible_truncation)]
-    let total_scenarios = json_value
-        .get("total_scenarios")
+    let total_scenarios = meta
+        .and_then(|v| v.get("total_scenarios"))
         .and_then(serde_json::Value::as_u64)
         .unwrap_or(evidence_array.len() as u64) as usize;
     #[allow(clippy::cast_possible_truncation)]
-    let passed = json_value
-        .get("passed")
+    let passed = meta
+        .and_then(|v| v.get("passed"))
         .and_then(serde_json::Value::as_u64)
         .unwrap_or(0) as usize;
     #[allow(clippy::cast_possible_truncation)]
-    let failed = json_value
-        .get("failed")
+    let failed = meta
+        .and_then(|v| v.get("failed"))
         .and_then(serde_json::Value::as_u64)
         .unwrap_or(0) as usize;
     #[allow(clippy::cast_possible_truncation)]
-    let skipped = json_value
-        .get("skipped")
+    let skipped = meta
+        .and_then(|v| v.get("skipped"))
         .and_then(serde_json::Value::as_u64)
         .unwrap_or(0) as usize;
-    let duration_ms = json_value
-        .get("duration_ms")
+    let duration_ms = meta
+        .and_then(|v| v.get("duration_ms"))
         .and_then(serde_json::Value::as_u64)
         .unwrap_or(0);
 
