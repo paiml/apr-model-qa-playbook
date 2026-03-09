@@ -37,6 +37,9 @@ impl ScenarioGenerator {
     /// Generate all scenarios for a model
     #[must_use]
     pub fn generate(&self) -> Vec<QaScenario> {
+        if self.prompts.is_empty() {
+            return Vec::new();
+        }
         let mut scenarios = Vec::new();
         let mut seed: u64 = 0;
 
