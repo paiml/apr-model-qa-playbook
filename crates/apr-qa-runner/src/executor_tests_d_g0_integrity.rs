@@ -264,6 +264,47 @@ fn test_format_tensor_failure_without_expected() {
     assert!(!formatted.contains("Actual:"));
 }
 
+/// G0 layout check: when contract exists, nonexistent model path → critical_failures → (0, ≥1)
+#[test]
+fn test_run_g0_layout_check_contract_present_model_missing() {
+    // Only runs when aprender sibling is present; otherwise auto-skips (0, 0)
+    let contract_path =
+        std::path::Path::new(crate::layout_contract::DEFAULT_CONTRACT_PATH);
+    if !contract_path.exists() {
+        return; // CI without aprender: tolerated, skip path already covered
+    }
+
+    let dir = tempfile::TempDir::new().expect("create temp dir");
+    let nonexistent = dir.path().join("missing.safetensors");
+    let mut executor = Executor::new();
+    let model_id = ModelId::new("test", "model");
+
+    let (passed, failed) = executor.run_g0_layout_check(&nonexistent, &model_id);
+    // Model doesn't exist → validate_model returns critical_failures → (0, ≥1)
+    assert_eq!(passed, 0, "Expected 0 passed for missing model");
+    assert!(failed >= 1, "Expected ≥1 failure for missing model");
+}
+
+/// G0 layout check: when contract exists, empty dir → FILE-FORMAT → (0, ≥1)
+#[test]
+fn test_run_g0_layout_check_contract_present_no_safetensors() {
+    let contract_path =
+        std::path::Path::new(crate::layout_contract::DEFAULT_CONTRACT_PATH);
+    if !contract_path.exists() {
+        return;
+    }
+
+    let dir = tempfile::TempDir::new().expect("create temp dir");
+    // Dir exists but contains no .safetensors files
+    let mut executor = Executor::new();
+    let model_id = ModelId::new("test", "model");
+
+    let (passed, failed) = executor.run_g0_layout_check(dir.path(), &model_id);
+    // Dir exists, no SafeTensors → validate_model returns failed result → (0, ≥1)
+    assert_eq!(passed, 0, "Expected 0 passed for dir with no safetensors");
+    assert!(failed >= 1, "Expected ≥1 failure for dir with no safetensors");
+}
+
 /// Verify inspect_verified fails gracefully for a nonexistent model path
 #[test]
 fn test_execute_inspect_verified_nonexistent_model() {
