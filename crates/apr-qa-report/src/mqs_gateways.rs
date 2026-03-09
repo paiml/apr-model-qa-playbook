@@ -173,6 +173,11 @@ impl MqsCalculator {
             ("F-CONV-COM", "REGR"),
             ("F-CONV", "COMP"),
             ("F-CONTRACT", "COMP"),
+            ("F-GOLDEN-RULE", "REGR"), // Convert→infer→diff → regression
+            ("F-INT", "STAB"),         // Process integrity → stability
+            ("F-SEC", "STAB"),         // Security/DoS detection → stability
+            ("F-NUM", "STAB"),         // Numerical stability → stability
+            ("F-PROFILE", "PERF"),     // Performance profiling → performance
             ("F-OLLAMA-003", "PERF"),  // TTFT comparison → performance
             ("F-OLLAMA-004", "COMP"),  // API endpoint parity → compatibility
             ("F-OLLAMA-005", "COMP"),  // GGUF loadability → compatibility

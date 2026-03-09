@@ -217,3 +217,25 @@ fn test_extract_category_hf_parity_and_layout() {
     assert_eq!(MqsCalculator::extract_category("F-HF-PARITY-004"), "QUAL");
     assert_eq!(MqsCalculator::extract_category("F-LAYOUT-002"), "STAB");
 }
+
+/// Bug #62: Verify previously-unmapped gate IDs now map to correct categories.
+/// These all defaulted to QUAL before the PREFIX_MAP additions.
+#[test]
+fn test_extract_category_previously_unmapped() {
+    // Integrity checks → STAB
+    assert_eq!(MqsCalculator::extract_category("F-INT-001"), "STAB");
+    assert_eq!(MqsCalculator::extract_category("F-INT-005"), "STAB");
+    // Security checks → STAB
+    assert_eq!(MqsCalculator::extract_category("F-SEC-003"), "STAB");
+    assert_eq!(MqsCalculator::extract_category("F-SEC-PATH-001"), "STAB");
+    assert_eq!(MqsCalculator::extract_category("F-SEC-INJECT-001"), "STAB");
+    // Numerical stability → STAB
+    assert_eq!(MqsCalculator::extract_category("F-NUM-001"), "STAB");
+    assert_eq!(MqsCalculator::extract_category("F-NUM-004"), "STAB");
+    // Performance profiling → PERF
+    assert_eq!(MqsCalculator::extract_category("F-PROFILE-001"), "PERF");
+    assert_eq!(MqsCalculator::extract_category("F-PROFILE-CI-001"), "PERF");
+    // Golden rule (conversion) → REGR
+    assert_eq!(MqsCalculator::extract_category("F-GOLDEN-RULE-001"), "REGR");
+    assert_eq!(MqsCalculator::extract_category("F-GOLDEN-RULE-003"), "REGR");
+}
