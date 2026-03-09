@@ -78,7 +78,10 @@ impl Executor {
         (passed, failed)
     }
 
-    /// Run performance gates: F-PERF-003 (GPU/CPU ratio) and F-PERF-005 (memory profiling)
+    /// Run performance gates: F-PERF-006 (GPU/CPU ratio) and F-PERF-005 (memory profiling)
+    ///
+    /// Note: F-PERF-003 is reserved for Memory Leak detection (patterns_spec_gates.rs).
+    /// F-PERF-006 is the CI-level GPU vs CPU throughput ratio gate.
     fn run_perf_gates(
         &mut self,
         model_path: &Path,
@@ -93,7 +96,7 @@ impl Executor {
             _ => return (0, 0),
         };
 
-        // F-PERF-003: GPU vs CPU throughput comparison
+        // F-PERF-006: GPU vs CPU throughput comparison
         let has_cpu = profile_config
             .backends
             .iter()
@@ -129,7 +132,7 @@ impl Executor {
                 let ratio = gpu / cpu.max(0.01);
                 if ratio >= 1.0 {
                     let ev = Evidence::corroborated(
-                        "F-PERF-003",
+                        "F-PERF-006",
                         scenario,
                         &format!(
                             "GPU/CPU ratio: {ratio:.1}x (GPU={gpu:.1} tok/s, CPU={cpu:.1} tok/s)"
@@ -140,7 +143,7 @@ impl Executor {
                     passed += 1;
                 } else {
                     let ev = Evidence::falsified(
-                        "F-PERF-003",
+                        "F-PERF-006",
                         scenario,
                         format!("GPU slower than CPU: ratio {ratio:.2}x"),
                         &format!("GPU={gpu:.1} tok/s, CPU={cpu:.1} tok/s"),

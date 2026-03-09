@@ -211,11 +211,13 @@ bugs that format-level tests cannot detect.
 
 | Gate ID | Description |
 |---------|-------------|
-| F-PERF-003 | GPU throughput >= CPU throughput (ratio >= 1.0x) |
+| F-PERF-003 | Memory leak: RSS growth < 5% over 100 requests |
 | F-PERF-005 | Memory profiling completes and reports peak RSS |
+| F-PERF-006 | GPU throughput >= CPU throughput (ratio >= 1.0x) |
 
-Performance gates run when `profile_ci` is enabled. F-PERF-003 requires both
-`cpu` and `gpu` in the profile backends list.
+Performance gates run when `profile_ci` is enabled. F-PERF-006 requires both
+`cpu` and `gpu` in the profile backends list. F-PERF-003 runs independently
+of `profile_ci` as part of the pattern-level stability gate.
 
 ### Legacy Conversion Gates
 

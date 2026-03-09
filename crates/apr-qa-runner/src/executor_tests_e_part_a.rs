@@ -268,8 +268,9 @@ fn test_g0_tensor_family_contract_not_found() {
         .iter()
         .find(|e| e.gate_id == "G0-TENSOR-001")
         .expect("should have G0-TENSOR evidence");
-    assert!(tensor_ev.output.contains("G0 SKIP"));
-    assert!(tensor_ev.output.contains("Family contract not found"));
+    // Evidence::skipped puts message in reason field (not output)
+    assert!(tensor_ev.reason.contains("G0 SKIP"));
+    assert!(tensor_ev.reason.contains("Family contract not found"));
 }
 
 #[test]

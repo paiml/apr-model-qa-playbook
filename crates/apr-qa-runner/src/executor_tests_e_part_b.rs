@@ -331,10 +331,11 @@ ollama_parity:
     assert!(!api_ev.outcome.is_pass());
 }
 
-// ── F-PERF-003 GPU/CPU ratio test ──────────────────────────────────
+// ── F-PERF-006 GPU/CPU ratio test ──────────────────────────────────
+// Note: F-PERF-003 = Memory Leak (patterns_spec_gates.rs). F-PERF-006 = GPU/CPU ratio.
 
 #[test]
-fn test_perf_003_gpu_cpu_ratio() {
+fn test_perf_006_gpu_cpu_ratio() {
     let runner = Arc::new(MockCommandRunner::new().with_tps(50.0));
     let config = ExecutionConfig {
         run_profile_ci: true,
@@ -362,10 +363,10 @@ profile_ci:
     let playbook: Playbook = serde_yaml::from_str(yaml).unwrap();
     let model_id = playbook.model_id();
     let (passed, _failed) = executor.run_perf_gates(Path::new("/mock/model"), &model_id, &playbook);
-    // F-PERF-003 (GPU/CPU ratio) + F-PERF-005 (memory)
+    // F-PERF-006 (GPU/CPU ratio) + F-PERF-005 (memory profiling)
     assert!(passed >= 2, "Expected at least 2 passes, got {passed}");
     let evidence = executor.evidence().all();
-    assert!(evidence.iter().any(|e| e.gate_id == "F-PERF-003"));
+    assert!(evidence.iter().any(|e| e.gate_id == "F-PERF-006"));
     assert!(evidence.iter().any(|e| e.gate_id == "F-PERF-005"));
 }
 

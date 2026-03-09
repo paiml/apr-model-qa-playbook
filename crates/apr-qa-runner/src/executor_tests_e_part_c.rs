@@ -31,8 +31,8 @@ profile_ci:
     let result = executor.execute(&playbook).expect("Execution failed");
     assert!(result.total_scenarios >= 1);
     let evidence = executor.evidence().all();
-    assert!(evidence.iter().any(|e| e.gate_id == "F-PERF-003"));
-    assert!(evidence.iter().any(|e| e.gate_id == "F-PERF-005"));
+    assert!(evidence.iter().any(|e| e.gate_id == "F-PERF-006")); // GPU/CPU ratio
+    assert!(evidence.iter().any(|e| e.gate_id == "F-PERF-005")); // memory profiling
 }
 
 // ── Bug 202: Sibling-file lookup in file mode ────────────────────────

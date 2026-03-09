@@ -36,13 +36,12 @@ impl Executor {
         let contract = match registry.load_family(family) {
             Ok(c) => c.clone(),
             Err(e) => {
-                // Family contract not found - skip check gracefully
-                let duration = start.elapsed().as_millis() as u64;
-                let ev = Evidence::corroborated(
+                // Family contract not found — cannot validate, emit skipped (not corroborated).
+                // Popperian: untested hypothesis has NOT survived falsification (Bug #79).
+                let ev = Evidence::skipped(
                     "G0-TENSOR-001",
                     Self::validate_scenario(model_id),
                     &format!("G0 SKIP: Family contract not found for '{family}': {e}"),
-                    duration,
                 );
                 self.collector.add(ev);
                 return (0, 0);
@@ -52,13 +51,12 @@ impl Executor {
         // Get expected tensor names from family YAML
         let expected_tensors = contract.required_tensors_for_size(size_variant);
         if expected_tensors.is_empty() {
-            // No tensor template defined - skip check
-            let duration = start.elapsed().as_millis() as u64;
-            let ev = Evidence::corroborated(
+            // No tensor template — cannot validate, emit skipped (not corroborated).
+            // Popperian: untested hypothesis has NOT survived falsification (Bug #80).
+            let ev = Evidence::skipped(
                 "G0-TENSOR-001",
                 Self::validate_scenario(model_id),
                 &format!("G0 SKIP: No tensor template for {family}/{size_variant}"),
-                duration,
             );
             self.collector.add(ev);
             return (0, 0);
@@ -67,12 +65,12 @@ impl Executor {
         // Get actual tensor names from the model via inspect
         let files = Self::find_safetensors_files(model_path);
         if files.is_empty() {
-            let duration = start.elapsed().as_millis() as u64;
-            let ev = Evidence::corroborated(
+            // No safetensors files — cannot validate tensors, emit skipped (not corroborated).
+            // Popperian: untested hypothesis has NOT survived falsification (Bug #81).
+            let ev = Evidence::skipped(
                 "G0-TENSOR-001",
                 Self::validate_scenario(model_id),
                 "G0 SKIP: No safetensors files found for tensor template validation",
-                duration,
             );
             self.collector.add(ev);
             return (0, 0);
