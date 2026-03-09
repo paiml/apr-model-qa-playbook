@@ -24,10 +24,12 @@ impl ConversionExecutionResult {
     }
 
     /// Get pass rate as percentage
+    ///
+    /// Returns 0.0 for 0 total tests (Popperian: untested ≠ passed).
     #[must_use]
     pub fn pass_rate(&self) -> f64 {
         if self.total == 0 {
-            100.0
+            0.0
         } else {
             (self.passed as f64 / self.total as f64) * 100.0
         }

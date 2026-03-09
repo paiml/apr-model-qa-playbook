@@ -115,7 +115,8 @@ fn test_conversion_execution_result_pass_rate_zero_total() {
         duration_ms: 0,
     };
     let rate = result.pass_rate();
-    assert!((rate - 100.0).abs() < f64::EPSILON);
+    // Popperian: 0 tests = 0% pass rate (untested ≠ passed)
+    assert!(rate.abs() < f64::EPSILON);
 }
 
 #[test]

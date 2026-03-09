@@ -197,6 +197,21 @@ impl ConversionExecutor {
                         0,
                     );
                     evidence.push(ev);
+                    results.push(ConversionResult::Falsified {
+                        gate_id: "F-CONV-RT-001".to_string(),
+                        reason: e.to_string(),
+                        evidence: ConversionEvidence {
+                            source_hash: String::new(),
+                            converted_hash: String::new(),
+                            max_diff: f64::MAX,
+                            diff_indices: vec![],
+                            source_format: Format::Gguf,
+                            target_format: Format::Gguf,
+                            backend: *backend,
+                            failure_type: None,
+                            quant_type: None,
+                        },
+                    });
                 }
             }
         }
@@ -272,6 +287,21 @@ impl ConversionExecutor {
                             0,
                         );
                         evidence.push(ev);
+                        results.push(ConversionResult::Falsified {
+                            gate_id: (*gate_id).to_string(),
+                            reason: e.to_string(),
+                            evidence: ConversionEvidence {
+                                source_hash: String::new(),
+                                converted_hash: String::new(),
+                                max_diff: f64::MAX,
+                                diff_indices: vec![],
+                                source_format: Format::SafeTensors,
+                                target_format: Format::SafeTensors,
+                                backend: *backend,
+                                failure_type: None,
+                                quant_type: None,
+                            },
+                        });
                     }
                 }
             }
@@ -313,6 +343,21 @@ impl ConversionExecutor {
                         0,
                     );
                     evidence.push(ev);
+                    results.push(ConversionResult::Falsified {
+                        gate_id: "F-CONV-RT-BYTE-001".to_string(),
+                        reason: e.to_string(),
+                        evidence: ConversionEvidence {
+                            source_hash: String::new(),
+                            converted_hash: String::new(),
+                            max_diff: f64::MAX,
+                            diff_indices: vec![],
+                            source_format: Format::SafeTensors,
+                            target_format: Format::Apr,
+                            backend: *backend,
+                            failure_type: None,
+                            quant_type: None,
+                        },
+                    });
                 }
             }
         }
@@ -354,6 +399,21 @@ impl ConversionExecutor {
                         0,
                     );
                     evidence.push(ev);
+                    results.push(ConversionResult::Falsified {
+                        gate_id: "F-CONV-IDEM-001".to_string(),
+                        reason: e.to_string(),
+                        evidence: ConversionEvidence {
+                            source_hash: String::new(),
+                            converted_hash: String::new(),
+                            max_diff: f64::MAX,
+                            diff_indices: vec![],
+                            source_format: Format::Gguf,
+                            target_format: Format::Apr,
+                            backend: *backend,
+                            failure_type: None,
+                            quant_type: None,
+                        },
+                    });
                 }
             }
         }
@@ -394,6 +454,21 @@ impl ConversionExecutor {
                         0,
                     );
                     evidence.push(ev);
+                    results.push(ConversionResult::Falsified {
+                        gate_id: "F-CONV-COM-001".to_string(),
+                        reason: e.to_string(),
+                        evidence: ConversionEvidence {
+                            source_hash: String::new(),
+                            converted_hash: String::new(),
+                            max_diff: f64::MAX,
+                            diff_indices: vec![],
+                            source_format: Format::Gguf,
+                            target_format: Format::Apr,
+                            backend: *backend,
+                            failure_type: None,
+                            quant_type: None,
+                        },
+                    });
                 }
             }
         }

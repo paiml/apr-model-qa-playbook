@@ -50,7 +50,9 @@ pub fn convert_format_cached(
 
     // Create target directory if needed
     if let Some(parent) = target_path.parent() {
-        let _ = std::fs::create_dir_all(parent);
+        if let Err(e) = std::fs::create_dir_all(parent) {
+            eprintln!("[JIDOKA] Failed to create target directory {}: {e}", parent.display());
+        }
     }
 
     let start = std::time::Instant::now();

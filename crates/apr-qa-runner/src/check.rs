@@ -65,6 +65,36 @@ impl ConversionExecutor {
                 eprintln!(
                     "[JIDOKA] Tensor cardinality check failed for {source:?}→{target:?}: {e}"
                 );
+                let ev = Evidence::falsified(
+                    "F-CONV-CARD-001",
+                    QaScenario::new(
+                        model_id.clone(),
+                        Modality::Run,
+                        Backend::Cpu,
+                        target,
+                        format!("Cardinality {source:?}→{target:?}"),
+                        0,
+                    ),
+                    format!("Cardinality check infrastructure error: {e}"),
+                    "N/A",
+                    0,
+                );
+                evidence.push(ev);
+                results.push(ConversionResult::Falsified {
+                    gate_id: "F-CONV-CARD-001".to_string(),
+                    reason: e.to_string(),
+                    evidence: ConversionEvidence {
+                        source_hash: String::new(),
+                        converted_hash: String::new(),
+                        max_diff: 0.0,
+                        diff_indices: vec![],
+                        source_format: source,
+                        target_format: target,
+                        backend: Backend::Cpu,
+                        failure_type: None,
+                        quant_type: None,
+                    },
+                });
             }
         }
     }
@@ -117,6 +147,21 @@ impl ConversionExecutor {
                 eprintln!(
                     "[JIDOKA] Tensor name check failed for {source:?}→{target:?}: {e}"
                 );
+                let ev = Evidence::falsified(
+                    "F-CONV-NAME-001",
+                    QaScenario::new(
+                        model_id.clone(),
+                        Modality::Run,
+                        Backend::Cpu,
+                        target,
+                        format!("Tensor names {source:?}→{target:?}"),
+                        0,
+                    ),
+                    format!("Tensor name check infrastructure error: {e}"),
+                    "N/A",
+                    0,
+                );
+                evidence.push(ev);
             }
         }
     }

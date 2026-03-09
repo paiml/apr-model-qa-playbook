@@ -24,8 +24,11 @@ fn test_conversion_config_all_disabled() {
     assert_eq!(exec_result.total, 0);
     assert_eq!(exec_result.passed, 0);
     assert_eq!(exec_result.failed, 0);
+    // Popperian: 0 tests run means untested (not "all passed")
+    // all_passed() checks failed == 0, which is technically true for zero tests,
+    // but pass_rate() correctly returns 0% for untested
     assert!(exec_result.all_passed());
-    assert!((exec_result.pass_rate() - 100.0).abs() < f64::EPSILON);
+    assert!(exec_result.pass_rate().abs() < f64::EPSILON);
 }
 
 // ── ConversionExecutor with only structural checks ────────────────

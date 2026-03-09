@@ -289,15 +289,17 @@ fn update_row_from_export(
     was_updated
 }
 
-/// Derive the model certification status from MQS score and gateway results
+/// Derive the model certification status from MQS score and gateway results.
+///
+/// Called from `process_evidence_files()` — the presence of an evidence file
+/// means the model WAS tested. Score 0 here means tested-and-failed, not
+/// untested. Use `Blocked`, not `Pending`.
 #[allow(clippy::missing_const_for_fn)] // Can't be const due to internal use statement
 fn derive_status_from_mqs(mqs: &apr_qa_report::MqsExport) -> apr_qa_report::ModelStatus {
     use apr_qa_report::ModelStatus;
 
     if mqs.score >= 800 && mqs.gateway_passed {
         ModelStatus::Certified
-    } else if mqs.score == 0 {
-        ModelStatus::Pending
     } else {
         ModelStatus::Blocked
     }

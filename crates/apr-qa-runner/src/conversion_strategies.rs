@@ -400,6 +400,14 @@ fn run_inference_simple(model_path: &Path, backend: Backend, binary: &str) -> Re
         .output()
         .map_err(Error::Io)?;
 
+    if !output.status.success() {
+        return Err(Error::Execution(format!(
+            "Inference failed (exit {}): {}",
+            output.status.code().unwrap_or(-1),
+            String::from_utf8_lossy(&output.stderr)
+        )));
+    }
+
     Ok(String::from_utf8_lossy(&output.stdout).to_string())
 }
 
