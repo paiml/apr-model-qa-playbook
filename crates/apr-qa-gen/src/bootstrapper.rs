@@ -177,9 +177,15 @@ fn performance_thresholds(size_category: &str) -> (f64, f64) {
     }
 }
 
-/// Build the standard falsification gates G1 through G4
+/// Build the standard falsification gates G0 through G4
 fn standard_gates() -> Vec<BootstrappedGate> {
     vec![
+        BootstrappedGate {
+            id: "G0".to_string(),
+            description: "Model integrity (config.json matches tensor metadata)".to_string(),
+            condition: "config_matches_tensors".to_string(),
+            severity: "P0".to_string(),
+        },
         BootstrappedGate {
             id: "G1".to_string(),
             description: "Model loads successfully".to_string(),

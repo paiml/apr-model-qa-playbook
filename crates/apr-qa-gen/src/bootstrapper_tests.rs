@@ -140,7 +140,7 @@ fn test_bootstrap_deep_tier() {
     assert_eq!(playbook.test_matrix.scenario_count, 50);
 }
 
-/// Verify bootstrapped playbook includes G1 through G4 falsification gates
+/// Verify bootstrapped playbook includes G0 through G4 falsification gates
 #[test]
 fn test_bootstrap_gates() {
     let playbook = bootstrap_playbook(
@@ -149,12 +149,13 @@ fn test_bootstrap_gates() {
         &qwen_size_variant(),
         "small",
     );
-    assert_eq!(playbook.falsification_gates.len(), 4);
+    assert_eq!(playbook.falsification_gates.len(), 5);
     let gate_ids: Vec<&str> = playbook
         .falsification_gates
         .iter()
         .map(|g| g.id.as_str())
         .collect();
+    assert!(gate_ids.contains(&"G0"));
     assert!(gate_ids.contains(&"G1"));
     assert!(gate_ids.contains(&"G2"));
     assert!(gate_ids.contains(&"G3"));

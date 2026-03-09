@@ -458,12 +458,25 @@ fn escape_prompt(prompt: &str) -> String {
     prompt.replace('\'', "'\\''")
 }
 
-/// Escape a prompt for JSON usage
+/// Escape a prompt for JSON usage (RFC 8259 §7: control chars must be escaped)
 fn escape_json(prompt: &str) -> String {
-    prompt
-        .replace('\\', "\\\\")
-        .replace('"', "\\\"")
-        .replace('\n', "\\n")
+    let mut result = String::with_capacity(prompt.len());
+    for c in prompt.chars() {
+        match c {
+            '\\' => result.push_str("\\\\"),
+            '"' => result.push_str("\\\""),
+            '\n' => result.push_str("\\n"),
+            '\r' => result.push_str("\\r"),
+            '\t' => result.push_str("\\t"),
+            c if c < '\u{20}' => {
+                // Escape other control characters as \u00XX
+                use std::fmt::Write;
+                let _ = write!(result, "\\u{:04x}", c as u32);
+            }
+            _ => result.push(c),
+        }
+    }
+    result
 }
 
 /// Scenario generator for property-based testing

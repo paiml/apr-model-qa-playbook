@@ -93,12 +93,26 @@ fn test_scenario_generator_debug() {
     assert!(debug_str.contains("ScenarioGenerator"));
 }
 
-/// Verify escape_json preserves tab characters
+/// Verify escape_json escapes tab characters per RFC 8259
 #[test]
 fn test_escape_json_tab() {
-    // Verify tabs don't cause issues
     let result = escape_json("hello\tworld");
-    assert!(result.contains('\t'));
+    assert_eq!(result, "hello\\tworld");
+    assert!(!result.contains('\t'));
+}
+
+/// Verify escape_json escapes carriage return
+#[test]
+fn test_escape_json_cr() {
+    let result = escape_json("line1\rline2");
+    assert_eq!(result, "line1\\rline2");
+}
+
+/// Verify escape_json escapes other control characters as unicode escapes
+#[test]
+fn test_escape_json_control_chars() {
+    let result = escape_json("null\x00byte");
+    assert_eq!(result, "null\\u0000byte");
 }
 
 /// Verify escape_prompt returns input unchanged when no quotes present

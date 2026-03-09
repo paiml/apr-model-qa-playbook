@@ -421,6 +421,7 @@ fn has_char_ngram_repetition(output: &str) -> bool {
 /// Check if words contain a 2-word repeating pattern
 ///
 /// Returns true if a 2-word bigram repeats for at least half the chunks.
+/// Skips the first chunk (trivial self-match against the pattern source).
 fn has_two_word_repetition(words: &[&str]) -> bool {
     if words.len() < 6 {
         return false;
@@ -428,9 +429,12 @@ fn has_two_word_repetition(words: &[&str]) -> bool {
     let pattern: Vec<_> = words.iter().take(2).collect();
     let matches = words
         .chunks(2)
+        .skip(1) // skip first chunk — it always matches the pattern trivially
         .filter(|chunk| chunk.len() == 2 && chunk[0] == *pattern[0] && chunk[1] == *pattern[1])
         .count();
-    matches >= words.len() / 2 / 2
+    // At least half of the remaining chunks must match
+    let remaining_chunks = (words.len() / 2).saturating_sub(1);
+    remaining_chunks > 0 && matches * 2 >= remaining_chunks
 }
 
 /// Check if all words in a slice are identical
