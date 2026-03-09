@@ -68,18 +68,24 @@ impl ArithmeticOracle {
         // Simple parser for "a+b", "a-b", "a*b", "a/b"
         let expr = expr.trim().trim_end_matches('=').trim_end_matches('?');
 
-        for op in ['+', '-', '*', '/'] {
-            if let Some(pos) = expr.find(op) {
-                let left: i64 = expr[..pos].trim().parse().ok()?;
-                let right: i64 = expr[pos + 1..].trim().parse().ok()?;
-                return match op {
-                    '+' => Some(left + right),
-                    '-' => Some(left - right),
-                    '*' => Some(left * right),
-                    '/' if right != 0 => Some(left / right),
-                    _ => None,
-                };
-            }
+        // Find the FIRST operator by string position, not by operator priority.
+        // Searching by operator type [+,-,*,/] is wrong: "3-2+1" would find '+'
+        // at position 3, then try to parse "3-2" as i64, which fails.
+        let first_op = ['+', '-', '*', '/']
+            .iter()
+            .filter_map(|&op| expr.find(op).map(|pos| (pos, op)))
+            .min_by_key(|&(pos, _)| pos);
+
+        if let Some((pos, op)) = first_op {
+            let left: i64 = expr[..pos].trim().parse().ok()?;
+            let right: i64 = expr[pos + 1..].trim().parse().ok()?;
+            return match op {
+                '+' => Some(left + right),
+                '-' => Some(left - right),
+                '*' => Some(left * right),
+                '/' if right != 0 => Some(left / right),
+                _ => None,
+            };
         }
         None
     }
@@ -381,7 +387,7 @@ fn check_substring_repetition(s: &str) -> bool {
             reps += 1;
             pos += p;
         }
-        if reps >= 3 && (reps * p) * 100 / len >= 70 {
+        if reps >= 3 && (reps * p) * 100 >= len * 70 {
             return true;
         }
     }

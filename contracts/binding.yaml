@@ -85,7 +85,7 @@ bindings:
     function: MqsCalculator::calculate_grade
     signature: "fn calculate_grade(score: f64) -> String"
     status: implemented
-    notes: "12 grades (A+ through D-, F) on normalized 0-100 scale. Physical file: mqs_gateways.rs:200."
+    notes: "12 grades (A+ through D-, F) on normalized 0-100 scale. Physical file: mqs_gateways.rs:205."
 
   - contract: mqs-scoring-v1.yaml
     equation: penalty_floor
@@ -102,7 +102,7 @@ bindings:
     function: GarbageOracle::evaluate
     signature: "fn evaluate(&self, _prompt: &str, output: &str) -> OracleResult"
     status: implemented
-    notes: "Takes (prompt, output), not just output. Physical file: oracle.rs:132."
+    notes: "Takes (prompt, output), not just output. Physical file: oracle.rs:138."
 
   - contract: garbage-oracle-v1.yaml
     equation: layout_implication
