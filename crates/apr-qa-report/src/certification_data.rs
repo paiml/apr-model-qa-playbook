@@ -426,6 +426,7 @@ pub fn write_models_csv<P: AsRef<Path>>(rows: &[CertificationRow], path: P) -> R
             "tps_st_cpu",
             "tps_st_gpu",
             "provenance_verified",
+            "kernel_proof_level",
         ])
         .map_err(|e| Error::Io(format!("Failed to write CSV header: {e}")))?;
 
@@ -433,6 +434,12 @@ pub fn write_models_csv<P: AsRef<Path>>(rows: &[CertificationRow], path: P) -> R
     for row in rows {
         let format_optional_f64 =
             |opt: Option<f64>| -> String { opt.map_or_else(String::new, |v| format!("{v:.1}")) };
+
+        let kernel_proof = row
+            .kernel_proof_level
+            .as_deref()
+            .unwrap_or("")
+            .to_string();
 
         writer
             .write_record([
@@ -456,6 +463,7 @@ pub fn write_models_csv<P: AsRef<Path>>(rows: &[CertificationRow], path: P) -> R
                 &format_optional_f64(row.tps_st_cpu),
                 &format_optional_f64(row.tps_st_gpu),
                 &row.provenance_verified.to_string(),
+                &kernel_proof,
             ])
             .map_err(|e| Error::Io(format!("Failed to write CSV row: {e}")))?;
     }
