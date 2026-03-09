@@ -19,11 +19,17 @@ fn get_registry() -> &'static Arc<Mutex<Vec<Child>>> {
 /// Register a child process for tracking
 #[must_use]
 pub fn register_child(child: Child) -> usize {
-    get_registry().lock().map_or(0, |mut registry| {
-        let idx = registry.len();
-        registry.push(child);
-        idx
-    })
+    get_registry().lock().map_or_else(
+        |e| {
+            eprintln!("[JIDOKA] Process registry lock poisoned: {e}");
+            0
+        },
+        |mut registry| {
+            let idx = registry.len();
+            registry.push(child);
+            idx
+        },
+    )
 }
 
 /// Kill and reap all registered child processes (Jidoka cleanup)
@@ -31,15 +37,25 @@ pub fn register_child(child: Child) -> usize {
 /// Returns the number of processes cleaned up.
 #[must_use]
 pub fn kill_all_registered() -> usize {
-    get_registry().lock().map_or(0, |mut registry| {
-        let count = registry.len();
-        for child in registry.iter_mut() {
-            let _ = child.kill();
-            let _ = child.wait();
-        }
-        registry.clear();
-        count
-    })
+    get_registry().lock().map_or_else(
+        |e| {
+            eprintln!("[JIDOKA] Process registry lock poisoned during cleanup: {e}");
+            0
+        },
+        |mut registry| {
+            let count = registry.len();
+            for child in registry.iter_mut() {
+                if let Err(e) = child.kill() {
+                    eprintln!("[JIDOKA] Failed to kill child process: {e}");
+                }
+                if let Err(e) = child.wait() {
+                    eprintln!("[JIDOKA] Failed to reap child process: {e}");
+                }
+            }
+            registry.clear();
+            count
+        },
+    )
 }
 
 /// RAII guard that ensures child process cleanup on drop

@@ -211,6 +211,12 @@ fn calculate_score(evidence_path: &PathBuf, model_id: &str) {
         }
     };
 
+    if evidence.is_empty() {
+        eprintln!("Error: Evidence file contains no test results");
+        eprintln!("  Popperian: untested hypotheses cannot earn a score");
+        std::process::exit(1);
+    }
+
     let collector = collect_evidence(evidence);
 
     match calculate_mqs_score(model_id, &collector) {

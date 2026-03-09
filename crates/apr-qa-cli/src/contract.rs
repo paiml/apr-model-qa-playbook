@@ -48,6 +48,12 @@ fn export_evidence(
         .cloned()
         .unwrap_or_default();
 
+    if evidence_array.is_empty() {
+        eprintln!("Error: Source file contains no evidence entries");
+        eprintln!("  Popperian: untested hypotheses cannot be exported as evidence");
+        std::process::exit(1);
+    }
+
     #[allow(clippy::cast_possible_truncation)]
     let total_scenarios = json_value
         .get("total_scenarios")
@@ -206,6 +212,12 @@ fn validate_contract_command(
 
     if critical_only {
         print_critical_tensors(get_critical_tensors(&contract));
+    }
+
+    if !matches!(format, "text" | "json") {
+        eprintln!("Error: Unknown format: {format}");
+        eprintln!("  Valid formats: text, json");
+        std::process::exit(1);
     }
 
     println!("\n=== Running Validation ===");
@@ -816,6 +828,15 @@ fn run_bootstrap(
                         eprintln!("Error creating directory: {e}");
                         std::process::exit(1);
                     }
+                }
+                if out_path.exists() {
+                    eprintln!(
+                        "{} Playbook already exists: {}",
+                        "Warning:".bold().yellow(),
+                        out_path.display()
+                    );
+                    eprintln!("  Use --dry-run to preview, or delete the file first");
+                    std::process::exit(1);
                 }
                 match std::fs::write(&out_path, &yaml) {
                     Ok(()) => {

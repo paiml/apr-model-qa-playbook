@@ -7,6 +7,11 @@ fn generate_tickets(
     min_occurrences: usize,
     ticket_mode: &str,
 ) {
+    if !matches!(ticket_mode, "draft" | "create") {
+        eprintln!("Error: Unknown ticket mode: {ticket_mode}");
+        eprintln!("  Valid modes: draft, create");
+        std::process::exit(1);
+    }
     let is_draft = ticket_mode == "draft";
 
     let evidence_json = match std::fs::read_to_string(evidence_path) {
@@ -406,11 +411,15 @@ fn run_tool_tests(
             })
             .collect::<Vec<_>>(),
     )
-    .unwrap_or_default();
+    .unwrap_or_else(|e| {
+        eprintln!("Error serializing tool results: {e}");
+        std::process::exit(1);
+    });
 
     let results_path = output_dir.join("tool_tests.json");
     if let Err(e) = std::fs::write(&results_path, results_json) {
         eprintln!("Error saving tool test results: {e}");
+        std::process::exit(1);
     } else {
         println!("Results saved to: {}", results_path.display());
     }

@@ -78,8 +78,8 @@ impl MqsCalculator {
             .iter()
             .filter(|e| e.gate_id.starts_with("G4") && e.outcome.is_fail())
             .count();
-        if garbage_failures > evidence.len() / 4 {
-            // More than 25% garbage output
+        if garbage_failures * 4 > evidence.len() {
+            // More than 25% garbage output (use multiplication to avoid integer truncation)
             results.push(GatewayResult::failed(
                 "G4",
                 "Output is not garbage",
@@ -172,7 +172,9 @@ impl MqsCalculator {
         if total == 0 {
             return 0;
         }
-        let ratio = passed as f64 / total as f64;
+        // Clamp passed to total to prevent corrupted evidence from inflating scores
+        let clamped = passed.min(total);
+        let ratio = clamped as f64 / total as f64;
         (ratio * f64::from(max)).round() as u32
     }
 

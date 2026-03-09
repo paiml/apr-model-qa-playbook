@@ -346,9 +346,12 @@ pub fn generate_evidence_detail(evidence: &Evidence) -> String {
     md
 }
 
-/// Escape pipe characters in markdown table cells to prevent column misalignment.
+/// Escape characters that break markdown table cells (pipes, newlines, backslashes).
 fn escape_md_table(s: &str) -> String {
-    s.replace('|', "\\|")
+    s.replace('\\', "\\\\")
+        .replace('|', "\\|")
+        .replace('\n', " ")
+        .replace('\r', "")
 }
 
 #[cfg(test)]
