@@ -1,0 +1,37 @@
+[lint]
+min_score = 0.60
+severity = "warning"
+contracts_dir = "contracts/"
+binding = "contracts/binding.yaml"
+
+[lint.rules]
+# Kani not yet integrated — suppress provability rules to info
+PV-PRV-001 = "info"
+PV-PRV-002 = "info"
+PV-PRV-003 = "info"
+PV-PRV-004 = "info"
+
+# Enforce strictly
+PV-VAL-001 = "error"
+PV-VAL-002 = "error"
+PV-AUD-001 = "warning"
+PV-SCR-001 = "error"
+
+[lint.suppress]
+rules = []
+files = []
+
+[lint.diff]
+base_ref = "master"
+
+[lint.trend]
+enabled = true
+retention_days = 90
+drift_threshold = 0.05
+
+[lint.cache]
+enabled = true
+dir = ".pv/cache"
+
+[output]
+format = "text"
