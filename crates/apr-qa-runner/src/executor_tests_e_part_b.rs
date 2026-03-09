@@ -215,11 +215,17 @@ ollama_parity:
   prompts: ["test"]
 "#;
     let playbook: Playbook = serde_yaml::from_str(yaml).unwrap();
-    let (passed, _failed) = executor.run_ollama_parity_tests(Path::new("/mock/model"), &playbook);
-    // Should have F-OLLAMA-001, F-OLLAMA-005, F-OLLAMA-004
-    assert!(passed >= 3, "Expected at least 3 passes, got {passed}");
+    let (passed, failed) = executor.run_ollama_parity_tests(Path::new("/mock/model"), &playbook);
+    // F-OLLAMA-001 (output match), F-OLLAMA-005 (GGUF loadability), F-OLLAMA-004 (API)
+    // F-OLLAMA-001 may now FAIL if APR and Ollama produce different text (Bug #32 fix)
+    assert!(passed + failed >= 3, "Expected at least 3 evidence items, got passed={passed} failed={failed}");
     let evidence = executor.evidence().all();
     assert!(evidence.iter().any(|e| e.gate_id == "F-OLLAMA-005"));
+    // F-OLLAMA-005 and F-OLLAMA-004 should still pass (ecosystem gates)
+    let gguf_ev = evidence.iter().find(|e| e.gate_id == "F-OLLAMA-005").unwrap();
+    assert!(gguf_ev.outcome.is_pass());
+    let api_ev = evidence.iter().find(|e| e.gate_id == "F-OLLAMA-004").unwrap();
+    assert!(api_ev.outcome.is_pass());
 }
 
 #[test]

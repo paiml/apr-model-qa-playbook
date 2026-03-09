@@ -170,6 +170,11 @@ impl MqsCalculator {
             ("F-CONV-COM", "REGR"),
             ("F-CONV", "COMP"),
             ("F-CONTRACT", "COMP"),
+            ("F-OLLAMA-003", "PERF"),  // TTFT comparison → performance
+            ("F-OLLAMA-004", "COMP"),  // API endpoint parity → compatibility
+            ("F-OLLAMA-005", "COMP"),  // GGUF loadability → compatibility
+            ("F-OLLAMA-PULL", "COMP"), // Ollama pull → compatibility
+            ("F-OLLAMA", "QUAL"),      // Output match → quality (must be after specific prefixes)
             ("G0-", "STAB"),
             ("T1-QUANT", "COMP"),   // Quantize → compatibility
             ("T2-IMPORT", "COMP"),  // Import → compatibility

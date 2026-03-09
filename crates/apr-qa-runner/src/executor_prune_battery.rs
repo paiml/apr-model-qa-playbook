@@ -54,8 +54,22 @@ impl Executor {
             duration,
         ));
 
-        let prune_json: serde_json::Value =
-            serde_json::from_str(&prune_output.stdout).unwrap_or_default();
+        let prune_json: serde_json::Value = match serde_json::from_str(&prune_output.stdout) {
+            Ok(v) => v,
+            Err(e) => {
+                results.push(Evidence::falsified(
+                    "T3-PRUNE-001",
+                    scenario.clone(),
+                    format!(
+                        "Prune exited 0 but produced invalid JSON: {e}. Stdout: {}",
+                        Self::truncate_output(&prune_output.stdout),
+                    ),
+                    &prune_output.stdout,
+                    start.elapsed().as_millis() as u64,
+                ));
+                return results;
+            }
+        };
 
         // Check 2: Output smaller than input
         let output_size = prune_json

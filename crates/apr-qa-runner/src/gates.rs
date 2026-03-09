@@ -297,13 +297,32 @@ impl Executor {
                     match serde_json::from_str::<GoldenMeta>(&data) {
                         Ok(meta) => meta.prompt,
                         Err(e) => {
-                            eprintln!("[JIDOKA] Failed to parse golden meta {}: {e}", golden_path.display());
+                            // Bug #33: I/O errors must generate Evidence, not just eprintln.
+                            // Invisible failures defeat falsification.
+                            let ev = Evidence::falsified(
+                                "F-HF-PARITY-004",
+                                Self::hf_parity_scenario(model_id, prompt_hash),
+                                format!("Failed to parse golden meta {}: {e}", golden_path.display()),
+                                "N/A",
+                                0,
+                            );
+                            self.collector.add(ev);
+                            failed += 1;
                             continue;
                         }
                     }
                 }
                 Err(e) => {
-                    eprintln!("[JIDOKA] Failed to read golden file {}: {e}", golden_path.display());
+                    // Bug #33: I/O errors must generate Evidence, not just eprintln.
+                    let ev = Evidence::falsified(
+                        "F-HF-PARITY-004",
+                        Self::hf_parity_scenario(model_id, prompt_hash),
+                        format!("Failed to read golden file {}: {e}", golden_path.display()),
+                        "N/A",
+                        0,
+                    );
+                    self.collector.add(ev);
+                    failed += 1;
                     continue;
                 }
             };

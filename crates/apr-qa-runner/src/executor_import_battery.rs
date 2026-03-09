@@ -50,8 +50,22 @@ impl Executor {
             duration,
         ));
 
-        let import_json: serde_json::Value =
-            serde_json::from_str(&import_output.stdout).unwrap_or_default();
+        let import_json: serde_json::Value = match serde_json::from_str(&import_output.stdout) {
+            Ok(v) => v,
+            Err(e) => {
+                results.push(Evidence::falsified(
+                    "T2-IMPORT-001",
+                    scenario.clone(),
+                    format!(
+                        "Import exited 0 but produced invalid JSON: {e}. Stdout: {}",
+                        Self::truncate_output(&import_output.stdout),
+                    ),
+                    &import_output.stdout,
+                    start.elapsed().as_millis() as u64,
+                ));
+                return results;
+            }
+        };
 
         // Check 2: Output file reasonable size (within 2x of source)
         let output_size = import_json

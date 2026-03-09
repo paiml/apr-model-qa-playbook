@@ -511,6 +511,7 @@ impl Executor {
     }
 
     /// Run per-prompt ollama gates: F-OLLAMA-001 (output match) and F-OLLAMA-003 (TTFT).
+    #[allow(clippy::too_many_lines)]
     fn run_ollama_prompt_gates(
         &mut self,
         model_path: &Path,
@@ -577,21 +578,26 @@ impl Executor {
                 self.collector.add(ev);
                 passed += 1;
             } else {
-                // Text differs — still corroborate if both produced non-empty output,
-                // since LLM output is non-deterministic. Log the diff for investigation.
-                let ev = Evidence::corroborated(
+                // Text differs — this FALSIFIES the parity hypothesis.
+                // Non-deterministic LLM output explains the divergence but does not
+                // excuse it: the hypothesis "APR ≡ Ollama" was refuted by evidence.
+                // Use temperature=0 on both sides for deterministic comparison.
+                let ev = Evidence::falsified(
                     "F-OLLAMA-001",
                     scenario.clone(),
-                    &format!(
-                        "Ollama parity: both produced output (APR: {} chars, Ollama: {} chars). \
-                         Non-deterministic outputs accepted for prompt: {prompt}",
+                    format!(
+                        "Ollama parity FAIL: output differs (APR: {} chars, Ollama: {} chars) \
+                         for prompt: {prompt}. APR: '{}', Ollama: '{}'",
                         apr_text.len(),
-                        ollama_text.len()
+                        ollama_text.len(),
+                        Self::truncate_str(&apr_text, 80),
+                        Self::truncate_str(&ollama_text, 80),
                     ),
+                    &format!("APR: {apr_text}\nOllama: {ollama_text}"),
                     0,
                 );
                 self.collector.add(ev);
-                passed += 1;
+                failed += 1;
             }
 
             // Gate F-OLLAMA-003: TTFT comparison (time-to-first-token)
@@ -623,6 +629,15 @@ impl Executor {
                     self.collector.add(ev);
                     failed += 1;
                 }
+            } else {
+                // Timing data unavailable — cannot evaluate TTFT hypothesis.
+                // Popperian: absence of timing data is not evidence of performance.
+                let ev = Evidence::skipped(
+                    "F-OLLAMA-003",
+                    scenario.clone(),
+                    "TTFT comparison skipped: timing data unavailable from output",
+                );
+                self.collector.add(ev);
             }
         }
 

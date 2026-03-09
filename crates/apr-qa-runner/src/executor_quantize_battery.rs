@@ -52,9 +52,24 @@ impl Executor {
             duration,
         ));
 
-        // Parse JSON output for metadata
-        let quant_json: serde_json::Value =
-            serde_json::from_str(&quant_output.stdout).unwrap_or_default();
+        // Parse JSON output for metadata — Jidoka: invalid JSON is a falsifiable defect,
+        // not something to silently default away (Bug #31).
+        let quant_json: serde_json::Value = match serde_json::from_str(&quant_output.stdout) {
+            Ok(v) => v,
+            Err(e) => {
+                results.push(Evidence::falsified(
+                    "T1-QUANT-001",
+                    scenario.clone(),
+                    format!(
+                        "Quantization exited 0 but produced invalid JSON: {e}. Stdout: {}",
+                        Self::truncate_output(&quant_output.stdout),
+                    ),
+                    &quant_output.stdout,
+                    start.elapsed().as_millis() as u64,
+                ));
+                return results;
+            }
+        };
 
         // Check 2: Output file smaller than input
         let output_size = quant_json

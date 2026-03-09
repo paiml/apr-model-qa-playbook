@@ -237,6 +237,19 @@ impl Executor {
         })
     }
 
+    /// Truncate output for diagnostic messages (first 200 chars, UTF-8 safe).
+    fn truncate_output(s: &str) -> String {
+        if s.len() <= 200 {
+            s.to_string()
+        } else {
+            let mut end = 200;
+            while end > 0 && !s.is_char_boundary(end) {
+                end -= 1;
+            }
+            format!("{}...", &s[..end])
+        }
+    }
+
     /// Extract generated text from apr output
     fn extract_generated_text(output: &str) -> String {
         // apr run with --json outputs JSON, otherwise plain text
