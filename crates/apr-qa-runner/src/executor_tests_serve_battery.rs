@@ -147,7 +147,10 @@ fn test_serve_battery_sse_empty() {
 }
 
 #[test]
-fn test_serve_battery_malformed_survives() {
+fn test_serve_battery_malformed_accepted_is_failure() {
+    // mock_with_healthy_server has http_post always succeed, meaning the mock server
+    // "accepts" the malformed request. Under the new falsification logic, a server
+    // that accepts malformed input FAILS the ERR check — vacuous survival is not enough.
     let mock_runner = mock_with_healthy_server();
     let config = ExecutionConfig {
         model_path: Some("/test/model.gguf".to_string()),
@@ -159,10 +162,10 @@ fn test_serve_battery_malformed_survives() {
 
     let malformed = results.iter().find(|e| e.gate_id == "F-A5-ERR-001");
     assert!(malformed.is_some(), "Malformed check evidence should exist");
-    // With mock, http_get succeeds with "healthy" → server is healthy → corroborated
+    // Mock accepts malformed input (http_post succeeds) → fails the check
     assert!(
-        malformed.unwrap().outcome.is_pass(),
-        "Server should survive malformed request"
+        malformed.unwrap().outcome.is_fail(),
+        "Server that accepts malformed input should fail ERR check"
     );
 }
 
@@ -323,6 +326,39 @@ fn test_check_serve_malformed_server_unhealthy() {
     assert!(ev.outcome.is_fail());
     assert_eq!(ev.gate_id, "F-A5-ERR-001");
     assert!(ev.reason.contains("unhealthy after malformed"));
+}
+
+#[test]
+fn test_check_serve_malformed_request_rejected_correctly() {
+    // http_post fails (malformed rejected), http_get succeeds (server healthy) → PASS
+    // This is the correct Jidoka behavior: server rejects bad input and stays healthy
+    let mock_runner = MockCommandRunner::new()
+        .with_http_post_failure(); // malformed request rejected (non-2xx)
+    // http_get defaults to success (server remains healthy)
+    let config = ExecutionConfig::default();
+    let executor = Executor::with_runner(config, Arc::new(mock_runner));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_malformed(8080, &scenario, &start);
+    assert!(ev.outcome.is_pass(), "Server that rejects malformed input and stays healthy should pass");
+    assert_eq!(ev.gate_id, "F-A5-ERR-001");
+    assert!(ev.output.contains("rejected malformed request"));
+}
+
+#[test]
+fn test_check_serve_malformed_request_accepted_is_failure() {
+    // http_post succeeds (server accepted malformed request) and server healthy → FAIL
+    // Vacuous truth: a server that accepts bad input provides no error-handling guarantee
+    let mock_runner = MockCommandRunner::new();
+    // Default: http_post succeeds (malformed accepted), http_get succeeds (server healthy)
+    let config = ExecutionConfig::default();
+    let executor = Executor::with_runner(config, Arc::new(mock_runner));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_malformed(8080, &scenario, &start);
+    assert!(ev.outcome.is_fail(), "Server that accepts malformed input should fail (expected rejection)");
+    assert_eq!(ev.gate_id, "F-A5-ERR-001");
+    assert!(ev.reason.contains("accepted malformed request"));
 }
 
 #[test]
@@ -749,6 +785,19 @@ fn test_check_serve_special_chars_failure() {
     let ev = executor.check_serve_special_chars(8080, &scenario, &start);
     assert!(ev.outcome.is_fail());
     assert!(ev.reason.contains("Special char prompt failed"));
+}
+
+#[test]
+fn test_check_serve_special_chars_empty_response_is_failure() {
+    // HTTP success with empty body is vacuous — no actual output was produced
+    let mock_runner = MockCommandRunner::new()
+        .with_http_post_response(""); // empty response
+    let executor = Executor::with_runner(ExecutionConfig::default(), Arc::new(mock_runner));
+    let scenario = serve_scenario();
+    let start = Instant::now();
+    let ev = executor.check_serve_special_chars(8080, &scenario, &start);
+    assert!(ev.outcome.is_fail(), "Empty response to special char prompt should fail");
+    assert!(ev.reason.contains("empty"), "Reason should mention empty response");
 }
 
 #[test]

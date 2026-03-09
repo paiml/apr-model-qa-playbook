@@ -348,24 +348,43 @@ impl Executor {
         let output = self.command_runner.http_post(&url, bad_body);
         let duration = start.elapsed().as_millis() as u64;
 
-        // We expect a non-success response (server rejects malformed input)
-        // but the server must still be healthy afterward
+        // Hypothesis: malformed request is REJECTED by server (non-2xx), AND
+        // server remains healthy afterward (Jidoka: error handling, not crash).
+        // Passing only because server stayed up (while accepting bad input) is
+        // vacuous truth — it must also have rejected the malformed request.
         let health_url = format!("http://localhost:{port}/health");
         let health = self.command_runner.http_get(&health_url);
 
-        if health.success {
-            Evidence::corroborated(
-                &gate_id,
-                scenario.clone(),
-                format!("Server survived malformed request (status={})", output.exit_code),
-                duration,
-            )
-        } else {
-            Evidence::falsified(
+        if !health.success {
+            return Evidence::falsified(
                 &gate_id,
                 scenario.clone(),
                 "Server became unhealthy after malformed request",
                 &health.stderr,
+                duration,
+            );
+        }
+
+        if output.success {
+            // Server accepted a malformed request — vacuous corroboration avoided
+            Evidence::falsified(
+                &gate_id,
+                scenario.clone(),
+                format!(
+                    "Server accepted malformed request (status={}): expected rejection",
+                    output.exit_code
+                ),
+                &output.stdout,
+                duration,
+            )
+        } else {
+            Evidence::corroborated(
+                &gate_id,
+                scenario.clone(),
+                format!(
+                    "Server rejected malformed request (status={}) and remained healthy",
+                    output.exit_code
+                ),
                 duration,
             )
         }
@@ -787,11 +806,24 @@ impl Executor {
         let output = self.command_runner.http_post(&url, body);
         let duration = start.elapsed().as_millis() as u64;
 
-        if output.success {
+        // Validate: server must accept the request AND return non-empty output.
+        // HTTP success with empty body would indicate the request was dropped silently.
+        if output.success && !output.stdout.is_empty() {
             Evidence::corroborated(
                 &gate_id,
                 scenario.clone(),
-                &format!("Special chars handled: {}", output.stdout.chars().take(100).collect::<String>()),
+                &format!(
+                    "Special chars handled: {}",
+                    output.stdout.chars().take(100).collect::<String>()
+                ),
+                duration,
+            )
+        } else if output.success {
+            Evidence::falsified(
+                &gate_id,
+                scenario.clone(),
+                "Special char prompt accepted but response was empty",
+                &output.stdout,
                 duration,
             )
         } else {
