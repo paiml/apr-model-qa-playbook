@@ -301,3 +301,185 @@ fn test_tolerance_for_q6k() {
     let tol = tolerance_for(QuantType::Q6K);
     assert!((tol.atol - 5e-2).abs() < 1e-10);
 }
+
+// ── ConversionTest::execute branch coverage ──────────────────────────────────
+
+/// ConversionTest::execute: same-format, identical outputs → Corroborated
+#[test]
+fn test_conversion_test_execute_corroborated_same_format() {
+    let dir = tempfile::tempdir().unwrap();
+    let model_file = dir.path().join("model.gguf");
+    std::fs::write(&model_file, "fake").unwrap();
+
+    // Mock: `run` always returns "The answer is 4.", `rosetta convert` touches target
+    let mock = create_mock_apr(
+        dir.path(),
+        r#"case "$1" in
+run) printf "The answer is 4."; exit 0;;
+rosetta) touch "$4"; exit 0;;
+esac
+exit 1"#,
+    );
+
+    let mut test = ConversionTest::new(
+        Format::Gguf, Format::Gguf, Backend::Cpu,
+        ModelId::new("test", "model"),
+    );
+    test.binary = mock.to_string_lossy().to_string();
+
+    match test.execute(&model_file) {
+        Ok(ConversionResult::Corroborated { source_format, target_format, max_diff, .. }) => {
+            assert_eq!(source_format, Format::Gguf);
+            assert_eq!(target_format, Format::Gguf);
+            assert!(max_diff < 1e-6, "Same outputs should have near-zero diff");
+        }
+        other => panic!("Expected Corroborated, got: {other:?}"),
+    }
+}
+
+/// ConversionTest::execute: cross-format, non-garbage outputs → Corroborated
+#[test]
+fn test_conversion_test_execute_corroborated_cross_format() {
+    let dir = tempfile::tempdir().unwrap();
+    let model_file = dir.path().join("model.gguf");
+    std::fs::write(&model_file, "fake").unwrap();
+
+    let mock = create_mock_apr(
+        dir.path(),
+        r#"case "$1" in
+run) printf "The answer is four."; exit 0;;
+rosetta) touch "$4"; exit 0;;
+esac
+exit 1"#,
+    );
+
+    let mut test = ConversionTest::new(
+        Format::Gguf, Format::Apr, Backend::Cpu,
+        ModelId::new("test", "model"),
+    );
+    test.binary = mock.to_string_lossy().to_string();
+
+    // Cross-format: uses garbage detection (not text diff). Non-garbage → Corroborated.
+    match test.execute(&model_file) {
+        Ok(ConversionResult::Corroborated { source_format, target_format, .. }) => {
+            assert_eq!(source_format, Format::Gguf);
+            assert_eq!(target_format, Format::Apr);
+        }
+        other => panic!("Expected Corroborated for non-garbage cross-format, got: {other:?}"),
+    }
+}
+
+/// ConversionTest::execute: same-format, different outputs → Falsified (diff > epsilon)
+#[test]
+fn test_conversion_test_execute_falsified_same_format_diff() {
+    let dir = tempfile::tempdir().unwrap();
+    let model_file = dir.path().join("model.gguf");
+    std::fs::write(&model_file, "fake").unwrap();
+
+    // Source returns "aaa", converted returns "zzz" → large diff
+    let mock = create_mock_apr(
+        dir.path(),
+        r#"case "$1" in
+run)
+  case "$2" in
+  *converted*) printf "zzzzzzzzzzz";;
+  *) printf "aaaaaaaaaaa";;
+  esac
+  exit 0;;
+rosetta) touch "$4"; exit 0;;
+esac
+exit 1"#,
+    );
+
+    let mut test = ConversionTest::new(
+        Format::Gguf, Format::Gguf, Backend::Cpu,
+        ModelId::new("test", "model"),
+    );
+    test.binary = mock.to_string_lossy().to_string();
+
+    match test.execute(&model_file) {
+        Ok(ConversionResult::Falsified { gate_id, reason, .. }) => {
+            assert_eq!(gate_id, "F-CONV-G-G");
+            assert!(reason.contains("different output"), "reason: {reason}");
+        }
+        other => panic!("Expected Falsified for diff outputs, got: {other:?}"),
+    }
+}
+
+/// ConversionTest::execute: cross-format, converted output is garbage → Falsified
+#[test]
+fn test_conversion_test_execute_falsified_cross_format_garbage() {
+    let dir = tempfile::tempdir().unwrap();
+    let model_file = dir.path().join("model.gguf");
+    std::fs::write(&model_file, "fake").unwrap();
+
+    // Source output is valid; converted output is garbage (too short = 1 char)
+    let mock = create_mock_apr(
+        dir.path(),
+        r#"case "$1" in
+run)
+  case "$2" in
+  *converted*) printf "x";;
+  *) printf "The answer is four and a half.";;
+  esac
+  exit 0;;
+rosetta) touch "$4"; exit 0;;
+esac
+exit 1"#,
+    );
+
+    let mut test = ConversionTest::new(
+        Format::Gguf, Format::Apr, Backend::Cpu,
+        ModelId::new("test", "model"),
+    );
+    test.binary = mock.to_string_lossy().to_string();
+
+    match test.execute(&model_file) {
+        Ok(ConversionResult::Falsified { gate_id, reason, .. }) => {
+            assert_eq!(gate_id, "F-CONV-G-A");
+            assert!(reason.contains("garbage"), "reason should mention garbage: {reason}");
+        }
+        other => panic!("Expected Falsified for garbage converted output, got: {other:?}"),
+    }
+}
+
+/// ConversionTest::execute: cross-format, file exists but inference on converted fails
+/// → Falsified with InferenceFailure
+#[test]
+fn test_conversion_test_execute_falsified_cross_format_inference_failure() {
+    let dir = tempfile::tempdir().unwrap();
+    let model_file = dir.path().join("model.gguf");
+    std::fs::write(&model_file, "fake").unwrap();
+
+    // Source inference succeeds; rosetta convert creates file; converted inference fails
+    let mock = create_mock_apr(
+        dir.path(),
+        r#"case "$1" in
+run)
+  case "$2" in
+  *converted*) echo "inference failed" >&2; exit 1;;
+  *) printf "The answer is 4."; exit 0;;
+  esac;;
+rosetta) touch "$4"; exit 0;;
+esac
+exit 1"#,
+    );
+
+    let mut test = ConversionTest::new(
+        Format::Gguf, Format::Apr, Backend::Cpu,
+        ModelId::new("test", "model"),
+    );
+    test.binary = mock.to_string_lossy().to_string();
+
+    match test.execute(&model_file) {
+        Ok(ConversionResult::Falsified { evidence, reason, .. }) => {
+            assert_eq!(
+                evidence.failure_type,
+                Some(ConversionFailureType::InferenceFailure),
+                "Expected InferenceFailure, got: {:?}. reason: {reason}",
+                evidence.failure_type
+            );
+        }
+        other => panic!("Expected Falsified with InferenceFailure, got: {other:?}"),
+    }
+}
