@@ -292,7 +292,10 @@ fn output_validation_result(result: &apr_qa_runner::ModelValidationResult, forma
     if format == "json" {
         match serde_json::to_string_pretty(result) {
             Ok(json) => println!("{json}"),
-            Err(e) => eprintln!("Error serializing result: {e}"),
+            Err(e) => {
+                eprintln!("Error serializing result: {e}");
+                std::process::exit(1);
+            }
         }
         return;
     }

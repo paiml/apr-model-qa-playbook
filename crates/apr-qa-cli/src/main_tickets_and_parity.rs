@@ -174,19 +174,19 @@ fn parity_list_golden(corpus_dir: &std::path::Path) {
     let manifest_path = corpus_dir.join("manifest.json");
     if !manifest_path.exists() {
         eprintln!("No manifest.json found in {}", corpus_dir.display());
-        return;
+        std::process::exit(1);
     }
     let Ok(content) = std::fs::read_to_string(&manifest_path) else {
         eprintln!("Error reading manifest.json: {}", manifest_path.display());
-        return;
+        std::process::exit(1);
     };
     let Ok(manifest) = serde_json::from_str::<serde_json::Value>(&content) else {
         eprintln!("Error parsing manifest.json: invalid JSON");
-        return;
+        std::process::exit(1);
     };
     let Some(prompts) = manifest.get("prompts").and_then(|p| p.as_array()) else {
         eprintln!("manifest.json missing 'prompts' array");
-        return;
+        std::process::exit(1);
     };
     println!("Found {} golden outputs:\n", prompts.len());
 

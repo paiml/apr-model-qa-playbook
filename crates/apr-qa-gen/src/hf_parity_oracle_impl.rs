@@ -336,9 +336,14 @@ impl Oracle for HfParityOracle {
                     ),
                 };
             }
-            // Text mismatch - check if it's a tensor file path
+            // Text mismatch - only fall through to tensor comparison if output
+            // is an existing .safetensors file path; otherwise falsify immediately
             let output_path = Path::new(output_trimmed);
-            if !output_path.exists() {
+            if !output_path.exists()
+                || output_path
+                    .extension()
+                    .is_none_or(|ext| ext != "safetensors")
+            {
                 return OracleResult::Falsified {
                     reason: "Text output differs from HF golden".to_string(),
                     evidence: format!(
