@@ -132,6 +132,10 @@ fn main() {
             list_models(size.as_deref());
         }
         Commands::LockPlaybooks { dir, output } => match generate_lock_file(&dir, &output) {
+            Ok(0) => {
+                eprintln!("Error: No playbook files found in {}", dir.display());
+                std::process::exit(1);
+            }
             Ok(count) => println!("Locked {count} playbook(s) → {}", output.display()),
             Err(e) => {
                 eprintln!("Error generating lock file: {e}");

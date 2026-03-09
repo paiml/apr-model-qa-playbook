@@ -111,7 +111,7 @@ fn run_parity_check(
         if let Ok(entries) = std::fs::read_dir(corpus_path) {
             for entry in entries.flatten() {
                 if entry.path().is_dir() {
-                    println!("  - {}", entry.file_name().to_string_lossy());
+                    eprintln!("  - {}", entry.file_name().to_string_lossy());
                 }
             }
         }
@@ -388,7 +388,7 @@ fn run_tool_tests(
     // Save results to JSON
     if let Err(e) = std::fs::create_dir_all(output_dir) {
         eprintln!("Error creating output directory: {e}");
-        return;
+        std::process::exit(1);
     }
 
     let results_json = serde_json::to_string_pretty(

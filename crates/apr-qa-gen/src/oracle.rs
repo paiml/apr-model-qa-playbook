@@ -450,7 +450,12 @@ fn truncate(s: &str, max_len: usize) -> String {
         s.to_string()
     } else {
         // Find last valid char boundary at or before max_len
-        let end = s.floor_char_boundary(max_len);
+        let end = s[..=max_len.min(s.len())]
+            .char_indices()
+            .map(|(i, _)| i)
+            .take_while(|&i| i <= max_len)
+            .last()
+            .unwrap_or(0);
         format!("{}...", &s[..end])
     }
 }

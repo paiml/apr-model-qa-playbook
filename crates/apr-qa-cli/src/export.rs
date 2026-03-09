@@ -178,8 +178,8 @@ fn export_csv(evidence_dir: &Path, output: &Path, append: bool) {
     let (processed, updated) = process_evidence_files(evidence_dir, &mut rows);
 
     if processed == 0 {
-        println!("  No evidence files found in {}", evidence_dir.display());
-        return;
+        eprintln!("Error: No evidence files found in {}", evidence_dir.display());
+        std::process::exit(1);
     }
 
     ensure_parent_dir(output);
@@ -242,6 +242,7 @@ fn process_evidence_files(
             }
         };
         let Ok(export) = serde_json::from_str::<apr_qa_report::EvidenceExport>(&content) else {
+            eprintln!("  Warning: Malformed JSON (skipped): {}", path.display());
             continue;
         };
         processed += 1;

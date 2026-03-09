@@ -111,7 +111,7 @@ fn export_evidence(
     }
 
     // Check if all gateways passed
-    let gateway_passed = ["G1", "G2", "G3", "G4"].iter().all(|g| {
+    let gateway_passed = ["G0", "G1", "G2", "G3", "G4"].iter().all(|g| {
         gates
             .iter()
             .filter(|(k, _)| k.starts_with(g))
@@ -333,6 +333,450 @@ fn exit_with_validation_status(passed: bool) -> ! {
     } else {
         println!("\n✗ Model DOES NOT conform to tensor layout contract");
         std::process::exit(1);
+    }
+}
+
+/// Verify kernel coverage across HuggingFace architectures (Spec §20).
+///
+/// Checks which kernel operations each model architecture requires, verifies
+/// implementation status in the sovereign stack (trueno/realizar), and
+/// optionally generates upstream tickets for gaps.
+#[allow(clippy::fn_params_excessive_bools)]
+fn kernel_coverage_command(
+    architecture: Option<&str>,
+    all: bool,
+    models: bool,
+    verify: bool,
+    file_tickets: bool,
+    output_dir: &Path,
+    trueno_path: &Path,
+    realizar_path: &Path,
+    format: &str,
+    contracts_path: &Path,
+    bindings_path: &Path,
+) {
+    use apr_qa_gen::CoverageContext;
+
+    if !matches!(format, "json" | "text") {
+        eprintln!("Error: Unknown format: {format}");
+        eprintln!("  Valid formats: json, text");
+        std::process::exit(1);
+    }
+
+    let ctx = match CoverageContext::load(contracts_path, bindings_path) {
+        Ok(ctx) => ctx,
+        Err(e) => {
+            eprintln!("Error loading coverage data: {e}");
+            eprintln!("  contracts: {}", contracts_path.display());
+            eprintln!("  bindings:  {}", bindings_path.display());
+            eprintln!("\nHint: Ensure provable-contracts is cloned as a sibling directory");
+            std::process::exit(1);
+        }
+    };
+
+    // --verify mode: check binding claims against source code
+    if verify {
+        if let Some(report) = ctx.verify_bindings_against_source(trueno_path, realizar_path) {
+            if format == "json" {
+                match serde_json::to_string_pretty(&report) {
+                    Ok(json) => println!("{json}"),
+                    Err(e) => {
+                        eprintln!("Error serializing report: {e}");
+                        std::process::exit(1);
+                    }
+                }
+            } else {
+                print_binding_verification(&report);
+            }
+            if report.drift_count > 0 {
+                std::process::exit(1);
+            }
+        } else {
+            eprintln!("Error: Neither trueno nor realizar repos found");
+            eprintln!("  trueno:   {}", trueno_path.display());
+            eprintln!("  realizar: {}", realizar_path.display());
+            eprintln!("\nHint: Use --trueno-path and --realizar-path to specify locations");
+            std::process::exit(1);
+        }
+        return;
+    }
+
+    // --models mode: walk all registry models
+    if models {
+        let summary = ctx.verify_all_registry_models();
+        if format == "json" {
+            match serde_json::to_string_pretty(&summary) {
+                Ok(json) => println!("{json}"),
+                Err(e) => {
+                    eprintln!("Error serializing summary: {e}");
+                    std::process::exit(1);
+                }
+            }
+        } else {
+            print_model_coverage_summary(&summary);
+        }
+        if file_tickets {
+            let arch_report = ctx.verify_all_architectures();
+            if !arch_report.gaps.is_empty() {
+                write_gap_tickets(&arch_report, output_dir);
+            }
+        }
+        if summary.gap_count > 0 {
+            std::process::exit(1);
+        }
+        return;
+    }
+
+    if !all && architecture.is_none() {
+        eprintln!("Error: Specify --architecture <name>, --all, or --models");
+        std::process::exit(1);
+    }
+
+    let report = architecture.map_or_else(
+        || ctx.verify_all_architectures(),
+        |arch| {
+            ctx.verify_by_name(arch).unwrap_or_else(|| {
+                eprintln!("Error: Unknown architecture '{arch}'");
+                eprintln!("Known architectures:");
+                for name in ctx.architecture_names() {
+                    eprintln!("  - {name}");
+                }
+                std::process::exit(1);
+            })
+        },
+    );
+
+    if format == "json" {
+        match serde_json::to_string_pretty(&report) {
+            Ok(json) => println!("{json}"),
+            Err(e) => {
+                eprintln!("Error serializing report: {e}");
+                std::process::exit(1);
+            }
+        }
+    } else {
+        print_coverage_report(&report);
+    }
+
+    if file_tickets && !report.gaps.is_empty() {
+        write_gap_tickets(&report, output_dir);
+    }
+
+    // Exit with failure if missing gaps found (Jidoka: stop the line)
+    if report.missing_count > 0 {
+        std::process::exit(1);
+    }
+}
+
+/// Print a human-readable kernel coverage matrix.
+fn print_coverage_report(report: &apr_qa_gen::CoverageReport) {
+    println!(
+        "\n{} Kernel Coverage Report",
+        "===".bold().cyan()
+    );
+    println!(
+        "  {} {} fused, {} fallback, {} missing (of {} total)",
+        "Summary:".dimmed(),
+        report.fused_count.to_string().green(),
+        report.fallback_count.to_string().yellow(),
+        if report.missing_count > 0 {
+            report.missing_count.to_string().red().to_string()
+        } else {
+            report.missing_count.to_string()
+        },
+        report.total_ops,
+    );
+
+    for arch in &report.architectures {
+        let class_label = arch
+            .kernel_class
+            .as_deref()
+            .unwrap_or("?");
+        println!(
+            "\n  {} [Class {}]",
+            arch.architecture.bold(),
+            class_label
+        );
+        for op in &arch.ops {
+            let symbol = op.status.symbol();
+            let status_colored = match op.status {
+                apr_qa_gen::ImplementationStatus::Fused => symbol.green().to_string(),
+                apr_qa_gen::ImplementationStatus::Fallback => symbol.yellow().to_string(),
+                apr_qa_gen::ImplementationStatus::Missing => symbol.red().to_string(),
+            };
+            println!(
+                "    {status_colored} {:30} trueno={:30} realizar={}",
+                op.op.description(),
+                op.trueno_fn.as_deref().unwrap_or("—"),
+                op.realizar_fn.as_deref().unwrap_or("—"),
+            );
+        }
+    }
+
+    if report.gaps.is_empty() {
+        println!(
+            "\n{}",
+            "All required kernel ops are implemented.".green().bold()
+        );
+    } else {
+        println!(
+            "\n{} {} gap(s) found:",
+            "GAPS:".red().bold(),
+            report.gaps.len()
+        );
+        for gap in &report.gaps {
+            println!(
+                "  {} [{}] {} — affects: {}",
+                gap.status.ticket_priority().red(),
+                gap.status,
+                gap.op.description(),
+                gap.affected_architectures.join(", ")
+            );
+        }
+    }
+}
+
+/// Write gap tickets as markdown files to the output directory.
+fn write_gap_tickets(report: &apr_qa_gen::CoverageReport, output_dir: &Path) {
+    if let Err(e) = std::fs::create_dir_all(output_dir) {
+        eprintln!("Error creating ticket directory: {e}");
+        std::process::exit(1);
+    }
+
+    let mut written = 0;
+    for gap in &report.gaps {
+        let safe_name = gap
+            .op
+            .description()
+            .to_lowercase()
+            .replace([' ', '/'], "-");
+        let filename = format!("KERNEL-GAP-{safe_name}.md");
+        let path = output_dir.join(&filename);
+
+        match std::fs::write(&path, &gap.ticket_body) {
+            Ok(()) => {
+                println!(
+                    "  {} {}",
+                    "Ticket:".dimmed(),
+                    path.display()
+                );
+                written += 1;
+            }
+            Err(e) => {
+                eprintln!("Error writing ticket {filename}: {e}");
+            }
+        }
+    }
+
+    println!(
+        "\n{} {written} ticket(s) written to {}",
+        "Filed:".bold().green(),
+        output_dir.display()
+    );
+}
+
+/// Print binding verification results.
+fn print_binding_verification(report: &apr_qa_gen::BindingVerificationReport) {
+    println!(
+        "\n{} Binding Verification Against Source",
+        "===".bold().cyan()
+    );
+    if let Some(ref p) = report.trueno_path {
+        println!("  {} {p}", "trueno:".dimmed());
+    }
+    if let Some(ref p) = report.realizar_path {
+        println!("  {} {p}", "realizar:".dimmed());
+    }
+    println!(
+        "  {} {}/{} claims verified, {} drift",
+        "Summary:".dimmed(),
+        report.verified_count.to_string().green(),
+        report.total_claims,
+        if report.drift_count > 0 {
+            report.drift_count.to_string().red().to_string()
+        } else {
+            report.drift_count.to_string()
+        },
+    );
+
+    println!("\n  {}", "Per-Binding Results:".bold());
+    for bv in &report.bindings {
+        let op_name = bv.op.description();
+
+        // trueno column
+        let trueno_status = bv.trueno_claim.as_ref().map_or_else(
+            || "—".dimmed().to_string(),
+            |claim| {
+                if bv.trueno_found {
+                    format!("{} {claim}", "✓".green())
+                } else {
+                    format!("{} {claim}", "✗".red())
+                }
+            },
+        );
+
+        // realizar column
+        let realizar_status = bv.realizar_claim.as_ref().map_or_else(
+            || "—".dimmed().to_string(),
+            |claim| {
+                if bv.realizar_found {
+                    format!("{} {claim}", "✓".green())
+                } else {
+                    format!("{} {claim}", "✗".red())
+                }
+            },
+        );
+
+        println!(
+            "    {op_name:30} trueno={trueno_status:40} realizar={realizar_status}"
+        );
+
+        // Show file paths for verified bindings
+        if let Some(ref file) = bv.trueno_file {
+            println!("    {:30} {}", "", file.dimmed());
+        }
+        if let Some(ref file) = bv.realizar_file {
+            println!("    {:30} {}", "", file.dimmed());
+        }
+    }
+
+    if report.drift_count == 0 {
+        println!(
+            "\n{}",
+            "All binding claims verified against source code."
+                .green()
+                .bold()
+        );
+    } else {
+        println!(
+            "\n{} {} claim(s) not found in source — binding drift detected!",
+            "DRIFT:".red().bold(),
+            report.drift_count
+        );
+    }
+}
+
+/// Print per-model kernel coverage summary for the full registry.
+#[allow(clippy::too_many_lines)]
+fn print_model_coverage_summary(summary: &apr_qa_gen::ModelCoverageSummary) {
+    println!(
+        "\n{} Model Kernel Coverage ({} models)",
+        "===".bold().cyan(),
+        summary.models.len()
+    );
+    println!(
+        "  {} {} covered, {} with gaps",
+        "Summary:".dimmed(),
+        summary.covered_count.to_string().green(),
+        if summary.gap_count > 0 {
+            summary.gap_count.to_string().red().to_string()
+        } else {
+            summary.gap_count.to_string()
+        },
+    );
+    if summary.defaults_count > 0 {
+        println!(
+            "  {} {} model(s) using default constraints (arch not in contracts YAML)",
+            "WARNING:".yellow().bold(),
+            summary.defaults_count,
+        );
+    }
+
+    // Class summary table
+    println!("\n  {}", "By Kernel Class:".bold());
+    for cs in &summary.class_summary {
+        let status = if cs.fully_covered {
+            "✓".green().to_string()
+        } else {
+            "✗".red().to_string()
+        };
+        println!(
+            "    {status} Class {} ({}) — {} model(s)",
+            cs.class, cs.label, cs.model_count
+        );
+        if !cs.missing_ops.is_empty() {
+            for op in &cs.missing_ops {
+                println!("      {} {op}", "└".dimmed());
+            }
+        }
+    }
+
+    // Per-model table
+    println!("\n  {}", "Per-Model Coverage:".bold());
+    let mut current_arch = String::new();
+    for model in &summary.models {
+        if model.architecture != current_arch {
+            current_arch.clone_from(&model.architecture);
+            let class_str = model
+                .kernel_class
+                .as_deref()
+                .unwrap_or("?");
+            println!(
+                "\n    {} [Class {}]",
+                current_arch.bold().cyan(),
+                class_str
+            );
+        }
+
+        let status = if model.using_defaults {
+            "?".yellow().to_string()
+        } else if model.fully_covered {
+            "✓".green().to_string()
+        } else if model.missing_ops > 0 {
+            "✗".red().to_string()
+        } else {
+            "~".yellow().to_string()
+        };
+
+        let gap_info = if model.using_defaults {
+            " — arch not in contracts YAML (using defaults)".to_string()
+        } else if model.gap_ops.is_empty() {
+            String::new()
+        } else {
+            format!(" — {}", model.gap_ops.join(", "))
+        };
+
+        println!("      {status} {}{gap_info}", model.model_id);
+    }
+
+    // Final verdict
+    if summary.gap_count == 0 && summary.defaults_count == 0 {
+        println!(
+            "\n{}",
+            "All registered models have full kernel coverage."
+                .green()
+                .bold()
+        );
+    } else {
+        if summary.gap_count > 0 {
+            println!(
+                "\n{} {}/{} models have kernel gaps",
+                "BLOCKED:".red().bold(),
+                summary.gap_count,
+                summary.models.len()
+            );
+        }
+        if summary.defaults_count > 0 {
+            println!(
+                "\n{} {}/{} models use default constraints (arch missing from contracts YAML)",
+                "UNVERIFIED:".yellow().bold(),
+                summary.defaults_count,
+                summary.models.len()
+            );
+            // Collect unique unknown architectures
+            let mut unknown_archs: Vec<&str> = summary
+                .models
+                .iter()
+                .filter(|m| m.using_defaults)
+                .map(|m| m.architecture.as_str())
+                .collect();
+            unknown_archs.sort_unstable();
+            unknown_archs.dedup();
+            println!(
+                "  Add to arch-constraints-v1.yaml: {}",
+                unknown_archs.join(", ")
+            );
+        }
     }
 }
 

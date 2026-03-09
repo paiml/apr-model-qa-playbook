@@ -307,6 +307,12 @@ fn write_report_formats(
     popperian_score: &PopperianScore,
     collector: &EvidenceCollector,
 ) {
+    if !matches!(formats, "all" | "html" | "junit") {
+        eprintln!("Error: Unknown report format: {formats}");
+        eprintln!("  Valid formats: all, html, junit");
+        std::process::exit(1);
+    }
+
     let gen_html = formats == "all" || formats == "html";
     let gen_junit = formats == "all" || formats == "junit";
 
