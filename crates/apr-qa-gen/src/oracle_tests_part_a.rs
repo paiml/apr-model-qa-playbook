@@ -539,6 +539,24 @@ fn test_garbage_oracle_catches_standalone_nan_inf() {
     assert!(oracle.evaluate("test", "[NaN, Inf, -Inf]").is_falsified());
 }
 
+/// Verify NaN/Inf detection in JSON, equals, angle brackets, and pipes
+#[test]
+fn test_nan_detection_additional_delimiters() {
+    let oracle = GarbageOracle::new();
+    // JSON embedded NaN
+    assert!(oracle.evaluate("test", r#"{"value":NaN}"#).is_falsified());
+    // Equals-delimited
+    assert!(oracle.evaluate("test", "value=NaN").is_falsified());
+    // Angle brackets
+    assert!(oracle.evaluate("test", "<NaN>").is_falsified());
+    // Quoted
+    assert!(oracle.evaluate("test", r#""NaN""#).is_falsified());
+    // Pipe-delimited
+    assert!(oracle.evaluate("test", "NaN|Inf").is_falsified());
+    // Still no false positives on words containing "nan"/"inf"
+    assert!(oracle.evaluate("test", "information about nanotech").is_corroborated());
+}
+
 /// Verify two-word repetition detected at mid-output offset
 #[test]
 fn test_mid_output_two_word_repetition() {

@@ -18,9 +18,15 @@ impl Executor {
             let link_path = st_dir.join(canonical_name);
             let _ = std::fs::remove_file(&link_path);
             #[cfg(unix)]
-            let _ = std::os::unix::fs::symlink(src_path, &link_path);
+            let link_res = std::os::unix::fs::symlink(src_path, &link_path);
             #[cfg(not(unix))]
-            let _ = std::fs::copy(src_path, &link_path);
+            let link_res = std::fs::copy(src_path, &link_path).map(|_| ());
+
+            if let Err(e) = link_res {
+                eprintln!(
+                    "[WARN] Failed to link sibling {canonical_name}: {e}"
+                );
+            }
         }
         None
     }

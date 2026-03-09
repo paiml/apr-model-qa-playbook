@@ -420,7 +420,15 @@ fn is_code_prompt(prompt: &str) -> bool {
 /// "Infrastructure", etc. Matches: "NaN", "nan", "Inf", "inf", "-Inf", "-inf".
 fn has_nan_or_inf(output: &str) -> bool {
     let tokens = ["NaN", "nan", "NAN", "Inf", "inf", "-Inf", "-inf", "+Inf", "+inf"];
-    output.split(|c: char| c.is_whitespace() || c == ',' || c == ';' || c == ':' || c == '[' || c == ']' || c == '(' || c == ')')
+    output
+        .split(|c: char| {
+            c.is_whitespace()
+                || matches!(
+                    c,
+                    ',' | ';' | ':' | '[' | ']' | '(' | ')' | '{' | '}' | '=' | '"' | '\''
+                        | '<' | '>' | '|' | '/'
+                )
+        })
         .any(|word| tokens.contains(&word))
 }
 

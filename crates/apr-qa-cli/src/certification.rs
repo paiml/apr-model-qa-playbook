@@ -85,13 +85,15 @@ fn run_certification(
     let csv_output = write_csv(&certifications);
     if let Err(e) = std::fs::write(&csv_path, &csv_output) {
         eprintln!("Error writing models.csv: {e}");
-    } else {
-        println!(
-            "{} {}",
-            "Updated:".green(),
-            csv_path.display().to_string().cyan()
-        );
+        // Jidoka: CSV persistence failure is a P0 defect — certification
+        // results are lost. Stop the line.
+        std::process::exit(1);
     }
+    println!(
+        "{} {}",
+        "Updated:".green(),
+        csv_path.display().to_string().cyan()
+    );
 
     warn_missing_lock_file(no_integrity_check);
 
