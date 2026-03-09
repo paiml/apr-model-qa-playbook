@@ -244,14 +244,19 @@ fn test_arithmetic_division_by_zero() {
     assert!(result.is_falsified());
 }
 
-/// Verify natural language arithmetic prompt skips (not Falsified) when unparseable
+/// Verify natural language arithmetic prompts are correctly evaluated
 #[test]
-fn test_arithmetic_natural_language_skips() {
+fn test_arithmetic_natural_language_extraction() {
     let oracle = ArithmeticOracle::new();
-    // "What is 2+2?" has arithmetic but eval_arithmetic can't extract it
-    // → parser limitation, not math impossibility → Corroborated (skip)
+    // "What is 2+2?" → extracts "2+2" → expected 4
     let result = oracle.evaluate("What is 2+2?", "The answer is 4.");
     assert!(result.is_corroborated());
+    // "Calculate 7*8" → extracts "7*8" → expected 56
+    let result = oracle.evaluate("Calculate 7*8", "56");
+    assert!(result.is_corroborated());
+    // Wrong answer for natural language prompt → Falsified
+    let result = oracle.evaluate("What is 15-7?", "The answer is 10.");
+    assert!(result.is_falsified());
 }
 
 /// Verify is_arithmetic_prompt detects math expressions

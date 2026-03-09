@@ -63,33 +63,106 @@ impl ArithmeticOracle {
         Self
     }
 
-    /// Try to parse and evaluate a simple arithmetic expression
+    /// Try to parse and evaluate a simple arithmetic expression.
+    ///
+    /// Handles both raw expressions ("2+2") and natural language ("What is 2+2?").
+    /// For natural language, extracts the first `number operator number` pattern.
     fn eval_arithmetic(expr: &str) -> Option<i64> {
-        // Simple parser for "a+b", "a-b", "a*b", "a/b"
-        let expr = expr.trim().trim_end_matches('=').trim_end_matches('?');
+        let cleaned = expr.trim().trim_end_matches('=').trim_end_matches('?');
 
+        // Try direct parse first (raw expressions like "2+2", "15-7")
+        if let Some(result) = Self::try_eval_simple(cleaned) {
+            return Some(result);
+        }
+
+        // Extract arithmetic expression from natural language.
+        // Scan for the pattern: digits [+-*/] digits
+        Self::extract_and_eval(cleaned)
+    }
+
+    /// Evaluate a cleaned expression with no natural language.
+    fn try_eval_simple(expr: &str) -> Option<i64> {
         // Find the FIRST operator by string position, not by operator priority.
-        // Searching by operator type [+,-,*,/] is wrong: "3-2+1" would find '+'
-        // at position 3, then try to parse "3-2" as i64, which fails.
         // Skip position 0 for '-' to handle negative numbers like "-5+3".
         let first_op = ['+', '-', '*', '/']
             .iter()
             .filter_map(|&op| {
-                expr.find(op)
-                    .and_then(|pos| {
-                        // Skip '-' at position 0 (negative sign, not subtraction)
-                        if pos == 0 && op == '-' {
-                            expr[1..].find(op).map(|p| (p + 1, op))
-                        } else {
-                            Some((pos, op))
-                        }
-                    })
+                expr.find(op).and_then(|pos| {
+                    if pos == 0 && op == '-' {
+                        expr[1..].find(op).map(|p| (p + 1, op))
+                    } else {
+                        Some((pos, op))
+                    }
+                })
             })
             .min_by_key(|&(pos, _)| pos);
 
         if let Some((pos, op)) = first_op {
             let left: i64 = expr[..pos].trim().parse().ok()?;
             let right: i64 = expr[pos + 1..].trim().parse().ok()?;
+            return match op {
+                '+' => left.checked_add(right),
+                '-' => left.checked_sub(right),
+                '*' => left.checked_mul(right),
+                '/' if right != 0 => left.checked_div(right),
+                _ => None,
+            };
+        }
+        None
+    }
+
+    /// Extract a `number op number` pattern from natural language text.
+    ///
+    /// Scans for the first occurrence of `\d+\s*[+\-*/]\s*\d+` and evaluates it.
+    /// Handles: "What is 2+2?", "Calculate 7*8", "What is 15-7?", "100/4"
+    fn extract_and_eval(text: &str) -> Option<i64> {
+        let bytes = text.as_bytes();
+        let len = bytes.len();
+        let mut i = 0;
+
+        while i < len {
+            // Find start of a number
+            if !bytes[i].is_ascii_digit() {
+                i += 1;
+                continue;
+            }
+
+            // Consume digits (left operand)
+            let left_start = i;
+            while i < len && bytes[i].is_ascii_digit() {
+                i += 1;
+            }
+            let left_end = i;
+
+            // Skip optional whitespace
+            while i < len && bytes[i] == b' ' {
+                i += 1;
+            }
+
+            // Check for operator
+            if i >= len || !matches!(bytes[i], b'+' | b'-' | b'*' | b'/') {
+                continue;
+            }
+            let op = bytes[i] as char;
+            i += 1;
+
+            // Skip optional whitespace
+            while i < len && bytes[i] == b' ' {
+                i += 1;
+            }
+
+            // Consume digits (right operand)
+            if i >= len || !bytes[i].is_ascii_digit() {
+                continue;
+            }
+            let right_start = i;
+            while i < len && bytes[i].is_ascii_digit() {
+                i += 1;
+            }
+
+            // Parse and evaluate
+            let left: i64 = text[left_start..left_end].parse().ok()?;
+            let right: i64 = text[right_start..i].parse().ok()?;
             return match op {
                 '+' => left.checked_add(right),
                 '-' => left.checked_sub(right),
