@@ -1419,4 +1419,285 @@ bindings:
         );
         assert!(names.contains(&"qwen"), "qwen alias should be registered");
     }
+
+    // ── walk_rs_files_for_name ───────────────────────────────────────────────
+
+    #[test]
+    fn test_walk_rs_files_nonexistent_dir() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let nonexistent = dir.path().join("does_not_exist");
+        let (found, file) = walk_rs_files_for_name(&nonexistent, "any_function");
+        assert!(!found);
+        assert!(file.is_none());
+    }
+
+    #[test]
+    fn test_walk_rs_files_function_found() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let rs_file = dir.path().join("lib.rs");
+        std::fs::write(
+            &rs_file,
+            "pub fn matmul_q4k_f32(a: &[u8], b: &[f32]) -> Vec<f32> {}",
+        )
+        .unwrap();
+        let (found, file) = walk_rs_files_for_name(dir.path(), "matmul_q4k_f32");
+        assert!(found, "should find fn matmul_q4k_f32(");
+        assert!(file.is_some());
+        assert!(file.unwrap().ends_with("lib.rs"));
+    }
+
+    #[test]
+    fn test_walk_rs_files_struct_found() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let rs_file = dir.path().join("types.rs");
+        std::fs::write(&rs_file, "pub struct BlockQ5K { data: Vec<u8> }").unwrap();
+        let (found, file) = walk_rs_files_for_name(dir.path(), "BlockQ5K");
+        assert!(found, "should find struct BlockQ5K {{");
+        assert!(file.is_some());
+    }
+
+    #[test]
+    fn test_walk_rs_files_function_not_found() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let rs_file = dir.path().join("lib.rs");
+        std::fs::write(&rs_file, "pub fn other_function() {}").unwrap();
+        let (found, file) = walk_rs_files_for_name(dir.path(), "matmul_q4k_f32");
+        assert!(!found);
+        assert!(file.is_none());
+    }
+
+    #[test]
+    fn test_walk_rs_files_recursive() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let subdir = dir.path().join("kernels");
+        std::fs::create_dir_all(&subdir).unwrap();
+        let rs_file = subdir.join("q6k.rs");
+        std::fs::write(&rs_file, "pub fn matmul_q6k_f32(w: &[u8]) {}").unwrap();
+        let (found, file) = walk_rs_files_for_name(dir.path(), "matmul_q6k_f32");
+        assert!(found, "should find function in subdirectory");
+        assert!(file.is_some());
+        assert!(file.unwrap().ends_with("q6k.rs"));
+    }
+
+    #[test]
+    fn test_walk_rs_files_skips_non_rs_files() {
+        let dir = tempfile::TempDir::new().unwrap();
+        // Only a .txt file — should not be searched
+        let txt_file = dir.path().join("notes.txt");
+        std::fs::write(&txt_file, "pub fn target_function() {}").unwrap();
+        let (found, _) = walk_rs_files_for_name(dir.path(), "target_function");
+        assert!(!found, "should not search non-.rs files");
+    }
+
+    #[test]
+    fn test_walk_rs_files_generic_function() {
+        // Pattern: fn name<T>(  — should match via "fn name<" pattern
+        let dir = tempfile::TempDir::new().unwrap();
+        let rs_file = dir.path().join("generic.rs");
+        std::fs::write(
+            &rs_file,
+            "pub fn rms_norm_alloc<T: Float>(x: &[T]) -> Vec<T> {}",
+        )
+        .unwrap();
+        let (found, _) = walk_rs_files_for_name(dir.path(), "rms_norm_alloc");
+        assert!(found, "should find generic fn via fn name< pattern");
+    }
+
+    // ── find_function_in_dir (private helper) ────────────────────────────────
+
+    #[test]
+    fn test_find_function_strips_parenthetical_notes() {
+        // "BlockQ5K::dequantize" → strips "::" prefix, searches for "dequantize"
+        let dir = tempfile::TempDir::new().unwrap();
+        let rs_file = dir.path().join("quant.rs");
+        std::fs::write(&rs_file, "impl BlockQ5K { pub fn dequantize(&self) {} }").unwrap();
+        // find_function_in_dir strips module path — "BlockQ5K::dequantize" → "dequantize"
+        let (found, _) = find_function_in_dir(dir.path(), "BlockQ5K::dequantize");
+        assert!(
+            found,
+            "should find dequantize after stripping module prefix"
+        );
+    }
+
+    #[test]
+    fn test_find_function_description_string_not_greppable() {
+        // Names with spaces are prose descriptions — must return (false, None)
+        let dir = tempfile::TempDir::new().unwrap();
+        let rs_file = dir.path().join("ops.rs");
+        std::fs::write(&rs_file, "// vector add implementation").unwrap();
+        let (found, file) = find_function_in_dir(dir.path(), "vector add");
+        assert!(!found, "prose description must not be searched");
+        assert!(file.is_none());
+    }
+
+    #[test]
+    fn test_find_function_strips_parenthetical_suffix() {
+        // "apply_rope_rotation_simd (composed)" → searches "apply_rope_rotation_simd"
+        let dir = tempfile::TempDir::new().unwrap();
+        let rs_file = dir.path().join("rope.rs");
+        std::fs::write(
+            &rs_file,
+            "pub fn apply_rope_rotation_simd(x: &mut [f32]) {}",
+        )
+        .unwrap();
+        let (found, _) = find_function_in_dir(dir.path(), "apply_rope_rotation_simd (composed)");
+        assert!(found, "should strip parenthetical suffix before searching");
+    }
+
+    // ── verify_bindings_against_source ──────────────────────────────────────
+
+    #[test]
+    fn test_verify_bindings_neither_repo_exists() {
+        let ctx = test_ctx();
+        let dir = tempfile::TempDir::new().unwrap();
+        let trueno = dir.path().join("trueno");
+        let realizar = dir.path().join("realizar");
+        // Neither trueno/src nor realizar/src exist
+        let result = ctx.verify_bindings_against_source(&trueno, &realizar);
+        assert!(
+            result.is_none(),
+            "should return None when neither repo exists"
+        );
+    }
+
+    #[test]
+    fn test_verify_bindings_trueno_only_returns_some() {
+        let ctx = test_ctx();
+        let dir = tempfile::TempDir::new().unwrap();
+        let trueno = dir.path().join("trueno");
+        std::fs::create_dir_all(trueno.join("src")).unwrap();
+        let realizar = dir.path().join("realizar"); // no src dir
+
+        let report = ctx
+            .verify_bindings_against_source(&trueno, &realizar)
+            .expect("should return Some when trueno/src exists");
+        assert!(report.trueno_path.is_some());
+        assert!(report.realizar_path.is_none());
+        // all bindings should be present in report
+        assert_eq!(report.bindings.len(), ctx.bindings.len());
+    }
+
+    #[test]
+    fn test_verify_bindings_realizar_only_returns_some() {
+        let ctx = test_ctx();
+        let dir = tempfile::TempDir::new().unwrap();
+        let trueno = dir.path().join("trueno"); // no src dir
+        let realizar = dir.path().join("realizar");
+        std::fs::create_dir_all(realizar.join("src")).unwrap();
+
+        let report = ctx
+            .verify_bindings_against_source(&trueno, &realizar)
+            .expect("should return Some when realizar/src exists");
+        assert!(report.trueno_path.is_none());
+        assert!(report.realizar_path.is_some());
+    }
+
+    #[test]
+    fn test_verify_bindings_found_in_trueno_src() {
+        let ctx = test_ctx();
+        let dir = tempfile::TempDir::new().unwrap();
+        let trueno = dir.path().join("trueno");
+        std::fs::create_dir_all(trueno.join("src")).unwrap();
+        // Write a file containing matmul_q4k_f32 (the trueno_function in TEST_BINDINGS_YAML)
+        std::fs::write(
+            trueno.join("src").join("q4k.rs"),
+            "pub fn matmul_q4k_f32(w: &[u8], x: &[f32]) -> Vec<f32> {}",
+        )
+        .unwrap();
+        let realizar = dir.path().join("realizar"); // absent
+
+        let report = ctx
+            .verify_bindings_against_source(&trueno, &realizar)
+            .unwrap();
+        let q4k = report
+            .bindings
+            .iter()
+            .find(|b| b.op == KernelOp::FusedQ4kMatvec)
+            .unwrap();
+        assert!(
+            q4k.trueno_found,
+            "matmul_q4k_f32 should be found in trueno/src"
+        );
+        assert!(q4k.trueno_file.is_some());
+    }
+
+    #[test]
+    fn test_verify_bindings_not_found_increments_drift() {
+        let ctx = test_ctx();
+        let dir = tempfile::TempDir::new().unwrap();
+        let trueno = dir.path().join("trueno");
+        std::fs::create_dir_all(trueno.join("src")).unwrap();
+        // Empty src dir — nothing will be found
+        let realizar = dir.path().join("realizar"); // absent
+
+        let report = ctx
+            .verify_bindings_against_source(&trueno, &realizar)
+            .unwrap();
+        // total_claims = number of bindings with trueno_function (non-None)
+        let expected_trueno_claims = ctx
+            .bindings
+            .iter()
+            .filter(|b| b.trueno_function.is_some())
+            .count();
+        assert_eq!(report.total_claims, expected_trueno_claims);
+        // verified_count should be 0 (nothing in empty dir)
+        assert_eq!(report.verified_count, 0);
+        assert_eq!(report.drift_count, expected_trueno_claims);
+    }
+
+    #[test]
+    fn test_verify_bindings_both_repos_count_claims() {
+        let ctx = test_ctx();
+        let dir = tempfile::TempDir::new().unwrap();
+        let trueno = dir.path().join("trueno");
+        let realizar = dir.path().join("realizar");
+        std::fs::create_dir_all(trueno.join("src")).unwrap();
+        std::fs::create_dir_all(realizar.join("src")).unwrap();
+        // Both src dirs exist but empty — claims counted for both
+
+        let report = ctx
+            .verify_bindings_against_source(&trueno, &realizar)
+            .unwrap();
+        let expected_trueno = ctx
+            .bindings
+            .iter()
+            .filter(|b| b.trueno_function.is_some())
+            .count();
+        let expected_realizar = ctx
+            .bindings
+            .iter()
+            .filter(|b| b.realizar_function.is_some())
+            .count();
+        assert_eq!(report.total_claims, expected_trueno + expected_realizar);
+        assert_eq!(report.verified_count, 0);
+        assert_eq!(report.drift_count, report.total_claims);
+    }
+
+    #[test]
+    fn test_verify_bindings_found_in_realizar_src() {
+        let ctx = test_ctx();
+        let dir = tempfile::TempDir::new().unwrap();
+        let trueno = dir.path().join("trueno"); // absent
+        let realizar = dir.path().join("realizar");
+        std::fs::create_dir_all(realizar.join("src")).unwrap();
+        // Write file containing fused_q4k_parallel_matvec_into
+        std::fs::write(
+            realizar.join("src").join("q4k_fused.rs"),
+            "pub fn fused_q4k_parallel_matvec_into(out: &mut [f32], w: &[u8]) {}",
+        )
+        .unwrap();
+
+        let report = ctx
+            .verify_bindings_against_source(&trueno, &realizar)
+            .unwrap();
+        let q4k = report
+            .bindings
+            .iter()
+            .find(|b| b.op == KernelOp::FusedQ4kMatvec)
+            .unwrap();
+        assert!(
+            q4k.realizar_found,
+            "fused_q4k_parallel_matvec_into should be found in realizar/src"
+        );
+    }
 }
