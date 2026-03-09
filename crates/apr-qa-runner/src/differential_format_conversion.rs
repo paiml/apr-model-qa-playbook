@@ -287,10 +287,18 @@ pub struct ProfileAssertion {
 }
 
 impl SixColumnProfile {
-    /// Check if all assertions passed
+    /// Check if all assertions passed.
+    ///
+    /// Popperian: returns false when no throughput was measured — untested ≠ passed.
     #[must_use]
     pub fn all_assertions_passed(&self) -> bool {
-        self.failed_assertions.is_empty()
+        let any_measured = self.tps_gguf_cpu.is_some()
+            || self.tps_gguf_gpu.is_some()
+            || self.tps_apr_cpu.is_some()
+            || self.tps_apr_gpu.is_some()
+            || self.tps_st_cpu.is_some()
+            || self.tps_st_gpu.is_some();
+        any_measured && self.failed_assertions.is_empty()
     }
 
     /// Check throughput against thresholds and record failures

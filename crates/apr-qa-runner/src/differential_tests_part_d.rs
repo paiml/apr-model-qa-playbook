@@ -1,7 +1,8 @@
 #[test]
 fn test_six_column_profile_all_assertions_passed_empty() {
     let profile = SixColumnProfile::default();
-    assert!(profile.all_assertions_passed());
+    // Popperian: no throughput measured → untested ≠ passed
+    assert!(!profile.all_assertions_passed());
 }
 
 #[test]
@@ -102,8 +103,8 @@ fn test_six_column_profile_check_assertions_multiple_failures() {
 fn test_six_column_profile_check_assertions_none_values() {
     let mut profile = SixColumnProfile::default();
     profile.check_assertions(10.0, 30.0);
-    // No assertions should be recorded for None values
-    assert!(profile.all_assertions_passed());
+    // Popperian: no throughput measured → untested ≠ passed
+    assert!(!profile.all_assertions_passed());
 }
 
 #[test]
