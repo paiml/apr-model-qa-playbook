@@ -19,7 +19,9 @@ fn run_i3_no_silent_fallbacks(
     gate_id: &str,
 ) -> Evidence {
     let apr_path = resolve_apr_path(model_path);
+    let start = std::time::Instant::now();
     let result = runner.check_model(&apr_path);
+    let duration = start.elapsed().as_millis() as u64;
 
     if !result.success {
         return Evidence::falsified(
@@ -27,7 +29,7 @@ fn run_i3_no_silent_fallbacks(
             contract_scenario(model_id),
             format!("I-3 No Silent Fallbacks: check failed: {}", result.stderr),
             &result.stdout,
-            0,
+            duration,
         );
     }
 
@@ -37,11 +39,11 @@ fn run_i3_no_silent_fallbacks(
             contract_scenario(model_id),
             "I-3 No Silent Fallbacks: detected F32 fallback in check output",
             &result.stdout,
-            0,
+            duration,
         )
     } else {
         let mut ev =
-            Evidence::corroborated(gate_id, contract_scenario(model_id), &result.stdout, 0);
+            Evidence::corroborated(gate_id, contract_scenario(model_id), &result.stdout, duration);
         ev.reason = "I-3 No Silent Fallbacks: no F32 fallbacks detected".to_string();
         ev
     }
@@ -64,7 +66,9 @@ fn run_i4_statistical_preservation(
 ) -> Evidence {
     let st_path = resolve_safetensors_path(model_path);
     let apr_path = resolve_apr_path(model_path);
+    let start = std::time::Instant::now();
     let result = runner.validate_stats(&st_path, &apr_path);
+    let duration = start.elapsed().as_millis() as u64;
 
     if !result.success {
         return Evidence::falsified(
@@ -75,13 +79,13 @@ fn run_i4_statistical_preservation(
                 result.stderr
             ),
             &result.stdout,
-            0,
+            duration,
         );
     }
 
     if result.stdout.contains("\"passed\":true") || result.stdout.contains("\"passed\": true") {
         let mut ev =
-            Evidence::corroborated(gate_id, contract_scenario(model_id), &result.stdout, 0);
+            Evidence::corroborated(gate_id, contract_scenario(model_id), &result.stdout, duration);
         ev.reason = "I-4 Statistical Preservation: tensor statistics preserved within tolerance"
             .to_string();
         ev
@@ -94,7 +98,7 @@ fn run_i4_statistical_preservation(
                 result.stdout
             ),
             &result.stdout,
-            0,
+            duration,
         )
     }
 }
@@ -108,7 +112,9 @@ fn run_i5_tokenizer_roundtrip(
 ) -> Evidence {
     let st_path = resolve_safetensors_path(model_path);
     let apr_path = resolve_apr_path(model_path);
+    let start = std::time::Instant::now();
     let result = runner.compare_inference(&st_path, &apr_path, "Hello", 1, 0.0);
+    let duration = start.elapsed().as_millis() as u64;
 
     if !result.success {
         return Evidence::falsified(
@@ -119,13 +125,13 @@ fn run_i5_tokenizer_roundtrip(
                 result.stderr
             ),
             &result.stdout,
-            0,
+            duration,
         );
     }
 
     if result.stdout.contains("\"passed\":true") || result.stdout.contains("\"passed\": true") {
         let mut ev =
-            Evidence::corroborated(gate_id, contract_scenario(model_id), &result.stdout, 0);
+            Evidence::corroborated(gate_id, contract_scenario(model_id), &result.stdout, duration);
         ev.reason = "I-5 Tokenizer Roundtrip: tokenizer roundtrip verified".to_string();
         ev
     } else {
@@ -137,7 +143,7 @@ fn run_i5_tokenizer_roundtrip(
                 result.stdout
             ),
             &result.stdout,
-            0,
+            duration,
         )
     }
 }

@@ -380,9 +380,11 @@ fn run_i2_tensor_bijection(
     let st_path = resolve_safetensors_path(model_path);
     let apr_path = resolve_apr_path(model_path);
 
+    let start = std::time::Instant::now();
     // Inspect both models to get tensor name lists
     let st_inspect = runner.inspect_model_json(&st_path);
     let apr_inspect = runner.inspect_model_json(&apr_path);
+    let duration = start.elapsed().as_millis() as u64;
 
     if !st_inspect.success || !apr_inspect.success {
         let err = if st_inspect.success {
@@ -395,7 +397,7 @@ fn run_i2_tensor_bijection(
             contract_scenario(model_id),
             format!("I-2 Tensor Name Bijection: inspect failed: {err}"),
             &format!("st: {}, apr: {}", st_inspect.stdout, apr_inspect.stdout),
-            0,
+            duration,
         );
     }
 
@@ -413,7 +415,7 @@ fn run_i2_tensor_bijection(
                 apr_names.len()
             ),
             &format!("st_stdout: {}, apr_stdout: {}", st_inspect.stdout, apr_inspect.stdout),
-            0,
+            duration,
         );
     }
 
@@ -434,7 +436,7 @@ fn run_i2_tensor_bijection(
                 missing.join(", ")
             ),
             &format!("source={}, apr={}", st_names.len(), apr_names.len()),
-            0,
+            duration,
         );
     }
 
@@ -467,7 +469,7 @@ fn run_i2_tensor_bijection(
                 apr_names.len(),
                 extra
             ),
-            0,
+            duration,
         );
     }
 
@@ -480,7 +482,7 @@ fn run_i2_tensor_bijection(
         gate_id,
         contract_scenario(model_id),
         &format!("source={}, apr={}", st_names.len(), apr_names.len()),
-        0,
+        duration,
     );
     ev.reason = format!(
         "I-2 Tensor Name Bijection: all {} source tensors present in APR ({} total){}",
