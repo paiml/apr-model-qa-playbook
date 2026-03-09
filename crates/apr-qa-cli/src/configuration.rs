@@ -453,6 +453,10 @@ fn run_playbook(
                     tool_failed.to_string().dimmed()
                 }
             );
+            if tool_failed > 0 {
+                eprintln!("Aborting: {tool_failed} tool test(s) failed (Jidoka: stop the line)");
+                std::process::exit(1);
+            }
         }
     }
 

@@ -273,11 +273,15 @@ fn calculate_score(evidence_path: &PathBuf, model_id: &str) {
 
 /// Generate HTML and/or JUnit reports from evidence and write them to the output directory
 fn generate_report(evidence_path: &PathBuf, output_dir: &PathBuf, formats: &str, model_id: &str) {
-    // Validate format before any I/O
-    if !matches!(formats, "all" | "html" | "junit") {
-        eprintln!("Error: Unknown report format: {formats}");
-        eprintln!("  Valid formats: all, html, junit");
-        std::process::exit(1);
+    // Parse comma-separated formats (e.g., "html,junit" or "all")
+    let format_list: Vec<&str> = formats.split(',').map(str::trim).collect();
+    let valid_formats = ["all", "html", "junit", "markdown"];
+    for f in &format_list {
+        if !valid_formats.contains(f) {
+            eprintln!("Error: Unknown report format: {f}");
+            eprintln!("  Valid formats: all, html, junit, markdown");
+            std::process::exit(1);
+        }
     }
 
     let evidence_json = read_file_or_exit(evidence_path, "evidence file");
@@ -289,7 +293,7 @@ fn generate_report(evidence_path: &PathBuf, output_dir: &PathBuf, formats: &str,
     create_dir_or_exit(output_dir);
     write_report_formats(
         output_dir,
-        formats,
+        &format_list,
         model_id,
         &mqs_score,
         &popperian_score,
@@ -329,29 +333,28 @@ fn create_dir_or_exit(dir: &PathBuf) {
     }
 }
 
-/// Dispatch report generation to the requested format writers (HTML, JUnit, MQS JSON)
+/// Dispatch report generation to the requested format writers (HTML, JUnit, Markdown, MQS JSON)
 fn write_report_formats(
     output_dir: &PathBuf,
-    formats: &str,
+    formats: &[&str],
     model_id: &str,
     mqs_score: &MqsScore,
     popperian_score: &PopperianScore,
     collector: &EvidenceCollector,
 ) {
-    if !matches!(formats, "all" | "html" | "junit") {
-        eprintln!("Error: Unknown report format: {formats}");
-        eprintln!("  Valid formats: all, html, junit");
-        std::process::exit(1);
-    }
-
-    let gen_html = formats == "all" || formats == "html";
-    let gen_junit = formats == "all" || formats == "junit";
+    let is_all = formats.contains(&"all");
+    let gen_html = is_all || formats.contains(&"html");
+    let gen_junit = is_all || formats.contains(&"junit");
+    let gen_markdown = is_all || formats.contains(&"markdown");
 
     if gen_html {
         write_html_report(output_dir, model_id, mqs_score, popperian_score, collector);
     }
     if gen_junit {
         write_junit_report(output_dir, model_id, collector, mqs_score);
+    }
+    if gen_markdown {
+        write_markdown_report(output_dir, mqs_score, popperian_score, collector);
     }
     write_mqs_json(output_dir, mqs_score);
 }
@@ -371,6 +374,21 @@ fn write_html_report(
         collector,
     );
     write_report_file(output_dir, "report.html", "HTML report", result);
+}
+
+/// Generate and write the RAG-optimized markdown report file
+fn write_markdown_report(
+    output_dir: &PathBuf,
+    mqs_score: &MqsScore,
+    popperian_score: &PopperianScore,
+    collector: &EvidenceCollector,
+) {
+    let markdown = apr_qa_report::markdown::generate_rag_markdown(mqs_score, popperian_score, collector);
+    let path = output_dir.join("report.md");
+    match std::fs::write(&path, markdown) {
+        Ok(()) => println!("Markdown report: {}", path.display()),
+        Err(e) => eprintln!("Error writing markdown report: {e}"),
+    }
 }
 
 /// Generate and write the JUnit XML report file
