@@ -178,7 +178,10 @@ fn export_csv(evidence_dir: &Path, output: &Path, append: bool) {
     let (processed, updated) = process_evidence_files(evidence_dir, &mut rows);
 
     if processed == 0 {
-        eprintln!("Error: No evidence files found in {}", evidence_dir.display());
+        eprintln!(
+            "Error: No EvidenceExport files found in {}.\n  If using `certifications/` directory, run `apr-qa export-evidence` first.",
+            evidence_dir.display()
+        );
         std::process::exit(1);
     }
 
@@ -213,7 +216,12 @@ fn load_existing_csv_rows(output: &Path, append: bool) -> Vec<apr_qa_report::Cer
     }
 }
 
-/// Scan the evidence directory and upsert rows from each JSON evidence file
+/// Scan the evidence directory and upsert rows from each JSON evidence file.
+///
+/// Searches both top-level JSON files AND `{dir}/{model}/evidence.json` files
+/// (the structure written by `apr-qa certify` and `apr-qa run`). Top-level files
+/// must be in `EvidenceExport` format (written by `export-evidence`). For nested
+/// plain-array evidence files, a summary hint is printed once at the end.
 fn process_evidence_files(
     evidence_dir: &Path,
     rows: &mut Vec<apr_qa_report::CertificationRow>,
@@ -228,30 +236,60 @@ fn process_evidence_files(
 
     let mut processed = 0;
     let mut updated = 0;
+    let mut plain_array_count = 0;
 
     for entry in entries.flatten() {
         let path = entry.path();
-        if path.extension().is_none_or(|ext| ext != "json") {
-            continue;
-        }
-        let content = match std::fs::read_to_string(&path) {
-            Ok(c) => c,
-            Err(e) => {
-                eprintln!("  Warning: Could not read {}: {e}", path.display());
-                continue;
+        if path.is_dir() {
+            // Nested: {evidence_dir}/{model}/evidence.json
+            let nested = path.join("evidence.json");
+            if nested.exists() {
+                process_single_file(&nested, rows, &mut processed, &mut updated, &mut plain_array_count);
             }
-        };
-        let Ok(export) = serde_json::from_str::<apr_qa_report::EvidenceExport>(&content) else {
-            eprintln!("  Warning: Malformed JSON (skipped): {}", path.display());
-            continue;
-        };
-        processed += 1;
-        let was_updated = update_row_from_export(rows, &export);
-        if was_updated {
-            updated += 1;
+        } else if path.extension().is_some_and(|ext| ext == "json") {
+            process_single_file(&path, rows, &mut processed, &mut updated, &mut plain_array_count);
         }
     }
+
+    if plain_array_count > 0 {
+        eprintln!(
+            "  Hint: {plain_array_count} plain evidence array(s) skipped.\n  Run `apr-qa export-evidence` for each model first, then re-run export-csv."
+        );
+    }
+
     (processed, updated)
+}
+
+/// Attempt to parse a JSON file as EvidenceExport and upsert into rows.
+fn process_single_file(
+    path: &Path,
+    rows: &mut Vec<apr_qa_report::CertificationRow>,
+    processed: &mut usize,
+    updated: &mut usize,
+    plain_array_count: &mut usize,
+) {
+    let content = match std::fs::read_to_string(path) {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("  Warning: Could not read {}: {e}", path.display());
+            return;
+        }
+    };
+    let Ok(export) = serde_json::from_str::<apr_qa_report::EvidenceExport>(&content) else {
+        // Plain Evidence arrays (from `certify`/`run`) can't be processed directly.
+        // The user must run `export-evidence` first to add model metadata.
+        if content.trim_start().starts_with('[') {
+            *plain_array_count += 1;
+        } else {
+            eprintln!("  Warning: Malformed JSON (skipped): {}", path.display());
+        }
+        return;
+    };
+    *processed += 1;
+    let was_updated = update_row_from_export(rows, &export);
+    if was_updated {
+        *updated += 1;
+    }
 }
 
 /// Update or insert a certification row from an evidence export record
