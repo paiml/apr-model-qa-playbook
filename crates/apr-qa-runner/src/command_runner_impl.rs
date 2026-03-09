@@ -343,8 +343,12 @@ impl CommandRunner for RealCommandRunner {
         {
             Ok(mut child) => {
                 if let Some(mut stdin) = child.stdin.take() {
-                    let _ = stdin.write_all(prompt.as_bytes());
-                    let _ = stdin.write_all(b"\n");
+                    if let Err(e) = stdin.write_all(prompt.as_bytes()) {
+                        eprintln!("[JIDOKA] Failed to write prompt to stdin: {e}");
+                    }
+                    if let Err(e) = stdin.write_all(b"\n") {
+                        eprintln!("[JIDOKA] Failed to write newline to stdin: {e}");
+                    }
                 }
                 match child.wait_with_output() {
                     Ok(output) => CommandOutput {

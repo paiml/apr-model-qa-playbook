@@ -239,7 +239,8 @@ pub fn parse_csv(content: &str) -> Result<Vec<ModelCertification>> {
     };
 
     // Validate header (minimum 13 fields for backwards compatibility, 16 with tps)
-    let header_fields: Vec<&str> = header.split(',').collect();
+    // Use csv_split for RFC 4180 compliance (handles quoted fields with commas)
+    let header_fields = csv_split(header);
     if header_fields.len() < 13 {
         return Err(CertifyError::CsvParse {
             line: 1,
@@ -450,7 +451,7 @@ pub fn write_csv(models: &[ModelCertification]) -> String {
         };
         let last_cert = m
             .last_certified
-            .map_or_else(|| "2026-01-31T00:00:00Z".to_string(), |dt| dt.to_rfc3339());
+            .map_or_else(String::new, |dt| dt.to_rfc3339());
 
         // Format tps values (empty string for None)
         let fmt = |v: Option<f64>| v.map_or(String::new(), |x| format!("{x:.1}"));

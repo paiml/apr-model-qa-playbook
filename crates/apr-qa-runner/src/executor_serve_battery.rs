@@ -4,6 +4,30 @@ use jugar_probar::llm::{
     assertion::assert_deterministic,
 };
 
+/// Escape a string for embedding in a JSON string literal.
+/// Handles all characters that are invalid inside JSON strings per RFC 8259.
+fn escape_json_string(s: &str) -> String {
+    use std::fmt::Write;
+    let mut out = String::with_capacity(s.len());
+    for ch in s.chars() {
+        match ch {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            c if c.is_control() => {
+                // Unicode escape for other control characters
+                for unit in c.encode_utf16(&mut [0; 2]) {
+                    let _ = write!(out, "\\u{unit:04x}");
+                }
+            }
+            c => out.push(c),
+        }
+    }
+    out
+}
+
 /// Serve battery: spawn server once, run 19 endpoint checks, kill once.
 ///
 /// Replaces the 1-request-per-server-lifecycle pattern. The primary
@@ -147,7 +171,7 @@ impl Executor {
         let gate_id = format!("F-{}-001", scenario.mqs_category());
         let body = format!(
             r#"{{"prompt":"{}","max_tokens":32}}"#,
-            scenario.prompt.replace('"', "\\\""),
+            escape_json_string(&scenario.prompt),
         );
         let url = format!("http://localhost:{port}/generate");
         let output = self.command_runner.http_post(&url, &body);
@@ -187,7 +211,7 @@ impl Executor {
         let gate_id = format!("F-{}-COMP-001", scenario.mqs_category());
         let body = format!(
             r#"{{"prompt":"{}","max_tokens":32,"temperature":0.0}}"#,
-            scenario.prompt.replace('"', "\\\""),
+            escape_json_string(&scenario.prompt),
         );
         let url = format!("http://localhost:{port}/v1/completions");
         let output = self.command_runner.http_post(&url, &body);
@@ -216,7 +240,7 @@ impl Executor {
         let gate_id = format!("F-{}-CHAT-001", scenario.mqs_category());
         let body = format!(
             r#"{{"model":"apr","messages":[{{"role":"user","content":"{}"}}],"max_tokens":32}}"#,
-            scenario.prompt.replace('"', "\\\""),
+            escape_json_string(&scenario.prompt),
         );
         let url = format!("http://localhost:{port}/v1/chat/completions");
         let output = self.command_runner.http_post(&url, &body);
@@ -245,7 +269,7 @@ impl Executor {
         let gate_id = format!("F-{}-STREAM-001", scenario.mqs_category());
         let body = format!(
             r#"{{"prompt":"{}","max_tokens":16,"stream":true}}"#,
-            scenario.prompt.replace('"', "\\\""),
+            escape_json_string(&scenario.prompt),
         );
         let url = format!("http://localhost:{port}/generate");
         let output = self.command_runner.http_post(&url, &body);
