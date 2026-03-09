@@ -176,6 +176,11 @@ fn generate_scenarios(model_id: &str, count: usize, format: &str) {
         std::process::exit(1);
     }
 
+    if count == 0 {
+        eprintln!("Error: --count must be at least 1");
+        std::process::exit(1);
+    }
+
     let scenarios = generate_model_scenarios(model_id, count);
 
     eprintln!("Generated {} scenarios for {model_id}", scenarios.len());
@@ -183,11 +188,17 @@ fn generate_scenarios(model_id: &str, count: usize, format: &str) {
     match format {
         "yaml" => match scenarios_to_yaml(&scenarios) {
             Ok(yaml) => println!("{yaml}"),
-            Err(e) => eprintln!("{e}"),
+            Err(e) => {
+                eprintln!("Error serializing scenarios to YAML: {e}");
+                std::process::exit(1);
+            }
         },
         "json" => match scenarios_to_json(&scenarios) {
             Ok(json) => println!("{json}"),
-            Err(e) => eprintln!("{e}"),
+            Err(e) => {
+                eprintln!("Error serializing scenarios to JSON: {e}");
+                std::process::exit(1);
+            }
         },
         _ => unreachable!(),
     }
@@ -255,6 +266,13 @@ fn calculate_score(evidence_path: &PathBuf, model_id: &str) {
 
 /// Generate HTML and/or JUnit reports from evidence and write them to the output directory
 fn generate_report(evidence_path: &PathBuf, output_dir: &PathBuf, formats: &str, model_id: &str) {
+    // Validate format before any I/O
+    if !matches!(formats, "all" | "html" | "junit") {
+        eprintln!("Error: Unknown report format: {formats}");
+        eprintln!("  Valid formats: all, html, junit");
+        std::process::exit(1);
+    }
+
     let evidence_json = read_file_or_exit(evidence_path, "evidence file");
     let evidence = parse_evidence_or_exit(&evidence_json);
     let collector = collect_evidence(evidence);

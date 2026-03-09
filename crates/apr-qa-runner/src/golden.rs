@@ -309,6 +309,20 @@ impl Executor {
         let orig_text = Self::extract_output_text(&original_result.stdout);
         let conv_text = Self::extract_output_text(&converted_result.stdout);
 
+        // Popperian: empty extraction means "Output:" marker was missing.
+        // Two empty strings comparing equal is vacuous truth, not evidence.
+        if orig_text.is_empty() && conv_text.is_empty() {
+            let ev = Evidence::falsified(
+                "F-GOLDEN-RULE-002",
+                Self::golden_scenario(model_id),
+                "Golden rule vacuous: both outputs missing 'Output:' marker",
+                "N/A",
+                0,
+            );
+            self.collector.add(ev);
+            return (0, 1);
+        }
+
         if orig_text == conv_text {
             let ev = Evidence::corroborated(
                 "F-GOLDEN-RULE-001",
