@@ -515,3 +515,12 @@ fn test_garbage_oracle_catches_standalone_nan_inf() {
     assert!(oracle.evaluate("test", "[NaN, Inf, -Inf]").is_falsified());
 }
 
+/// Verify two-word repetition detected at mid-output offset
+#[test]
+fn test_mid_output_two_word_repetition() {
+    // Repetition starts after a coherent prefix — old code missed this
+    assert!(is_repetitive("Normal start foo bar foo bar foo bar foo bar"));
+    // Still detects repetition from the beginning
+    assert!(is_repetitive("x y x y x y x y x y"));
+}
+

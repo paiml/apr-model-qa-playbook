@@ -435,23 +435,31 @@ fn has_char_ngram_repetition(output: &str) -> bool {
         .any(|word| word.len() >= 6 && check_substring_repetition(word))
 }
 
-/// Check if words contain a 2-word repeating pattern
+/// Check if words contain a 2-word repeating pattern starting at any offset.
 ///
-/// Returns true if a 2-word bigram repeats for at least half the chunks.
-/// Skips the first chunk (trivial self-match against the pattern source).
+/// Tries each starting bigram position to catch repetition that begins
+/// mid-output (e.g., "Normal start foo bar foo bar foo bar").
+/// Returns true if any bigram repeats >= 3 consecutive times.
 fn has_two_word_repetition(words: &[&str]) -> bool {
     if words.len() < 6 {
         return false;
     }
-    let pattern: Vec<_> = words.iter().take(2).collect();
-    let matches = words
-        .chunks(2)
-        .skip(1) // skip first chunk — it always matches the pattern trivially
-        .filter(|chunk| chunk.len() == 2 && chunk[0] == *pattern[0] && chunk[1] == *pattern[1])
-        .count();
-    // At least half of the remaining chunks must match
-    let remaining_chunks = (words.len() / 2).saturating_sub(1);
-    remaining_chunks > 0 && matches * 2 >= remaining_chunks
+    // Try each starting position for a 2-word pattern
+    let max_start = words.len().saturating_sub(5); // need at least 3 reps = 6 words
+    for start in 0..=max_start {
+        let p0 = words[start];
+        let p1 = words[start + 1];
+        let mut reps = 1;
+        let mut pos = start + 2;
+        while pos + 1 < words.len() && words[pos] == p0 && words[pos + 1] == p1 {
+            reps += 1;
+            pos += 2;
+        }
+        if reps >= 3 {
+            return true;
+        }
+    }
+    false
 }
 
 /// Check if all words in a slice are identical

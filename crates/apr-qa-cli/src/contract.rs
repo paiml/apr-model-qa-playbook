@@ -86,16 +86,10 @@ fn export_evidence(
         0.0
     };
 
-    // Calculate MQS from pass rate (simplified)
+    // Calculate MQS from pass rate (simplified — canonical MQS uses category scoring)
     #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
     let mqs_score = (pass_rate * 1000.0) as u32;
-    let grade = match mqs_score {
-        900..=1000 => "A",
-        800..=899 => "B",
-        600..=799 => "C",
-        400..=599 => "D",
-        _ => "F",
-    };
+    let grade = apr_qa_certify::grade_from_score(mqs_score);
 
     // Extract gateway results from evidence (pessimistic: failure wins)
     let mut gates: HashMap<String, GateResult> = HashMap::new();
@@ -125,12 +119,14 @@ fn export_evidence(
         }
     }
 
-    // Check if all gateways passed
+    // Check if all gateways passed (Popperian: untested gateway = NOT passed)
     let gateway_passed = ["G0", "G1", "G2", "G3", "G4"].iter().all(|g| {
-        gates
+        let matching: Vec<_> = gates
             .iter()
             .filter(|(k, _)| k.starts_with(g))
-            .all(|(_, v)| v.passed)
+            .collect();
+        // Empty iterator means gateway was never tested — cannot be declared passed
+        !matching.is_empty() && matching.iter().all(|(_, v)| v.passed)
     });
 
     // Build export structure
