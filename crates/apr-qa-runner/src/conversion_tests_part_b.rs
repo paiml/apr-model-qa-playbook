@@ -59,9 +59,9 @@ fn test_find_diff_indices_longer_second() {
         Backend::Cpu,
         ModelId::new("test", "model"),
     );
-    // "ab" vs "abc" - only compares up to shorter length
+    // "ab" vs "abc" - trailing difference at index 2
     let indices = test.find_diff_indices("ab", "abc");
-    assert!(indices.is_empty()); // first 2 chars match
+    assert_eq!(indices, vec![2]); // position 2 differs (shorter string ends)
 }
 
 #[test]

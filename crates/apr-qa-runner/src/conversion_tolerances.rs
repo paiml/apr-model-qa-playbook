@@ -478,10 +478,22 @@ impl ConversionTest {
         }
     }
 
-    /// Find indices where outputs differ
+    /// Find indices where outputs differ (including length differences)
     fn find_diff_indices(&self, a: &str, b: &str) -> Vec<usize> {
-        a.chars()
-            .zip(b.chars())
+        use std::iter;
+        let a_chars: Vec<char> = a.chars().collect();
+        let b_chars: Vec<char> = b.chars().collect();
+        let max_len = a_chars.len().max(b_chars.len());
+        a_chars
+            .iter()
+            .copied()
+            .chain(iter::repeat_n('\0', max_len.saturating_sub(a_chars.len())))
+            .zip(
+                b_chars
+                    .iter()
+                    .copied()
+                    .chain(iter::repeat_n('\0', max_len.saturating_sub(b_chars.len()))),
+            )
             .enumerate()
             .filter(|(_, (ca, cb))| ca != cb)
             .map(|(i, _)| i)
