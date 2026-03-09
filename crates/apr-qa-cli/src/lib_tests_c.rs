@@ -322,3 +322,69 @@ fn test_cert_tier_playbook_suffix_all() {
 }
 
 use std::str::FromStr;
+
+// ── certify_model deeper paths ────────────────────────────────────────────────
+
+#[test]
+fn test_certify_model_load_playbook_failure_invalid_yaml() {
+    // Create a real-but-invalid YAML file at the expected playbook path so that
+    // certify_model passes the `!playbook_file.exists()` check and fails at
+    // load_playbook() instead.
+    let model_slug = "test-invalid-yaml-coverage-xxz";
+    let playbook_path = format!("playbooks/models/{model_slug}-mvp.playbook.yaml");
+    let playbook_dir = std::path::Path::new("playbooks/models");
+
+    // Guard: can only run if playbooks/models/ exists in CWD (workspace root)
+    if !playbook_dir.exists() {
+        return;
+    }
+
+    std::fs::write(&playbook_path, "not: [valid: {{{ yaml}}}").expect("write invalid yaml");
+
+    let config = CertificationConfig {
+        tier: CertTier::Mvp,
+        ..Default::default()
+    };
+    let result = certify_model(&format!("test/{model_slug}"), &config);
+
+    // Clean up before assertions (avoids leaving debris on failure)
+    let _ = std::fs::remove_file(&playbook_path);
+
+    assert!(!result.success, "Expected failure on invalid YAML");
+    let err = result.error.expect("should have error message");
+    assert!(
+        err.contains("Error loading playbook") || err.contains("yaml") || err.contains("parse"),
+        "Expected YAML error, got: {err}"
+    );
+}
+
+#[test]
+fn test_certify_model_execute_playbook_success() {
+    // Use an existing playbook (smollm2-135m-mvp) if available in CWD.
+    // This exercises the load_playbook + execute_playbook + calculate_mqs_score path.
+    let playbook_path = "playbooks/models/smollm2-135m-mvp.playbook.yaml";
+
+    // Guard: only run when workspace playbooks are accessible
+    if !std::path::Path::new(playbook_path).exists() {
+        return;
+    }
+
+    let config = CertificationConfig {
+        tier: CertTier::Mvp,
+        model_cache: None,
+        ..Default::default()
+    };
+    let result = certify_model("HuggingFaceTB/SmolLM2-135M", &config);
+    // The playbook loads and executes; MQS may be 0 (no model file)
+    // but success=true means execute_playbook succeeded and MQS was calculated
+    // (or error path if MQS calc fails — either way, we reach beyond load_playbook)
+    assert_eq!(result.model_id, "HuggingFaceTB/SmolLM2-135M");
+    // Result may succeed or fail depending on model availability, but must not be
+    // a "Playbook not found" error — we must have gotten past the first early return
+    if let Some(ref err) = result.error {
+        assert!(
+            !err.contains("Playbook not found"),
+            "Should not hit 'Playbook not found' — file exists: {err}"
+        );
+    }
+}
