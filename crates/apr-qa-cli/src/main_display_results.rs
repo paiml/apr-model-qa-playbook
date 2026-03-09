@@ -291,14 +291,17 @@ fn generate_report(evidence_path: &PathBuf, output_dir: &PathBuf, formats: &str,
     let popperian_score = calculate_popperian_score(model_id, &collector);
 
     create_dir_or_exit(output_dir);
-    write_report_formats(
+    if !write_report_formats(
         output_dir,
         &format_list,
         model_id,
         &mqs_score,
         &popperian_score,
         &collector,
-    );
+    ) {
+        eprintln!("Error: one or more report files failed to write");
+        std::process::exit(1);
+    }
 }
 
 /// Read a file to string or exit with an error message
@@ -334,6 +337,8 @@ fn create_dir_or_exit(dir: &PathBuf) {
 }
 
 /// Dispatch report generation to the requested format writers (HTML, JUnit, Markdown, MQS JSON)
+///
+/// Returns false if any write fails. Callers should exit non-zero on false.
 fn write_report_formats(
     output_dir: &PathBuf,
     formats: &[&str],
@@ -341,22 +346,24 @@ fn write_report_formats(
     mqs_score: &MqsScore,
     popperian_score: &PopperianScore,
     collector: &EvidenceCollector,
-) {
+) -> bool {
     let is_all = formats.contains(&"all");
     let gen_html = is_all || formats.contains(&"html");
     let gen_junit = is_all || formats.contains(&"junit");
     let gen_markdown = is_all || formats.contains(&"markdown");
+    let mut ok = true;
 
     if gen_html {
-        write_html_report(output_dir, model_id, mqs_score, popperian_score, collector);
+        ok &= write_html_report(output_dir, model_id, mqs_score, popperian_score, collector);
     }
     if gen_junit {
-        write_junit_report(output_dir, model_id, collector, mqs_score);
+        ok &= write_junit_report(output_dir, model_id, collector, mqs_score);
     }
     if gen_markdown {
-        write_markdown_report(output_dir, mqs_score, popperian_score, collector);
+        ok &= write_markdown_report(output_dir, mqs_score, popperian_score, collector);
     }
-    write_mqs_json(output_dir, mqs_score);
+    ok &= write_mqs_json(output_dir, mqs_score);
+    ok
 }
 
 /// Generate and write the HTML report file
@@ -366,14 +373,14 @@ fn write_html_report(
     mqs_score: &MqsScore,
     popperian_score: &PopperianScore,
     collector: &EvidenceCollector,
-) {
+) -> bool {
     let result = generate_html_report(
         &format!("MQS Report: {model_id}"),
         mqs_score,
         popperian_score,
         collector,
     );
-    write_report_file(output_dir, "report.html", "HTML report", result);
+    write_report_file(output_dir, "report.html", "HTML report", result)
 }
 
 /// Generate and write the RAG-optimized markdown report file
@@ -382,12 +389,18 @@ fn write_markdown_report(
     mqs_score: &MqsScore,
     popperian_score: &PopperianScore,
     collector: &EvidenceCollector,
-) {
+) -> bool {
     let markdown = apr_qa_report::markdown::generate_rag_markdown(mqs_score, popperian_score, collector);
     let path = output_dir.join("report.md");
     match std::fs::write(&path, markdown) {
-        Ok(()) => println!("Markdown report: {}", path.display()),
-        Err(e) => eprintln!("Error writing markdown report: {e}"),
+        Ok(()) => {
+            println!("Markdown report: {}", path.display());
+            true
+        }
+        Err(e) => {
+            eprintln!("Error writing markdown report: {e}");
+            false
+        }
     }
 }
 
@@ -397,9 +410,9 @@ fn write_junit_report(
     model_id: &str,
     collector: &EvidenceCollector,
     mqs_score: &MqsScore,
-) {
+) -> bool {
     let result = generate_junit_report(model_id, collector, mqs_score);
-    write_report_file(output_dir, "junit.xml", "JUnit report", result);
+    write_report_file(output_dir, "junit.xml", "JUnit report", result)
 }
 
 /// Write a generated report string to the output directory, handling errors
@@ -408,28 +421,46 @@ fn write_report_file<E: std::fmt::Display>(
     filename: &str,
     desc: &str,
     result: Result<String, E>,
-) {
+) -> bool {
     match result {
         Ok(content) => {
             let path = output_dir.join(filename);
             match std::fs::write(&path, content) {
-                Ok(()) => println!("{desc}: {}", path.display()),
-                Err(e) => eprintln!("Error writing {desc}: {e}"),
+                Ok(()) => {
+                    println!("{desc}: {}", path.display());
+                    true
+                }
+                Err(e) => {
+                    eprintln!("Error writing {desc}: {e}");
+                    false
+                }
             }
         }
-        Err(e) => eprintln!("{e}"),
+        Err(e) => {
+            eprintln!("{e}");
+            false
+        }
     }
 }
 
 /// Serialize and write the MQS score as pretty-printed JSON
-fn write_mqs_json(output_dir: &PathBuf, mqs_score: &MqsScore) {
+fn write_mqs_json(output_dir: &PathBuf, mqs_score: &MqsScore) -> bool {
     let score_path = output_dir.join("mqs.json");
     match serde_json::to_string_pretty(mqs_score) {
         Ok(json) => match std::fs::write(&score_path, json) {
-            Ok(()) => println!("MQS score: {}", score_path.display()),
-            Err(e) => eprintln!("Error writing MQS JSON: {e}"),
+            Ok(()) => {
+                println!("MQS score: {}", score_path.display());
+                true
+            }
+            Err(e) => {
+                eprintln!("Error writing MQS JSON: {e}");
+                false
+            }
         },
-        Err(e) => eprintln!("Error serializing MQS: {e}"),
+        Err(e) => {
+            eprintln!("Error serializing MQS: {e}");
+            false
+        }
     }
 }
 

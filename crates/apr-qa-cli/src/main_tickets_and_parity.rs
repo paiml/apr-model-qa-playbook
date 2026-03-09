@@ -52,17 +52,43 @@ fn generate_tickets(
             println!("{}", "=".repeat(60));
         }
     } else {
-        // Create mode - generate files and show commands
-        println!("=== Generated Tickets ({}) ===\n", tickets.len());
+        // Create mode — actually run gh commands to file issues
+        println!("=== Creating Tickets ({}) ===\n", tickets.len());
+        let mut created = 0;
+        let mut failed = 0;
 
         for ticket in &tickets {
             println!("--- {} ---", ticket.title);
-            println!("Priority: {}", ticket.priority);
-            println!("Category: {}", ticket.category);
-            println!("Labels: {}", ticket.labels.join(", "));
-            println!();
-            println!("gh command:");
-            println!("  {}\n", ticket.to_gh_command(repo));
+            let gh_cmd = ticket.to_gh_command(repo);
+            println!("  Running: {gh_cmd}");
+
+            // Build the gh issue create command
+            let mut args = vec!["issue", "create", "--repo", repo, "--title", &ticket.title, "--body", &ticket.body];
+            for label in &ticket.labels {
+                args.push("--label");
+                args.push(label);
+            }
+            match std::process::Command::new("gh").args(&args).output() {
+                Ok(output) if output.status.success() => {
+                    let url = String::from_utf8_lossy(&output.stdout);
+                    println!("  Created: {}", url.trim());
+                    created += 1;
+                }
+                Ok(output) => {
+                    let stderr = String::from_utf8_lossy(&output.stderr);
+                    eprintln!("  Failed: {}", stderr.trim());
+                    failed += 1;
+                }
+                Err(e) => {
+                    eprintln!("  Failed to run gh: {e}");
+                    failed += 1;
+                }
+            }
+        }
+
+        println!("\nCreated: {created}, Failed: {failed}");
+        if failed > 0 {
+            std::process::exit(1);
         }
     }
 }
@@ -247,6 +273,12 @@ fn parity_self_check(oracle: &apr_qa_gen::HfParityOracle, corpus_dir: &std::path
     println!("\n=== Self-Check Results ===");
     println!("Passed: {passed}");
     println!("Failed: {failed}");
+
+    if passed == 0 && failed == 0 {
+        eprintln!("Error: No golden files found — self-check is vacuous");
+        eprintln!("  Popperian: a check that checks nothing cannot pass");
+        std::process::exit(1);
+    }
 
     if failed > 0 {
         std::process::exit(1);
