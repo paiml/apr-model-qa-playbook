@@ -236,6 +236,7 @@ impl HfParityOracle {
     ///
     /// Returns (max_diff, mean_diff, std_diff) for diagnostic purposes.
     #[must_use]
+    #[allow(clippy::cast_possible_truncation)] // f64→f32 intentional: accumulate in f64, return f32
     pub fn compute_divergence_stats(expected: &[f32], actual: &[f32]) -> (f32, f32, f32) {
         if expected.len() != actual.len() || expected.is_empty() {
             return (0.0, 0.0, 0.0);
@@ -248,12 +249,19 @@ impl HfParityOracle {
             .collect();
 
         let max_diff = diffs.iter().copied().fold(0.0f32, f32::max);
-        let mean_diff: f32 = diffs.iter().sum::<f32>() / diffs.len() as f32;
+        // Use f64 accumulation to prevent precision loss on large tensors
+        let sum: f64 = diffs.iter().map(|&d| f64::from(d)).sum();
+        let mean_diff = (sum / diffs.len() as f64) as f32;
 
-        // Compute standard deviation
-        let variance: f32 =
-            diffs.iter().map(|d| (d - mean_diff).powi(2)).sum::<f32>() / diffs.len() as f32;
-        let std_diff = variance.sqrt();
+        // Compute standard deviation (f64 accumulation for variance)
+        let var_sum: f64 = diffs
+            .iter()
+            .map(|&d| {
+                let delta = f64::from(d) - f64::from(mean_diff);
+                delta * delta
+            })
+            .sum();
+        let std_diff = (var_sum / diffs.len() as f64).sqrt() as f32;
 
         (max_diff, mean_diff, std_diff)
     }
