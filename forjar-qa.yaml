@@ -87,7 +87,7 @@ resources:
       - gemma-3-12b
       - olmo-2-13b
       - codellama-13b
-      - vicuna-13b
+      # vicuna-13b: permanently skipped (PyTorch-only, no SafeTensors)
       - qwen2.5-14b
       - qwen2.5-coder-14b
       - qwen3-14b
@@ -95,7 +95,7 @@ resources:
       - phi-3-medium-4k
       - starcoder2-15b
       - deepseek-coder-v2-lite
-      - wizardcoder-15b
+      # wizardcoder-15b: permanently skipped (PyTorch-only, no SafeTensors)
       - internlm2.5-20b
       - codestral-22b
       - mistral-small-24b
@@ -120,7 +120,7 @@ resources:
       - nemotron-70b
       - qwen2.5-72b
       - qwen3-coder-next
-      - vicuna-7b
+      # vicuna-7b: permanently skipped (PyTorch-only, no SafeTensors)
     depends_on: [build]
     working_dir: "{{params.qa_repo}}"
     timeout: 120
@@ -203,7 +203,7 @@ resources:
       - gemma-3-12b
       - olmo-2-13b
       - codellama-13b
-      - vicuna-13b
+      # vicuna-13b: permanently skipped (PyTorch-only, no SafeTensors)
       - qwen2.5-14b
       - qwen2.5-coder-14b
       - qwen3-14b
@@ -211,7 +211,7 @@ resources:
       - phi-3-medium-4k
       - starcoder2-15b
       - deepseek-coder-v2-lite
-      - wizardcoder-15b
+      # wizardcoder-15b: permanently skipped (PyTorch-only, no SafeTensors)
       # Large models (>=20B) removed from smoke for now — too slow for batch runs
       # internlm2.5-20b, codestral-22b, mistral-small-24b, gemma-2-27b,
       # gemma-3-27b, qwen3-30b-a3b, qwen3-coder-30b-a3b, qwen2.5-32b,
@@ -220,7 +220,7 @@ resources:
       # falcon-40b, codellama-70b, llama-3.1-70b, llama-3.3-70b,
       # deepseek-r1-distill-llama-70b, nemotron-70b, qwen2.5-72b,
       # qwen3-coder-next
-      - vicuna-7b
+      # vicuna-7b: permanently skipped (PyTorch-only, no SafeTensors)
     depends_on: ["dim-smoke-{{item}}"]
     working_dir: "{{params.qa_repo}}"
     timeout: 600
@@ -293,7 +293,7 @@ resources:
       - gemma-3-12b
       - olmo-2-13b
       - codellama-13b
-      - vicuna-13b
+      # vicuna-13b: permanently skipped (PyTorch-only, no SafeTensors)
       - qwen2.5-14b
       - qwen2.5-coder-14b
       - qwen3-14b
@@ -301,7 +301,7 @@ resources:
       - phi-3-medium-4k
       - starcoder2-15b
       - deepseek-coder-v2-lite
-      - wizardcoder-15b
+      # wizardcoder-15b: permanently skipped (PyTorch-only, no SafeTensors)
       # Large models (>=20B) removed from MVP for now — too slow for batch runs
       # internlm2.5-20b, codestral-22b, mistral-small-24b, gemma-2-27b,
       # gemma-3-27b, qwen3-30b-a3b, qwen3-coder-30b-a3b, qwen2.5-32b,
@@ -310,7 +310,7 @@ resources:
       # falcon-40b, codellama-70b, llama-3.1-70b, llama-3.3-70b,
       # deepseek-r1-distill-llama-70b, nemotron-70b, qwen2.5-72b,
       # qwen3-coder-next
-      - vicuna-7b
+      # vicuna-7b: permanently skipped (PyTorch-only, no SafeTensors)
     depends_on: ["smoke-{{item}}"]
     working_dir: "{{params.qa_repo}}"
     timeout: 7200
@@ -354,7 +354,13 @@ policy:
   post_apply: |
     echo "=== Certification run complete ==="
     cd /home/noah/src/apr-model-qa-playbook
-    cargo run --release --bin apr-qa -- export-csv docs/certifications/models.csv 2>/dev/null || true
-    git add docs/certifications/models.csv 2>/dev/null || true
-    git commit -m "qa: update models.csv after certification batch (Refs #10)" 2>/dev/null || true
-    git push origin main 2>/dev/null || true
+    if ! cargo run --release --bin apr-qa -- export-csv docs/certifications/models.csv; then
+      echo "[WARN] export-csv failed" >&2
+    fi
+    if git diff --quiet docs/certifications/models.csv 2>/dev/null; then
+      echo "models.csv unchanged, skipping commit"
+    else
+      git add docs/certifications/models.csv
+      git commit -m "qa: update models.csv after certification batch (Refs #10)"
+      git push origin main || echo "[WARN] git push failed" >&2
+    fi

@@ -1,11 +1,11 @@
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   created: "2026-03-08"
   author: "PAIML Engineering"
   description: "GarbageOracle output quality gate (G4) with LAYOUT-002 detection"
   registry: true
   references:
-    - "crates/apr-qa-gen/src/oracle.rs:149 — GarbageOracle::evaluate(prompt, output)"
+    - "crates/apr-qa-gen/src/oracle.rs:153 — GarbageOracle::evaluate(prompt, output)"
     - "§10.2 Oracle Definitions"
     - "§4.1.1 LAYOUT-002: Row-Major Mandate"
     - "docs/tickets/GH-190-GGUF-APR-CONVERSION-GARBAGE-OUTPUT.md"
@@ -19,7 +19,7 @@ equations:
     invariants:
       - "Empty or whitespace-only output is garbage"
       - "Control characters (excluding \\n, \\t, \\r) indicate encoding corruption"
-      - "NaN/Inf strings indicate numerical explosion"
+      - "Standalone NaN/nan/Inf/inf tokens indicate numerical explosion (word-boundary aware)"
       - "Repetitive n-gram patterns indicate degenerate output"
       - "U+FFFD replacement characters indicate encoding failures"
       - "LAYOUT-002 violations manifest as garbage output (control chars or repetition)"
