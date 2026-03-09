@@ -5619,6 +5619,7 @@ diff expected.txt actual.txt   # Exit 0 = PASS, Exit 1 = FAIL
 | **F-GOLDEN-RULE-001** | Converted inference matches original | P0 |
 | **F-GOLDEN-RULE-002** | Conversion completes without error | P0 |
 | **F-GOLDEN-RULE-003** | Converted model loads and runs | P0 |
+| **F-GOLDEN-RULE-004** | Vacuous truth guard: both outputs have 'Output:' marker | P0 |
 
 ### 17.4 Golden Reference Files
 

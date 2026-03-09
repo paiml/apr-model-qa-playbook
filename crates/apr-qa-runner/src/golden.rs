@@ -21,10 +21,32 @@ impl Executor {
             }};
         }
 
+        // Jidoka: never silently skip an enabled battery — emit explicit evidence
+        // when model_path is missing. (Bug #78)
+        macro_rules! skip_no_model {
+            ($gate:expr, $label:expr) => {{
+                let ev = Evidence::skipped(
+                    $gate,
+                    QaScenario::new(
+                        playbook.model_id(),
+                        Modality::Run,
+                        Backend::Cpu,
+                        Format::SafeTensors,
+                        concat!($label, ": model_path not configured").to_string(),
+                        0,
+                    ),
+                    concat!($label, " skipped: model_path not set in ExecutionConfig"),
+                );
+                self.collector.add(ev);
+            }};
+        }
+
         if self.config.run_conversion_tests {
             if let Some(model_path) = self.config.model_path.clone() {
                 let model_id = playbook.model_id();
                 run_battery!(self.run_conversion_tests(Path::new(&model_path), &model_id));
+            } else {
+                skip_no_model!("F-CONV-SKIP-001", "Conversion tests");
             }
         }
 
@@ -32,6 +54,8 @@ impl Executor {
             if let Some(model_path) = self.config.model_path.clone() {
                 let model_id = playbook.model_id();
                 run_battery!(self.run_golden_rule_test(Path::new(&model_path), &model_id));
+            } else {
+                skip_no_model!("F-GOLDEN-RULE-SKIP-001", "Golden rule test");
             }
         }
 
@@ -41,6 +65,8 @@ impl Executor {
                 run_battery!(
                     self.run_contract_invariants(Path::new(&model_path), &model_id, playbook)
                 );
+            } else {
+                skip_no_model!("F-CONTRACT-SKIP-001", "Contract tests");
             }
         }
 
@@ -53,12 +79,16 @@ impl Executor {
             if let Some(model_path) = self.config.model_path.clone() {
                 let model_id = playbook.model_id();
                 run_battery!(self.run_perf_gates(Path::new(&model_path), &model_id, playbook));
+            } else {
+                skip_no_model!("F-PERF-SKIP-001", "Profile CI");
             }
         }
 
         if self.config.run_ollama_parity {
             if let Some(model_path) = self.config.model_path.clone() {
                 run_battery!(self.run_ollama_parity_tests(Path::new(&model_path), playbook));
+            } else {
+                skip_no_model!("F-OLLAMA-SKIP-001", "Ollama parity");
             }
         }
 
@@ -319,7 +349,7 @@ impl Executor {
         // Two empty strings comparing equal is vacuous truth, not evidence.
         if orig_text.is_empty() && conv_text.is_empty() {
             let ev = Evidence::falsified(
-                "F-GOLDEN-RULE-002",
+                "F-GOLDEN-RULE-004",
                 Self::golden_scenario(model_id),
                 "Golden rule vacuous: both outputs missing 'Output:' marker",
                 "N/A",
