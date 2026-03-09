@@ -442,18 +442,7 @@ impl Executor {
             &config,
         );
 
-        let mut passed = 0;
-        let mut failed = 0;
-        for ev in evidence {
-            if ev.outcome.is_pass() {
-                passed += 1;
-            } else {
-                failed += 1;
-            }
-            self.collector.add(ev);
-        }
-
-        (passed, failed)
+        self.tally_battery(evidence)
     }
 
     /// Run ollama parity tests (GH-6/AC-2)
