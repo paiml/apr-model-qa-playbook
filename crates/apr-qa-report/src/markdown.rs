@@ -83,7 +83,12 @@ fn write_gateway_section(md: &mut String, mqs: &MqsScore) {
         } else {
             gw.description.clone()
         };
-        md.push_str(&format!("| {} | {} | {} |\n", gw.id, status, desc));
+        md.push_str(&format!(
+            "| {} | {} | {} |\n",
+            escape_md_table(&gw.id),
+            status,
+            escape_md_table(&desc)
+        ));
     }
     md.push('\n');
 }
@@ -172,7 +177,10 @@ fn write_category_failures(md: &mut String, evidence: &[&Evidence]) {
     for e in failures.iter().take(10) {
         md.push_str(&format!(
             "- `{}`: {} ({:?}, {}ms)\n",
-            e.gate_id, e.reason, e.outcome, e.metrics.duration_ms
+            e.gate_id,
+            e.reason.replace('`', "'"),
+            e.outcome,
+            e.metrics.duration_ms
         ));
     }
     if failures.len() > 10 {
@@ -195,7 +203,9 @@ fn write_penalties_section(md: &mut String, mqs: &MqsScore) {
     for penalty in &mqs.penalties {
         md.push_str(&format!(
             "| {} | {} | -{} |\n",
-            penalty.code, penalty.description, penalty.points
+            escape_md_table(&penalty.code),
+            escape_md_table(&penalty.description),
+            penalty.points
         ));
     }
     md.push_str(&format!(
@@ -258,13 +268,15 @@ pub fn generate_index_entry(mqs: &MqsScore) -> String {
 
 /// Get qualification status string.
 ///
-/// Six tiers:
+/// Seven tiers (gateways must pass; first match wins):
 /// - Gateway failure  -> REJECTED (Gateway Failure)
 /// - Score >= 90      -> CERTIFIED
-/// - Score >= 80      -> CERTIFIED (Conditional)
+/// - Score >= 85      -> CERTIFIED (Conditional)
+/// - Score >= 80      -> QUALIFIED (Conditional)
 /// - Score >= 70      -> PROVISIONAL
 /// - Score >= 60      -> UNDER REVIEW
-/// - Score < 60       -> REJECTED
+/// - Score >= 50      -> NEEDS IMPROVEMENT
+/// - Score < 50       -> REJECTED
 ///
 /// Score-based qualification tiers (gateways must pass). Checked in order; first match wins.
 const QUALIFICATION_TIERS: &[(f64, &str)] = &[
@@ -332,6 +344,11 @@ pub fn generate_evidence_detail(evidence: &Evidence) -> String {
 
     md.push('\n');
     md
+}
+
+/// Escape pipe characters in markdown table cells to prevent column misalignment.
+fn escape_md_table(s: &str) -> String {
+    s.replace('|', "\\|")
 }
 
 #[cfg(test)]

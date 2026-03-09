@@ -198,7 +198,6 @@ impl PopperianCalculator {
         let all_evidence = evidence.all();
 
         let mut corroborated = 0;
-        let mut falsified = 0;
         let mut inconclusive = 0;
         let mut severity_total = 0.0;
         let mut severity_passed = 0.0;
@@ -220,7 +219,6 @@ impl PopperianCalculator {
                     severity_passed += weight;
                 }
                 Outcome::Falsified | Outcome::Crashed => {
-                    falsified += 1;
                     *failure_counts.entry(e.gate_id.clone()).or_insert(0) += 1;
 
                     // Black swan: crash or severe unexpected failure
@@ -255,6 +253,8 @@ impl PopperianCalculator {
         falsifications.sort_by(|a, b| a.gate_id.cmp(&b.gate_id).then(b.severity.cmp(&a.severity)));
         falsifications.dedup_by(|a, b| a.gate_id == b.gate_id);
 
+        // Use deduplicated count: each gate_id is one hypothesis
+        let falsified = falsifications.len();
         let hypotheses_tested = corroborated + falsified;
         let corroboration_ratio = if hypotheses_tested > 0 {
             corroborated as f64 / hypotheses_tested as f64
