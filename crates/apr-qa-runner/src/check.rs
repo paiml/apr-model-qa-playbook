@@ -12,7 +12,10 @@ impl ConversionExecutor {
         results: &mut Vec<ConversionResult>,
         evidence: &mut Vec<Evidence>,
     ) {
-        match check_cardinality(model_path, converted_path, &self.binary) {
+        let start = std::time::Instant::now();
+        let check_result = check_cardinality(model_path, converted_path, &self.binary);
+        let duration = start.elapsed().as_millis() as u64;
+        match check_result {
             Ok(Some((gate_id, reason))) => {
                 let ev = Evidence::falsified(
                     &gate_id,
@@ -26,7 +29,7 @@ impl ConversionExecutor {
                     ),
                     &reason,
                     "N/A",
-                    0,
+                    duration,
                 );
                 evidence.push(ev);
                 results.push(ConversionResult::Falsified {
@@ -57,7 +60,7 @@ impl ConversionExecutor {
                         0,
                     ),
                     "Tensor cardinality preserved",
-                    0,
+                    duration,
                 );
                 evidence.push(ev);
             }
@@ -77,7 +80,7 @@ impl ConversionExecutor {
                     ),
                     format!("Cardinality check infrastructure error: {e}"),
                     "N/A",
-                    0,
+                    duration,
                 );
                 evidence.push(ev);
                 results.push(ConversionResult::Falsified {
@@ -109,7 +112,10 @@ impl ConversionExecutor {
         target: Format,
         evidence: &mut Vec<Evidence>,
     ) {
-        match check_tensor_names(model_path, converted_path, &self.binary) {
+        let start = std::time::Instant::now();
+        let check_result = check_tensor_names(model_path, converted_path, &self.binary);
+        let duration = start.elapsed().as_millis() as u64;
+        match check_result {
             Ok(Some((gate_id, reason))) => {
                 let ev = Evidence::falsified(
                     &gate_id,
@@ -123,7 +129,7 @@ impl ConversionExecutor {
                     ),
                     &reason,
                     "N/A",
-                    0,
+                    duration,
                 );
                 evidence.push(ev);
             }
@@ -139,7 +145,7 @@ impl ConversionExecutor {
                         0,
                     ),
                     "Tensor names preserved",
-                    0,
+                    duration,
                 );
                 evidence.push(ev);
             }
@@ -159,7 +165,7 @@ impl ConversionExecutor {
                     ),
                     format!("Tensor name check infrastructure error: {e}"),
                     "N/A",
-                    0,
+                    duration,
                 );
                 evidence.push(ev);
             }
