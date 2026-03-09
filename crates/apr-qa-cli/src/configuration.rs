@@ -463,13 +463,16 @@ fn run_playbook(
     };
 
     print_playbook_results(&result);
-    if !save_playbook_evidence(&result, output_dir) {
+
+    // Dry-run: skip evidence persistence — output directory may not be writable
+    // and the purpose of dry-run is inspection, not artifact production.
+    if !dry_run && !save_playbook_evidence(&result, output_dir) {
         eprintln!("Error: evidence save failed — results may be lost");
         std::process::exit(1);
     }
 
-    // Jidoka: non-zero exit on any failure or gateway blow
-    if result.failed > 0 || result.gateway_failed.is_some() {
+    // Jidoka: non-zero exit on any failure or gateway blow (not in dry-run)
+    if !dry_run && (result.failed > 0 || result.gateway_failed.is_some()) {
         std::process::exit(1);
     }
 }
