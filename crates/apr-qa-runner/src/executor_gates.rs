@@ -14,6 +14,12 @@ impl Executor {
     fn run_g0_integrity_check(&mut self, model_path: &Path, model_id: &ModelId) -> (usize, usize) {
         let result = Self::run_integrity_analysis(model_path);
         let Some(result) = result else {
+            let ev = Evidence::skipped(
+                integrity::gate_ids::CONFIG,
+                Self::integrity_scenario(model_id),
+                "G0 SKIP: No SafeTensors files found for integrity check",
+            );
+            self.collector.add(ev);
             return (0, 0);
         };
 
@@ -140,8 +146,13 @@ impl Executor {
         // Try to load the contract from the default location
         // If not found, skip the check (contract is optional)
         let Ok(contract) = load_contract_from(DEFAULT_CONTRACT_PATH) else {
-            // Contract not found - check is not applicable
-            // This is expected when aprender is not a sibling directory
+            // Contract not found - expected when aprender is not a sibling directory
+            let ev = Evidence::skipped(
+                "G0-LAYOUT-001",
+                Self::layout_scenario(model_id),
+                &format!("G0 SKIP: Layout contract not found at '{DEFAULT_CONTRACT_PATH}' (aprender not present)"),
+            );
+            self.collector.add(ev);
             return (0, 0);
         };
 
@@ -327,7 +338,12 @@ impl Executor {
         // Resolve to individual safetensors files
         let files = Self::find_safetensors_files(model_path);
         if files.is_empty() {
-            // No safetensors files found — not applicable, auto-pass
+            let ev = Evidence::skipped(
+                "G0-VALIDATE-001",
+                Self::validate_scenario(model_id),
+                "G0 SKIP: No safetensors files found for physics validation",
+            );
+            self.collector.add(ev);
             return (0, 0);
         }
 
