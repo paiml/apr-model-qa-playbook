@@ -828,7 +828,7 @@ fn test_dtype_consistent_only_embed_tensors() {
         "hidden_size": 896, "num_hidden_layers": 24, "vocab_size": 151_936
     });
     write_config_json(dir.path(), &config);
-    // Only embedding tensors, no interior weights — no consistency check emitted
+    // Only embedding tensors, no interior weights — consistency check still emitted (passes vacuously)
     write_safetensors_with_dtype(
         dir.path(),
         &[
@@ -839,9 +839,15 @@ fn test_dtype_consistent_only_embed_tensors() {
 
     let playbook = make_minimal_playbook("test/model");
     let result = run_dimensional_check(dir.path(), &playbook);
-    let check = result.checks.iter().find(|c| c.name == "dtype_consistent");
+    let check = result
+        .checks
+        .iter()
+        .find(|c| c.name == "dtype_consistent")
+        .expect("dtype_consistent check should always be emitted");
+    assert!(check.passed, "no interior weights → passes (all embeddings)");
     assert!(
-        check.is_none(),
-        "no interior weights → no consistency check emitted"
+        check.actual.contains("no interior weight tensors"),
+        "actual should note absence: {}",
+        check.actual
     );
 }

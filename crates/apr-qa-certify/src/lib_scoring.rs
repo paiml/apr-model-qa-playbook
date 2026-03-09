@@ -170,6 +170,12 @@ pub fn update_readme(readme: &str, table_content: &str) -> Result<String> {
         .find(END_MARKER)
         .ok_or_else(|| CertifyError::MarkerNotFound(END_MARKER.to_string()))?;
 
+    if start_idx >= end_idx {
+        return Err(CertifyError::MarkerNotFound(format!(
+            "START marker (pos {start_idx}) must appear before END marker (pos {end_idx})"
+        )));
+    }
+
     let before = &readme[..start_idx + START_MARKER.len()];
     let after = &readme[end_idx..];
 

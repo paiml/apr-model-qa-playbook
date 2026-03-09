@@ -440,14 +440,32 @@ fn is_embedding_tensor(name: &str) -> bool {
 fn check_dtypes(model_path: &Path, config: &LayoutModelConfig, checks: &mut Vec<DimensionalCheck>) {
     let st_files = find_safetensors_files(model_path);
     let Some(first_file) = st_files.first() else {
+        checks.push(DimensionalCheck {
+            name: "dtype_supported".to_string(),
+            expected: "at least one SafeTensors file".to_string(),
+            actual: "no SafeTensors files found".to_string(),
+            passed: false,
+        });
         return;
     };
 
     let Ok(tensors) = read_safetensors_metadata_with_dtypes(first_file) else {
+        checks.push(DimensionalCheck {
+            name: "dtype_supported".to_string(),
+            expected: "readable SafeTensors metadata".to_string(),
+            actual: "failed to read SafeTensors header".to_string(),
+            passed: false,
+        });
         return;
     };
 
     if tensors.is_empty() {
+        checks.push(DimensionalCheck {
+            name: "dtype_supported".to_string(),
+            expected: "at least one tensor".to_string(),
+            actual: "SafeTensors file contains no tensors".to_string(),
+            passed: false,
+        });
         return;
     }
 
@@ -495,28 +513,29 @@ fn check_dtypes(model_path: &Path, config: &LayoutModelConfig, checks: &mut Vec<
         .map(|t| t.dtype.as_str())
         .collect();
 
-    if !interior_weight_dtypes.is_empty() {
-        checks.push(DimensionalCheck {
-            name: "dtype_consistent".to_string(),
-            expected: "single dtype across interior 2D weight tensors".to_string(),
-            actual: if interior_weight_dtypes.len() == 1 {
-                format!(
-                    "uniform: {}",
-                    interior_weight_dtypes.iter().next().unwrap_or(&"?")
-                )
-            } else {
-                format!(
-                    "mixed: {}",
-                    interior_weight_dtypes
-                        .iter()
-                        .copied()
-                        .collect::<Vec<_>>()
-                        .join(", ")
-                )
-            },
-            passed: interior_weight_dtypes.len() <= 1,
-        });
-    }
+    checks.push(DimensionalCheck {
+        name: "dtype_consistent".to_string(),
+        expected: "single dtype across interior 2D weight tensors".to_string(),
+        actual: if interior_weight_dtypes.is_empty() {
+            "no interior weight tensors found (all embeddings)".to_string()
+        } else if interior_weight_dtypes.len() == 1 {
+            format!(
+                "uniform: {}",
+                interior_weight_dtypes.iter().next().unwrap_or(&"?")
+            )
+        } else {
+            format!(
+                "mixed: {}",
+                interior_weight_dtypes
+                    .iter()
+                    .copied()
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            )
+        },
+        // Empty set is OK (model may have only embedding tensors), single dtype is consistent
+        passed: interior_weight_dtypes.len() <= 1,
+    });
 
     // dtype_config_match: if config.json has torch_dtype, verify it matches tensor dtypes
     check_dtype_config_match(model_path, config, &weight_dtypes, checks);
@@ -556,12 +575,12 @@ fn check_dtype_config_match(
         return;
     };
 
-    let matches = weight_dtypes.is_empty() || weight_dtypes.contains(expected_st_dtype);
+    let matches = !weight_dtypes.is_empty() && weight_dtypes.contains(expected_st_dtype);
     checks.push(DimensionalCheck {
         name: "dtype_config_match".to_string(),
         expected: format!("{expected_st_dtype} (from torch_dtype='{torch_dtype_str}')"),
         actual: if weight_dtypes.is_empty() {
-            "no 2D tensors to check".to_string()
+            "no 2D tensors found (cannot verify)".to_string()
         } else {
             weight_dtypes.iter().copied().collect::<Vec<_>>().join(", ")
         },
