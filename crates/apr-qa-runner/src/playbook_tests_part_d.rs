@@ -335,3 +335,60 @@ ollama_parity:
     assert!((ollama.min_perf_ratio - 0.8).abs() < f64::EPSILON);
     assert!(ollama.gates.is_empty());
 }
+
+/// Verify from_yaml rejects empty hf_repo
+#[test]
+fn test_validation_empty_hf_repo() {
+    let yaml = r#"
+name: bad-playbook
+version: "1.0.0"
+model:
+  hf_repo: ""
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 1
+"#;
+    let result = Playbook::from_yaml(yaml);
+    assert!(result.is_err());
+    assert!(result.unwrap_err().to_string().contains("hf_repo"));
+}
+
+/// Verify from_yaml rejects empty modalities
+#[test]
+fn test_validation_empty_modalities() {
+    let yaml = r#"
+name: bad-playbook
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: []
+  backends: [cpu]
+  scenario_count: 1
+"#;
+    let result = Playbook::from_yaml(yaml);
+    assert!(result.is_err());
+    assert!(result.unwrap_err().to_string().contains("modalities"));
+}
+
+/// Verify from_yaml rejects scenario_count of 0
+#[test]
+fn test_validation_zero_scenario_count() {
+    let yaml = r#"
+name: bad-playbook
+version: "1.0.0"
+model:
+  hf_repo: "test/model"
+  formats: [gguf]
+test_matrix:
+  modalities: [run]
+  backends: [cpu]
+  scenario_count: 0
+"#;
+    let result = Playbook::from_yaml(yaml);
+    assert!(result.is_err());
+    assert!(result.unwrap_err().to_string().contains("scenario_count"));
+}

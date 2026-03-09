@@ -268,13 +268,52 @@ impl Playbook {
         Self::from_yaml(&content)
     }
 
-    /// Parse a playbook from YAML string
+    /// Parse a playbook from YAML string.
+    ///
+    /// Validates required fields after parsing:
+    /// - `model.hf_repo` must be non-empty
+    /// - `test_matrix.modalities` must be non-empty
+    /// - `test_matrix.backends` must be non-empty
+    /// - `model.formats` must be non-empty
+    /// - `test_matrix.scenario_count` must be > 0
     ///
     /// # Errors
     ///
-    /// Returns an error if the YAML is invalid.
+    /// Returns an error if the YAML is invalid or required fields are missing.
     pub fn from_yaml(yaml: &str) -> Result<Self> {
-        serde_yaml::from_str(yaml).map_err(Error::from)
+        let playbook: Self = serde_yaml::from_str(yaml).map_err(Error::from)?;
+        playbook.validate()?;
+        Ok(playbook)
+    }
+
+    /// Post-parse validation (Jidoka: reject invalid playbooks early).
+    fn validate(&self) -> Result<()> {
+        if self.model.hf_repo.trim().is_empty() {
+            return Err(Error::Validation(
+                "model.hf_repo must not be empty".to_string(),
+            ));
+        }
+        if self.test_matrix.modalities.is_empty() {
+            return Err(Error::Validation(
+                "test_matrix.modalities must not be empty".to_string(),
+            ));
+        }
+        if self.test_matrix.backends.is_empty() {
+            return Err(Error::Validation(
+                "test_matrix.backends must not be empty".to_string(),
+            ));
+        }
+        if self.model.formats.is_empty() {
+            return Err(Error::Validation(
+                "model.formats must not be empty".to_string(),
+            ));
+        }
+        if self.test_matrix.scenario_count == 0 {
+            return Err(Error::Validation(
+                "test_matrix.scenario_count must be > 0".to_string(),
+            ));
+        }
+        Ok(())
     }
 
     /// Convert to YAML string

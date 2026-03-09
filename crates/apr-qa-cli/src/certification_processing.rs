@@ -49,7 +49,8 @@ fn process_certification_result(
 
             let model_output = output_dir.join(short.to_lowercase().replace('.', "-"));
             if !save_evidence(&model_output, &result) {
-                eprintln!("  [WARN] Evidence save failed — results may be lost");
+                eprintln!("  [ERROR] Evidence save failed — Jidoka: stop the line");
+                std::process::exit(1);
             }
 
             if oracle_enhance && result.failed > 0 {
