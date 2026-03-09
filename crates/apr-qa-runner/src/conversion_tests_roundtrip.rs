@@ -741,3 +741,283 @@ fn test_byte_level_round_trip_convert_failure() {
     let result = brt.execute(&model_file);
     assert!(result.is_err(), "Expected Err when conversion fails");
 }
+
+// ── IdempotencyTest::execute ─────────────────────────────────────────────────
+
+#[test]
+fn test_idempotency_execute_error_on_wrong_format() {
+    // resolve_model_path expects Gguf but file is .safetensors → Err
+    let dir = tempfile::tempdir().unwrap();
+    let model_file = dir.path().join("model.safetensors");
+    std::fs::write(&model_file, "fake").unwrap();
+
+    let mut idem = IdempotencyTest::new(
+        Format::Gguf,
+        Format::Apr,
+        Backend::Cpu,
+        ModelId::new("test", "model"),
+    );
+    idem.binary = "/nonexistent/apr".to_string();
+
+    let result = idem.execute(&model_file);
+    assert!(result.is_err(), "Expected Err for wrong format extension");
+}
+
+#[test]
+fn test_idempotency_execute_error_on_conversion_failure() {
+    let dir = tempfile::tempdir().unwrap();
+    let model_file = dir.path().join("model.gguf");
+    std::fs::write(&model_file, "fake").unwrap();
+
+    // Mock always exits 1 → conversion fails
+    let mock = create_mock_apr(dir.path(), "exit 1");
+
+    let mut idem = IdempotencyTest::new(
+        Format::Gguf,
+        Format::Apr,
+        Backend::Cpu,
+        ModelId::new("test", "model"),
+    );
+    idem.binary = mock.to_string_lossy().to_string();
+
+    let result = idem.execute(&model_file);
+    assert!(result.is_err(), "Expected Err when conversion fails");
+}
+
+#[test]
+fn test_idempotency_execute_corroborated_cross_format() {
+    // Cross-format (Gguf→Apr): non-garbage output on both runs → Corroborated
+    let dir = tempfile::tempdir().unwrap();
+    let model_file = dir.path().join("model.gguf");
+    std::fs::write(&model_file, "fake").unwrap();
+
+    let mock = create_mock_apr(
+        dir.path(),
+        r#"case "$1" in
+rosetta) case "$2" in
+  convert) touch "$4"; exit 0;;
+esac;;
+run) echo "The answer is 4"; exit 0;;
+esac
+exit 1"#,
+    );
+
+    let mut idem = IdempotencyTest::new(
+        Format::Gguf,
+        Format::Apr,
+        Backend::Cpu,
+        ModelId::new("test", "model"),
+    );
+    idem.binary = mock.to_string_lossy().to_string();
+
+    match idem.execute(&model_file) {
+        Ok(ConversionResult::Corroborated { source_format, target_format, .. }) => {
+            assert_eq!(source_format, Format::Gguf);
+            assert_eq!(target_format, Format::Apr);
+        }
+        other => panic!("Expected Corroborated, got: {other:?}"),
+    }
+}
+
+#[test]
+fn test_idempotency_execute_falsified_cross_format_garbage() {
+    // Cross-format: garbage output → Falsified
+    let dir = tempfile::tempdir().unwrap();
+    let model_file = dir.path().join("model.gguf");
+    std::fs::write(&model_file, "fake").unwrap();
+
+    // Return heavy repetition garbage (high repetition ratio triggers is_garbage)
+    let mock = create_mock_apr(
+        dir.path(),
+        r#"case "$1" in
+rosetta) case "$2" in
+  convert) touch "$4"; exit 0;;
+esac;;
+run) printf "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"; exit 0;;
+esac
+exit 1"#,
+    );
+
+    let mut idem = IdempotencyTest::new(
+        Format::Gguf,
+        Format::Apr,
+        Backend::Cpu,
+        ModelId::new("test", "model"),
+    );
+    idem.binary = mock.to_string_lossy().to_string();
+
+    match idem.execute(&model_file) {
+        Ok(ConversionResult::Falsified { gate_id, .. }) => {
+            assert_eq!(gate_id, "F-CONV-IDEM-001");
+        }
+        other => panic!("Expected Falsified, got: {other:?}"),
+    }
+}
+
+#[test]
+fn test_idempotency_execute_corroborated_same_format_identical_output() {
+    // Same format (Gguf→Gguf): outputs must be identical → Corroborated
+    let dir = tempfile::tempdir().unwrap();
+    let model_file = dir.path().join("model.gguf");
+    std::fs::write(&model_file, "fake").unwrap();
+
+    let mock = create_mock_apr(
+        dir.path(),
+        r#"case "$1" in
+rosetta) case "$2" in
+  convert) touch "$4"; exit 0;;
+esac;;
+run) echo "The answer is 4"; exit 0;;
+esac
+exit 1"#,
+    );
+
+    let mut idem = IdempotencyTest::new(
+        Format::Gguf,
+        Format::Gguf,
+        Backend::Cpu,
+        ModelId::new("test", "model"),
+    );
+    idem.binary = mock.to_string_lossy().to_string();
+
+    match idem.execute(&model_file) {
+        Ok(ConversionResult::Corroborated { source_format, target_format, .. }) => {
+            assert_eq!(source_format, Format::Gguf);
+            assert_eq!(target_format, Format::Gguf);
+        }
+        other => panic!("Expected Corroborated, got: {other:?}"),
+    }
+}
+
+#[test]
+fn test_idempotency_execute_falsified_same_format_different_output() {
+    // Same format: outputs differ → Falsified
+    let dir = tempfile::tempdir().unwrap();
+    let model_file = dir.path().join("model.gguf");
+    std::fs::write(&model_file, "fake").unwrap();
+
+    // Return different output based on which tagged file is being run (idem1 vs idem2)
+    let mock = create_mock_apr(
+        dir.path(),
+        r#"case "$1" in
+rosetta) case "$2" in
+  convert) touch "$4"; exit 0;;
+esac;;
+run) case "$2" in
+  *idem1*) echo "output one";;
+  *idem2*) echo "output two";;
+  *) echo "output one";;
+esac; exit 0;;
+esac
+exit 1"#,
+    );
+
+    let mut idem = IdempotencyTest::new(
+        Format::Gguf,
+        Format::Gguf,
+        Backend::Cpu,
+        ModelId::new("test", "model"),
+    );
+    idem.binary = mock.to_string_lossy().to_string();
+
+    match idem.execute(&model_file) {
+        Ok(ConversionResult::Falsified { gate_id, .. }) => {
+            assert_eq!(gate_id, "F-CONV-IDEM-001");
+        }
+        other => panic!("Expected Falsified, got: {other:?}"),
+    }
+}
+
+// ── CommutativityTest::execute ───────────────────────────────────────────────
+
+#[test]
+fn test_commutativity_execute_error_on_wrong_format() {
+    // resolve_model_path expects Gguf but file is .safetensors → Err
+    let dir = tempfile::tempdir().unwrap();
+    let model_file = dir.path().join("model.safetensors");
+    std::fs::write(&model_file, "fake").unwrap();
+
+    let mut com = CommutativityTest::new(Backend::Cpu, ModelId::new("test", "model"));
+    com.binary = "/nonexistent/apr".to_string();
+
+    let result = com.execute(&model_file);
+    assert!(result.is_err(), "Expected Err for wrong format extension");
+}
+
+#[test]
+fn test_commutativity_execute_error_on_conversion_failure() {
+    let dir = tempfile::tempdir().unwrap();
+    let model_file = dir.path().join("model.gguf");
+    std::fs::write(&model_file, "fake").unwrap();
+
+    let mock = create_mock_apr(dir.path(), "exit 1");
+
+    let mut com = CommutativityTest::new(Backend::Cpu, ModelId::new("test", "model"));
+    com.binary = mock.to_string_lossy().to_string();
+
+    let result = com.execute(&model_file);
+    assert!(result.is_err(), "Expected Err when conversion fails");
+}
+
+#[test]
+fn test_commutativity_execute_corroborated() {
+    // Both paths produce non-garbage output → Corroborated
+    let dir = tempfile::tempdir().unwrap();
+    let model_file = dir.path().join("model.gguf");
+    std::fs::write(&model_file, "fake").unwrap();
+
+    let mock = create_mock_apr(
+        dir.path(),
+        r#"case "$1" in
+rosetta) case "$2" in
+  convert) touch "$4"; exit 0;;
+esac;;
+run) echo "The answer is 4"; exit 0;;
+esac
+exit 1"#,
+    );
+
+    let mut com = CommutativityTest::new(Backend::Cpu, ModelId::new("test", "model"));
+    com.binary = mock.to_string_lossy().to_string();
+
+    match com.execute(&model_file) {
+        Ok(ConversionResult::Corroborated { source_format, target_format, .. }) => {
+            assert_eq!(source_format, Format::Gguf);
+            assert_eq!(target_format, Format::Apr);
+        }
+        other => panic!("Expected Corroborated, got: {other:?}"),
+    }
+}
+
+#[test]
+fn test_commutativity_execute_falsified_indirect_path_garbage() {
+    // Indirect path (GGUF→ST→APR) returns garbage output → Falsified
+    let dir = tempfile::tempdir().unwrap();
+    let model_file = dir.path().join("model.gguf");
+    std::fs::write(&model_file, "fake").unwrap();
+
+    // Direct path (com_direct) → good output; indirect path (com_indirect) → garbage
+    let mock = create_mock_apr(
+        dir.path(),
+        r#"case "$1" in
+rosetta) case "$2" in
+  convert) touch "$4"; exit 0;;
+esac;;
+run) case "$2" in
+  *com_direct*) echo "The answer is 4";;
+  *) printf "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";;
+esac; exit 0;;
+esac
+exit 1"#,
+    );
+
+    let mut com = CommutativityTest::new(Backend::Cpu, ModelId::new("test", "model"));
+    com.binary = mock.to_string_lossy().to_string();
+
+    match com.execute(&model_file) {
+        Ok(ConversionResult::Falsified { gate_id, .. }) => {
+            assert_eq!(gate_id, "F-CONV-COM-001");
+        }
+        other => panic!("Expected Falsified, got: {other:?}"),
+    }
+}
