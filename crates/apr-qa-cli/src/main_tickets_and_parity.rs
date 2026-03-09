@@ -141,15 +141,19 @@ fn parity_list_golden(corpus_dir: &std::path::Path) {
     println!("\n=== Available Golden Outputs ===\n");
     let manifest_path = corpus_dir.join("manifest.json");
     if !manifest_path.exists() {
+        eprintln!("No manifest.json found in {}", corpus_dir.display());
         return;
     }
     let Ok(content) = std::fs::read_to_string(&manifest_path) else {
+        eprintln!("Error reading manifest.json: {}", manifest_path.display());
         return;
     };
     let Ok(manifest) = serde_json::from_str::<serde_json::Value>(&content) else {
+        eprintln!("Error parsing manifest.json: invalid JSON");
         return;
     };
     let Some(prompts) = manifest.get("prompts").and_then(|p| p.as_array()) else {
+        eprintln!("manifest.json missing 'prompts' array");
         return;
     };
     println!("Found {} golden outputs:\n", prompts.len());
@@ -340,9 +344,15 @@ fn load_logits_from_file(logits_path: &std::path::Path) -> Vec<f32> {
         }
     };
 
-    logits_view
-        .data()
-        .chunks_exact(4)
+    let data = logits_view.data();
+    if data.len() % 4 != 0 {
+        eprintln!(
+            "Error: logits tensor byte length {} is not a multiple of 4 (corrupt or non-f32 data)",
+            data.len()
+        );
+        std::process::exit(1);
+    }
+    data.chunks_exact(4)
         .map(|b| f32::from_le_bytes([b[0], b[1], b[2], b[3]]))
         .collect()
 }

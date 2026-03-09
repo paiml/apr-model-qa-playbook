@@ -188,11 +188,7 @@ impl Executor {
             let filename = ep.file_name()?.to_str()?;
 
             // Skip test artifacts
-            if filename.contains("converted")
-                || filename.contains(".idem")
-                || filename.contains(".com_")
-                || filename.contains(".rt_")
-            {
+            if Self::is_conversion_artifact(filename) {
                 continue;
             }
 

@@ -360,10 +360,23 @@ pub fn find_skip_files(playbook_dir: &Path, name: &str) -> Vec<SkipReason> {
     }
 
     let Ok(content) = std::fs::read_to_string(&skip_path) else {
+        eprintln!(
+            "[WARN] Cannot read skip file: {}",
+            skip_path.display()
+        );
         return Vec::new();
     };
 
-    serde_yaml::from_str(&content).unwrap_or_default()
+    match serde_yaml::from_str(&content) {
+        Ok(reasons) => reasons,
+        Err(e) => {
+            eprintln!(
+                "[WARN] Invalid skip file {}: {e}",
+                skip_path.display()
+            );
+            Vec::new()
+        }
+    }
 }
 
 /// Detect implicit skips by comparing playbook formats against all known formats

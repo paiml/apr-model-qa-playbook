@@ -198,6 +198,10 @@ pub fn generate_lock_file(dir: &Path, output: &Path) -> Result<usize, String> {
     /// Recursively walk a directory collecting playbook lock entries
     fn walk_dir(dir: &Path, entries: &mut HashMap<String, apr_qa_runner::PlaybookLockEntry>) {
         let Ok(read_dir) = std::fs::read_dir(dir) else {
+            eprintln!(
+                "[WARN] Cannot read directory: {}",
+                dir.display()
+            );
             return;
         };
         for entry in read_dir.flatten() {
@@ -208,8 +212,23 @@ pub fn generate_lock_file(dir: &Path, output: &Path) -> Result<usize, String> {
                 .file_name()
                 .is_some_and(|n| n.to_string_lossy().ends_with(".playbook.yaml"))
             {
-                if let Ok((name, lock_entry)) = generate_lock_entry(&path) {
-                    entries.insert(name, lock_entry);
+                match generate_lock_entry(&path) {
+                    Ok((name, lock_entry)) => {
+                        if entries.contains_key(&name) {
+                            eprintln!(
+                                "[WARN] Duplicate playbook name '{}' at {}",
+                                name,
+                                path.display()
+                            );
+                        }
+                        entries.insert(name, lock_entry);
+                    }
+                    Err(e) => {
+                        eprintln!(
+                            "[WARN] Failed to hash {}: {e}",
+                            path.display()
+                        );
+                    }
                 }
             }
         }
