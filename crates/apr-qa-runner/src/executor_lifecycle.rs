@@ -382,6 +382,19 @@ impl Executor {
     /// G0-FORMAT: Prepare workspace with APR cache directory structure
     fn run_g0_format_check(&mut self, playbook: &Playbook) -> (usize, usize) {
         let Some(model_path_str) = self.config.model_path.clone() else {
+            let model_id = playbook.model_id();
+            self.collector.add(Evidence::skipped(
+                "G0-FORMAT-SKIP-001",
+                QaScenario::new(
+                    model_id,
+                    Modality::Run,
+                    Backend::Cpu,
+                    Format::SafeTensors,
+                    "G0 Format: prepare workspace".to_string(),
+                    0,
+                ),
+                "G0-FORMAT skipped: model path not available",
+            ));
             return (0, 0);
         };
         let path = Path::new(&model_path_str);
@@ -421,19 +434,47 @@ impl Executor {
 
     /// G0-TENSOR: Tensor template validation against family YAML
     fn check_g0_tensor(&mut self, playbook: &Playbook) -> (usize, usize) {
-        let model_path_str = match self.config.model_path.as_ref() {
-            Some(p) => p.clone(),
-            None => return (0, 0),
-        };
-        let family = match playbook.model.family.as_ref() {
-            Some(f) => f.clone(),
-            None => return (0, 0),
-        };
-        let size_variant = match playbook.model.size_variant.as_ref() {
-            Some(s) => s.clone(),
-            None => return (0, 0),
-        };
         let model_id = playbook.model_id();
+        let tensor_scenario = || {
+            QaScenario::new(
+                model_id.clone(),
+                Modality::Run,
+                Backend::Cpu,
+                Format::SafeTensors,
+                "G0 Tensor: template validation".to_string(),
+                0,
+            )
+        };
+        let model_path_str = if let Some(p) = self.config.model_path.as_ref() {
+            p.clone()
+        } else {
+            self.collector.add(Evidence::skipped(
+                "G0-TENSOR-SKIP-001",
+                tensor_scenario(),
+                "G0-TENSOR skipped: model path not available",
+            ));
+            return (0, 0);
+        };
+        let family = if let Some(f) = playbook.model.family.as_ref() {
+            f.clone()
+        } else {
+            self.collector.add(Evidence::skipped(
+                "G0-TENSOR-SKIP-001",
+                tensor_scenario(),
+                "G0-TENSOR skipped: model family not configured in playbook",
+            ));
+            return (0, 0);
+        };
+        let size_variant = if let Some(s) = playbook.model.size_variant.as_ref() {
+            s.clone()
+        } else {
+            self.collector.add(Evidence::skipped(
+                "G0-TENSOR-SKIP-001",
+                tensor_scenario(),
+                "G0-TENSOR skipped: size_variant not configured in playbook",
+            ));
+            return (0, 0);
+        };
         self.run_g0_tensor_template_check(
             Path::new(&model_path_str),
             &model_id,

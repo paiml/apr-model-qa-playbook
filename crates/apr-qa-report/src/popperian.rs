@@ -49,7 +49,23 @@ const SEVERITY_RULES: &[GateRule<u8>] = &[
         value: 5,
     },
     GateRule {
-        matcher: GateMatcher::StartsWith("G"),
+        matcher: GateMatcher::StartsWith("G0-"),
+        value: 5,
+    },
+    GateRule {
+        matcher: GateMatcher::StartsWith("G1-"),
+        value: 5,
+    },
+    GateRule {
+        matcher: GateMatcher::StartsWith("G2-"),
+        value: 5,
+    },
+    GateRule {
+        matcher: GateMatcher::StartsWith("G3-"),
+        value: 5,
+    },
+    GateRule {
+        matcher: GateMatcher::StartsWith("G4-"),
         value: 5,
     },
     GateRule {

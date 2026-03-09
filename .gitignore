@@ -36,3 +36,4 @@ book/book/
 .pmat/context.idx/
 .pmat/workspace.idx/
 .pmat/deps-cache.json
+dhat-heap.json

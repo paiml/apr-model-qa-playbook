@@ -18,15 +18,17 @@ impl Executor {
             "ollama GGUF loadability".to_string(),
             0,
         );
+        let start = Instant::now();
         let create_output = self
             .command_runner
             .create_ollama_model(&format!("apr-test-{}", model_id.name), model_path);
+        let duration = start.elapsed().as_millis() as u64;
         if create_output.success {
             let ev = Evidence::corroborated(
                 "F-OLLAMA-005",
                 gguf_scenario,
                 "Ollama successfully loaded our GGUF via `ollama create`",
-                0,
+                duration,
             );
             self.collector.add(ev);
             passed += 1;
@@ -36,7 +38,7 @@ impl Executor {
                 gguf_scenario,
                 format!("Ollama failed to load GGUF: {}", create_output.stderr),
                 &create_output.stdout,
-                0,
+                duration,
             );
             self.collector.add(ev);
             failed += 1;
@@ -51,15 +53,17 @@ impl Executor {
             "ollama API parity".to_string(),
             0,
         );
+        let start = Instant::now();
         let ollama_api = self
             .command_runner
             .http_get("http://localhost:11434/api/tags");
+        let duration = start.elapsed().as_millis() as u64;
         if ollama_api.success {
             let ev = Evidence::corroborated(
                 "F-OLLAMA-004",
                 api_scenario,
                 "Ollama API endpoint /api/tags is accessible",
-                0,
+                duration,
             );
             self.collector.add(ev);
             passed += 1;
@@ -69,7 +73,7 @@ impl Executor {
                 api_scenario,
                 format!("Ollama API not accessible: {}", ollama_api.stderr),
                 &ollama_api.stdout,
-                0,
+                duration,
             );
             self.collector.add(ev);
             failed += 1;
@@ -82,6 +86,7 @@ impl Executor {
     ///
     /// Note: F-PERF-003 is reserved for Memory Leak detection (patterns_spec_gates.rs).
     /// F-PERF-006 is the CI-level GPU vs CPU throughput ratio gate.
+    #[allow(clippy::too_many_lines)]
     fn run_perf_gates(
         &mut self,
         model_path: &Path,
@@ -93,7 +98,22 @@ impl Executor {
 
         let profile_config = match &playbook.profile_ci {
             Some(c) if c.enabled => c,
-            _ => return (0, 0),
+            _ => {
+                let ev = Evidence::skipped(
+                    "F-PERF-SKIP-001",
+                    QaScenario::new(
+                        model_id.clone(),
+                        Modality::Run,
+                        Backend::Cpu,
+                        Format::SafeTensors,
+                        "Performance gates (profile_ci)".to_string(),
+                        0,
+                    ),
+                    "Performance gates skipped: profile_ci not configured or disabled",
+                );
+                self.collector.add(ev);
+                return (0, 0);
+            }
         };
 
         // F-PERF-006: GPU vs CPU throughput comparison
@@ -109,12 +129,14 @@ impl Executor {
         if has_cpu && includes_gpu {
             let warmup = profile_config.warmup as u32;
             let measure = profile_config.measure as u32;
+            let start = Instant::now();
             let cpu_output = self
                 .command_runner
                 .profile_ci(model_path, None, None, warmup, measure, true);
             let gpu_output = self
                 .command_runner
                 .profile_ci(model_path, None, None, warmup, measure, false);
+            let duration = start.elapsed().as_millis() as u64;
 
             let cpu_tps = crate::executor::parse_throughput(&cpu_output.stdout);
             let gpu_tps = crate::executor::parse_throughput(&gpu_output.stdout);
@@ -137,7 +159,7 @@ impl Executor {
                         &format!(
                             "GPU/CPU ratio: {ratio:.1}x (GPU={gpu:.1} tok/s, CPU={cpu:.1} tok/s)"
                         ),
-                        0,
+                        duration,
                     );
                     self.collector.add(ev);
                     passed += 1;
@@ -147,7 +169,7 @@ impl Executor {
                         scenario,
                         format!("GPU slower than CPU: ratio {ratio:.2}x"),
                         &format!("GPU={gpu:.1} tok/s, CPU={cpu:.1} tok/s"),
-                        0,
+                        duration,
                     );
                     self.collector.add(ev);
                     failed += 1;
@@ -156,7 +178,9 @@ impl Executor {
         }
 
         // F-PERF-005: Memory profiling
+        let start = Instant::now();
         let mem_output = self.command_runner.profile_memory(model_path);
+        let duration = start.elapsed().as_millis() as u64;
         let mem_scenario = QaScenario::new(
             model_id.clone(),
             Modality::Run,
@@ -171,7 +195,7 @@ impl Executor {
                 "F-PERF-005",
                 mem_scenario,
                 &format!("Memory profile collected: {}", mem_output.stdout.trim()),
-                0,
+                duration,
             );
             self.collector.add(ev);
             passed += 1;
@@ -181,7 +205,7 @@ impl Executor {
                 mem_scenario,
                 format!("Memory profiling failed: {}", mem_output.stderr),
                 &mem_output.stdout,
-                0,
+                duration,
             );
             self.collector.add(ev);
             failed += 1;
@@ -358,6 +382,7 @@ impl Executor {
                 continue;
             };
 
+            let start = Instant::now();
             let inference_output = self.command_runner.run_inference(
                 Path::new(&model_path_str),
                 &prompt,
@@ -365,6 +390,7 @@ impl Executor {
                 false,
                 &[],
             );
+            let duration = start.elapsed().as_millis() as u64;
 
             if !inference_output.success {
                 let ev = Evidence::falsified(
@@ -372,7 +398,7 @@ impl Executor {
                     Self::hf_parity_scenario(model_id, &prompt),
                     format!("HF parity: inference failed: {}", inference_output.stderr),
                     &inference_output.stdout,
-                    0,
+                    duration,
                 );
                 self.collector.add(ev);
                 failed += 1;
@@ -387,7 +413,7 @@ impl Executor {
                         "F-HF-PARITY-001",
                         Self::hf_parity_scenario(model_id, &prompt),
                         &format!("HF parity PASS: {ev_text}"),
-                        0,
+                        duration,
                     );
                     self.collector.add(ev);
                     passed += 1;
@@ -398,7 +424,7 @@ impl Executor {
                         Self::hf_parity_scenario(model_id, &prompt),
                         format!("HF parity FAIL: {reason}"),
                         &ev_text,
-                        0,
+                        duration,
                     );
                     self.collector.add(ev);
                     failed += 1;

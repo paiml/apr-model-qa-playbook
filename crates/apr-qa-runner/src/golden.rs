@@ -123,6 +123,13 @@ impl Executor {
     /// dedicated battery of checks if configured. Returns `(passed, failed)`.
     fn execute_transformation_tests(&mut self, playbook: &Playbook) -> (usize, usize) {
         let Some(ref config) = playbook.transformations else {
+            let model_id = playbook.model_id();
+            let ev = Evidence::skipped(
+                "F-TRANSFORM-SKIP-002",
+                Self::golden_scenario(&model_id),
+                "Transformation tests skipped: no transformations block in playbook",
+            );
+            self.collector.add(ev);
             return (0, 0);
         };
         let Some(ref model_path_str) = self.config.model_path else {
@@ -511,7 +518,23 @@ impl Executor {
     ) -> (usize, usize) {
         let config = match &playbook.ollama_parity {
             Some(c) if c.enabled => c.clone(),
-            _ => return (0, 0),
+            _ => {
+                let model_id = playbook.model_id();
+                let ev = Evidence::skipped(
+                    "F-OLLAMA-PARITY-SKIP-001",
+                    QaScenario::new(
+                        model_id,
+                        Modality::Run,
+                        Backend::Cpu,
+                        Format::SafeTensors,
+                        "Ollama parity testing".to_string(),
+                        0,
+                    ),
+                    "Ollama parity tests skipped: ollama_parity not configured or disabled",
+                );
+                self.collector.add(ev);
+                return (0, 0);
+            }
         };
 
         let model_id = playbook.model_id();
