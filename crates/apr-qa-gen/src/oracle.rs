@@ -91,10 +91,10 @@ impl ArithmeticOracle {
             let left: i64 = expr[..pos].trim().parse().ok()?;
             let right: i64 = expr[pos + 1..].trim().parse().ok()?;
             return match op {
-                '+' => Some(left + right),
-                '-' => Some(left - right),
-                '*' => Some(left * right),
-                '/' if right != 0 => Some(left / right),
+                '+' => left.checked_add(right),
+                '-' => left.checked_sub(right),
+                '*' => left.checked_mul(right),
+                '/' if right != 0 => left.checked_div(right),
                 _ => None,
             };
         }
