@@ -357,7 +357,7 @@ fn mha_prompts() -> PromptCategory {
                 .to_string(),
             "If x=10, y=x+5, z=y*2, what is z?".to_string(),
         ],
-        oracle_type: "response".to_string(),
+        oracle_type: "garbage".to_string(),
         max_tokens: 64,
     }
 }
@@ -400,7 +400,7 @@ fn rope_long_context_prompts() -> PromptCategory {
              then tell me what the 10th Fibonacci number is."
                 .to_string(),
         ],
-        oracle_type: "response".to_string(),
+        oracle_type: "garbage".to_string(),
         max_tokens: 256,
     }
 }

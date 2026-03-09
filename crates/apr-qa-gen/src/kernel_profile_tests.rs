@@ -318,7 +318,7 @@ fn test_prompt_category_oracle_types() {
     let profile = profile_from_constraints("qwen2", &qwen_constraints(), Some(32768));
     for cat in &profile.prompt_categories {
         assert!(
-            ["arithmetic", "response", "code_syntax"].contains(&cat.oracle_type.as_str()),
+            ["arithmetic", "garbage", "code_syntax"].contains(&cat.oracle_type.as_str()),
             "Unexpected oracle type: {}",
             cat.oracle_type
         );

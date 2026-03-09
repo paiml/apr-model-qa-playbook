@@ -191,9 +191,9 @@ pub struct CertificationRow {
     /// Whether model provenance has been verified
     pub provenance_verified: bool,
 
-    /// Kernel proof level from provable-contracts (optional, L1–L5).
+    /// Kernel proof reference model for dim-smoke tier (optional).
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub kernel_proof_level: Option<String>,
+    pub kernel_proof_ref: Option<String>,
 }
 
 /// Provide default values for a new uncertified model row
@@ -221,7 +221,7 @@ impl Default for CertificationRow {
             tps_st_cpu: None,
             tps_st_gpu: None,
             provenance_verified: false,
-            kernel_proof_level: None,
+            kernel_proof_ref: None,
         }
     }
 }
@@ -378,7 +378,7 @@ fn parse_csv_record(record: &csv::StringRecord, idx: usize) -> Result<Certificat
         tps_st_cpu: parse_optional_f64(17),
         tps_st_gpu: parse_optional_f64(18),
         provenance_verified: parse_bool(19, "provenance_verified")?,
-        kernel_proof_level: record.get(20).and_then(|s| {
+        kernel_proof_ref: record.get(20).and_then(|s| {
             let s = s.trim();
             if s.is_empty() {
                 None
@@ -427,7 +427,7 @@ pub fn write_models_csv<P: AsRef<Path>>(rows: &[CertificationRow], path: P) -> R
             "tps_st_cpu",
             "tps_st_gpu",
             "provenance_verified",
-            "kernel_proof_level",
+            "kernel_proof_ref",
         ])
         .map_err(|e| Error::Io(format!("Failed to write CSV header: {e}")))?;
 
@@ -437,7 +437,7 @@ pub fn write_models_csv<P: AsRef<Path>>(rows: &[CertificationRow], path: P) -> R
             |opt: Option<f64>| -> String { opt.map_or_else(String::new, |v| format!("{v:.1}")) };
 
         let kernel_proof = row
-            .kernel_proof_level
+            .kernel_proof_ref
             .as_deref()
             .unwrap_or("")
             .to_string();

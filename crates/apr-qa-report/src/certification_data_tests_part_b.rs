@@ -111,30 +111,30 @@ test/model,family,0.5B,tiny,BLOCKED,246,F,quick,not-a-date,true,true,true,true,,
     assert!(err.contains("Invalid timestamp"));
 }
 
-/// Verify CSV with kernel_proof_level column parsed correctly
+/// Verify CSV with kernel_proof_ref column parsed correctly
 #[test]
-fn test_csv_with_kernel_proof_level() {
-    let csv_data = r#"model_id,family,parameters,size_category,status,mqs_score,grade,certified_tier,last_certified,g1,g2,g3,g4,tps_gguf_cpu,tps_gguf_gpu,tps_apr_cpu,tps_apr_gpu,tps_st_cpu,tps_st_gpu,provenance_verified,kernel_proof_level
+fn test_csv_with_kernel_proof_ref() {
+    let csv_data = r#"model_id,family,parameters,size_category,status,mqs_score,grade,certified_tier,last_certified,g1,g2,g3,g4,tps_gguf_cpu,tps_gguf_gpu,tps_apr_cpu,tps_apr_gpu,tps_st_cpu,tps_st_gpu,provenance_verified,kernel_proof_ref
 test/model,family,0.5B,tiny,CERTIFIED,900,A,mvp,2026-02-04T13:28:18.663+00:00,true,true,true,true,25.0,100.0,22.0,90.0,5.0,30.0,true,L3
 "#;
     let temp = NamedTempFile::new().unwrap();
     std::fs::write(temp.path(), csv_data).unwrap();
     let rows = read_models_csv(temp.path()).unwrap();
     assert_eq!(rows.len(), 1);
-    assert_eq!(rows[0].kernel_proof_level, Some("L3".to_string()));
+    assert_eq!(rows[0].kernel_proof_ref, Some("L3".to_string()));
 }
 
-/// Verify CSV with empty kernel_proof_level column is None
+/// Verify CSV with empty kernel_proof_ref column is None
 #[test]
-fn test_csv_with_empty_kernel_proof_level() {
-    let csv_data = r#"model_id,family,parameters,size_category,status,mqs_score,grade,certified_tier,last_certified,g1,g2,g3,g4,tps_gguf_cpu,tps_gguf_gpu,tps_apr_cpu,tps_apr_gpu,tps_st_cpu,tps_st_gpu,provenance_verified,kernel_proof_level
+fn test_csv_with_empty_kernel_proof_ref() {
+    let csv_data = r#"model_id,family,parameters,size_category,status,mqs_score,grade,certified_tier,last_certified,g1,g2,g3,g4,tps_gguf_cpu,tps_gguf_gpu,tps_apr_cpu,tps_apr_gpu,tps_st_cpu,tps_st_gpu,provenance_verified,kernel_proof_ref
 test/model,family,0.5B,tiny,CERTIFIED,900,A,mvp,2026-02-04T13:28:18.663+00:00,true,true,true,true,25.0,100.0,22.0,90.0,5.0,30.0,true,
 "#;
     let temp = NamedTempFile::new().unwrap();
     std::fs::write(temp.path(), csv_data).unwrap();
     let rows = read_models_csv(temp.path()).unwrap();
     assert_eq!(rows.len(), 1);
-    assert!(rows[0].kernel_proof_level.is_none());
+    assert!(rows[0].kernel_proof_ref.is_none());
 }
 
 /// Verify boolean "1" and "yes" values work in CSV
