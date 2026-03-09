@@ -89,9 +89,7 @@ impl Executor {
             }
         }
         if !server_ready {
-            if pid_str.parse::<u32>().is_ok() {
-                let _ = std::process::Command::new("kill").arg(&pid_str).output();
-            }
+            kill_server_process(server_pid.as_ref());
             let gate_id = format!("F-{}-001", scenario.mqs_category());
             results.push(Evidence::falsified(
                 &gate_id,
@@ -134,9 +132,7 @@ impl Executor {
         }
 
         // Kill the server process
-        if pid_str.parse::<u32>().is_ok() {
-            let _ = std::process::Command::new("kill").arg(&pid_str).output();
-        }
+        kill_server_process(server_pid.as_ref());
 
         results
     }
@@ -994,5 +990,28 @@ impl Executor {
         data_lines
             .last()
             .is_some_and(|l| *l == "data: [DONE]")
+    }
+}
+
+/// Kill a server process by PID with SIGTERM, logging failures.
+///
+/// Sends SIGTERM via the `kill` command. If `server_pid` is None (PID
+/// parsing failed at spawn time), logs a warning instead of silently
+/// skipping cleanup.
+fn kill_server_process(server_pid: Option<&u32>) {
+    let Some(&pid) = server_pid else {
+        eprintln!("[JIDOKA] Cannot kill server: PID not available (spawn output was malformed)");
+        return;
+    };
+    let pid_str = pid.to_string();
+    match std::process::Command::new("kill").arg(&pid_str).output() {
+        Ok(output) if output.status.success() => {}
+        Ok(output) => {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            eprintln!("[JIDOKA] kill {pid} exited with {}: {}", output.status, stderr.trim());
+        }
+        Err(e) => {
+            eprintln!("[JIDOKA] Failed to execute kill {pid}: {e}");
+        }
     }
 }
