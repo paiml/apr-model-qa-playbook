@@ -97,11 +97,11 @@ fn export_evidence(
         _ => "F",
     };
 
-    // Extract gateway results from evidence
+    // Extract gateway results from evidence (pessimistic: failure wins)
     let mut gates: HashMap<String, GateResult> = HashMap::new();
     for ev in &evidence_array {
         if let Some(gate_id) = ev.get("gate_id").and_then(|g| g.as_str()) {
-            if gate_id.starts_with('G') && !gates.contains_key(gate_id) {
+            if gate_id.starts_with('G') {
                 let passed = ev
                     .get("outcome")
                     .and_then(|o| o.as_str())
@@ -111,7 +111,16 @@ fn export_evidence(
                     .and_then(|r| r.as_str())
                     .unwrap_or("")
                     .to_string();
-                gates.insert(gate_id.to_string(), GateResult { passed, reason });
+
+                // Pessimistic merge: if gate already exists and was passing,
+                // a new failure overrides it (Jidoka: any failure matters)
+                if let Some(existing) = gates.get(gate_id) {
+                    if existing.passed && !passed {
+                        gates.insert(gate_id.to_string(), GateResult { passed, reason });
+                    }
+                } else {
+                    gates.insert(gate_id.to_string(), GateResult { passed, reason });
+                }
             }
         }
     }
