@@ -33,14 +33,27 @@ impl MqsCalculator {
         }
 
         // G1: Model loads successfully
-        let has_load_failure = evidence
+        // No evidence uses "G1-*" gate_id prefix directly. Instead, a model that
+        // fails to load causes ALL inference attempts to fail (G2-BASIC failures).
+        // G1 fails when: (a) there are G2-BASIC failures, AND (b) zero inference
+        // successes — indicating the model never loaded. If some inferences succeed,
+        // the model loaded fine and individual failures are G2 issues.
+        let inference_evidence: Vec<&Evidence> = evidence
             .iter()
-            .any(|e| e.gate_id.starts_with("G1") && e.outcome.is_fail());
-        if has_load_failure {
+            .filter(|e| !e.gate_id.starts_with("G0-"))
+            .collect();
+        let any_inference_success = inference_evidence
+            .iter()
+            .any(|e| e.outcome == Outcome::Corroborated);
+        let all_inferences_failed = !inference_evidence.is_empty()
+            && inference_evidence
+                .iter()
+                .all(|e| e.outcome.is_fail());
+        if all_inferences_failed && !any_inference_success {
             results.push(GatewayResult::failed(
                 "G1",
                 "Model loads successfully",
-                "Model failed to load",
+                "All inference attempts failed — model may not have loaded",
             ));
         } else {
             results.push(GatewayResult::passed("G1", "Model loads successfully"));
@@ -76,16 +89,27 @@ impl MqsCalculator {
         }
 
         // G4: Output is not garbage
-        let garbage_failures = evidence
+        // The GarbageOracle produces evidence with gate_ids like "F-A1-001" (QUAL
+        // category), not "G4-*". Detect garbage by checking oracle_type == "garbage"
+        // on falsified evidence. Threshold: >25% garbage across garbage-oracle tests.
+        let garbage_tests: Vec<&Evidence> = evidence
             .iter()
-            .filter(|e| e.gate_id.starts_with("G4") && e.outcome.is_fail())
+            .filter(|e| e.scenario.oracle_type == "garbage")
+            .collect();
+        let garbage_failures = garbage_tests
+            .iter()
+            .filter(|e| e.outcome.is_fail())
             .count();
-        if garbage_failures * 4 > evidence.len() {
+        let garbage_total = garbage_tests.len();
+        if garbage_total > 0 && garbage_failures * 4 > garbage_total {
             // More than 25% garbage output (use multiplication to avoid integer truncation)
             results.push(GatewayResult::failed(
                 "G4",
                 "Output is not garbage",
-                format!("{garbage_failures} garbage outputs detected"),
+                format!(
+                    "{garbage_failures}/{garbage_total} garbage-oracle tests failed (>{} threshold)",
+                    "25%"
+                ),
             ));
         } else {
             results.push(GatewayResult::passed("G4", "Output is not garbage"));

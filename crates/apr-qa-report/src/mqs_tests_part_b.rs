@@ -3,11 +3,20 @@ fn test_gateway_g1_failure() {
     let calc = MqsCalculator::new();
     let mut collector = EvidenceCollector::new();
 
-    // Add a G1 failure (model load failure)
+    // G1 fails when ALL inference attempts fail and NONE succeed.
+    // Simulates a model that never loaded — every inference attempt
+    // exits non-zero (G2-BASIC failures).
     collector.add(Evidence::falsified(
-        "G1-LOAD",
+        "G2-BASIC",
         test_scenario(),
-        "Model failed to load",
+        "Command failed (exit 1): model not found",
+        "",
+        100,
+    ));
+    collector.add(Evidence::falsified(
+        "G2-BASIC",
+        test_scenario(),
+        "Command failed (exit 1): model not found",
         "",
         100,
     ));
@@ -20,6 +29,29 @@ fn test_gateway_g1_failure() {
     assert!(!score.gateways_passed);
     let g1 = score.gateways.iter().find(|g| g.id == "G1").unwrap();
     assert!(!g1.passed);
+}
+
+#[test]
+fn test_gateway_g1_passes_with_mixed_results() {
+    let calc = MqsCalculator::new();
+    let mut collector = EvidenceCollector::new();
+
+    // G1 passes when at least one inference succeeds (model loaded)
+    collector.add(test_evidence_passed("F-QUAL-001"));
+    collector.add(Evidence::falsified(
+        "G2-BASIC",
+        test_scenario(),
+        "wrong answer",
+        "",
+        100,
+    ));
+
+    let score = calc
+        .calculate("test/model", &collector)
+        .expect("Calculation failed");
+
+    let g1 = score.gateways.iter().find(|g| g.id == "G1").unwrap();
+    assert!(g1.passed);
 }
 
 #[test]
@@ -44,16 +76,31 @@ fn test_gateway_g2_failure() {
     assert!(!g2.passed);
 }
 
+/// Create a scenario with oracle_type "garbage" (default oracle for non-arithmetic, non-code prompts)
+fn garbage_scenario() -> QaScenario {
+    QaScenario::new(
+        ModelId::new("test", "model"),
+        Modality::Run,
+        Backend::Cpu,
+        Format::Gguf,
+        "Tell me about AI".to_string(),
+        42,
+    )
+}
+
 #[test]
 fn test_gateway_g4_failure_garbage_output() {
     let calc = MqsCalculator::new();
     let mut collector = EvidenceCollector::new();
 
-    // Add many G4 failures (more than 25% garbage)
+    // G4 detects garbage via oracle_type == "garbage" on falsified evidence.
+    // All 10 items use the garbage oracle and are falsified — >25% threshold.
+    let gs = garbage_scenario();
+    assert_eq!(gs.oracle_type, "garbage", "prompt must select garbage oracle");
     for i in 0..10 {
         collector.add(Evidence::falsified(
-            &format!("G4-GARBAGE-{i:03}"),
-            test_scenario(),
+            &format!("F-A1-{i:03}"),
+            garbage_scenario(),
             "Garbage output",
             "###$$@@!!",
             100,
@@ -66,6 +113,36 @@ fn test_gateway_g4_failure_garbage_output() {
 
     let g4 = score.gateways.iter().find(|g| g.id == "G4").unwrap();
     assert!(!g4.passed);
+}
+
+#[test]
+fn test_gateway_g4_passes_with_mostly_good_garbage_oracle() {
+    let calc = MqsCalculator::new();
+    let mut collector = EvidenceCollector::new();
+
+    // 8 corroborated + 1 falsified garbage oracle → 1/9 < 25% → G4 passes
+    for i in 0..8 {
+        collector.add(Evidence::corroborated(
+            &format!("F-A1-{i:03}"),
+            garbage_scenario(),
+            "Good output",
+            100,
+        ));
+    }
+    collector.add(Evidence::falsified(
+        "F-A1-008",
+        garbage_scenario(),
+        "Garbage output",
+        "###$$@@!!",
+        100,
+    ));
+
+    let score = calc
+        .calculate("test/model", &collector)
+        .expect("Calculation failed");
+
+    let g4 = score.gateways.iter().find(|g| g.id == "G4").unwrap();
+    assert!(g4.passed);
 }
 
 #[test]

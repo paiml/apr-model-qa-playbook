@@ -199,12 +199,17 @@ impl PopperianCalculator {
     pub fn calculate(&self, model_id: &str, evidence: &EvidenceCollector) -> PopperianScore {
         let all_evidence = evidence.all();
 
-        let mut corroborated = 0;
         let mut inconclusive = 0;
         let mut severity_total = 0.0;
         let mut severity_passed = 0.0;
         let mut falsifications = Vec::new();
         let mut black_swan_count = 0;
+
+        // Track unique gate_ids for consistent hypothesis counting.
+        // Both corroborated and falsified counts must use the same unit
+        // (unique gate_ids = hypotheses) to avoid ratio distortion.
+        let mut corroborated_gates: std::collections::HashSet<String> =
+            std::collections::HashSet::new();
 
         // Group failures by gate_id for reproducibility analysis
         let mut failure_counts: std::collections::HashMap<String, usize> =
@@ -217,7 +222,7 @@ impl PopperianCalculator {
 
             match e.outcome {
                 Outcome::Corroborated => {
-                    corroborated += 1;
+                    corroborated_gates.insert(e.gate_id.clone());
                     severity_passed += weight;
                 }
                 Outcome::Falsified | Outcome::Crashed => {
@@ -255,8 +260,14 @@ impl PopperianCalculator {
         falsifications.sort_by(|a, b| a.gate_id.cmp(&b.gate_id).then(b.severity.cmp(&a.severity)));
         falsifications.dedup_by(|a, b| a.gate_id == b.gate_id);
 
-        // Use deduplicated count: each gate_id is one hypothesis
+        // Both corroborated and falsified use unique gate_ids (hypotheses)
+        // to ensure the ratio uses consistent counting units.
         let falsified = falsifications.len();
+        // Remove gate_ids that were also falsified (mixed results → falsified wins)
+        let corroborated = corroborated_gates
+            .iter()
+            .filter(|g| !failure_counts.contains_key(g.as_str()))
+            .count();
         let hypotheses_tested = corroborated + falsified;
         let corroboration_ratio = if hypotheses_tested > 0 {
             corroborated as f64 / hypotheses_tested as f64

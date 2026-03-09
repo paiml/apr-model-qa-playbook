@@ -30,7 +30,7 @@ equations:
     formula: "check_gateways produces exactly 5 GatewayResult items"
     domain: "MqsCalculator"
     invariants:
-      - "MQS gateway evaluator: G0 scans gate_id prefix 'G0-' (all sub-gates), G1/G2/G4 scan gate_id via starts_with(), G3 checks Outcome::Crashed (no gate_id scan)"
+      - "MQS gateway evaluator: G0 scans gate_id prefix 'G0-', G1 checks all-failures-no-successes in non-G0 evidence, G2 scans gate_id starts_with('G2'), G3 checks Outcome::Crashed, G4 checks oracle_type='garbage' on falsified evidence (>25% threshold)"
       - "Absence of evidence for a gateway counts as pass (no evidence = no failure)"
       - "All G0 sub-gates (FORMAT, TENSOR, INTEGRITY, LAYOUT, VALIDATE, PULL) enforce via Jidoka early-return before scenario execution"
 
