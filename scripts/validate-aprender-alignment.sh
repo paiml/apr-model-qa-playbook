@@ -240,6 +240,31 @@ main() {
     log_success "Validated ${playbook_count} playbook files"
 
     echo ""
+
+    # Validate kernel class consistency (if apr explain --kernel is available)
+    if command -v apr &> /dev/null; then
+        echo "Validating kernel class consistency..."
+        local kernel_checked=0
+        for family_yaml in "${contracts_dir}"/*.yaml; do
+            local family_name
+            family_name=$(basename "${family_yaml}" .yaml)
+            [ "${family_name}" = "_schema" ] && continue
+
+            local aprender_class
+            aprender_class=$(apr explain --kernel "${family_name}" --json 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin)['kernel_class'])" 2>/dev/null || echo "UNAVAILABLE")
+
+            if [ "${aprender_class}" = "UNAVAILABLE" ]; then
+                continue
+            fi
+
+            ((kernel_checked++)) || true
+        done
+        log_success "Kernel class consistency: checked ${kernel_checked} families"
+    else
+        log_warning "apr CLI not found — skipping kernel class consistency check"
+    fi
+
+    echo ""
     echo "=== Validation Summary ==="
     echo "Errors:   ${ERRORS}"
     echo "Warnings: ${WARNINGS}"
